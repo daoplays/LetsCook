@@ -1,0 +1,35 @@
+@font-face {
+    font-family: 'ChalkBoard';
+    src: local('ChalkBoard'), url(/fonts/ChalkBoard.woff2) format('woff2');
+    /* other formats include: 'woff2', 'truetype, 'opentype',
+                              'embedded-opentype', and 'svg' */
+}
+
+@font-face {
+    font-family: 'KGSummerSunshineBlackout';
+    src: local('KGSummerSunshineBlackout'), url(/fonts/KGSummerSunshineBlackout.woff2) format('woff2');
+    /* other formats include: 'woff2', 'truetype, 'opentype',
+                              'embedded-opentype', and 'svg' */
+}
+
+
+@font-face {
+    font-family: 'ReemKufiRegular';
+    src: local('ReemKufiRegular'), url(/fonts/ReemKufiRegular.woff2) format('woff2');
+    /* other formats include: 'woff2', 'truetype, 'opentype',
+                              'embedded-opentype', and 'svg' */
+}
+
+
+
+.font-face-kg {
+    font-family: "KGSummerSunshineBlackout";
+}
+
+.font-face-cb {
+    font-family: "ChalkBoard";
+}
+
+.font-face-rk {
+    font-family: "ReemKufiRegular";
+}

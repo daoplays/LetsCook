@@ -1,0 +1,9 @@
+node_modules/
+build/
+
+# env variables
+.env
+# Local Netlify folder
+.netlify
+#nextjs stuff
+.next
