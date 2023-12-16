@@ -42,15 +42,5 @@ if (PROD) {
 
 export const enum Screen {
     HOME_SCREEN = 0,
-    DUNGEON_SCREEN = 1,
-    DEATH_SCREEN = 2,
-    FAQ_SCREEN = 3,
-    ODDS_SCREEN = 4,
-    HELP_SCREEN = 5,
-    SHOP_SCREEN = 6,
-    DM_SCREEN = 7,
-    ACHIEVEMENT_SCREEN = 8,
-    STATS_SCREEN = 9,
-    MARKETPLACE_SCREEN = 10,
-    ARENA_SCREEN = 11
+    FAQ_SCREEN = 1,
 }

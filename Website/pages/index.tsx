@@ -39,263 +39,16 @@ import { TfiReload } from "react-icons/tfi";
 
 import bs58 from "bs58";
 
-import { DEBUG, SYSTEM_KEY, PROGRAM} from '../components/Solana/constants';
+import { DEBUG, SYSTEM_KEY, PROGRAM, Screen} from '../components/Solana/constants';
 import {run_launch_data_GPA, LaunchData, get_current_blockhash, send_transaction, uInt32ToLEBytes, serialise_CreateLaunch_instruction} from '../components/Solana/state';
 import Navigation from "../components/Navigation"
-
+import { FAQScreen } from "./faq";
+import Footer from "../components/Footer"
+import {NewGameModal, TermsModal} from "../components/Solana/modals"
 
 import logo from "../public/images/sauce.png";
 import styles from '../components/css/featured.module.css'
 
-
-function NewGameModal({show_value, showFunction, name, setName, liquidity, setLiquidity, processing_transaction, ListGameOnArena, launchDate, setLaunchDate} : {show_value: boolean, showFunction: Dispatch<SetStateAction<boolean>>, name: string, setName: Dispatch<SetStateAction<string>>, liquidity: string, setLiquidity: Dispatch<SetStateAction<string>>, processing_transaction: boolean, ListGameOnArena: MouseEventHandler<HTMLParagraphElement>, launchDate : Date, setLaunchDate: Dispatch<SetStateAction<Date>>}) {
-    const handleClose = () => {
-        showFunction(false);
-    };
-
-    const handleNameChange = (e) => {setName(e.target.value)}
-    const handleLiquidityChange = (e) => { setLiquidity(e); }
-    return (
-        <>
-            <Modal isOpen={show_value} onClose={handleClose} motionPreset='none'>
-                    <ModalOverlay />
-                    <ModalContent>
-                    <ModalHeader style={{ backgroundColor: "black", fontSize: 14, color: "white", fontWeight: "semibold"}}>
-                        
-                            Token Launch Details
-                    </ModalHeader>
-                    <ModalCloseButton />
-
-                    <ModalBody style={{ backgroundColor: "black", fontSize: 14, color: "white", fontWeight: "semibold" }}>
-                        <VStack align="center" spacing="10px">
-                            <HStack width="80%" align={"center"}>
-                                <Box width="50%">
-                                    <Text align={"left"} fontSize={14} color="white">
-                                        Ticker:
-                                    </Text>
-                                </Box>
-                                <Box width="50%">
-                                <FormControl id="desired_team_name" maxWidth={"350px"} >
-                                    <Input
-                                        type="text"
-                                        value={name}
-                                        onChange={handleNameChange}
-                                    />
-                                </FormControl>
-                                </Box>
-                            </HStack>
-
-                            <HStack width="80%" align={"center"}>
-                                <Box width="50%">
-                                    <Text align={"left"} fontSize={14} color="white">
-                                        Min. Liquidity:
-                                    </Text>
-                                </Box>
-                                <Box width="50%">
-                                    <NumberInput
-                                        id="desired_betsize"
-                                        fontSize={14}
-                                        color="white"
-                                        size="lg"
-                                        onChange={handleLiquidityChange}
-                                        value={liquidity}
-                                        borderColor="white"
-                                        min={1}
-                                    >
-                                        <NumberInputField
-                                            height={14}
-                                            paddingTop="1rem"
-                                            paddingBottom="1rem"
-                                            borderColor="white"
-                                        />
-                                    </NumberInput>
-                                </Box>
-                            </HStack>
-                            <HStack width="80%" align={"center"}>
-                                <Box width="50%">
-                                    <Text align={"left"} fontSize={14} color="white">
-                                        Date:
-                                    </Text>
-                                </Box>
-                            <DatePicker selected={launchDate} onChange={(date) => setLaunchDate(date)} />
-                            </HStack>
-
-                        </VStack>
-                    </ModalBody>
-
-                    <ModalFooter style={{ alignItems: "center", justifyContent: "center", backgroundColor: "black" }}>
-                    <div className="font-face-sfpb">
-                        <VStack>
-                            <Box as="button" borderWidth="2px" borderColor="white" width="120px">
-                                <Text
-                                    align="center"
-                                    onClick={
-                                        processing_transaction
-                                            ? () => {
-                                                  console.log("already clicked");
-                                              }
-                                            : ListGameOnArena
-                                    }
-                                    fontSize={14}
-                                    color="white"
-                                >
-                                    CREATE
-                                </Text>
-                            </Box>
-                            <Text color="grey" fontSize="10px">
-                                Account costs will be returned in the event of a failed launch
-                            </Text>
-                        </VStack>
-                    </div>
-                </ModalFooter>
-
-                    
-                </ModalContent>
-            </Modal>
-        </>
-    );
-}
-
-/*
-  function NewGameModal() {
-    const handleClose = () => {
-        setShowNewGame(false);
-    };
-
-    return (
-        <>
-            <Modal isOpen={show_new_game} onClose={handleClose} motionPreset='none'>
-                    <ModalOverlay />
-                    <ModalContent>
-                    <ModalHeader style={{ backgroundColor: "black", fontSize: 14, color: "white", fontWeight: "semibold"}}>
-                        
-                            Token Launch Details
-                    </ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody style={{ backgroundColor: "black", fontSize: 14, color: "white", fontWeight: "semibold" }}>
-                        <VStack align="center" spacing="10px">
-                            <HStack width="80%" align={"center"}>
-                                <Box width="50%">
-                                    <Text align={"left"} fontSize={14} color="white">
-                                        Ticker:
-                                    </Text>
-                                </Box>
-                                <Box width="50%">
-                                <FormControl id="desired_team_name" maxWidth={"350px"} >
-                                    <Input
-                                        type="text"
-                                        value={desired_team_name}
-                                        onChange={handleDesiredTeamNameChange}
-                                        ref={modalRef}
-                                    />
-                                </FormControl>
-                                </Box>
-                            </HStack>
-                            <HStack width="80%" align={"center"}>
-                                <Box width="50%">
-                                    <Text align={"left"} fontSize={14} color="white">
-                                        Field:
-                                    </Text>
-                                </Box>
-                                <Box width="50%">
-                                    <NumberInput
-                                        id="desired_betsize"
-                                        ref={BetSizeRef}
-                                        fontSize={14}
-                                        color="white"
-                                        size="lg"
-                                        onChange={(valueString) => {
-                                            setBetSizeString(valueString);
-                                        }}
-                                        value={bet_size_string}
-                                        borderColor="white"
-                                        min={0.05}
-                                    >
-                                        <NumberInputField
-                                            height={14}
-                                            paddingTop="1rem"
-                                            paddingBottom="1rem"
-                                            borderColor="white"
-                                        />
-                                    </NumberInput>
-                                </Box>
-                            </HStack>
-                            <HStack width="80%" align={"center"}>
-                                <Box width="50%">
-                                    <Text align={"left"} fontSize={14} color="white">
-                                        Min. Liquidity:
-                                    </Text>
-                                </Box>
-
-                                <VStack width="30%" align="left">
-                                    <HStack width="100%">
-                                        <Box
-                                            as="button"
-                                            borderWidth="2px"
-                                            borderColor={chosen_speed === GameSpeed.slow ? "white" : "black"}
-                                            width="50px"
-                                            height={35}
-                                            onClick={() => setChosenSpeed(GameSpeed.slow)}
-                                        >
-                                            <Text align="center" fontSize={14} color="white">
-                                                A
-                                            </Text>
-                                        </Box>
-
-                                        <Box
-                                            as="button"
-                                            borderWidth="2px"
-                                            borderColor={chosen_speed === GameSpeed.fast ? "white" : "black"}
-                                            width="50px"
-                                            height={35}
-                                            onClick={() => setChosenSpeed(GameSpeed.fast)}
-                                        >
-                                            <Text align="center" fontSize={14} color="white">
-                                                B
-                                            </Text>
-                                        </Box>
-                                    </HStack>
-                                </VStack>
-                            </HStack>
-                            <Box width="80%">
-                                <Text align={"left"} fontSize={14} color="white">
-                                    Launch Date:
-                                </Text>
-                            </Box>
-                        </VStack>
-                    </ModalBody>
-
-                <ModalFooter style={{ alignItems: "center", justifyContent: "center", backgroundColor: "black" }}>
-                    <div className="font-face-sfpb">
-                        <VStack>
-                            <Box as="button" borderWidth="2px" borderColor="white" width="120px">
-                                <Text
-                                    align="center"
-                                    onClick={
-                                        processing_transaction
-                                            ? () => {
-                                                  console.log("already clicked");
-                                              }
-                                            : ListGameOnArena
-                                    }
-                                    fontSize={14}
-                                    color="white"
-                                >
-                                    CREATE
-                                </Text>
-                            </Box>
-                            <Text color="grey" fontSize="10px">
-                                Account costs will be returned in the event of a failed launch
-                            </Text>
-                        </VStack>
-                    </div>
-                </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>
-    );
-}
-*/
 
 const enum LaunchInstruction {
     init = 0,
@@ -375,6 +128,7 @@ function LetsCook() {
 
      const [processing_transaction, setProcessingTransaction] = useState<boolean>(false);
      const [show_new_game, setShowNewGame] = useState<boolean>(false);
+     const [show_terms, setShowTerms] = useState<boolean>(false);
 
      const game_interval = useRef<number | null>(null);
      const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
@@ -384,6 +138,9 @@ function LetsCook() {
     const [desired_team_name, setDesiredTeamName] = useState<string>("")
 
     const [launchDate, setLaunchDate] = useState<Date>(new Date());
+
+    const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
+
 
 
 
@@ -552,11 +309,11 @@ function LetsCook() {
 
     },[wallet, desired_team_name, launchDate]);
 
-  return (
-    <>
-        <Navigation showLaunch={setShowNewGame}/>
 
-        <div className={styles.featuredImage}>
+    const HomeScreen = () => {
+        return(
+            <>
+            <div className={styles.featuredImage}>
             <Center className={styles.featuredBox}>
                 <HStack marginLeft={"50px"}>
                 <img
@@ -594,6 +351,18 @@ function LetsCook() {
                 <GameTable/>
         </Center>
         </>
+        );
+    }
+
+  return (
+    <>
+        <Navigation showLaunch={setShowNewGame} setScreen={setScreen}/>
+        <TermsModal show_value={show_terms} showFunction={setShowTerms}/>
+        {screen === Screen.HOME_SCREEN && <HomeScreen />}
+        {screen === Screen.FAQ_SCREEN && <FAQScreen />}
+        <Footer showTerms={setShowTerms}/>
+
+        </>
   );
 }
 
@@ -601,10 +370,8 @@ export default function Home() {
 
 
     return(
-            <>
-                      <LetsCook />
-
-</>
+        
+        <LetsCook />
                
     );
 }

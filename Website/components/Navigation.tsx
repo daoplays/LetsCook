@@ -1,14 +1,18 @@
 import {Dispatch, SetStateAction} from "react";
-import Link from 'next/link';
 
 import {  HStack, Text, Box } from '@chakra-ui/react';
 
 import {ConnectWalletButton, DisconnectWalletButton} from './Solana/wallet'
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import styles from './header.module.css'
+import {Screen} from "./Solana/constants"
 
-function Navigation({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean>>}) {
+import styles from './header.module.css'
+import faq from "../public/images/FAQ.png";
+
+
+function Navigation({showLaunch, setScreen} : {showLaunch : Dispatch<SetStateAction<boolean>>, 
+  setScreen : Dispatch<SetStateAction<Screen>>}) {
 
   const LaunchTokenButton = ({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean>>}) => {
 
@@ -40,16 +44,21 @@ function Navigation({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean
     <>
     <div className={styles.headerImage}>
       <HStack>
-      <Link href="/">
         <div className="font-face-kg">
-          <Text pl="10px" pt="10px" color={"brown"}>
+          <Text pl="10px" pt="10px" color={"brown"} onClick={() => setScreen(Screen.HOME_SCREEN)}>
             LET'S COOK
           </Text>
         </div>
-        </Link>
         {wallet.publicKey && <DisconnectWalletButton />}
         {wallet.publicKey === null && <ConnectWalletButton />}
         <LaunchTokenButton showLaunch={showLaunch}/>
+        <img
+                src={faq.src}
+                width="auto"
+                alt={""}
+                style={{ maxHeight: "30px", maxWidth: "30px" }}
+                onClick={() => setScreen(Screen.FAQ_SCREEN)}
+                />
         </HStack>
       </div>
       </>

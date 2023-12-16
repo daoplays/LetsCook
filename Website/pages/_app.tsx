@@ -8,7 +8,6 @@ import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
 
 
-import Footer from "../components/Footer"
 
 import 'bootstrap/dist/css/bootstrap.css';
 import '../styles/fonts.css';
@@ -23,7 +22,6 @@ function MyApp({ Component, pageProps }) {
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <Component {...pageProps} />
-          <Footer/>
           </WalletModalProvider>
             </WalletProvider>
     </ChakraProvider>
