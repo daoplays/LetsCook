@@ -9,8 +9,8 @@ import {
   
 import { FaTwitter, FaTwitch } from 'react-icons/fa';
 
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "../components/Solana/constants";
-import { LaunchData } from "../components/Solana/state";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "./Solana/constants";
+import { LaunchData } from "./Solana/state";
 
 import logo from "../public/images/sauce.png";
 import tickets from "../public/images/Mint.png";

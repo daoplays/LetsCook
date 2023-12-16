@@ -1,6 +1,6 @@
 import { Box, Center, HStack, Text } from "@chakra-ui/react";
 
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "../components/Solana/constants";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "./Solana/constants";
 
 import salad2 from "../public/images/salad2.png";
 import hotdog from "../public/images/hotdog.png";

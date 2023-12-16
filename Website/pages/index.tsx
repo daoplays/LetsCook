@@ -25,8 +25,8 @@ import bs58 from "bs58";
 import { DEBUG, SYSTEM_KEY, PROGRAM, Screen} from '../components/Solana/constants';
 import {run_launch_data_GPA, LaunchData, get_current_blockhash, send_transaction, uInt32ToLEBytes, serialise_CreateLaunch_instruction} from '../components/Solana/state';
 import Navigation from "../components/Navigation"
-import { FAQScreen } from "./faq";
-import { TokenScreen } from "./token";
+import { FAQScreen } from "../components/faq";
+import { TokenScreen } from "../components/token";
 
 import Footer from "../components/Footer"
 import {NewGameModal, TermsModal} from "../components/Solana/modals"
