@@ -21,7 +21,8 @@ function Navigation({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean
           width="200px"
           height="25px"
           fontSize={"16px"}
-          mb="5px"
+          mb="6px"
+          
       >
           <div className="font-face-rk">
             <Text align="center" fontSize={14} color="white">
@@ -38,7 +39,7 @@ function Navigation({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean
   return (
     <>
     <div className={styles.headerImage}>
-      <HStack align="center">
+      <HStack>
       <Link href="/">
         <div className="font-face-kg">
           <Text pl="10px" pt="10px" color={"brown"}>

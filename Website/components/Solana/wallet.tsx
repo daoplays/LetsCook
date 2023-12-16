@@ -10,7 +10,7 @@ import {
   import { useWalletModal } from "@solana/wallet-adapter-react-ui";
   import { useWallet } from "@solana/wallet-adapter-react";
 
-
+require('@solana/wallet-adapter-react-ui/styles.css');
 
 export function DisconnectWalletButton() {
 
@@ -52,7 +52,7 @@ export function ConnectWalletButton() {
 
     return (
         <>
-            <Box mb="1rem" as="button" onClick={handleConnectWallet}>
+            <Box as="button" onClick={handleConnectWallet}>
                 <div className="font-face-rk">
                     <Text
                         borderColor="white"
@@ -62,7 +62,7 @@ export function ConnectWalletButton() {
                         fontSize={"16px"}
                         textAlign="center"
                         color="white"
-                        mb="0"
+                        mt="10px"
                     >
                         CONNECT WALLET
                     </Text>

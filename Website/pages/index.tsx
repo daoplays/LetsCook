@@ -111,8 +111,15 @@ function NewGameModal({show_value, showFunction, name, setName, liquidity, setLi
                                     </NumberInput>
                                 </Box>
                             </HStack>
-
+                            <HStack width="80%" align={"center"}>
+                                <Box width="50%">
+                                    <Text align={"left"} fontSize={14} color="white">
+                                        Date:
+                                    </Text>
+                                </Box>
                             <DatePicker selected={launchDate} onChange={(date) => setLaunchDate(date)} />
+                            </HStack>
+
                         </VStack>
                     </ModalBody>
 
@@ -372,7 +379,7 @@ function LetsCook() {
      const game_interval = useRef<number | null>(null);
      const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
      const check_launch_data = useRef<boolean>(true);
-    const [bet_size_string, setBetSizeString] = useState<string>("0.05");
+    const [bet_size_string, setBetSizeString] = useState<string>("100");
 
     const [desired_team_name, setDesiredTeamName] = useState<string>("")
 
