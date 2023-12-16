@@ -1,0 +1,10 @@
+.custom-table {
+    background-color: black;
+    color: white;
+}
+
+.custom-centered-table {
+    background-color: black;
+    color: white;
+    text-align: center;
+}

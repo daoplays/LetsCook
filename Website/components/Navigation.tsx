@@ -1,13 +1,44 @@
-import React from "react";
+import {Dispatch, SetStateAction} from "react";
 import Link from 'next/link';
-import { FaDiscord, FaTwitter, FaGithub, FaTwitch } from 'react-icons/fa';
-import { Code, HStack, Text } from '@chakra-ui/react';
+
+import {  HStack, Text, Box } from '@chakra-ui/react';
+
+import {ConnectWalletButton, DisconnectWalletButton} from './Solana/wallet'
+import { useWallet } from "@solana/wallet-adapter-react";
 
 import styles from './header.module.css'
 
-function Navigation() {
+function Navigation({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean>>}) {
+
+  const LaunchTokenButton = ({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean>>}) => {
+
+    return(
+        <Box
+          as="button"
+          onClick={() => showLaunch(true)}
+          borderWidth="1px"
+          borderColor="white"
+          width="200px"
+          height="25px"
+          fontSize={"16px"}
+          mb="5px"
+      >
+          <div className="font-face-rk">
+            <Text align="center" fontSize={14} color="white">
+              LAUNCH TOKEN
+            </Text>
+          </div>
+      </Box>
+    );
+  }
+
+  const wallet = useWallet();
+
+
   return (
+    <>
     <div className={styles.headerImage}>
+      <HStack align="center">
       <Link href="/">
         <div className="font-face-kg">
           <Text pl="10px" pt="10px" color={"brown"}>
@@ -15,46 +46,13 @@ function Navigation() {
           </Text>
         </div>
         </Link>
+        {wallet.publicKey && <DisconnectWalletButton />}
+        {wallet.publicKey === null && <ConnectWalletButton />}
+        <LaunchTokenButton showLaunch={showLaunch}/>
+        </HStack>
       </div>
+      </>
     );
 }
-/*
-function Navigation() {
-  return (
-    <div className="navigation" style={{"marginBottom":"10px"}}>
-      <nav className="navbar navbar-expand navbar-dark bg-dark">
-        <div className="container">
-        <Link className="navbar-brand" href="/">
-            DaoPlays
-          </Link>
-          <div>
-          <ul className="navbar-nav ml-auto">
-              <li className="nav-item">
-                <a className="nav-link" href="http://www.twitter.com/dao_plays">
-                 <FaTwitter />
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="http://www.discord.gg/4KbYFt3cSg">
-                <FaDiscord/>
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="http://www.twitch.tv/daoplays_">
-                <FaTwitch/>
-                </a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link" href="http://www.github.com/daoplays">
-                <FaGithub/>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
-    </div>
-  );
-}
-*/
+
 export default Navigation;
