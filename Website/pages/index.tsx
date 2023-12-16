@@ -1,32 +1,15 @@
-import dynamic from 'next/dynamic';
-
 import {
   Center,
   VStack,
   Text,
   Box,
-  HStack,
-  FormControl,
-  Input
+  HStack
 } from "@chakra-ui/react";
 
-import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalFooter,
-    ModalBody,
-    ModalCloseButton,
-  } from '@chakra-ui/react'
-
-import DatePicker from "react-datepicker";
 
 import "react-datepicker/dist/react-datepicker.css";
 
-import { NumberInput, NumberInputField } from "@chakra-ui/react";
-
-import { MouseEventHandler, Dispatch, SetStateAction, ChangeEventHandler, useCallback, useEffect, useState, useRef, useMemo } from 'react';
+import {Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from 'react';
 import Table from 'react-bootstrap/Table';
 
 
@@ -43,6 +26,8 @@ import { DEBUG, SYSTEM_KEY, PROGRAM, Screen} from '../components/Solana/constant
 import {run_launch_data_GPA, LaunchData, get_current_blockhash, send_transaction, uInt32ToLEBytes, serialise_CreateLaunch_instruction} from '../components/Solana/state';
 import Navigation from "../components/Navigation"
 import { FAQScreen } from "./faq";
+import { TokenScreen } from "./token";
+
 import Footer from "../components/Footer"
 import {NewGameModal, TermsModal} from "../components/Solana/modals"
 
@@ -62,13 +47,13 @@ const enum LaunchInstruction {
 }
 
 
-const ArenaGameCard = ({ launch, index }: { launch: LaunchData; index: number }) => {
+const ArenaGameCard = ({ launch, setLaunchData, setScreen, index }: { launch: LaunchData; setLaunchData: Dispatch<SetStateAction<LaunchData>>, setScreen: Dispatch<SetStateAction<Screen>>, index: number }) => {
 
     let name = new TextDecoder().decode(new Uint8Array(launch.name)); 
     let splitDate = new Date(launch.launch_date * 24 * 60 * 60 * 1000).toUTCString().split(' ');
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3]
     return (
-        <tr>
+        <tr onClick={() => {setLaunchData(launch); setScreen(Screen.TOKEN_SCREEN)}}>
             <td >
                 <Center>
                 <img
@@ -95,7 +80,7 @@ const ArenaGameCard = ({ launch, index }: { launch: LaunchData; index: number })
     );
 }
 
-const Listings = ({launch_list} : {launch_list : LaunchData[]}) => {
+const Listings = ({launch_list, setLaunchData, setScreen} : {launch_list : LaunchData[], setLaunchData : Dispatch<SetStateAction<LaunchData>>, setScreen: Dispatch<SetStateAction<Screen>>}) => {
     if (launch_list.length === 0) {
         return(<></>);
     }
@@ -103,18 +88,13 @@ const Listings = ({launch_list} : {launch_list : LaunchData[]}) => {
   return(
       <>{
         launch_list.map((item: LaunchData, index) => 
-              <ArenaGameCard key={index} launch={item} index={index} />
+            <ArenaGameCard key={index} launch={item} setLaunchData={setLaunchData} setScreen={setScreen} index={index} />
       )
       }
       </>
   );
 }
 
-
-const enum GameSpeed {
-    fast = 0,
-    slow = 1,
-}
 
 function LetsCook() {
 
@@ -138,6 +118,7 @@ function LetsCook() {
     const [desired_team_name, setDesiredTeamName] = useState<string>("")
 
     const [launchDate, setLaunchDate] = useState<Date>(new Date());
+    const [current_launch_data, setCurrentLaunchData] = useState<LaunchData | null>(null);
 
     const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
 
@@ -208,7 +189,7 @@ function LetsCook() {
                         <tbody style={{
                             backgroundColor: 'black'
                         }}>
-                            <Listings launch_list={launch_data}/>
+                            <Listings launch_list={launch_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen}/>
                         </tbody>
                     </Table>
                 </div>
@@ -360,6 +341,8 @@ function LetsCook() {
         <TermsModal show_value={show_terms} showFunction={setShowTerms}/>
         {screen === Screen.HOME_SCREEN && <HomeScreen />}
         {screen === Screen.FAQ_SCREEN && <FAQScreen />}
+        {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
+
         <Footer showTerms={setShowTerms}/>
 
         </>
