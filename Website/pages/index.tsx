@@ -31,7 +31,7 @@ import { TokenScreen } from "../components/token";
 
 import Footer from "../components/Footer"
 import {NewGameModal, TermsModal} from "../components/Solana/modals"
-import { arweave_upload } from "../components/Solana/arweave";
+import { arweave_json_upload, arweave_upload } from "../components/Solana/arweave";
 
 import logo from "../public/images/sauce.png";
 import styles from '../components/css/featured.module.css'
@@ -220,7 +220,9 @@ function LetsCook() {
         
         // first upload the png file to arweave and get the url
         let image_url = await arweave_upload(image_file_string);
-        console.log("list game with url", image_url)
+        let meta_data_url = await arweave_json_upload(desired_team_name, "LC", image_url);
+        console.log("list game with url", image_url, meta_data_url);
+
         let arena_account = (PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM))[0];
         let game_data_account = (PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from(desired_team_name), Buffer.from("Game")], PROGRAM))[0];
         let sol_data_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
@@ -247,7 +249,7 @@ function LetsCook() {
 
         console.log("have launch date", launchDate, launchDate.getDate(), launchDate.getTime())
         let date : number = launchDate.getTime()/1000/24/60/60.0;
-        const instruction_data = serialise_CreateLaunch_instruction(LaunchInstruction.create_game, desired_team_name, "LC", image_url, date);
+        const instruction_data = serialise_CreateLaunch_instruction(LaunchInstruction.create_game, desired_team_name, "LC", meta_data_url, date);
 
         var account_vector  = [
             {pubkey: wallet.publicKey, isSigner: true, isWritable: true},

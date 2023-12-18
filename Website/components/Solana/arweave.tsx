@@ -21,3 +21,31 @@ export const arweave_upload = async (b64string : string) => {
     return result.body;
 
   }
+
+export const arweave_json_upload = async (name : string, symbol : string, image_url : string) => {
+
+    var metadata = {
+        name: name,
+        symbol: symbol,
+        description: "placeholder description",
+        image: image_url,
+    }
+
+    const metaContentType = ["Content-Type", "application/json"];
+    const metadataString = JSON.stringify(metadata);
+
+    const response = await fetch("/.netlify/functions/arweave_json", {
+        method: 'POST',
+        body: JSON.stringify({
+        data: metadataString,
+        }),
+        headers: {
+        'Content-Type': 'application/json'
+        },
+    });
+    
+    // #3 Get our Arweave URL, that's it! 
+    const result = (await response.json())
+
+    return result.body;
+}
