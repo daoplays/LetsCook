@@ -20,7 +20,7 @@ import bar from "../public/images/bar.png";
 
 export function TokenScreen({launch_data} : {launch_data : LaunchData}) {
 
-    let name = new TextDecoder().decode(new Uint8Array(launch_data.name)); 
+    let name = launch_data.name;
 
     return(
         <Center mt="20px" width="90%">

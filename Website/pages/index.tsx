@@ -13,7 +13,8 @@ import {Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } fro
 import Table from 'react-bootstrap/Table';
 
 
-import { PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 import { useWallet } from "@solana/wallet-adapter-react";
 
@@ -22,7 +23,7 @@ import { TfiReload } from "react-icons/tfi";
 
 import bs58 from "bs58";
 
-import { DEBUG, SYSTEM_KEY, PROGRAM, Screen} from '../components/Solana/constants';
+import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen} from '../components/Solana/constants';
 import {run_launch_data_GPA, LaunchData, get_current_blockhash, send_transaction, uInt32ToLEBytes, serialise_CreateLaunch_instruction} from '../components/Solana/state';
 import Navigation from "../components/Navigation"
 import { FAQScreen } from "../components/faq";
@@ -30,6 +31,7 @@ import { TokenScreen } from "../components/token";
 
 import Footer from "../components/Footer"
 import {NewGameModal, TermsModal} from "../components/Solana/modals"
+import { arweave_upload } from "../components/Solana/arweave";
 
 import logo from "../public/images/sauce.png";
 import styles from '../components/css/featured.module.css'
@@ -49,7 +51,7 @@ const enum LaunchInstruction {
 
 const ArenaGameCard = ({ launch, setLaunchData, setScreen, index }: { launch: LaunchData; setLaunchData: Dispatch<SetStateAction<LaunchData>>, setScreen: Dispatch<SetStateAction<Screen>>, index: number }) => {
 
-    let name = new TextDecoder().decode(new Uint8Array(launch.name)); 
+    let name = launch.name;
     let splitDate = new Date(launch.launch_date * 24 * 60 * 60 * 1000).toUTCString().split(' ');
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3]
     return (
@@ -122,7 +124,10 @@ function LetsCook() {
 
     const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
 
+    const [image_file, setFile] = useState<File | null>(null);
+    const [image_file_string, setFileString] = useState<string | null>(null);
 
+    
 
 
      const CheckLaunchData = useCallback(async () => {
@@ -132,8 +137,6 @@ function LetsCook() {
 
         let list = await run_launch_data_GPA("");
         console.log(list)
-        let str = new TextDecoder().decode(new Uint8Array(list[0].name)); 
-        console.log(str)
         setLaunchData(list)
         check_launch_data.current = false
 
@@ -197,7 +200,7 @@ function LetsCook() {
         );
     }
   
-
+    
 
     const ListGameOnArena = useCallback( async () => 
     {
@@ -205,14 +208,35 @@ function LetsCook() {
         if (wallet.publicKey === null || wallet.signTransaction === undefined)
             return;
 
-        setProcessingTransaction(true);
+        //setProcessingTransaction(true);
         setTransactionFailed(false);
 
-        let seed = (Math.random()*1e9);
-        let seed_bytes = uInt32ToLEBytes(seed);
+        if (image_file_string === null) {
+            console.log("image is null")
+            return;
+        }
+        
+        console.log(image_file_string);
+        
+        // first upload the png file to arweave and get the url
+        let image_url = await arweave_upload(image_file_string);
+        console.log("list game with url", image_url)
         let arena_account = (PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM))[0];
-        let game_data_account = (PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), seed_bytes, Buffer.from("Game")], PROGRAM))[0];
+        let game_data_account = (PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from(desired_team_name), Buffer.from("Game")], PROGRAM))[0];
         let sol_data_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
+
+        const token_mint_keypair = Keypair.generate();
+        var token_mint_pubkey = token_mint_keypair.publicKey;
+        let token_meta_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
+            METAPLEX_META,
+        )[0];
+
+        let token_raffle_account_key = await getAssociatedTokenAddress(
+            token_mint_pubkey, // mint
+            arena_account, // owner
+            true, // allow owner off curve
+        );
 
         if(DEBUG) {
             console.log("arena: ", arena_account.toString());
@@ -221,18 +245,9 @@ function LetsCook() {
         }
 
 
-        let utf8Encode = new TextEncoder();
-        let name_bytes = Array.from(utf8Encode.encode(desired_team_name.toString()));
-        let name_array : number[] = Array(256)
-
-        for (let i = 0; i < name_bytes.length; i++) {
-            name_array[i] = name_bytes[i]
-        }
-
-
         console.log("have launch date", launchDate, launchDate.getDate(), launchDate.getTime())
         let date : number = launchDate.getTime()/1000/24/60/60.0;
-        const instruction_data = serialise_CreateLaunch_instruction(LaunchInstruction.create_game, name_array, seed, date);
+        const instruction_data = serialise_CreateLaunch_instruction(LaunchInstruction.create_game, desired_team_name, "LC", image_url, date);
 
         var account_vector  = [
             {pubkey: wallet.publicKey, isSigner: true, isWritable: true},
@@ -240,8 +255,17 @@ function LetsCook() {
             {pubkey: sol_data_account, isSigner: false, isWritable: true},
 
             {pubkey: arena_account, isSigner: false, isWritable: true},
-            {pubkey: SYSTEM_KEY, isSigner: false, isWritable: false}
+
+            { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
+            { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
+            { pubkey: token_meta_key, isSigner: false, isWritable: true },
+            
         ];
+
+        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
 
 
         const list_instruction = new TransactionInstruction({
@@ -257,6 +281,9 @@ function LetsCook() {
 
 
         transaction.add(list_instruction);
+
+        transaction.partialSign(token_mint_keypair);
+
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -288,7 +315,7 @@ function LetsCook() {
 
         setShowNewGame(false);
 
-    },[wallet, desired_team_name, launchDate]);
+    },[wallet, desired_team_name, launchDate, image_file, image_file_string]);
 
 
     const HomeScreen = () => {
@@ -326,7 +353,7 @@ function LetsCook() {
          <Center width="100%" marginBottom="5rem">
              <NewGameModal show_value={show_new_game} showFunction={setShowNewGame} name={desired_team_name} setName={setDesiredTeamName}
                 liquidity={bet_size_string} setLiquidity={setBetSizeString} processing_transaction={processing_transaction} ListGameOnArena={ListGameOnArena}
-                launchDate={launchDate} setLaunchDate={setLaunchDate}/>
+                launchDate={launchDate} setLaunchDate={setLaunchDate} setFileString={setFileString}/>
               
 
                 <GameTable/>

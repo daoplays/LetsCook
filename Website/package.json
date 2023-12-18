@@ -21,6 +21,7 @@
     "@solana/wallet-adapter-wallets": "^0.19.23",
     "@solana/web3.js": "^1.87.1",
     "@types/react-plotly.js": "^2.6.1",
+    "arweave": "^1.14.4",
     "better-react-mathjax": "^2.0.3",
     "bootstrap": "^5.3.2",
     "chart.js": "^4.4.0",

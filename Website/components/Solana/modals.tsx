@@ -25,13 +25,28 @@ import DatePicker from "react-datepicker";
 
 import { NumberInput, NumberInputField } from "@chakra-ui/react";
 
-export function NewGameModal({show_value, showFunction, name, setName, liquidity, setLiquidity, processing_transaction, ListGameOnArena, launchDate, setLaunchDate} : {show_value: boolean, showFunction: Dispatch<SetStateAction<boolean>>, name: string, setName: Dispatch<SetStateAction<string>>, liquidity: string, setLiquidity: Dispatch<SetStateAction<string>>, processing_transaction: boolean, ListGameOnArena: MouseEventHandler<HTMLParagraphElement>, launchDate : Date, setLaunchDate: Dispatch<SetStateAction<Date>>}) {
+export function NewGameModal({show_value, showFunction, name, setName, liquidity, setLiquidity, processing_transaction, ListGameOnArena, launchDate, setLaunchDate, setFileString} : {show_value: boolean, showFunction: Dispatch<SetStateAction<boolean>>, name: string, setName: Dispatch<SetStateAction<string>>, liquidity: string, setLiquidity: Dispatch<SetStateAction<string>>, processing_transaction: boolean, ListGameOnArena: MouseEventHandler<HTMLParagraphElement>, launchDate : Date, setLaunchDate: Dispatch<SetStateAction<Date>>, setFileString: Dispatch<SetStateAction<string>>}) {
     const handleClose = () => {
         showFunction(false);
     };
 
     const handleNameChange = (e) => {setName(e.target.value)}
     const handleLiquidityChange = (e) => { setLiquidity(e); }
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const reader = new FileReader()
+    
+            reader.readAsDataURL(e.target.files[0])
+        
+            reader.onload = () => {
+            console.log('called: ', reader)
+            setFileString(reader.result.toString().replace('data:', '').replace(/^.+,/, ''))
+        }
+        }
+      };
+
+
     return (
         <>
             <Modal isOpen={show_value} onClose={handleClose} motionPreset='none'>
@@ -97,7 +112,15 @@ export function NewGameModal({show_value, showFunction, name, setName, liquidity
                                 </Box>
                             <DatePicker selected={launchDate} onChange={(date) => setLaunchDate(date)} />
                             </HStack>
-
+                            <HStack width="80%" align={"center"}>
+                                <Box width="50%">
+                                    <Text align={"left"} fontSize={14} color="white">
+                                        Date:
+                                    </Text>
+                                </Box>
+                                <input id="file" type="file" onChange={handleFileChange} />
+                            </HStack>
+                            
                         </VStack>
                     </ModalBody>
 
@@ -111,6 +134,7 @@ export function NewGameModal({show_value, showFunction, name, setName, liquidity
                                         processing_transaction
                                             ? () => {
                                                   console.log("already clicked");
+                                                  
                                               }
                                             : ListGameOnArena
                                     }

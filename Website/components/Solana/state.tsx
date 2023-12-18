@@ -1,5 +1,5 @@
 import { PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { BeetStruct, uniformFixedSizeArray, u8, u16, u32, u64, i64, bignum } from '@metaplex-foundation/beet'
+import { FixableBeetStruct, BeetStruct, uniformFixedSizeArray, u8, u16, u32, u64, i64, bignum, utf8String } from '@metaplex-foundation/beet'
 import { publicKey } from '@metaplex-foundation/beet-solana';
 
 import { DEBUG, RPC_NODE, PROGRAM} from './constants';
@@ -370,28 +370,30 @@ export function serialise_basic_instruction(instruction : number) : Buffer
 
 export class LaunchData {
     constructor(
+        readonly account_type: number,
         readonly game_id: bignum,
         readonly last_interaction: bignum,
         readonly num_interactions: number,   
         readonly launch_date: number,
         readonly seller: PublicKey,
         readonly status: number,
-        readonly seed: number,
-        readonly name: number[]
+        readonly name: String,
+        readonly description: String
     ) {}
   
-    static readonly struct = new BeetStruct<LaunchData>(
+    static readonly struct = new FixableBeetStruct<LaunchData>(
       [
+        ['account_type', u8],
         ['game_id', u64],
         ['last_interaction', i64],
         ['num_interactions', u16],
         ['launch_date', u16],
         ['seller', publicKey],
         ['status', u8],
-        ['seed', u32],
-        ['name', uniformFixedSizeArray(u8, 256)]
+        ['name', utf8String],
+        ['description', utf8String]
       ],
-      (args) => new LaunchData(args.game_id!, args.last_interaction!, args.num_interactions!, args.launch_date!, args.seller!, args.status!, args.seed!, args.name!),
+      (args) => new LaunchData(args.account_type!, args.game_id!, args.last_interaction!, args.num_interactions!, args.launch_date!, args.seller!, args.status!, args.name!, args.description!),
       'LaunchData'
     )
 }
@@ -413,7 +415,7 @@ export async function request_launch_data(bearer : string, pubkey : PublicKey) :
 export async function run_launch_data_GPA(bearer : string) : Promise<LaunchData[]>
 {
 
-    var body = {"id": 1, "jsonrpc": "2.0", "method": "getProgramAccounts", "params": [PROGRAM.toString(), {"filters": [{"dataSize" : 313}], "encoding": "base64", "commitment": "confirmed"}]};
+    var body = {"id": 1, "jsonrpc": "2.0", "method": "getProgramAccounts", "params": [PROGRAM.toString(), {"filters": [{ memcmp: { offset: 0, bytes: 0}}], "encoding": "base64", "commitment": "confirmed"}]};
 
     var program_accounts_result;
     try {
@@ -441,29 +443,31 @@ export async function run_launch_data_GPA(bearer : string) : Promise<LaunchData[
 class CreateLaunch_Instruction {
     constructor(
         readonly instruction: number,
-        readonly name: number[],
-        readonly seed: number,
+        readonly name: String,
+        readonly symbol: String,
+        readonly uri: String,
         readonly launch_date: number
     ) {}
   
-    static readonly struct = new BeetStruct<CreateLaunch_Instruction>(
+    static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
       [
         ['instruction', u8],
-        ['name', uniformFixedSizeArray(u8, 256)],
-        ['seed', u32],
+        ['name', utf8String],
+        ['symbol', utf8String],
+        ["uri", utf8String],
         ['launch_date', u16]
 
       ],
-      (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.seed!, args.launch_date!),
+      (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.launch_date!),
       'CreateLaunch_Instruction'
     )
 }
 
 
-export function serialise_CreateLaunch_instruction(instruction : number, name : number[], seed : number, launch_date : number) : Buffer
+export function serialise_CreateLaunch_instruction(instruction : number, name : String, symbol : String, uri: String, launch_date : number) : Buffer
 {
 
-    const data = new CreateLaunch_Instruction(instruction, name, seed, launch_date);
+    const data = new CreateLaunch_Instruction(instruction, name, symbol, uri, launch_date);
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
     return buf;
