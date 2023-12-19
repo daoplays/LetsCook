@@ -24,10 +24,11 @@ import { TfiReload } from "react-icons/tfi";
 import bs58 from "bs58";
 
 import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen} from '../components/Solana/constants';
-import {run_launch_data_GPA, LaunchData, get_current_blockhash, send_transaction, uInt32ToLEBytes, serialise_CreateLaunch_instruction} from '../components/Solana/state';
+import {run_launch_data_GPA, LaunchData, LaunchDataUserInput, get_current_blockhash, send_transaction, uInt32ToLEBytes, serialise_CreateLaunch_instruction, bignum_to_num} from '../components/Solana/state';
 import Navigation from "../components/Navigation"
 import { FAQScreen } from "../components/faq";
 import { TokenScreen } from "../components/token";
+import { LaunchScreen } from "../components/launch_page";
 
 import Footer from "../components/Footer"
 import {NewGameModal, TermsModal} from "../components/Solana/modals"
@@ -37,22 +38,11 @@ import logo from "../public/images/sauce.png";
 import styles from '../components/css/featured.module.css'
 
 
-const enum LaunchInstruction {
-    init = 0,
-    create_game = 1,
-    join_game = 2,
-    cancel_game = 3,
-    take_move = 4,
-    reveal_move = 5,
-    claim_reward = 6,
-    forfeit = 7,
-}
-
 
 const ArenaGameCard = ({ launch, setLaunchData, setScreen, index }: { launch: LaunchData; setLaunchData: Dispatch<SetStateAction<LaunchData>>, setScreen: Dispatch<SetStateAction<Screen>>, index: number }) => {
 
     let name = launch.name;
-    let splitDate = new Date(launch.launch_date * 24 * 60 * 60 * 1000).toUTCString().split(' ');
+    let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(' ');
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3]
     return (
         <tr onClick={() => {setLaunchData(launch); setScreen(Screen.TOKEN_SCREEN)}}>
@@ -115,20 +105,11 @@ function LetsCook() {
      const game_interval = useRef<number | null>(null);
      const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
      const check_launch_data = useRef<boolean>(true);
-    const [bet_size_string, setBetSizeString] = useState<string>("100");
-
-    const [desired_team_name, setDesiredTeamName] = useState<string>("")
-
-    const [launchDate, setLaunchDate] = useState<Date>(new Date());
     const [current_launch_data, setCurrentLaunchData] = useState<LaunchData | null>(null);
 
     const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
 
-    const [image_file, setFile] = useState<File | null>(null);
-    const [image_file_string, setFileString] = useState<string | null>(null);
-
-    
-
+    const newLaunchData = useRef<LaunchDataUserInput>(null);
 
      const CheckLaunchData = useCallback(async () => {
         
@@ -205,26 +186,24 @@ function LetsCook() {
     const ListGameOnArena = useCallback( async () => 
     {
        
+
         if (wallet.publicKey === null || wallet.signTransaction === undefined)
             return;
 
         //setProcessingTransaction(true);
         setTransactionFailed(false);
-
-        if (image_file_string === null) {
-            console.log("image is null")
-            return;
-        }
         
-        console.log(image_file_string);
+        console.log(newLaunchData.current);
         
         // first upload the png file to arweave and get the url
-        let image_url = await arweave_upload(image_file_string);
-        let meta_data_url = await arweave_json_upload(desired_team_name, "LC", image_url);
+        let image_url = await arweave_upload(newLaunchData.current.icon);
+        let meta_data_url = await arweave_json_upload(newLaunchData.current.name, "LC", newLaunchData.current.icon);
         console.log("list game with url", image_url, meta_data_url);
 
+        newLaunchData.current.uri = meta_data_url;
+
         let arena_account = (PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM))[0];
-        let game_data_account = (PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from(desired_team_name), Buffer.from("Game")], PROGRAM))[0];
+        let game_data_account = (PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from(newLaunchData.current.name), Buffer.from("Game")], PROGRAM))[0];
         let sol_data_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
 
         const token_mint_keypair = Keypair.generate();
@@ -247,9 +226,7 @@ function LetsCook() {
         }
 
 
-        console.log("have launch date", launchDate, launchDate.getDate(), launchDate.getTime())
-        let date : number = launchDate.getTime()/1000/24/60/60.0;
-        const instruction_data = serialise_CreateLaunch_instruction(LaunchInstruction.create_game, desired_team_name, "LC", meta_data_url, date);
+        const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector  = [
             {pubkey: wallet.publicKey, isSigner: true, isWritable: true},
@@ -317,7 +294,7 @@ function LetsCook() {
 
         setShowNewGame(false);
 
-    },[wallet, desired_team_name, launchDate, image_file, image_file_string]);
+    },[wallet]);
 
 
     const HomeScreen = () => {
@@ -353,11 +330,7 @@ function LetsCook() {
             </Center>
         </div>
          <Center width="100%" marginBottom="5rem">
-             <NewGameModal show_value={show_new_game} showFunction={setShowNewGame} name={desired_team_name} setName={setDesiredTeamName}
-                liquidity={bet_size_string} setLiquidity={setBetSizeString} processing_transaction={processing_transaction} ListGameOnArena={ListGameOnArena}
-                launchDate={launchDate} setLaunchDate={setLaunchDate} setFileString={setFileString}/>
-              
-
+        
                 <GameTable/>
         </Center>
         </>
@@ -370,6 +343,7 @@ function LetsCook() {
         <TermsModal show_value={show_terms} showFunction={setShowTerms}/>
         {screen === Screen.HOME_SCREEN && <HomeScreen />}
         {screen === Screen.FAQ_SCREEN && <FAQScreen />}
+        {screen === Screen.LAUNCH_SCREEN && <LaunchScreen newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena}/>}
         {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
 
         <Footer showTerms={setShowTerms}/>

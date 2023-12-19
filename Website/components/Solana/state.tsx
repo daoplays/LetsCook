@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react';
 
 import BN from 'bn.js'
+import bs58 from "bs58";
 
 import {
     WalletDisconnectButton,
@@ -61,6 +62,13 @@ async function postData(url = "", bearer = "", data = {}) {
     return response.json(); // parses JSON response into native JavaScript objects
 }
 
+export function uInt8ToLEBytes(num : number) : Buffer {
+
+    const bytes = Buffer.alloc(1);
+    bytes.writeUInt8(num);
+   
+    return bytes
+ }
 
 export function uInt16ToLEBytes(num : number) : Buffer {
 
@@ -368,17 +376,55 @@ export function serialise_basic_instruction(instruction : number) : Buffer
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+const enum LaunchInstruction {
+    init = 0,
+    create_game = 1,
+    join_game = 2,
+    cancel_game = 3,
+    take_move = 4,
+    reveal_move = 5,
+    claim_reward = 6,
+    forfeit = 7,
+}
+
+
+export interface LaunchDataUserInput {
+    
+    name : string;
+    symbol : string;
+    icon : string;
+    launch_date : number,
+    uri : string
+}
+
 export class LaunchData {
     constructor(
         readonly account_type: number,
         readonly game_id: bignum,
         readonly last_interaction: bignum,
         readonly num_interactions: number,   
-        readonly launch_date: number,
         readonly seller: PublicKey,
         readonly status: number,
-        readonly name: String,
-        readonly description: String
+        readonly name : String,
+        readonly symbol : String,
+        readonly icon : String,
+        readonly total_supply : bignum,
+        readonly decimals : number,
+        readonly num_mints : bignum,
+        readonly ticket_price : bignum,
+        readonly minimum_liquidity : bignum,
+        readonly distribution : number[],
+        readonly page_name : String,
+        readonly description: String,
+        readonly launch_date : bignum,
+        readonly end_date : bignum,
+        readonly banner : String,
+        readonly website: String,
+        readonly twitter : String,
+        readonly telegram : String,
+        readonly team_wallet : PublicKey,
+        readonly mint_address : PublicKey
     ) {}
   
     static readonly struct = new FixableBeetStruct<LaunchData>(
@@ -387,13 +433,29 @@ export class LaunchData {
         ['game_id', u64],
         ['last_interaction', i64],
         ['num_interactions', u16],
-        ['launch_date', u16],
         ['seller', publicKey],
         ['status', u8],
         ['name', utf8String],
-        ['description', utf8String]
+        ['symbol', utf8String],
+        ['icon', utf8String],
+        ['total_supply', u64],
+        ['decimals', u8],
+        ['num_mints', u64],
+        ['ticket_price', u64],
+        ['minimum_liquidity', u64],
+        ['distribution', uniformFixedSizeArray(u8, 6)],
+        ['page_name', utf8String],
+        ['description', utf8String],
+        ['launch_date', u64],
+        ['end_date', utf8String],
+        ['banner', utf8String],
+        ['website', utf8String],
+        ['twitter', utf8String],
+        ['telegram', utf8String],
+        ['team_wallet', publicKey],
+        ['mint_address', publicKey]
       ],
-      (args) => new LaunchData(args.account_type!, args.game_id!, args.last_interaction!, args.num_interactions!, args.launch_date!, args.seller!, args.status!, args.name!, args.description!),
+      (args) => new LaunchData(args.account_type!, args.game_id!, args.last_interaction!, args.num_interactions!, args.seller!, args.status!, args.name!, args.symbol!, args.icon!, args.total_supply!, args.decimals!, args.num_mints!, args.ticket_price!, args.minimum_liquidity!, args.distribution!, args.page_name!, args.description!, args.launch_date!, args.end_date!, args.banner!, args.website!, args.twitter!, args.telegram!, args.team_wallet!, args.mint_address! ),
       'LaunchData'
     )
 }
@@ -415,7 +477,10 @@ export async function request_launch_data(bearer : string, pubkey : PublicKey) :
 export async function run_launch_data_GPA(bearer : string) : Promise<LaunchData[]>
 {
 
-    var body = {"id": 1, "jsonrpc": "2.0", "method": "getProgramAccounts", "params": [PROGRAM.toString(), {"filters": [{ memcmp: { offset: 0, bytes: 0}}], "encoding": "base64", "commitment": "confirmed"}]};
+    let index_buffer = uInt8ToLEBytes(0);
+    let account_bytes = bs58.encode(index_buffer);
+
+    var body = {"id": 1, "jsonrpc": "2.0", "method": "getProgramAccounts", "params": [PROGRAM.toString(), {"filters": [{ memcmp: { offset: 0, bytes: account_bytes}}], "encoding": "base64", "commitment": "confirmed"}]};
 
     var program_accounts_result;
     try {
@@ -433,8 +498,13 @@ export async function run_launch_data_GPA(bearer : string) : Promise<LaunchData[
         console.log(program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
-        const [game] = LaunchData.struct.deserialize(decoded_data);
-        result.push(game);
+        try {
+            const [game] = LaunchData.struct.deserialize(decoded_data);
+            result.push(game);
+        }
+        catch (error) {
+            console.log(error)
+        }
     }
 
     return result;
@@ -455,7 +525,7 @@ class CreateLaunch_Instruction {
         ['name', utf8String],
         ['symbol', utf8String],
         ["uri", utf8String],
-        ['launch_date', u16]
+        ['launch_date', u64]
 
       ],
       (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.launch_date!),
@@ -464,10 +534,11 @@ class CreateLaunch_Instruction {
 }
 
 
-export function serialise_CreateLaunch_instruction(instruction : number, name : String, symbol : String, uri: String, launch_date : number) : Buffer
+export function serialise_CreateLaunch_instruction(new_launch_data : LaunchDataUserInput) : Buffer
 {
 
-    const data = new CreateLaunch_Instruction(instruction, name, symbol, uri, launch_date);
+    console.log(new_launch_data)
+    const data = new CreateLaunch_Instruction(LaunchInstruction.create_game, new_launch_data.name, new_launch_data.symbol, new_launch_data.uri, new_launch_data.launch_date);
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
     return buf;

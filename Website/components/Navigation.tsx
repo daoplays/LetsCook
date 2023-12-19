@@ -14,12 +14,12 @@ import faq from "../public/images/FAQ.png";
 function Navigation({showLaunch, setScreen} : {showLaunch : Dispatch<SetStateAction<boolean>>, 
   setScreen : Dispatch<SetStateAction<Screen>>}) {
 
-  const LaunchTokenButton = ({showLaunch} : {showLaunch : Dispatch<SetStateAction<boolean>>}) => {
+  const LaunchTokenButton = ({setScreen} : {setScreen : Dispatch<SetStateAction<Screen>>}) => {
 
     return(
         <Box
           as="button"
-          onClick={() => showLaunch(true)}
+          onClick={() => setScreen(Screen.LAUNCH_SCREEN)}
           borderWidth="1px"
           borderColor="white"
           width="200px"
@@ -51,7 +51,7 @@ function Navigation({showLaunch, setScreen} : {showLaunch : Dispatch<SetStateAct
         </div>
         {wallet.publicKey && <DisconnectWalletButton />}
         {wallet.publicKey === null && <ConnectWalletButton />}
-        <LaunchTokenButton showLaunch={showLaunch}/>
+        <LaunchTokenButton setScreen={setScreen}/>
         <img
                 src={faq.src}
                 width="auto"

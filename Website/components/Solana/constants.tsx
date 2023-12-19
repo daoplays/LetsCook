@@ -43,5 +43,6 @@ if (PROD) {
 export const enum Screen {
     HOME_SCREEN = 0,
     FAQ_SCREEN = 1,
-    TOKEN_SCREEN = 2
+    TOKEN_SCREEN = 2,
+    LAUNCH_SCREEN = 3
 }
