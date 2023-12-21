@@ -1,139 +1,392 @@
-import {Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler} from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler } from "react";
+import { PieChart } from "react-minimal-pie-chart";
+import styles from "../styles/Launch.module.css";
+import ImageUploading from "react-images-uploading";
+import { useMediaQuery } from "react-responsive";
+import { Center, VStack, Text, Box, HStack, FormControl, Input, NumberInput, NumberInputField } from "@chakra-ui/react";
 
-import {
-    Center,
-    VStack,
-    Text,
-    Box,
-    HStack,
-    FormControl,
-    Input,
-    NumberInput,
-    NumberInputField
-  } from "@chakra-ui/react";
-  
 import DatePicker from "react-datepicker";
 
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "./Solana/constants";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
 
+export function LaunchScreen({
+    newLaunch,
+    ListGameOnArena,
+    setScreen,
+}: {
+    newLaunch: MutableRefObject<LaunchDataUserInput>;
+    ListGameOnArena: MouseEventHandler<HTMLParagraphElement>;
+    setScreen: Dispatch<SetStateAction<Screen>>;
+}) {
+    const isDesktopOrLaptop = useMediaQuery({
+        query: "(max-width: 1000px)",
+    });
+    const [name, setName] = useState<string>(newLaunch.current.name);
+    const [symbol, setSymbol] = useState<string>(newLaunch.current.symbol);
+    const [icon, setIcon] = useState<string>(null);
+    const [totalSupply, setTotalSupply] = useState<string>(newLaunch.current.total_supply.toString());
+    const [decimal, setDecimal] = useState<string>(newLaunch.current.decimals.toString());
+    const [mints, setMints] = useState<string>(newLaunch.current.num_mints.toString());
+    const [totalPrice, setTotalPrice] = useState<string>(newLaunch.current.ticket_price.toString());
+    const [liquidity, setLiquidity] = useState<string>(newLaunch.current.minimum_liquidity.toString());
+    const [distribution1, setDistribution1] = useState(newLaunch.current.distribution[0].toString());
+    const [distribution2, setDistribution2] = useState(newLaunch.current.distribution[1].toString());
+    const [distribution3, setDistribution3] = useState(newLaunch.current.distribution[2].toString());
+    const [distribution4, setDistribution4] = useState(newLaunch.current.distribution[3].toString());
+    const [distribution5, setDistribution5] = useState(newLaunch.current.distribution[4].toString());
+    const [distribution6, setDistribution6] = useState(newLaunch.current.distribution[5].toString());
 
-export function LaunchScreen({newLaunch, ListGameOnArena} : {newLaunch : MutableRefObject<LaunchDataUserInput>, ListGameOnArena: MouseEventHandler<HTMLParagraphElement>}) {
+    const handleNameChange = (e) => {
+        setName(e.target.value);
+    };
+    const handleSymbolChange = (e) => {
+        setSymbol(e.target.value);
+    };
 
-    const [name, setName] = useState<string>("")
-    const [symbol, setSymbol] = useState<string>("")
-    const [launch_date, setLaunchDate] = useState<Date | null>(null)
-    const [icon, setIcon] = useState<string>(null)
-
-    const handleNameChange = (e) => {setName(e.target.value);}
-    const handleSymbolChange = (e) => {setSymbol(e.target.value);}
-
-    const handleLaunchDateChange = (e) => {setLaunchDate(e);}
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            const reader = new FileReader()
-    
-            reader.readAsDataURL(e.target.files[0])
-        
-            reader.onload = () => {
-            console.log('called: ', reader)
-            setIcon(reader.result.toString().replace('data:', '').replace(/^.+,/, ''))
-        }
-        }
-      };
+            const reader = new FileReader();
 
+            reader.readAsDataURL(e.target.files[0]);
+
+            reader.onload = () => {
+                console.log("called: ", reader);
+                setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
+            };
+        }
+    };
 
     function setLaunchData(e) {
-        
-        console.log(name, symbol, launch_date, icon)
-        const new_input : LaunchDataUserInput = {
-            name : name,
-            symbol : symbol,
-            launch_date : launch_date.getTime() / 1000,
-            icon : icon,
-            uri : ""
-        }
-        console.log(new_input)
-        newLaunch.current = new_input
-        console.log(e)
-        ListGameOnArena(e)
+        console.log(name, symbol, icon);
+        console.log(newLaunch.current);
+        newLaunch.current.name = name;
+        newLaunch.current.symbol = symbol;
+        newLaunch.current.total_supply = parseInt(totalSupply);
+        newLaunch.current.decimals = parseInt(totalSupply);
+        newLaunch.current.num_mints = parseInt(totalSupply);
+        newLaunch.current.ticket_price = parseFloat(totalSupply);
+        newLaunch.current.minimum_liquidity = parseInt(totalSupply);
+        newLaunch.current.distribution[0] = parseInt(distribution1);
+        newLaunch.current.distribution[1] = parseInt(distribution2);
+        newLaunch.current.distribution[2] = parseInt(distribution3);
+        newLaunch.current.distribution[3] = parseInt(distribution4);
+        newLaunch.current.distribution[4] = parseInt(distribution5);
+        newLaunch.current.distribution[5] = parseInt(distribution6);
+
+        //ListGameOnArena(e);
+        setScreen(Screen.LAUNCH_DETAILS)
     }
 
-    return(
-        <Center mt="20px" width="90%">
-           
-   <VStack>
-            <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
-            Token Launch Details
-            </Text>
-            <VStack align="center" spacing="10px">
-                <HStack width="80%" align={"center"}>
-                    <Box width="50%">
-                        <Text align={"left"} fontSize={14} color="white">
-                            Name:
-                        </Text>
-                    </Box>
-                    <Box width="50%">
-                    <FormControl id="desired_team_name" maxWidth={"350px"} >
-                        <Input
-                            type="text"
-                            value={name}
-                            onChange={handleNameChange}
-                        />
-                    </FormControl>
-                    </Box>
-                </HStack>
+    const [images, setImages] = useState([]);
+    const maxNumber = 1000;
 
-                <HStack width="80%" align={"center"}>
-                    <Box width="50%">
-                        <Text align={"left"} fontSize={14} color="white">
-                            Symbol:
-                        </Text>
-                    </Box>
-                    <Box width="50%">
-                    <FormControl id="desired_team_name" maxWidth={"350px"} >
-                        <Input
-                            type="text"
-                            value={symbol}
-                            onChange={handleSymbolChange}
-                        />
-                    </FormControl>
-                    </Box>
-                </HStack>
+    const onChange = (imageList, addUpdateIndex) => {
+        // data for submit
+        console.log(imageList, addUpdateIndex);
+        setImages(imageList);
+    };
 
-                <HStack width="80%" align={"center"}>
-                    <Box width="50%">
-                        <Text align={"left"} fontSize={14} color="white">
-                            Date:
-                        </Text>
-                    </Box>
-                <DatePicker selected={launch_date} onChange={(launch_date) => handleLaunchDateChange(launch_date)} />
-                </HStack>
-                <HStack width="80%" align={"center"}>
-                    <Box width="50%">
-                        <Text align={"left"} fontSize={14} color="white">
-                            Icon:
-                        </Text>
-                    </Box>
-                    <input id="file" type="file" onChange={handleFileChange} />
-                </HStack>
-                
-            </VStack>
+    return (
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
+            <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
 
-            <Box as="button" borderWidth="2px" borderColor="white" width="120px">
-                <Text
-                    align="center"
-                    onClick={setLaunchData}
-                    fontSize={14}
-                    color="white"
-                >
-                    CREATE
+            <VStack>
+                <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
+                    Launch - Token
                 </Text>
-            </Box>
+                <div className={styles.launchBody}>
+                    <div className={styles.launchBodyUpper}>
+                        {images.length > 0 ? (
+                            <>
+                                {images.map((image, index) => (
+                                    <div key={index} className="image-item">
+                                        <img src={image["data_url"]} alt="" className={styles.imgFrame} />
+                                        <div className="image-item__btn-wrapper"></div>
+                                    </div>
+                                ))}
+                            </>
+                        ) : (
+                            <img className={styles.imgFrame} src="./images/Frame 49 (1).png" alt="" />
+                        )}
 
+                        <div className={styles.launchBodyUpperFields}>
+                            <div className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
+
+                                <div className={styles.textLabelInput}>
+                                    <input className={styles.inputBox} type="text" value={name} onChange={handleNameChange}/>
+                                </div>
+                            </div>
+
+                            <div className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>Symbol:</div>
+
+                                <div style={{ width: "50%" }} className={styles.textLabelInput}>
+                                    <input className={styles.inputBox} type="text" value={symbol} onChange={handleSymbolChange} />
+                                </div>
+                            </div>
+
+                            <div className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>Image:</div>
+
+                                <div>
+                                    {/* <input
+                                style={{
+                                    backgroundColor:'transparent',
+                                    border:'none'
+                                }}
+                                className={styles.inputBox}
+                                value={name}
+                                id="file" type="file" onChange={handleFileChange}
+                                /> */}
+
+                                    <ImageUploading
+                                        multiple={false}
+                                        value={images}
+                                        onChange={onChange}
+                                        maxNumber={maxNumber}
+                                        dataURLKey="data_url"
+                                    >
+                                        {({
+                                            imageList,
+                                            onImageUpload,
+                                            onImageRemoveAll,
+                                            onImageUpdate,
+                                            onImageRemove,
+                                            isDragging,
+                                            dragProps,
+                                        }) => (
+                                            // write your building UI
+                                            <div className="upload__image-wrapper">
+                                                <button
+                                                    style={isDragging ? { color: "red" } : undefined}
+                                                    onClick={onImageUpload}
+                                                    {...dragProps}
+                                                    className={`${styles.browse} font-face-kg `}
+                                                >
+                                                    BROWSE
+                                                </button>
+                                            </div>
+                                        )}
+                                    </ImageUploading>
+                                </div>
+                                <div className={styles.textLabelInput}>
+                                    <input
+                                        className={`${styles.inputBox} font-face-kg `}
+                                        type="text"
+                                        value={images.length > 0 ? "File Selected" : "No File Selected"}
+                                        disabled
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.launchBodyLower}>
+                        <div className={styles.launchBodyLowerHorizontal}>
+                            <div className={styles.eachField}>
+                                <div style={{ width: "40%" }} className={`${styles.textLabel} font-face-kg`}>
+                                    TOTAL SUPPLY:
+                                </div>
+
+                                <div className={styles.textLabelInput}>
+                                    <input
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={totalSupply}
+                                        onChange={(e) => {
+                                            setTotalSupply(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ width: isDesktopOrLaptop ? "100%" : "40%" }} className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>DECIMALS:</div>
+
+                                <div className={styles.textLabelInput}>
+                                    <input
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={decimal}
+                                        onChange={(e) => {
+                                            setDecimal(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.launchBodyLowerHorizontal}>
+                            <div className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>MINTS:</div>
+
+                                <div className={styles.textLabelInput}>
+                                    <input
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={mints}
+                                        onChange={(e) => {
+                                            setMints(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>TICKET PRICE:</div>
+
+                                <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
+                                    <input
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={totalPrice}
+                                        onChange={(e) => {
+                                            setTotalPrice(e.target.value);
+                                        }}
+                                    />
+                                    <img className={styles.sol} src="./images/sol.png" alt="" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className={styles.launchBodyLowerHorizontal}>
+                            <div className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>MINIMUM LIQUIDITY:</div>
+
+                                <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
+                                    <input
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={liquidity}
+                                        onChange={(e) => {
+                                            setLiquidity(e.target.value);
+                                        }}
+                                    />
+                                    <img className={styles.sol} src="./images/sol.png" alt="" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br></br>
+
+                    <div className={styles.distributionBox}>
+                        <div className={styles.distributionBoxFields}>
+                            <div className={`${styles.textLabel} font-face-kg`}>Distribution </div>
+
+                            <div className={styles.distributionBoxEachFields}>
+                                <div className={styles.colorBox1}></div>
+                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>LetsCookRaffle</div>
+                                <div className={styles.distributionField}>
+                                    <input
+                                        value={distribution1}
+                                        onChange={(e) => {
+                                            setDistribution1(e.target.value);
+                                        }}
+                                        type="text"
+                                    />
+                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                </div>
+                            </div>
+
+                            <div className={styles.distributionBoxEachFields}>
+                                <div className={styles.colorBox2}></div>
+                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Pool</div>
+                                <div className={styles.distributionField}>
+                                    <input
+                                        value={distribution2}
+                                        onChange={(e) => {
+                                            setDistribution2(e.target.value);
+                                        }}
+                                        type="text"
+                                    />
+                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                </div>
+                            </div>
+
+                            <div className={styles.distributionBoxEachFields}>
+                                <div className={styles.colorBox3}></div>
+                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>LP Rewards</div>
+                                <div className={styles.distributionField}>
+                                    <input
+                                        value={distribution3}
+                                        onChange={(e) => {
+                                            setDistribution3(e.target.value);
+                                        }}
+                                        type="text"
+                                    />
+                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                </div>
+                            </div>
+
+                            <div className={styles.distributionBoxEachFields}>
+                                <div className={styles.colorBox4}></div>
+                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops</div>
+                                <div className={styles.distributionField}>
+                                    <input
+                                        value={distribution4}
+                                        onChange={(e) => {
+                                            setDistribution4(e.target.value);
+                                        }}
+                                        type="text"
+                                    />
+                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                </div>
+                            </div>
+
+                            <div className={styles.distributionBoxEachFields}>
+                                <div className={styles.colorBox5}></div>
+                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
+                                <div className={styles.distributionField}>
+                                    <input
+                                        value={distribution5}
+                                        onChange={(e) => {
+                                            setDistribution5(e.target.value);
+                                        }}
+                                        type="text"
+                                    />
+                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                </div>
+                            </div>
+
+                            <div className={styles.distributionBoxEachFields}>
+                                <div className={styles.colorBox6}></div>
+                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Website)</div>
+                                <div className={styles.distributionField}>
+                                    <input
+                                        value={distribution6}
+                                        onChange={(e) => {
+                                            setDistribution6(e.target.value);
+                                        }}
+                                        type="text"
+                                    />
+                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.piechart}>
+                            <PieChart
+                                data={[
+                                    { title: "LetsCookRaffle", value: parseInt(distribution1), color: "#FF5151" },
+                                    { title: "Liquidity Pool", value: parseInt(distribution2), color: "#489CFF" },
+                                    { title: "LP Rewards", value: parseInt(distribution3), color: "#74DD5A" },
+                                    { title: "Airdrops", value: parseInt(distribution4), color: "#FFEF5E" },
+                                    { title: "Team", value: parseInt(distribution5), color: "#B96CF6" },
+                                    { title: "Other", value: parseInt(distribution6), color: "#FF994E" },
+                                ]}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <button onClick={setLaunchData} className={`${styles.nextBtn} font-face-kg `}>
+                            NEXT
+                        </button>
+                    </div>
+                </div>
             </VStack>
         </Center>
     );
-
 }
