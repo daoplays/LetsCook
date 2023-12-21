@@ -48,7 +48,7 @@ function Navigation({
         query: "(max-width: 1000px)",
     });
 
-    const [open, setOpen] = useState(0);
+    const [open, setOpen] = useState<boolean>(false);
     return (
         <>
             <div className={styles.headerImage}>

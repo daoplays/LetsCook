@@ -33,13 +33,6 @@ export function LaunchBook({
     const [totalPrice, setTotalPrice] = useState("");
     const [liquidity, setLiquidity] = useState("");
 
-    const handleNameChange = (e) => {
-        setName(e.target.value);
-    };
-    const handleSymbolChange = (e) => {
-        setSymbol(e.target.value);
-    };
-
     const handleLaunchDateChange = (e) => {
         setLaunchDate(e);
     };
