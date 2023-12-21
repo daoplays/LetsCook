@@ -55,16 +55,10 @@ function decimalToX64(num: Decimal): BN {
 
 function priceToSqrtPriceX64(price: Decimal, decimalsA: number, decimalsB: number): BN {
     return decimalToX64(price.mul(Decimal.pow(10, decimalsB - decimalsA)).sqrt())
+}
 
+/*
 
-/**
- * pre-action: fetch basic ammConfig info
- *
- * step 1: make create pool instructions
- * step 2: (optional) get mockPool info
- * step 3: compose instructions to several transactions
- * step 4: send transactions
- */
 async function clmmCreatePool(input: TestTxInputInfo) {
 
     // -------- pre-action: fetch basic ammConfig info --------
@@ -94,7 +88,8 @@ async function clmmCreatePool(input: TestTxInputInfo) {
 
     // send makeCreatePoolInstruction.innerTransactions
 }
-
+*/
+/*
 async function howToUse({mint1, mint2, decimals1, decimals2} : {mint1 : PublicKey, mint2 : PublicKey, decimals1: number, decimals2: number}) {
 
     const wallet = useWallet();
@@ -123,8 +118,8 @@ async function howToUse({mint1, mint2, decimals1, decimals2} : {mint1 : PublicKe
 
   const instructions = [
     SystemProgram.createAccountWithSeed({
-      fromPubkey: wallet.,
-      basePubkey: owner,
+      fromPubkey: wallet.publicKey,
+      basePubkey: wallet.publicKey,
       seed: observationId.seed,
       newAccountPubkey: observationId.publicKey,
       lamports: await connection.getMinimumBalanceForRentExemption(ObservationInfoLayout.span),
@@ -148,4 +143,6 @@ async function howToUse({mint1, mint2, decimals1, decimals2} : {mint1 : PublicKe
       startTime,
     ),
   ]
+  
 }
+*/
