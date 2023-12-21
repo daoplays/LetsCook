@@ -32,3 +32,9 @@ img {
   max-width: 100%;
   height: auto;
 }
+input[type="file"] {
+  display: none;
+}
+::placeholder{
+  color: white !important ;
+}

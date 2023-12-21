@@ -15,14 +15,12 @@ function Footer({showTerms} : {showTerms : Dispatch<SetStateAction<boolean>>}) {
             <Box
               as="button"
               onClick={() => showTerms(true)}
-              borderWidth="1px"
-              borderColor="white"
-              width="100px"
-              height="20px"
-              fontSize={"16px"}
+
               
-          >
-              <div className="font-face-rk">
+              style={{backgroundColor:'#683309', borderRadius:'20px', padding:'5px 10px', height:30}}
+              
+          > 
+              <div  className="font-face-rk">
                 <Text align="center" fontSize={14} color="white">
                   TERMS
                 </Text>
@@ -33,19 +31,20 @@ function Footer({showTerms} : {showTerms : Dispatch<SetStateAction<boolean>>}) {
 
     return (
         <div className={styles.footerImage}>
-            <HStack mt="7px" ml="50px">
+            <HStack style={{display:'flex',justifyContent:'flex-start',alignItems:'flex-start',width:'100%'}} mt="5px" mb="5px" ml="50px">
                 <ShowTermsButton showTerms={showTerms}/>
                 <img
                 src={twitter.src}
                 width="auto"
                 alt={""}
-                style={{ maxHeight: "20px", maxWidth: "20px" }}
+                
+                style={{ maxHeight: "30px", maxWidth: "30px", backgroundColor:'#683309', borderRadius:'50%', padding:5 }}
                 />
                 <img
                 src={telegram.src}
                 width="auto"
                 alt={""}
-                style={{ maxHeight: "20px", maxWidth: "20px" }}
+                style={{ maxHeight: "30px", maxWidth: "30px", backgroundColor:'#683309', borderRadius:'50%', padding:5 }}
                 />
             </HStack>
         </div>

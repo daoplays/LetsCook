@@ -6,6 +6,7 @@ import {
     Text,
     Box
   } from "@chakra-ui/react";
+  import styles from '../header.module.css'
 
   import { useWalletModal } from "@solana/wallet-adapter-react-ui";
   import { useWallet } from "@solana/wallet-adapter-react";
@@ -26,14 +27,10 @@ export function DisconnectWalletButton() {
             <Box as="button" onClick={() => DisconnectWallet()}>
                 <div className="font-face-rk">
                     <Text
-                        borderColor="white"
-                        borderWidth="1px"
-                        width="200px"
-                        height="25px"
-                        fontSize={"16px"}
-                        textAlign="center"
-                        color="white"
-                        mt="10px"
+                    className={styles.connect}
+
+                    style={{backgroundColor:'#683309',borderRadius:20,padding:'5px 10px 2px 10px', color:'white',marginTop:10,position:'relative',top:2}}
+
                     >
                         DISCONNECT WALLET
                     </Text>
@@ -55,14 +52,9 @@ export function ConnectWalletButton() {
             <Box as="button" onClick={handleConnectWallet}>
                 <div className="font-face-rk">
                     <Text
-                        borderColor="white"
-                        borderWidth="1px"
-                        width="160px"
-                        height="25px"
-                        fontSize={"16px"}
-                        textAlign="center"
-                        color="white"
-                        mt="10px"
+                    className={styles.connect}
+                    style={{backgroundColor:'#683309',borderRadius:20,padding:'5px 10px 2px 10px', color:'white',marginTop:10,position:'relative',top:2}}
+
                     >
                         CONNECT WALLET
                     </Text>

@@ -1,16 +1,66 @@
-
-
+@import url('https://fonts.googleapis.com/css2?family=Kufam&display=swap');
 .headerImage {
-    background-image: url("/images/header_fill.png");
-    width: 100%;
-    height: 40px;
+    background-image: url("/images/header_fill.jpeg");
+    width: 100vw;
+    height: 55px;
+    padding: 0;
+    margin: 0;
+    font-family: 'Kufam', sans-serif;
 }
-
+.sauce{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #683309;
+    gap: 10px;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+.sauce img{
+    width: 20px;
+}
+@import url('https://fonts.googleapis.com/css2?family=Kufam&display=swap');
 .footerImage {
-    background-image: url("/images/footer_fill.png");
+    background-image: url("/images/footer_fill.jpeg");
+    background-size: cover;
     width: 100%;
-    height: 30px;
-    padding-top: "50px";
+    /* height: 30px;
+    padding-top: "50px"; */
     position: fixed;
-    bottom: 0
+    bottom: 0;
+    padding: 0;
+    margin: 0;
+}
+.connect{
+    font-family: 'Kufam', sans-serif;
+
+}
+@media screen and (max-width:1000px) {
+    .navBody{
+        padding-top: 7px;
+    }
+    .menubar{
+        background-color: #eddac3;
+        width: 100%;
+        position: absolute;
+        top: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 10px;
+        left: 0;
+    }
+    @font-face {
+        font-family: Dealers;
+        src: url(../public/images/Dealers\ -\ Solid.otf);
+    }
+    .connect{
+        background-color: transparent !important;
+        font-family: Dealers;
+        font-size: 30px;
+        color: #683309 !important;
+
+    }
 }

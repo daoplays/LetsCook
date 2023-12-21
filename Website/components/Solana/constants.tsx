@@ -22,7 +22,7 @@ export var DUNGEON_FONT_SIZE = "20px"
 export var EMOJI_SIZE = 24
 
 if (isMobile) {
-    DEFAULT_FONT_SIZE = "15px"
+    DEFAULT_FONT_SIZE = "30px"
     DUNGEON_FONT_SIZE = "10px"
     EMOJI_SIZE = 20
 }
@@ -44,5 +44,9 @@ export const enum Screen {
     HOME_SCREEN = 0,
     FAQ_SCREEN = 1,
     TOKEN_SCREEN = 2,
-    LAUNCH_SCREEN = 3
+    LAUNCH_SCREEN = 3,
+    LAUNCH_DETAILS= 4,
+    LAUNCH_BOOK = 5
+
+
 }
