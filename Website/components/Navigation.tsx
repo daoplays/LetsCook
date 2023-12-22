@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react";
 
-import { HStack, Text, Box, useStatStyles } from "@chakra-ui/react";
+import { HStack, Text, Box } from "@chakra-ui/react";
 
 import { ConnectWalletButton, DisconnectWalletButton } from "./Solana/wallet";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -8,19 +8,16 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Screen } from "./Solana/constants";
 
 import styles from "./header.module.css";
-import faq from "../public/images/FAQ.png";
 import { useMediaQuery } from "react-responsive";
 
 function Navigation({
-    showLaunch,
     setScreen,
 }: {
-    showLaunch: Dispatch<SetStateAction<boolean>>;
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) {
     const LaunchTokenButton = ({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>> }) => {
         return (
-            <Box as="button" onClick={() => {setScreen(Screen.LAUNCH_SCREEN); howToUse()}}>
+            <Box as="button" onClick={() => {setScreen(Screen.LAUNCH_SCREEN);}}>
                 <div className="font-face-rk">
                     <Text
                         align="center"

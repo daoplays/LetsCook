@@ -2,20 +2,16 @@ import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler
 import { PieChart } from "react-minimal-pie-chart";
 import styles from "../styles/Launch.module.css";
 import { useMediaQuery } from "react-responsive";
-import { Center, VStack, Text, Box, HStack, FormControl, Input, NumberInput, NumberInputField } from "@chakra-ui/react";
-
-import DatePicker from "react-datepicker";
+import { Center, VStack, Text } from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
 
 export function LaunchScreen({
     newLaunch,
-    ListGameOnArena,
     setScreen,
 }: {
     newLaunch: MutableRefObject<LaunchDataUserInput>;
-    ListGameOnArena: MouseEventHandler<HTMLParagraphElement>;
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) {
     const isDesktopOrLaptop = useMediaQuery({

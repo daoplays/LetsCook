@@ -1,9 +1,7 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler } from "react";
-import { PieChart } from "react-minimal-pie-chart";
 import styles from "../styles/LaunchBook.module.css";
-import ImageUploading from "react-images-uploading";
 import TimePicker from 'react-time-picker';
-import { Center, VStack, Text, Box, HStack, FormControl, Input, NumberInput, NumberInputField } from "@chakra-ui/react";
+import { Center, VStack, Text } from "@chakra-ui/react";
 import 'react-time-picker/dist/TimePicker.css';
 import 'react-clock/dist/Clock.css';
 import DatePicker from "react-datepicker";
@@ -31,40 +29,6 @@ export function LaunchBook({
     const [openTimeLP, setOpenTimeLP] = useState<string>(newLaunch.current.opentimeLP);
     const [wallet, setWallet] = useState<string>(newLaunch.current.team_wallet);
 
-
-    const [launch_date, setLaunchDate] = useState<Date | null>(null);
-    const [icon, setIcon] = useState<string>(null);
-    const [totalSupply, setTotalSupply] = useState("");
-    const [decimal, setDecimal] = useState("");
-    const [mints, setMints] = useState("");
-    const [totalPrice, setTotalPrice] = useState("");
-    const [liquidity, setLiquidity] = useState("");
-
-    const handleLaunchDateChange = (e) => {
-        setLaunchDate(e);
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const reader = new FileReader();
-
-            reader.readAsDataURL(e.target.files[0]);
-
-            reader.onload = () => {
-                console.log("called: ", reader);
-                setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
-            };
-        }
-    };
-
-    const [images, setImages] = useState([]);
-    const maxNumber = 1000;
-
-    const onChange = (imageList, addUpdateIndex) => {
-        // data for submit
-        console.log(imageList, addUpdateIndex);
-        setImages(imageList);
-    };
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });

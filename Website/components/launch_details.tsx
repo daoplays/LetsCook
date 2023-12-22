@@ -1,23 +1,17 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler } from "react";
-import { PieChart } from "react-minimal-pie-chart";
 import styles from "../styles/LaunchDetails.module.css";
-import ImageUploading from "react-images-uploading";
 import { useMediaQuery } from "react-responsive";
 
-import { Center, VStack, Text, Box, HStack, FormControl, Input, NumberInput, NumberInputField } from "@chakra-ui/react";
-
-import DatePicker from "react-datepicker";
+import { Center, VStack, Text} from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
 
 export function LaunchDetails({
     newLaunch,
-    ListGameOnArena,
     setScreen,
 }: {
     newLaunch: MutableRefObject<LaunchDataUserInput>;
-    ListGameOnArena: MouseEventHandler<HTMLParagraphElement>;
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) {
     const [name, setName] = useState<string>(newLaunch.current.pagename);

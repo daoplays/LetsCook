@@ -345,7 +345,7 @@ function LetsCook() {
 
     return (
         <>
-            <Navigation showLaunch={setShowNewGame} setScreen={setScreen} />
+            <Navigation setScreen={setScreen} />
             <TermsModal show_value={show_terms} showFunction={setShowTerms} />
             {screen === Screen.HOME_SCREEN && <HomeScreen />}
             {screen === Screen.FAQ_SCREEN && <FAQScreen />}
@@ -353,10 +353,10 @@ function LetsCook() {
                 <LaunchBook setScreen={setScreen} newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena} />
             )}
             {screen === Screen.LAUNCH_DETAILS && (
-                <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena} />
+                <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />
             )}
             {screen === Screen.LAUNCH_SCREEN && (
-                <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena} />
+                <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />
             )}
             {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
 
