@@ -355,64 +355,59 @@ export interface LaunchDataUserInput {
     name: string;
     symbol: string;
     icon: string;
-    total_supply : number,
-    decimals : number,
-    num_mints : number,
-    minimum_liquidity: number,
-    ticket_price : number,
-    distribution : number[],
+    total_supply: number;
+    decimals: number;
+    num_mints: number;
+    minimum_liquidity: number;
+    ticket_price: number;
+    distribution: number[];
     launch_date: number;
     uri: string;
-    pagename: string,
-    iconpage2: string,
-    description : string,
-    web_url : string,
-    tele_url : string,
-    twt_url: string,
-    disc_url : string,
-    displayImg:string,
-    opendate: string,
-    opentime: string,
-    closedate : string,
-    closetime : string,
-    opendateLP : string,
-    opentimeLP: string,
-    team_wallet : string,
+    pagename: string;
+    iconpage2: string;
+    description: string;
+    web_url: string;
+    tele_url: string;
+    twt_url: string;
+    disc_url: string;
+    displayImg: string;
+    opendate: string;
+    opentime: string;
+    closedate: string;
+    closetime: string;
+    opendateLP: string;
+    opentimeLP: string;
+    team_wallet: string;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
     name: "",
     symbol: "",
     icon: "",
-    displayImg:null,
-    total_supply : 0,
-    decimals : 0,
-    num_mints : 0,
+    displayImg: null,
+    total_supply: 0,
+    decimals: 0,
+    num_mints: 0,
     minimum_liquidity: 0,
-    ticket_price : 0,
-    distribution : [0,0,0,0,0,0],
-    launch_date: (new Date()).getTime() / 1000,
+    ticket_price: 0,
+    distribution: [0, 0, 0, 0, 0, 0],
+    launch_date: new Date().getTime() / 1000,
     uri: "",
     pagename: "",
     iconpage2: "",
-    description : '',
-    web_url : "",
-    tele_url : "",
+    description: "",
+    web_url: "",
+    tele_url: "",
     twt_url: "",
-    disc_url : '',
+    disc_url: "",
     opendate: "",
     opentime: "",
-    closedate : "",
-    closetime : "",
-    opendateLP : "",
+    closedate: "",
+    closetime: "",
+    opendateLP: "",
     opentimeLP: "",
-    team_wallet : "",
+    team_wallet: "",
 };
-
-
-
-
-
 
 export class LaunchData {
     constructor(
@@ -597,13 +592,9 @@ export function bignum_to_num(bn: bignum): number {
     return value;
 }
 
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////// Raydium Instructions and MetaData //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 class RaydiumCreatePool_Instruction {
     constructor(
@@ -627,15 +618,8 @@ class RaydiumCreatePool_Instruction {
     );
 }
 
-export function serialise_RaydiumCreatePool_Instruction(nonce : number, openTime : bignum, pcAmount: bignum, coinAmount : bignum): Buffer {
-
-    const data = new RaydiumCreatePool_Instruction(
-        1,
-        nonce,
-        openTime,
-        pcAmount,
-        coinAmount,
-    );
+export function serialise_RaydiumCreatePool_Instruction(nonce: number, openTime: bignum, pcAmount: bignum, coinAmount: bignum): Buffer {
+    const data = new RaydiumCreatePool_Instruction(1, nonce, openTime, pcAmount, coinAmount);
     const [buf] = RaydiumCreatePool_Instruction.struct.serialize(data);
 
     return buf;

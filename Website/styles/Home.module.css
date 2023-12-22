@@ -118,30 +118,29 @@
     flex-direction: column;
 }
 
-.imgFrame{
-  width: 200px;
+.imgFrame {
+    width: 200px;
 }
-.inputBox{
-width: 500px;
+.inputBox {
+    width: 500px;
 }
-.launchBody{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
+.launchBody {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
 }
-.launchBodyUpper{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: row;
-  width: 100%;
+.launchBodyUpper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
 }
-.launchBodyUpperFields{
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
+.launchBodyUpperFields {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
 }
-

@@ -96,7 +96,7 @@
     color: white;
     width: 100px !important;
     text-align: center !important;
-    font-family: 'ChalkBoard';
+    font-family: "ChalkBoard";
 }
 .textLabelInputTime input:required {
     border-color: #ff0000; /* Change border color to red for emphasis */
@@ -111,8 +111,7 @@
     color: white;
     width: 100% !important;
     text-align: center !important;
-    font-family: 'ChalkBoard';
-
+    font-family: "ChalkBoard";
 }
 .inputTxtarea {
     position: relative;
@@ -222,14 +221,13 @@
     height: auto;
 }
 
-.textLabelInputTime div{
+.textLabelInputTime div {
     border: none !important;
     color: white !important;
 }
-.textLabelInputTime button{
+.textLabelInputTime button {
     display: none !important;
 }
-
 
 @media screen and (max-width: 1000px) {
     .inputBox {
@@ -281,7 +279,7 @@
         color: white;
         width: max-content;
         text-transform: capitalize !important;
-        width: 100% ;
+        width: 100%;
     }
     .textLabelInput {
         position: relative;
@@ -362,7 +360,7 @@
         justify-content: flex-start;
         align-items: flex-start;
         width: 100%;
-        flex-direction: column ;
+        flex-direction: column;
         gap: 20px;
     }
     .launchBodyLowerVertical {

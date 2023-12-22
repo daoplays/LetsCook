@@ -4,9 +4,7 @@ import { Center, VStack, Text, Box, HStack, FormControl, Input } from "@chakra-u
 
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 
-
-
-export function TermsModal({show_value, showFunction} : {show_value: boolean, showFunction: Dispatch<SetStateAction<boolean>>}) {
+export function TermsModal({ show_value, showFunction }: { show_value: boolean; showFunction: Dispatch<SetStateAction<boolean>> }) {
     const handleClose = () => {
         showFunction(false);
     };

@@ -32,15 +32,14 @@ import { FAQScreen } from "../components/faq";
 import { TokenScreen } from "../components/token";
 import { LaunchScreen } from "../components/launch_page";
 
-import Footer from "../components/Footer"
-import {TermsModal} from "../components/Solana/modals"
+import Footer from "../components/Footer";
+import { TermsModal } from "../components/Solana/modals";
 import { arweave_json_upload, arweave_upload } from "../components/Solana/arweave";
 
 import logo from "../public/images/sauce.png";
 import styles from "../components/css/featured.module.css";
 import { LaunchDetails } from "../components/launch_details";
 import { LaunchBook } from "../components/launch_book";
-
 
 const ArenaGameCard = ({
     launch,
@@ -352,12 +351,8 @@ function LetsCook() {
             {screen === Screen.LAUNCH_BOOK && (
                 <LaunchBook setScreen={setScreen} newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena} />
             )}
-            {screen === Screen.LAUNCH_DETAILS && (
-                <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />
-            )}
-            {screen === Screen.LAUNCH_SCREEN && (
-                <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />
-            )}
+            {screen === Screen.LAUNCH_DETAILS && <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />}
+            {screen === Screen.LAUNCH_SCREEN && <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
 
             <Footer showTerms={setShowTerms} />

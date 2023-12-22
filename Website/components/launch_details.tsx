@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler
 import styles from "../styles/LaunchDetails.module.css";
 import { useMediaQuery } from "react-responsive";
 
-import { Center, VStack, Text} from "@chakra-ui/react";
+import { Center, VStack, Text } from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
@@ -22,7 +22,6 @@ export function LaunchDetails({
     const [twitter, setTwitter] = useState(newLaunch.current.twt_url);
     const [discord, setDiscord] = useState(newLaunch.current.disc_url);
 
-
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
@@ -31,26 +30,24 @@ export function LaunchDetails({
         setName(e.target.value);
     };
 
-
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
-    
+
         if (file) {
-          if (file.size <= 4194304) {
-            const reader = new FileReader();
-    
-            reader.readAsDataURL(file);
-    
-            reader.onload = () => {
-              console.log("called: ", reader);
-              setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
-            };
-          } else {
-            alert('File size exceeds 4MB limit.');
-          }
+            if (file.size <= 4194304) {
+                const reader = new FileReader();
+
+                reader.readAsDataURL(file);
+
+                reader.onload = () => {
+                    console.log("called: ", reader);
+                    setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
+                };
+            } else {
+                alert("File size exceeds 4MB limit.");
+            }
         }
-      };
+    };
 
     const [images, setImages] = useState([]);
     const maxNumber = 1000;
@@ -94,18 +91,24 @@ export function LaunchDetails({
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>Page Name:</div>
 
-                                <input  required  placeholder="/" className={styles.inputBox} type="text" value={name} onChange={handleNameChange} />
+                                <input
+                                    required
+                                    placeholder="/"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    value={name}
+                                    onChange={handleNameChange}
+                                />
                             </div>
 
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>Banner:</div>
 
                                 <div>
-                                <label className={styles.label}>
-                                    <input  id="file" type="file" onChange={handleFileChange}/>
-                                    <span className={styles.browse}>BROWSE</span>
-                                </label>
-
+                                    <label className={styles.label}>
+                                        <input id="file" type="file" onChange={handleFileChange} />
+                                        <span className={styles.browse}>BROWSE</span>
+                                    </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -124,7 +127,7 @@ export function LaunchDetails({
                             <div className={`${styles.textLabel} font-face-kg`}>DESCRIPTION:</div>
                             <div>
                                 <textarea
-                                 required 
+                                    required
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles.inputTxtarea}`}
                                     value={description}
@@ -176,7 +179,7 @@ export function LaunchDetails({
 
                                 <div className={styles.textLabelInput}>
                                     <input
-                                     required 
+                                        required
                                         className={styles.inputBox}
                                         placeholder="URL"
                                         type="text"
@@ -220,13 +223,16 @@ export function LaunchDetails({
                             gap: 20,
                         }}
                     >
-                        <button 
-                        // type="submit"
-                        onClick={()=>{setScreen(Screen.LAUNCH_SCREEN)}}
-                          className={`${styles.nextBtn} font-face-kg `}>
+                        <button
+                            // type="submit"
+                            onClick={() => {
+                                setScreen(Screen.LAUNCH_SCREEN);
+                            }}
+                            className={`${styles.nextBtn} font-face-kg `}
+                        >
                             PREVIOUS
                         </button>
-                        <button type="submit"  className={`${styles.nextBtn} font-face-kg `}>
+                        <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
                             NEXT
                         </button>
                     </div>

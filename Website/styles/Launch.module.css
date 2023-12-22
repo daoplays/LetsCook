@@ -2,29 +2,27 @@
     width: 250px;
 }
 label.label input[type="file"] {
-    display:none;
-    
-   }
+    display: none;
+}
 .inputBox {
     width: 100%;
     font-size: 20px;
     font-family: "ChalkBoard";
 }
-.browse{
-  font-family: 'KGSummerSunshineBlackout';
-
+.browse {
+    font-family: "KGSummerSunshineBlackout";
 }
 .inputBox::file-selector-button {
-  color: #683309;
-  background-image: url(../public/images/Wood\ Panel.png);
-  background-size: cover;
-  padding: 10px;
-  font-size: 20px;
-  border-radius: 5px;
-  font-family: 'KGSummerSunshineBlackout';
+    color: #683309;
+    background-image: url(../public/images/Wood\ Panel.png);
+    background-size: cover;
+    padding: 10px;
+    font-size: 20px;
+    border-radius: 5px;
+    font-family: "KGSummerSunshineBlackout";
 }
 .inputBox::file-selector-button::after {
-  opacity:0 !important;   
+    opacity: 0 !important;
 }
 .launchBody {
     display: flex;
@@ -61,13 +59,12 @@ label.label input[type="file"] {
     width: max-content;
     text-transform: capitalize !important;
     width: 100%;
-  }
-  .textLabelInput{
+}
+.textLabelInput {
     position: relative;
     width: 100%;
-  }
-  .textLabelInput input{
-
+}
+.textLabelInput input {
 }
 .textLabelInput {
     position: relative;
@@ -86,13 +83,10 @@ label.label input[type="file"] {
 .distributionField {
     position: relative;
     color: white;
-
 }
 .distributionField input {
     position: relative;
     color: white;
-
-
 }
 .sol {
     position: absolute;

@@ -10,14 +10,15 @@ import { Screen } from "./Solana/constants";
 import styles from "./header.module.css";
 import { useMediaQuery } from "react-responsive";
 
-function Navigation({
-    setScreen,
-}: {
-    setScreen: Dispatch<SetStateAction<Screen>>;
-}) {
+function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>> }) {
     const LaunchTokenButton = ({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>> }) => {
         return (
-            <Box as="button" onClick={() => {setScreen(Screen.LAUNCH_SCREEN);}}>
+            <Box
+                as="button"
+                onClick={() => {
+                    setScreen(Screen.LAUNCH_SCREEN);
+                }}
+            >
                 <div className="font-face-rk">
                     <Text
                         align="center"

@@ -20,7 +20,7 @@ export function LaunchScreen({
     const [name, setName] = useState<string>(newLaunch.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunch.current.symbol);
     const [icon, setIcon] = useState<string>(newLaunch.current.icon);
-    const [displayImg,setDisplayImg]=useState<string>(newLaunch.current.displayImg);
+    const [displayImg, setDisplayImg] = useState<string>(newLaunch.current.displayImg);
     const [totalSupply, setTotalSupply] = useState<string>(newLaunch.current.total_supply.toString());
     const [decimal, setDecimal] = useState<string>(newLaunch.current.decimals.toString());
     const [mints, setMints] = useState<string>(newLaunch.current.num_mints.toString());
@@ -42,26 +42,23 @@ export function LaunchScreen({
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
-    
+
         if (file) {
-          if (file.size <= 1048576) {
-            const reader = new FileReader();
-            setDisplayImg(URL.createObjectURL(e.target.files[0]))
+            if (file.size <= 1048576) {
+                const reader = new FileReader();
+                setDisplayImg(URL.createObjectURL(e.target.files[0]));
 
+                reader.readAsDataURL(file);
 
-            
-            reader.readAsDataURL(file);
-    
-            reader.onload = () => {
-              console.log("called: ", reader);
-              setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
-            };
-          } else {
-            alert('File size exceeds 1MB limit.');
-          }
+                reader.onload = () => {
+                    console.log("called: ", reader);
+                    setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
+                };
+            } else {
+                alert("File size exceeds 1MB limit.");
+            }
         }
-      };
-
+    };
 
     const [images, setImages] = useState([]);
     const maxNumber = 1000;
@@ -78,19 +75,20 @@ export function LaunchScreen({
     const percentage4 = parseFloat(distribution4);
     const percentage5 = parseFloat(distribution5);
     const percentage6 = parseFloat(distribution6);
-  
-    // Calculate the total sum of all percentages
-    const totalPercentage = parseFloat(distribution1) + parseFloat(distribution2) + parseFloat(distribution3) +
-    parseFloat(distribution4) + parseFloat(distribution5) + parseFloat(distribution6);
 
+    // Calculate the total sum of all percentages
+    const totalPercentage =
+        parseFloat(distribution1) +
+        parseFloat(distribution2) +
+        parseFloat(distribution3) +
+        parseFloat(distribution4) +
+        parseFloat(distribution5) +
+        parseFloat(distribution6);
 
     function setLaunchData(e) {
-        e.preventDefault()
-        if(icon)
-        {
-            if(totalPercentage === 100)
-            {
-
+        e.preventDefault();
+        if (icon) {
+            if (totalPercentage === 100) {
                 newLaunch.current.name = name;
                 newLaunch.current.symbol = symbol;
                 newLaunch.current.icon = icon;
@@ -106,19 +104,15 @@ export function LaunchScreen({
                 newLaunch.current.distribution[3] = parseFloat(distribution4);
                 newLaunch.current.distribution[4] = parseFloat(distribution5);
                 newLaunch.current.distribution[5] = parseFloat(distribution6);
-                setScreen(Screen.LAUNCH_DETAILS)
+                setScreen(Screen.LAUNCH_DETAILS);
+            } else {
+                alert("The percentages must add upto 100%");
             }
-            else{
-             alert("The percentages must add upto 100%")
-            }
+        } else {
+            alert("Please select an icon image.");
         }
-        else{
-            alert("Please select an icon image.")
-        }
-
-
     }
-  
+
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
             <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
@@ -129,20 +123,18 @@ export function LaunchScreen({
                 </Text>
                 <form onSubmit={setLaunchData} className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
-                       {
-                        displayImg ?
+                        {displayImg ? (
                             <img src={displayImg} alt="" className={styles.imgFrame} />
-                         : (
+                        ) : (
                             <img className={styles.imgFrame} src="./images/Frame 49 (1).png" alt="" />
-                           )
-                       }
+                        )}
 
                         <div className={styles.launchBodyUpperFields}>
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input required className={styles.inputBox} type="text" value={name} onChange={handleNameChange}/>
+                                    <input required className={styles.inputBox} type="text" value={name} onChange={handleNameChange} />
                                 </div>
                             </div>
 
@@ -158,11 +150,10 @@ export function LaunchScreen({
                                 <div className={`${styles.textLabel} font-face-kg`}>ICON:</div>
 
                                 <div>
-                                <label  className={styles.label}>
-                                    <input  id="file" type="file" onChange={handleFileChange} />
-                                    <span className={styles.browse}>BROWSE</span>
-                                </label>
-                                
+                                    <label className={styles.label}>
+                                        <input id="file" type="file" onChange={handleFileChange} />
+                                        <span className={styles.browse}>BROWSE</span>
+                                    </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -185,7 +176,7 @@ export function LaunchScreen({
 
                                 <div className={styles.textLabelInput}>
                                     <input
-                                     required 
+                                        required
                                         className={styles.inputBox}
                                         type="number"
                                         value={totalSupply}
@@ -201,9 +192,11 @@ export function LaunchScreen({
 
                                 <div className={styles.textLabelInput}>
                                     <input
-                                     required 
+                                        required
                                         className={styles.inputBox}
-                                        type="number"  min="1" max="9" 
+                                        type="number"
+                                        min="1"
+                                        max="9"
                                         value={decimal}
                                         onChange={(e) => {
                                             setDecimal(e.target.value);
@@ -219,7 +212,7 @@ export function LaunchScreen({
 
                                 <div className={styles.textLabelInput}>
                                     <input
-                                     required 
+                                        required
                                         className={styles.inputBox}
                                         type="number"
                                         value={mints}
@@ -235,7 +228,7 @@ export function LaunchScreen({
 
                                 <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <input
-                                     required 
+                                        required
                                         className={styles.inputBox}
                                         type="number"
                                         value={totalPrice}
@@ -253,7 +246,7 @@ export function LaunchScreen({
 
                                 <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <input
-                                     required 
+                                        required
                                         className={styles.inputBox}
                                         type="number"
                                         value={parseFloat(mints) * parseFloat(totalPrice)}
@@ -271,22 +264,24 @@ export function LaunchScreen({
 
                     <div className={styles.distributionBox}>
                         <div className={styles.distributionBoxFields}>
-                            <div style={{color:'white'}} className={`${styles.textLabel} font-face-kg`}>Distribution </div>
+                            <div style={{ color: "white" }} className={`${styles.textLabel} font-face-kg`}>
+                                Distribution{" "}
+                            </div>
 
                             <div className={styles.distributionBoxEachFields}>
                                 <div className={styles.colorBox1}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>LetsCookRaffle</div>
                                 <div className={styles.distributionField}>
                                     <input
-                                    required
+                                        required
                                         value={distribution1}
                                         onChange={(e) => {
                                             setDistribution1(e.target.value);
                                         }}
                                         type="number"
-                                        min='0'
+                                        min="0"
                                         max="100"
-                                        disabled={totalPercentage ===100 && parseFloat(distribution1)===0 ? true:false}
+                                        disabled={totalPercentage === 100 && parseFloat(distribution1) === 0 ? true : false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -297,16 +292,15 @@ export function LaunchScreen({
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Pool</div>
                                 <div className={styles.distributionField}>
                                     <input
-                                    required
+                                        required
                                         value={distribution2}
                                         onChange={(e) => {
                                             setDistribution2(e.target.value);
                                         }}
                                         type="number"
-                                        min='0'
+                                        min="0"
                                         max="100"
-                                        disabled={totalPercentage ===100&& parseFloat(distribution2)===0 ? true:false}
-
+                                        disabled={totalPercentage === 100 && parseFloat(distribution2) === 0 ? true : false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -322,10 +316,9 @@ export function LaunchScreen({
                                             setDistribution3(e.target.value);
                                         }}
                                         type="number"
-                                        min='0'
+                                        min="0"
                                         max="100"
-                                        disabled={totalPercentage ===100 && parseFloat(distribution3)===0? true:false}
-
+                                        disabled={totalPercentage === 100 && parseFloat(distribution3) === 0 ? true : false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -341,10 +334,9 @@ export function LaunchScreen({
                                             setDistribution4(e.target.value);
                                         }}
                                         type="number"
-                                        min='0'
+                                        min="0"
                                         max="100"
-                                        disabled={totalPercentage ===100 && parseFloat(distribution4)===0 ? true:false}
-
+                                        disabled={totalPercentage === 100 && parseFloat(distribution4) === 0 ? true : false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -360,10 +352,9 @@ export function LaunchScreen({
                                             setDistribution5(e.target.value);
                                         }}
                                         type="number"
-                                        min='0'
+                                        min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution5) === 0 ?  true:false}
-
+                                        disabled={totalPercentage === 100 && parseFloat(distribution5) === 0 ? true : false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -379,10 +370,9 @@ export function LaunchScreen({
                                             setDistribution6(e.target.value);
                                         }}
                                         type="number"
-                                        min='0'
+                                        min="0"
                                         max="100"
-                                        disabled={totalPercentage ===100 && parseFloat(distribution6)===0 ? true:false}
-
+                                        disabled={totalPercentage === 100 && parseFloat(distribution6) === 0 ? true : false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -390,24 +380,24 @@ export function LaunchScreen({
                         </div>
 
                         <div className={styles.piechart}>
-                        <PieChart
-      animate={true}
-      totalValue={100}
-      data={[
-        { title: "LetsCookRaffle", value: percentage1, color: "#FF5151" },
-        { title: "Liquidity Pool", value: percentage2, color: "#489CFF" },
-        { title: "LP Rewards", value: percentage3, color: "#74DD5A" },
-        { title: "Airdrops", value: percentage4, color: "#FFEF5E" },
-        { title: "Team", value: percentage5, color: "#B96CF6" },
-        { title: "Other", value: percentage6, color: "#FF994E" },
-        { title: "Blank", value: 100 - totalPercentage, color: "transparent" }
-      ]}
-    />
+                            <PieChart
+                                animate={true}
+                                totalValue={100}
+                                data={[
+                                    { title: "LetsCookRaffle", value: percentage1, color: "#FF5151" },
+                                    { title: "Liquidity Pool", value: percentage2, color: "#489CFF" },
+                                    { title: "LP Rewards", value: percentage3, color: "#74DD5A" },
+                                    { title: "Airdrops", value: percentage4, color: "#FFEF5E" },
+                                    { title: "Team", value: percentage5, color: "#B96CF6" },
+                                    { title: "Other", value: percentage6, color: "#FF994E" },
+                                    { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
+                                ]}
+                            />
                         </div>
                     </div>
 
                     <div>
-                        <button type="submit"  className={`${styles.nextBtn} font-face-kg `}>
+                        <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
                             NEXT
                         </button>
                     </div>
