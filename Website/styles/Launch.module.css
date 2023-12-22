@@ -1,138 +1,80 @@
-.imgFrame{
+.imgFrame {
     width: 250px;
-  }
+}
+label.label input[type="file"] {
+    display:none;
+    
+   }
+.inputBox {
+    width: 100%;
+    font-size: 20px;
+    font-family: "ChalkBoard";
+}
+.browse{
+  font-family: 'KGSummerSunshineBlackout';
 
-  .inputBox{
-  width: 100%;
+}
+.inputBox::file-selector-button {
+  color: #683309;
+  background-image: url(../public/images/Wood\ Panel.png);
+  background-size: cover;
+  padding: 10px;
   font-size: 20px;
-  font-family: "ChalkBoard";
-
-  }
-  .launchBody{
+  border-radius: 5px;
+  font-family: 'KGSummerSunshineBlackout';
+}
+.inputBox::file-selector-button::after {
+  opacity:0 !important;   
+}
+.launchBody {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    width: 60vw; 
+    width: 60vw;
     gap: 20px;
     margin-top: 20px;
     margin-bottom: 50px;
-  }
-  .launchBodyUpper{
+}
+.launchBodyUpper {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     flex-direction: row;
     width: 100%;
     gap: 50px;
-  }
-  .launchBodyUpperFields{
+}
+.launchBodyUpperFields {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
     gap: 40px;
     width: 100%;
-  }
-  .eachField{
+}
+.eachField {
     display: flex;
     justify-content: flex-start;
     align-items: center;
     gap: 20px;
-width: 100%;
-  }
-  .textLabel{
-    font-size: 18px;
     color: white;
     width: max-content;
     text-transform: capitalize !important;
+    width: 100%;
   }
   .textLabelInput{
     position: relative;
     width: 100%;
   }
   .textLabelInput input{
-    position: relative;
-    background-color: #494949;
-    box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.761);
-    padding: 10px;
-    border-radius: 5px;
-    color: white; 
-    width: 100%;
-  }
-  .distributionField{
-    position: relative;
-  }
-  .distributionField input{
-    position: relative;
-  }
-  .sol{
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 30px;
-    height: auto;
-  }
-  .percentage{
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: auto;
-  }
-  .launchBodyLower{
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-direction: column;
-    gap: 40px;
-    width: 100%;
-  }
-  .launchBodyLowerHorizontal{
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    flex-direction: row;
-    gap: 20px;
-  }
-  .distributionBox{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-direction: row;
-    width: 100%;
-  }
-  .textLabel2{
-    font-family: 'ReemKufiRegular';
-    font-size: 25px;
-  }
-  .distributionBoxFields{
-    display: flex;
-    justify-content:flex-start;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .distributionBoxEachFields{
-    display: flex;
-    justify-content:flex-start;
-    align-items: flex-start;
-    flex-direction: row;
-    gap: 10px;
-  
-  }
-.help{
-  position: fixed;
-  top: 70px;
-  right: 20px;
-  width: 40px;
-  z-index: 100;
+
 }
-  .distributionField input{
+.textLabelInput {
+    position: relative;
+    width: 100%;
+}
+.textLabelInput input {
+    position: relative;
     background-color: #494949;
     box-shadow: none;
     border: 1px solid rgba(255, 255, 255, 0.761);
@@ -140,250 +82,332 @@ width: 100%;
     border-radius: 5px;
     color: white;
     width: 100%;
-  }
-  .colorBox1{
-    background-color: #FF5151;
+}
+.distributionField {
+    position: relative;
+    color: white;
+
+}
+.distributionField input {
+    position: relative;
+    color: white;
+
+
+}
+.sol {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: auto;
+}
+.percentage {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: auto;
+}
+.launchBodyLower {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    gap: 40px;
+    width: 100%;
+}
+.launchBodyLowerHorizontal {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    flex-direction: row;
+    gap: 20px;
+}
+.distributionBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: row;
+    width: 100%;
+}
+.textLabel2 {
+    font-family: "ReemKufiRegular";
+    font-size: 25px;
+    color: white;
+}
+.distributionBoxFields {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+}
+.distributionBoxEachFields {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 10px;
+}
+.help {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 40px;
+    z-index: 100;
+}
+.distributionField input {
+    background-color: #494949;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.761);
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    width: 100px;
+}
+.colorBox1 {
+    background-color: #ff5151;
     width: 50px;
     height: 30px;
-  }
-  .colorBox2{
-    background-color: #489CFF;
+}
+.colorBox2 {
+    background-color: #489cff;
     width: 50px;
     height: 30px;
-  }
-  .colorBox3{
-    background-color: #74DD5A;
+}
+.colorBox3 {
+    background-color: #74dd5a;
     width: 50px;
     height: 30px;
-  }
-  .colorBox4{
-    background-color: #FFEF5E;
+}
+.colorBox4 {
+    background-color: #ffef5e;
     width: 50px;
     height: 30px;
-  }
-  .colorBox5{
-    background-color: #B96CF6;
+}
+.colorBox5 {
+    background-color: #b96cf6;
     width: 50px;
     height: 30px;
-  }
-  .colorBox6{
-    background-color: #FF994E;
+}
+.colorBox6 {
+    background-color: #ff994e;
     width: 50px;
     height: 30px;
-  }
-  .browse{
+}
+.browse {
     color: #683309;
     background-image: url(../public/images/Wood\ Panel.png);
     background-size: cover;
     padding: 10px;
     font-size: 20px;
     border-radius: 5px;
-  }
-  .nextBtn{
+}
+.nextBtn {
     color: #683309;
     background-image: url(../public/images/Wood\ Panel.png);
     background-size: cover;
     padding: 10px 20px;
     font-size: 20px;
     border-radius: 5px;
+}
 
-  }
+@media screen and (max-width: 1000px) {
+    .imgFrame {
+        width: 250px;
+    }
+    .inputBox {
+        width: 100%;
+    }
+    .launchBody {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 90%;
+        gap: 20px;
+        margin-top: 20px;
+        margin-bottom: 50px;
+    }
+    .launchBodyUpper {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+        gap: 50px;
+    }
+    .launchBodyUpperFields {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 40px;
+        width: 100%;
+    }
+    .eachField {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 20px;
+        width: 100%;
+    }
+    .textLabel {
+        font-size: 12px;
+        color: white;
+        width: max-content;
+        text-transform: capitalize !important;
+        color: white !important;
+    }
+    .textLabelInput {
+        position: relative;
+        width: 100%;
+    }
+    .textLabelInput input {
+        position: relative;
+        background-color: #494949;
+        box-shadow: none;
+        border: 1px solid rgba(255, 255, 255, 0.761);
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+        width: 100%;
+    }
+    .distributionField {
+        position: relative;
+    }
+    .distributionField input {
+        position: relative;
+    }
+    .sol {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 30px;
+        height: auto;
+    }
+    .percentage {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: auto;
+    }
+    .launchBodyLower {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-direction: column;
+        gap: 40px;
+        width: 100%;
+    }
+    .launchBodyLowerHorizontal {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .distributionBox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+    }
+    .distributionBoxFields {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 20px;
+    }
 
-  @media screen and (max-width:1000px) {
-    .imgFrame{
-      width: 250px;
+    .distributionBoxEachFields {
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-start;
+        flex-direction: row;
+        gap: 10px;
+        font-family: "ReemKufiRegular" !important;
     }
-    .inputBox{
-    width: 100%;
-  
+    .distributionField input {
+        background-color: #494949;
+        box-shadow: none;
+        border: 1px solid rgba(255, 255, 255, 0.761);
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+        width: 100px;
     }
-    .launchBody{
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      width: 90%; 
-      gap: 20px;
-      margin-top: 20px;
-      margin-bottom: 50px;
+    .colorBox1 {
+        background-color: #ff5151;
+        width: 50px;
+        height: 30px;
     }
-    .launchBodyUpper{
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      flex-direction: column;
-      width: 100%;
-      gap: 50px;
+    .colorBox2 {
+        background-color: #489cff;
+        width: 50px;
+        height: 30px;
     }
-    .launchBodyUpperFields{
-      display: flex;
-      justify-content: flex-start;
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 40px;
-      width: 100%;
+    .colorBox3 {
+        background-color: #74dd5a;
+        width: 50px;
+        height: 30px;
     }
-    .eachField{
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 20px;
-  width: 100%;
+    .colorBox4 {
+        background-color: #ffef5e;
+        width: 50px;
+        height: 30px;
     }
-    .textLabel{
-      font-size: 12px;
-      color: white;
-      width: max-content;
-      text-transform: capitalize !important;
+    .colorBox5 {
+        background-color: #b96cf6;
+        width: 50px;
+        height: 30px;
     }
-    .textLabelInput{
-      position: relative;
-      width: 100%;
+    .colorBox6 {
+        background-color: #ff994e;
+        width: 50px;
+        height: 30px;
     }
-    .textLabelInput input{
-      position: relative;
-      background-color: #494949;
-      box-shadow: none;
-      border: 1px solid rgba(255, 255, 255, 0.761);
-      padding: 10px;
-      border-radius: 5px;
-      color: white; 
-      width: 100%;
+    .browse {
+        color: #683309;
+        background-image: url(../public/images/Wood\ Panel.png);
+        background-size: cover;
+        padding: 10px;
+        font-size: 20px;
+        border-radius: 5px;
     }
-    .distributionField{
-      position: relative;
+    .nextBtn {
+        color: #683309;
+        background-image: url(../public/images/Wood\ Panel.png);
+        background-size: cover;
+        padding: 10px 20px;
+        font-size: 20px;
+        border-radius: 5px;
     }
-    .distributionField input{
-      position: relative;
+    .piechart {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        margin-top: 20px;
     }
-    .sol{
-      position: absolute;
-      right: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 30px;
-      height: auto;
+    .help {
+        position: fixed;
+        top: 120px;
+        right: 20px;
+        width: 40px;
+        z-index: 100;
     }
-    .percentage{
-      position: absolute;
-      right: 5px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: auto;
+    .textLabel2 {
+        font-family: "ReemKufiRegular";
+        font-size: 20px;
     }
-    .launchBodyLower{
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      flex-direction: column;
-      gap: 40px;
-      width: 100%;
-    }
-    .launchBodyLowerHorizontal{
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      width: 100%;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .distributionBox{
-      display: flex;
-      justify-content: center;
-      align-items: center    ;
-      flex-direction: column;
-      width: 100%;
-    }
-    .distributionBoxFields{
-      display: flex;
-      justify-content:flex-start;
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .distributionBoxEachFields{
-      display: flex;
-      justify-content:flex-start;
-      align-items: flex-start;
-      flex-direction: row;
-      gap: 10px;
-      font-family: 'ReemKufiRegular' !important;
-    }
-    .distributionField input{
-      background-color: #494949;
-      box-shadow: none;
-      border: 1px solid rgba(255, 255, 255, 0.761);
-      padding: 10px;
-      border-radius: 5px;
-      color: white;
-      width: 100%;
-    }
-    .colorBox1{
-      background-color: #FF5151;
-      width: 50px;
-      height: 30px;
-    }
-    .colorBox2{
-      background-color: #489CFF;
-      width: 50px;
-      height: 30px;
-    }
-    .colorBox3{
-      background-color: #74DD5A;
-      width: 50px;
-      height: 30px;
-    }
-    .colorBox4{
-      background-color: #FFEF5E;
-      width: 50px;
-      height: 30px;
-    }
-    .colorBox5{
-      background-color: #B96CF6;
-      width: 50px;
-      height: 30px;
-    }
-    .colorBox6{
-      background-color: #FF994E;
-      width: 50px;
-      height: 30px;
-    }
-    .browse{
-      color: #683309;
-      background-image: url(../public/images/Wood\ Panel.png);
-      background-size: cover;
-      padding: 10px;
-      font-size: 20px;
-    border-radius: 5px;
-
-    }
-    .nextBtn{
-      color: #683309;
-      background-image: url(../public/images/Wood\ Panel.png);
-      background-size: cover;
-      padding: 10px 20px;
-      font-size: 20px;
-    border-radius: 5px;
-
-    }
-    .piechart{
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      margin-top: 20px;
-    }
-    .help{
-      position: fixed;
-      top: 120px;
-      right: 20px;
-      width: 40px;
-      z-index: 100;
-    }
-    .textLabel2{
-      font-family: 'ReemKufiRegular';
-      font-size: 20px;
-    }
-  }
+}

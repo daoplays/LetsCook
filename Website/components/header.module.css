@@ -1,13 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Kufam&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Kufam&display=swap");
 .headerImage {
     background-image: url("/images/header_fill.jpeg");
     width: 100vw;
     height: 55px;
     padding: 0;
     margin: 0;
-    font-family: 'Kufam', sans-serif;
+    font-family: "Kufam", sans-serif;
 }
-.sauce{
+.sauce {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,10 +17,10 @@
     padding: 5px 10px;
     border-radius: 20px;
 }
-.sauce img{
+.sauce img {
     width: 20px;
 }
-@import url('https://fonts.googleapis.com/css2?family=Kufam&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Kufam&display=swap");
 .footerImage {
     background-image: url("/images/footer_fill.jpeg");
     background-size: cover;
@@ -32,15 +32,14 @@
     padding: 0;
     margin: 0;
 }
-.connect{
-    font-family: 'Kufam', sans-serif;
-
+.connect {
+    font-family: "Kufam", sans-serif;
 }
-@media screen and (max-width:1000px) {
-    .navBody{
+@media screen and (max-width: 1000px) {
+    .navBody {
         padding-top: 7px;
     }
-    .menubar{
+    .menubar {
         background-color: #eddac3;
         width: 100%;
         position: absolute;
@@ -56,11 +55,10 @@
         font-family: Dealers;
         src: url(../public/images/Dealers\ -\ Solid.otf);
     }
-    .connect{
+    .connect {
         background-color: transparent !important;
         font-family: Dealers;
         font-size: 30px;
         color: #683309 !important;
-
     }
 }
