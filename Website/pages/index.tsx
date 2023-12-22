@@ -26,6 +26,8 @@ import {
     uInt32ToLEBytes,
     serialise_CreateLaunch_instruction,
     bignum_to_num,
+    UserData,
+    run_user_data_GPA
 } from "../components/Solana/state";
 import Navigation from "../components/Navigation";
 import { FAQScreen } from "../components/faq";
@@ -40,6 +42,7 @@ import logo from "../public/images/sauce.png";
 import styles from "../components/css/featured.module.css";
 import { LaunchDetails } from "../components/launch_details";
 import { LaunchBook } from "../components/launch_book";
+import { Leaderboard } from "../components/leaderboard";
 
 const ArenaGameCard = ({
     launch,
@@ -121,8 +124,11 @@ function LetsCook() {
 
     const game_interval = useRef<number | null>(null);
     const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
+    const [user_data, setUserData] = useState<UserData[]>([]);
+
     const check_launch_data = useRef<boolean>(true);
     const [current_launch_data, setCurrentLaunchData] = useState<LaunchData | null>(null);
+    const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
 
     const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
 
@@ -134,6 +140,10 @@ function LetsCook() {
         let list = await run_launch_data_GPA("");
         console.log(list);
         setLaunchData(list);
+
+        let user_list = await run_user_data_GPA("");
+        console.log(user_list);
+        setUserData(user_list);
         check_launch_data.current = false;
     }, []);
 
@@ -209,10 +219,17 @@ function LetsCook() {
         newLaunchData.current.uri = meta_data_url;
 
         let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
+
         let game_data_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), Buffer.from(newLaunchData.current.name), Buffer.from("Game")],
             PROGRAM,
         )[0];
+
+        let user_data_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(),Buffer.from("User")],
+            PROGRAM,
+        )[0];
+
         let sol_data_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
 
         const token_mint_keypair = Keypair.generate();
@@ -228,6 +245,12 @@ function LetsCook() {
             true, // allow owner off curve
         );
 
+        let user_token_account_key = await getAssociatedTokenAddress(
+            token_mint_pubkey, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+        );
+
         if (DEBUG) {
             console.log("arena: ", arena_account.toString());
             console.log("game_data_account: ", game_data_account.toString());
@@ -238,12 +261,14 @@ function LetsCook() {
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: game_data_account, isSigner: false, isWritable: true },
-            { pubkey: sol_data_account, isSigner: false, isWritable: true },
 
+            { pubkey: sol_data_account, isSigner: false, isWritable: true },
             { pubkey: arena_account, isSigner: false, isWritable: true },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
+            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
         ];
@@ -354,7 +379,7 @@ function LetsCook() {
             {screen === Screen.LAUNCH_DETAILS && <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.LAUNCH_SCREEN && <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
-
+            {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data}/>}
             <Footer showTerms={setShowTerms} />
         </>
     );

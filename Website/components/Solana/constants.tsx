@@ -45,4 +45,5 @@ export const enum Screen {
     LAUNCH_SCREEN = 3,
     LAUNCH_DETAILS = 4,
     LAUNCH_BOOK = 5,
+    LEADERBOARD = 6,
 }

@@ -436,6 +436,10 @@ export class LaunchData {
         readonly telegram: String,
         readonly team_wallet: PublicKey,
         readonly mint_address: PublicKey,
+        readonly sol_address : PublicKey,
+        readonly tickets_sold : number,
+        readonly tickets_claimed : number,
+        readonly mints_won : number
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchData>(
@@ -451,7 +455,7 @@ export class LaunchData {
             ["icon", utf8String],
             ["total_supply", u64],
             ["decimals", u8],
-            ["num_mints", u64],
+            ["num_mints", u32],
             ["ticket_price", u64],
             ["minimum_liquidity", u64],
             ["distribution", uniformFixedSizeArray(u8, 6)],
@@ -465,6 +469,11 @@ export class LaunchData {
             ["telegram", utf8String],
             ["team_wallet", publicKey],
             ["mint_address", publicKey],
+            ["sol_address", publicKey],
+            ["tickets_sold", u32],
+            ["tickets_claimed", u32],
+            ["mints_won", u32],
+
         ],
         (args) =>
             new LaunchData(
@@ -493,8 +502,70 @@ export class LaunchData {
                 args.telegram!,
                 args.team_wallet!,
                 args.mint_address!,
+                args.sol_address!,
+                args.tickets_sold!,
+                args.tickets_claimed!,
+                args.mints_won!
             ),
         "LaunchData",
+    );
+}
+
+
+export class JoinData {
+    constructor(
+        readonly account_type: number,
+        readonly joiner_key: PublicKey,
+        readonly game_id: bignum,
+        readonly num_tickets: number,
+        readonly num_winning_tickets: number,
+        readonly ticket_status: number,
+        
+    ) {}
+
+    static readonly struct = new BeetStruct<JoinData>(
+        [
+            ["account_type", u8],
+            ["joiner_key", publicKey],
+            ["game_id", u64],
+            ["num_tickets", u16],
+            ["num_winning_tickets", u16],
+            ["ticket_status", u8],
+        ],
+        (args) =>
+            new JoinData(
+                args.account_type!,
+                args.joiner_key!,
+                args.game_id!,
+                args.num_tickets!,
+                args.num_winning_tickets!,
+                args.ticket_status!,
+            ),
+        "JoinData",
+    );
+}
+
+export class UserData {
+    constructor(
+        readonly account_type: number,
+        readonly user_key: PublicKey,
+        readonly total_points: bignum
+        
+    ) {}
+
+    static readonly struct = new BeetStruct<UserData>(
+        [
+            ["account_type", u8],
+            ["user_key", publicKey],
+            ["total_points", u64]
+        ],
+        (args) =>
+            new UserData(
+                args.account_type!,
+                args.user_key!,
+                args.total_points!,
+            ),
+        "UserData",
     );
 }
 
@@ -550,13 +621,56 @@ export async function run_launch_data_GPA(bearer: string): Promise<LaunchData[]>
     return result;
 }
 
+export async function run_user_data_GPA(bearer: string): Promise<UserData[]> {
+    let index_buffer = uInt8ToLEBytes(2);
+    let account_bytes = bs58.encode(index_buffer);
+
+    var body = {
+        id: 1,
+        jsonrpc: "2.0",
+        method: "getProgramAccounts",
+        params: [
+            PROGRAM.toString(),
+            { filters: [{ memcmp: { offset: 0, bytes: account_bytes } }], encoding: "base64", commitment: "confirmed" },
+        ],
+    };
+
+    var program_accounts_result;
+    try {
+        program_accounts_result = await postData(RPC_NODE, bearer, body);
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+
+    console.log(program_accounts_result["result"]);
+
+    let result: UserData[] = [];
+    for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
+        console.log(program_accounts_result["result"][i]);
+        let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
+        let decoded_data = Buffer.from(encoded_data, "base64");
+        try {
+            const [game] = UserData.struct.deserialize(decoded_data);
+            result.push(game);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    return result;
+}
+
 class CreateLaunch_Instruction {
     constructor(
         readonly instruction: number,
         readonly name: String,
         readonly symbol: String,
         readonly uri: String,
-        readonly launch_date: number,
+        readonly total_supply : bignum,
+        readonly decimals : number,
+        readonly launch_date: bignum,
+        readonly description: String
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -565,9 +679,13 @@ class CreateLaunch_Instruction {
             ["name", utf8String],
             ["symbol", utf8String],
             ["uri", utf8String],
+            ["total_supply", u64],
+            ["decimals", u8],
             ["launch_date", u64],
+            ["description", utf8String],
+
         ],
-        (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.launch_date!),
+        (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.total_supply!, args.decimals!, args.launch_date!, args.description!),
         "CreateLaunch_Instruction",
     );
 }
@@ -579,7 +697,10 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.name,
         new_launch_data.symbol,
         new_launch_data.uri,
+        new_launch_data.total_supply,
+        new_launch_data.decimals,
         new_launch_data.launch_date,
+        new_launch_data.description
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

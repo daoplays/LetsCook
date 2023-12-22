@@ -84,7 +84,7 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                             <img src="./images/sauce 2.png" alt="" />
                             <div>1,400</div>
                         </div>
-                        <img src="./images/Group 38.png" width="auto" alt={""} style={{ maxHeight: "35px", maxWidth: "35px" }} />
+                        <img src="./images/Group 38.png" width="auto" alt={""} style={{ maxHeight: "35px", maxWidth: "35px" }} onClick={() => setScreen(Screen.LEADERBOARD)} />
                         <img src="./images/Group 39.png" width="auto" alt={""} style={{ maxHeight: "35px", maxWidth: "35px" }} />
 
                         {isDesktopOrLaptop ? (

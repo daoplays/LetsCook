@@ -2,7 +2,8 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } fr
 
 import BN from "bn.js";
 import Decimal from "decimal.js";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { Center, VStack, Text, Box, HStack, FormControl, Input } from "@chakra-ui/react";
 
 import {
     Clmm,
@@ -19,18 +20,26 @@ import {
     Liquidity,
     SYSTEM_PROGRAM_ID,
     RENT_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TokenAccount,
+    SPL_ACCOUNT_LAYOUT,
+    generatePubKey,
+    InstructionType,
+    Spl,
+    LOOKUP_TABLE_CACHE
 } from "@raydium-io/raydium-sdk";
-import { Keypair, PublicKey, SystemProgram, TransactionInstruction, Transaction } from "@solana/web3.js";
+import { Keypair, PublicKey, SystemProgram, TransactionInstruction, Transaction, Connection } from "@solana/web3.js";
 
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, AccountLayout, } from "@solana/spl-token";
 
 import bs58 from "bs58";
 
 import { send_transaction, get_current_blockhash, serialise_RaydiumCreatePool_Instruction } from "./state";
+import {RPC_NODE} from "./constants";
 
-const RAYDIUM_MAINNET_API = RAYDIUM_MAINNET;
 const PROGRAMIDS = DEVNET_PROGRAM_ID;
-const makeTxVersion = TxVersion.V0; // LEGACY
+const addLookupTableInfo = LOOKUP_TABLE_CACHE
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -61,14 +70,168 @@ const DEFAULT_TOKEN = {
     USDC: new Token(TOKEN_PROGRAM_ID, new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"), 6, "USDC", "USDC"),
     RAY: new Token(TOKEN_PROGRAM_ID, new PublicKey("4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R"), 6, "RAY", "RAY"),
     "RAY_USDC-LP": new Token(TOKEN_PROGRAM_ID, new PublicKey("FGYXP4vBkMEtKhxrmEBcWN8VNmXX8qNgEJpENKDETZ4Y"), 6, "RAY-USDC", "RAY-USDC"),
+    "Test": new Token(TOKEN_PROGRAM_ID, new PublicKey("5CTaSsqrjSmnxVe45MMknGtX72Wx1nquadBmnXGNrJHQ"), 6, "Test", "Test"),
+    "Test2": new Token(TOKEN_PROGRAM_ID, new PublicKey("2qR7QmMFELQ5tiHf66kKJcWa9SmcPpVMcdU2bxg6HykK"), 6, "Test2", "Test2"),
+
+    
 };
 
 export function Raydium() {
     const wallet = useWallet();
+    const connection  = new Connection(RPC_NODE);
+
+    async function getWalletTokenAccount(connection: Connection, wallet: PublicKey): Promise<TokenAccount[]> {
+      const walletTokenAccount = await connection.getTokenAccountsByOwner(wallet, {
+        programId: TOKEN_PROGRAM_ID,
+      });
+      return walletTokenAccount.value.map((i) => ({
+        pubkey: i.pubkey,
+        programId: i.account.owner,
+        accountInfo: SPL_ACCOUNT_LAYOUT.decode(i.account.data),
+      }));
+    }
+
+    async function test({mint} : {mint : PublicKey}) {
+
+        const frontInstructions: TransactionInstruction[] = []
+        const endInstructions: TransactionInstruction[] = []
+        const frontInstructionsType: InstructionType[] = []
+        const endInstructionsType: InstructionType[] = []
+
+        const newTokenAccount = generatePubKey({ fromPublicKey: wallet.publicKey, programId: TOKEN_PROGRAM_ID })
+        const balanceNeeded = await connection.getMinimumBalanceForRentExemption(AccountLayout.span)
+
+        const createAccountIns = SystemProgram.createAccountWithSeed({
+          fromPubkey: wallet.publicKey,
+          basePubkey: wallet.publicKey,
+          seed: newTokenAccount.seed,
+          newAccountPubkey: newTokenAccount.publicKey,
+          lamports: balanceNeeded,
+          space: AccountLayout.span,
+          programId: TOKEN_PROGRAM_ID,
+        })
+
+        const initAccountIns = Spl.createInitAccountInstruction(TOKEN_PROGRAM_ID, mint, newTokenAccount.publicKey, wallet.publicKey)
+        frontInstructions.push(createAccountIns, initAccountIns)
+        frontInstructionsType.push(InstructionType.createAccount, InstructionType.initAccount)
+        ;(endInstructions ?? []).push(
+          Spl.makeCloseAccountInstruction({
+            programId: TOKEN_PROGRAM_ID,
+            tokenAccount: newTokenAccount.publicKey,
+            owner: wallet.publicKey,
+            payer: wallet.publicKey,
+            instructionsType: endInstructionsType ?? [],
+          }),
+        )
+        return newTokenAccount.publicKey
+    }
+
+    const createPool2 = useCallback(async () => {
+
+        const baseToken = DEFAULT_TOKEN.Test; // USDC
+        const quoteToken = DEFAULT_TOKEN.Test2; // RAY
+        const targetMargetId = Keypair.generate().publicKey;
+        const addBaseAmount = new BN(10000); // 10000 / 10 ** 6,
+        const addQuoteAmount = new BN(10000); // 10000 / 10 ** 6,
+        const startTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7; // start from 7 days later
+
+        let m1 = await test(baseToken)
+        let m2 = await test(quoteToken)
+
+        console.log(m1.toString(), m2.toString())
+        const poolInfo = Liquidity.getAssociatedPoolKeys({
+            version: 4,
+            marketVersion: 3,
+            marketId: targetMargetId,
+            baseMint: baseToken.mint,
+            quoteMint: quoteToken.mint,
+            baseDecimals: baseToken.decimals,
+            quoteDecimals: quoteToken.decimals,
+            programId: PROGRAMIDS.AmmV4,
+            marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
+        });
+
+        const makeTxVersion = TxVersion.V0;
+
+        let user_base_account = await getAssociatedTokenAddress(
+            baseToken.mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+        );
+
+        let user_quote_account = await getAssociatedTokenAddress(
+            quoteToken.mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+        );
+
+        //console.log(poolInfo);
+
+        const walletTokenAccounts = await getWalletTokenAccount(connection, wallet.publicKey)
+
+        const ata1 = Spl.getAssociatedTokenAccount({ mint : baseToken.mint, owner : wallet.publicKey, programId: TOKEN_PROGRAM_ID })
+        const accounts1 = walletTokenAccounts
+        .filter((i) => i.accountInfo.mint.equals(baseToken.mint) && (!false || i.pubkey.equals(ata1)))
+        .sort((a, b) => (a.accountInfo.amount.lt(b.accountInfo.amount) ? 1 : -1))
+
+        console.log("accounts 1 " , user_base_account.toString(), ata1.toString(), accounts1);
+
+        const ata2 = Spl.getAssociatedTokenAccount({ mint : quoteToken.mint, owner : wallet.publicKey, programId: TOKEN_PROGRAM_ID })
+        const accounts2 = walletTokenAccounts
+        .filter((i) => i.accountInfo.mint.equals(quoteToken.mint) && (!false || i.pubkey.equals(ata1)))
+        .sort((a, b) => (a.accountInfo.amount.lt(b.accountInfo.amount) ? 1 : -1))
+
+        console.log("accounts 2 " , user_quote_account.toString(), ata2.toString(), accounts2);
+
+          const initPoolInstructionResponse = await Liquidity.makeCreatePoolV4InstructionV2Simple({
+            connection,
+            programId: PROGRAMIDS.AmmV4,
+            marketInfo: {
+              marketId: targetMargetId,
+              programId: PROGRAMIDS.OPENBOOK_MARKET,
+            },
+            baseMintInfo: baseToken,
+            quoteMintInfo: quoteToken,
+            baseAmount: addBaseAmount,
+            quoteAmount: addQuoteAmount,
+            startTime: new BN(Math.floor(startTime)),
+            ownerInfo: {
+              feePayer: wallet.publicKey,
+              wallet: wallet.publicKey,
+              tokenAccounts: walletTokenAccounts,
+              useSOLBalance: true,
+            },
+            associatedOnly: false,
+            checkCreateATAOwner: true,
+            makeTxVersion,
+          })
+
+          console.log(initPoolInstructionResponse)
+
+          const willSendTx = await buildSimpleTransaction({
+            connection,
+            makeTxVersion,
+            payer: wallet.publicKey,
+            innerTransactions: initPoolInstructionResponse.innerTransactions,
+            addLookupTableInfo: undefined,
+          })
+
+          console.log(willSendTx)
+
+        let signed_transaction = await wallet.signTransaction(willSendTx[0]);
+        const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+        var transaction_response = await send_transaction("", encoded_transaction);
+
+        console.log(transaction_response)
+
+
+  
+    }, [wallet]);
 
     const createPool = useCallback(async () => {
-        const baseToken = DEFAULT_TOKEN.USDC; // USDC
-        const quoteToken = DEFAULT_TOKEN.RAY; // RAY
+        const baseToken = DEFAULT_TOKEN.Test; // USDC
+        const quoteToken = DEFAULT_TOKEN.Test2; // RAY
         const targetMargetId = Keypair.generate().publicKey;
         const addBaseAmount = new BN(10000); // 10000 / 10 ** 6,
         const addQuoteAmount = new BN(10000); // 10000 / 10 ** 6,
@@ -158,5 +321,20 @@ export function Raydium() {
         const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
         var transaction_response = await send_transaction("", encoded_transaction);
+
+        console.log(transaction_response)
+
     }, [wallet]);
+
+
+    return(
+      <Box
+            as="button"
+            onClick={() => {
+              createPool2();
+            }}
+        >
+            <Text m="0" color={"white"}>Launch LP</Text>
+        </Box>
+    );
 }

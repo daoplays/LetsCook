@@ -4,6 +4,7 @@ import { FaTwitter, FaTwitch } from "react-icons/fa";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "./Solana/constants";
 import { LaunchData } from "./Solana/state";
+import {Raydium} from "./Solana/raydium"
 
 import logo from "../public/images/sauce.png";
 import tickets from "../public/images/Mint.png";
@@ -26,9 +27,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                             solscan link
                         </Text>
                         <Text color="white" className="font-face-rk" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet semper purus. Proin lorem sapien, placerat
-                            vel urna quis, blandit pulvinar purus. Vestibulum lobortis risus ut egestas placerat. Donec lorem quam,
-                            tristique at nibh quis, facilisis rhoncus magna. Nam fermentum sodales lectus sit amet vehicula.
+                            {launch_data.description}
                         </Text>
                         <HStack>
                             <FaTwitter color="white" />
@@ -36,6 +35,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                             <Text m="0" color="white" className="font-face-rk" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
                                 24 Jan 2024
                             </Text>
+                            <Raydium />
                         </HStack>
                     </VStack>
                 </HStack>
