@@ -561,3 +561,47 @@ export function bignum_to_num(bn: bignum): number {
 
     return value;
 }
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////// Raydium Instructions and MetaData //////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class RaydiumCreatePool_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly nonce: number,
+        readonly openTime: bignum,
+        readonly pcAmount: bignum,
+        readonly coinAmount: bignum,
+    ) {}
+
+    static readonly struct = new BeetStruct<RaydiumCreatePool_Instruction>(
+        [
+            ["instruction", u8],
+            ["nonce", u8],
+            ["openTime", u64],
+            ["pcAmount", u64],
+            ["coinAmount", u64],
+        ],
+        (args) => new RaydiumCreatePool_Instruction(args.instruction!, args.nonce!, args.openTime!, args.pcAmount!, args.coinAmount!),
+        "RaydiumCreatePool_Instruction",
+    );
+}
+
+export function serialise_RaydiumCreatePool_Instruction(nonce : number, openTime : bignum, pcAmount: bignum, coinAmount : bignum): Buffer {
+
+    const data = new RaydiumCreatePool_Instruction(
+        1,
+        nonce,
+        openTime,
+        pcAmount,
+        coinAmount,
+    );
+    const [buf] = RaydiumCreatePool_Instruction.struct.serialize(data);
+
+    return buf;
+}

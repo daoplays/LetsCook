@@ -41,6 +41,7 @@ import styles from "../components/css/featured.module.css";
 import { LaunchDetails } from "../components/launch_details";
 import { LaunchBook } from "../components/launch_book";
 
+
 const ArenaGameCard = ({
     launch,
     setLaunchData,

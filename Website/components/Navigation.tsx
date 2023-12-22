@@ -20,7 +20,7 @@ function Navigation({
 }) {
     const LaunchTokenButton = ({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>> }) => {
         return (
-            <Box as="button" onClick={() => setScreen(Screen.LAUNCH_SCREEN)}>
+            <Box as="button" onClick={() => {setScreen(Screen.LAUNCH_SCREEN); howToUse()}}>
                 <div className="font-face-rk">
                     <Text
                         align="center"
