@@ -20,15 +20,14 @@ export function LaunchDetails({
     ListGameOnArena: MouseEventHandler<HTMLParagraphElement>;
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) {
-    const [name, setName] = useState<string>("");
-    const [symbol, setSymbol] = useState<string>("");
-    const [launch_date, setLaunchDate] = useState<Date | null>(null);
-    const [icon, setIcon] = useState<string>(null);
-    const [totalSupply, setTotalSupply] = useState("");
-    const [decimal, setDecimal] = useState("");
-    const [mints, setMints] = useState("");
-    const [totalPrice, setTotalPrice] = useState("");
-    const [liquidity, setLiquidity] = useState("");
+    const [name, setName] = useState<string>(newLaunch.current.pagename);
+    const [icon, setIcon] = useState<string>(newLaunch.current.iconpage2);
+    const [description, setDescription] = useState<string>(newLaunch.current.description);
+    const [web, setWeb] = useState<string>(newLaunch.current.web_url);
+    const [telegram, setTelegram] = useState<string>(newLaunch.current.tele_url);
+    const [twitter, setTwitter] = useState(newLaunch.current.twt_url);
+    const [discord, setDiscord] = useState(newLaunch.current.disc_url);
+
 
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
@@ -37,26 +36,27 @@ export function LaunchDetails({
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
-    const handleSymbolChange = (e) => {
-        setSymbol(e.target.value);
-    };
 
-    const handleLaunchDateChange = (e) => {
-        setLaunchDate(e);
-    };
+
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+        const file = e.target.files && e.target.files[0];
+    
+        if (file) {
+          if (file.size <= 4194304) {
             const reader = new FileReader();
-
-            reader.readAsDataURL(e.target.files[0]);
-
+    
+            reader.readAsDataURL(file);
+    
             reader.onload = () => {
-                console.log("called: ", reader);
-                setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
+              console.log("called: ", reader);
+              setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
             };
+          } else {
+            alert('File size exceeds 4MB limit.');
+          }
         }
-    };
+      };
 
     const [images, setImages] = useState([]);
     const maxNumber = 1000;
@@ -67,6 +67,25 @@ export function LaunchDetails({
         setImages(imageList);
     };
 
+    function setLaunchData(e) {
+        newLaunch.current.pagename = name;
+        newLaunch.current.iconpage2 = icon;
+        newLaunch.current.description = description;
+        newLaunch.current.web_url = web;
+        newLaunch.current.twt_url = twitter;
+        newLaunch.current.disc_url = discord;
+        newLaunch.current.tele_url = telegram;
+        setScreen(Screen.LAUNCH_BOOK);
+    }
+    function setLaunchDataPrevious(e) {
+        newLaunch.current.pagename = name;
+        newLaunch.current.description = description;
+        newLaunch.current.web_url = web;
+        newLaunch.current.twt_url = twitter;
+        newLaunch.current.disc_url = discord;
+        newLaunch.current.tele_url = telegram;
+        setScreen(Screen.LAUNCH_SCREEN);
+    }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
             <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
@@ -75,54 +94,30 @@ export function LaunchDetails({
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Page
                 </Text>
-                <div className={styles.launchBody}>
+                <form onSubmit={setLaunchData} className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
                         <div className={styles.launchBodyUpperFields}>
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>Page Name:</div>
 
-                                <input placeholder="/" className={styles.inputBox} type="text" value={name} onChange={handleNameChange} />
+                                <input  required  placeholder="/" className={styles.inputBox} type="text" value={name} onChange={handleNameChange} />
                             </div>
 
                             <div className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`}>Background:</div>
+                                <div className={`${styles.textLabel} font-face-kg`}>Banner:</div>
 
                                 <div>
-                                    <ImageUploading
-                                        multiple={false}
-                                        value={images}
-                                        onChange={onChange}
-                                        maxNumber={maxNumber}
-                                        dataURLKey="data_url"
-                                    >
-                                        {({
-                                            imageList,
-                                            onImageUpload,
-                                            onImageRemoveAll,
-                                            onImageUpdate,
-                                            onImageRemove,
-                                            isDragging,
-                                            dragProps,
-                                        }) => (
-                                            // write your building UI
-                                            <div className="upload__image-wrapper">
-                                                <button
-                                                    style={isDragging ? { color: "red" } : undefined}
-                                                    onClick={onImageUpload}
-                                                    {...dragProps}
-                                                    className={`${styles.browse} font-face-kg `}
-                                                >
-                                                    BROWSE
-                                                </button>
-                                            </div>
-                                        )}
-                                    </ImageUploading>
+                                <label className={styles.label}>
+                                    <input  id="file" type="file" onChange={handleFileChange}/>
+                                    <span className={styles.browse}>BROWSE</span>
+                                </label>
+
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <input
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={images.length > 0 ? "File Selected" : "No File Selected"}
+                                        value={icon ? "File Selected" : "No File Selected"}
                                         disabled
                                     />
                                 </div>
@@ -135,11 +130,12 @@ export function LaunchDetails({
                             <div className={`${styles.textLabel} font-face-kg`}>DESCRIPTION:</div>
                             <div>
                                 <textarea
+                                 required 
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles.inputTxtarea}`}
-                                    value={totalSupply}
+                                    value={description}
                                     onChange={(e) => {
-                                        setTotalSupply(e.target.value);
+                                        setDescription(e.target.value);
                                     }}
                                 />
                             </div>
@@ -154,9 +150,9 @@ export function LaunchDetails({
                                         placeholder="URL"
                                         className={styles.inputBox}
                                         type="text"
-                                        value={totalSupply}
+                                        value={web}
                                         onChange={(e) => {
-                                            setTotalSupply(e.target.value);
+                                            setWeb(e.target.value);
                                         }}
                                     />
                                 </div>
@@ -172,9 +168,9 @@ export function LaunchDetails({
                                         className={styles.inputBox}
                                         placeholder="URL"
                                         type="text"
-                                        value={mints}
+                                        value={telegram}
                                         onChange={(e) => {
-                                            setMints(e.target.value);
+                                            setTelegram(e.target.value);
                                         }}
                                     />
                                 </div>
@@ -186,12 +182,13 @@ export function LaunchDetails({
 
                                 <div className={styles.textLabelInput}>
                                     <input
+                                     required 
                                         className={styles.inputBox}
                                         placeholder="URL"
                                         type="text"
-                                        value={liquidity}
+                                        value={twitter}
                                         onChange={(e) => {
-                                            setLiquidity(e.target.value);
+                                            setTwitter(e.target.value);
                                         }}
                                     />
                                 </div>
@@ -207,9 +204,9 @@ export function LaunchDetails({
                                         className={styles.inputBox}
                                         placeholder="URL"
                                         type="text"
-                                        value={liquidity}
+                                        value={discord}
                                         onChange={(e) => {
-                                            setLiquidity(e.target.value);
+                                            setDiscord(e.target.value);
                                         }}
                                     />
                                 </div>
@@ -229,14 +226,17 @@ export function LaunchDetails({
                             gap: 20,
                         }}
                     >
-                        <button onClick={() => setScreen(Screen.LAUNCH_SCREEN)} className={`${styles.nextBtn} font-face-kg `}>
+                        <button 
+                        // type="submit"
+                        onClick={()=>{setScreen(Screen.LAUNCH_SCREEN)}}
+                          className={`${styles.nextBtn} font-face-kg `}>
                             PREVIOUS
                         </button>
-                        <button onClick={() => setScreen(Screen.LAUNCH_BOOK)} className={`${styles.nextBtn} font-face-kg `}>
+                        <button type="submit"  className={`${styles.nextBtn} font-face-kg `}>
                             NEXT
                         </button>
                     </div>
-                </div>
+                </form>
             </VStack>
         </Center>
     );

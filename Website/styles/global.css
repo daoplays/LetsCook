@@ -37,3 +37,10 @@ input[type="file"] {
 ::placeholder {
     color: white !important ;
 }
+input[type="file"] {
+  display: none;
+}
+::placeholder{
+  color: white !important ;
+}
+

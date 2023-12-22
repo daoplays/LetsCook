@@ -363,12 +363,28 @@ export interface LaunchDataUserInput {
     distribution : number[],
     launch_date: number;
     uri: string;
+    pagename: string,
+    iconpage2: string,
+    description : string,
+    web_url : string,
+    tele_url : string,
+    twt_url: string,
+    disc_url : string,
+    displayImg:string,
+    opendate: string,
+    opentime: string,
+    closedate : string,
+    closetime : string,
+    opendateLP : string,
+    opentimeLP: string,
+    team_wallet : string,
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
     name: "",
     symbol: "",
     icon: "",
+    displayImg:null,
     total_supply : 0,
     decimals : 0,
     num_mints : 0,
@@ -377,7 +393,26 @@ export const defaultUserInput: LaunchDataUserInput = {
     distribution : [0,0,0,0,0,0],
     launch_date: (new Date()).getTime() / 1000,
     uri: "",
+    pagename: "",
+    iconpage2: "",
+    description : '',
+    web_url : "",
+    tele_url : "",
+    twt_url: "",
+    disc_url : '',
+    opendate: "",
+    opentime: "",
+    closedate : "",
+    closetime : "",
+    opendateLP : "",
+    opentimeLP: "",
+    team_wallet : "",
 };
+
+
+
+
+
 
 export class LaunchData {
     constructor(

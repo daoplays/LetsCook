@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler } from "react";
 import { PieChart } from "react-minimal-pie-chart";
 import styles from "../styles/Launch.module.css";
-import ImageUploading from "react-images-uploading";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text, Box, HStack, FormControl, Input, NumberInput, NumberInputField } from "@chakra-ui/react";
 
@@ -24,7 +23,8 @@ export function LaunchScreen({
     });
     const [name, setName] = useState<string>(newLaunch.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunch.current.symbol);
-    const [icon, setIcon] = useState<string>(null);
+    const [icon, setIcon] = useState<string>(newLaunch.current.icon);
+    const [displayImg,setDisplayImg]=useState<string>(newLaunch.current.displayImg);
     const [totalSupply, setTotalSupply] = useState<string>(newLaunch.current.total_supply.toString());
     const [decimal, setDecimal] = useState<string>(newLaunch.current.decimals.toString());
     const [mints, setMints] = useState<string>(newLaunch.current.num_mints.toString());
@@ -44,40 +44,28 @@ export function LaunchScreen({
         setSymbol(e.target.value);
     };
 
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+        const file = e.target.files && e.target.files[0];
+    
+        if (file) {
+          if (file.size <= 1048576) {
             const reader = new FileReader();
+            setDisplayImg(URL.createObjectURL(e.target.files[0]))
 
-            reader.readAsDataURL(e.target.files[0]);
 
+            
+            reader.readAsDataURL(file);
+    
             reader.onload = () => {
-                console.log("called: ", reader);
-                setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
+              console.log("called: ", reader);
+              setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
             };
+          } else {
+            alert('File size exceeds 1MB limit.');
+          }
         }
-    };
+      };
 
-    function setLaunchData(e) {
-        console.log(name, symbol, icon);
-        console.log(newLaunch.current);
-        newLaunch.current.name = name;
-        newLaunch.current.symbol = symbol;
-        newLaunch.current.total_supply = parseInt(totalSupply);
-        newLaunch.current.decimals = parseInt(totalSupply);
-        newLaunch.current.num_mints = parseInt(totalSupply);
-        newLaunch.current.ticket_price = parseFloat(totalSupply);
-        newLaunch.current.minimum_liquidity = parseInt(totalSupply);
-        newLaunch.current.distribution[0] = parseInt(distribution1);
-        newLaunch.current.distribution[1] = parseInt(distribution2);
-        newLaunch.current.distribution[2] = parseInt(distribution3);
-        newLaunch.current.distribution[3] = parseInt(distribution4);
-        newLaunch.current.distribution[4] = parseInt(distribution5);
-        newLaunch.current.distribution[5] = parseInt(distribution6);
-
-        //ListGameOnArena(e);
-        setScreen(Screen.LAUNCH_DETAILS)
-    }
 
     const [images, setImages] = useState([]);
     const maxNumber = 1000;
@@ -88,6 +76,53 @@ export function LaunchScreen({
         setImages(imageList);
     };
 
+    const percentage1 = parseFloat(distribution1);
+    const percentage2 = parseFloat(distribution2);
+    const percentage3 = parseFloat(distribution3);
+    const percentage4 = parseFloat(distribution4);
+    const percentage5 = parseFloat(distribution5);
+    const percentage6 = parseFloat(distribution6);
+  
+    // Calculate the total sum of all percentages
+    const totalPercentage = parseFloat(distribution1) + parseFloat(distribution2) + parseFloat(distribution3) +
+    parseFloat(distribution4) + parseFloat(distribution5) + parseFloat(distribution6);
+
+
+    function setLaunchData(e) {
+        e.preventDefault()
+        if(icon)
+        {
+            if(totalPercentage === 100)
+            {
+
+                newLaunch.current.name = name;
+                newLaunch.current.symbol = symbol;
+                newLaunch.current.icon = icon;
+                newLaunch.current.displayImg = displayImg;
+                newLaunch.current.total_supply = parseInt(totalSupply);
+                newLaunch.current.decimals = parseInt(decimal);
+                newLaunch.current.num_mints = parseInt(mints);
+                newLaunch.current.ticket_price = parseFloat(totalPrice);
+                newLaunch.current.minimum_liquidity = parseInt(liquidity);
+                newLaunch.current.distribution[0] = parseFloat(distribution1);
+                newLaunch.current.distribution[1] = parseFloat(distribution2);
+                newLaunch.current.distribution[2] = parseFloat(distribution3);
+                newLaunch.current.distribution[3] = parseFloat(distribution4);
+                newLaunch.current.distribution[4] = parseFloat(distribution5);
+                newLaunch.current.distribution[5] = parseFloat(distribution6);
+                setScreen(Screen.LAUNCH_DETAILS)
+            }
+            else{
+             alert("The percentages must add upto 100%")
+            }
+        }
+        else{
+            alert("Please select an icon image.")
+        }
+
+
+    }
+  
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
             <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
@@ -96,27 +131,22 @@ export function LaunchScreen({
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Token
                 </Text>
-                <div className={styles.launchBody}>
+                <form onSubmit={setLaunchData} className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
-                        {images.length > 0 ? (
-                            <>
-                                {images.map((image, index) => (
-                                    <div key={index} className="image-item">
-                                        <img src={image["data_url"]} alt="" className={styles.imgFrame} />
-                                        <div className="image-item__btn-wrapper"></div>
-                                    </div>
-                                ))}
-                            </>
-                        ) : (
+                       {
+                        displayImg ?
+                            <img src={displayImg} alt="" className={styles.imgFrame} />
+                         : (
                             <img className={styles.imgFrame} src="./images/Frame 49 (1).png" alt="" />
-                        )}
+                           )
+                       }
 
                         <div className={styles.launchBodyUpperFields}>
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input className={styles.inputBox} type="text" value={name} onChange={handleNameChange}/>
+                                    <input required className={styles.inputBox} type="text" value={name} onChange={handleNameChange}/>
                                 </div>
                             </div>
 
@@ -124,59 +154,25 @@ export function LaunchScreen({
                                 <div className={`${styles.textLabel} font-face-kg`}>Symbol:</div>
 
                                 <div style={{ width: "50%" }} className={styles.textLabelInput}>
-                                    <input className={styles.inputBox} type="text" value={symbol} onChange={handleSymbolChange} />
+                                    <input required className={styles.inputBox} type="text" value={symbol} onChange={handleSymbolChange} />
                                 </div>
                             </div>
 
                             <div className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`}>Image:</div>
+                                <div className={`${styles.textLabel} font-face-kg`}>ICON:</div>
 
                                 <div>
-                                    {/* <input
-                                style={{
-                                    backgroundColor:'transparent',
-                                    border:'none'
-                                }}
-                                className={styles.inputBox}
-                                value={name}
-                                id="file" type="file" onChange={handleFileChange}
-                                /> */}
-
-                                    <ImageUploading
-                                        multiple={false}
-                                        value={images}
-                                        onChange={onChange}
-                                        maxNumber={maxNumber}
-                                        dataURLKey="data_url"
-                                    >
-                                        {({
-                                            imageList,
-                                            onImageUpload,
-                                            onImageRemoveAll,
-                                            onImageUpdate,
-                                            onImageRemove,
-                                            isDragging,
-                                            dragProps,
-                                        }) => (
-                                            // write your building UI
-                                            <div className="upload__image-wrapper">
-                                                <button
-                                                    style={isDragging ? { color: "red" } : undefined}
-                                                    onClick={onImageUpload}
-                                                    {...dragProps}
-                                                    className={`${styles.browse} font-face-kg `}
-                                                >
-                                                    BROWSE
-                                                </button>
-                                            </div>
-                                        )}
-                                    </ImageUploading>
+                                <label  className={styles.label}>
+                                    <input  id="file" type="file" onChange={handleFileChange} />
+                                    <span className={styles.browse}>BROWSE</span>
+                                </label>
+                                
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <input
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={images.length > 0 ? "File Selected" : "No File Selected"}
+                                        value={icon ? "File Selected" : "No File Selected"}
                                         disabled
                                     />
                                 </div>
@@ -193,8 +189,9 @@ export function LaunchScreen({
 
                                 <div className={styles.textLabelInput}>
                                     <input
+                                     required 
                                         className={styles.inputBox}
-                                        type="text"
+                                        type="number"
                                         value={totalSupply}
                                         onChange={(e) => {
                                             setTotalSupply(e.target.value);
@@ -208,8 +205,9 @@ export function LaunchScreen({
 
                                 <div className={styles.textLabelInput}>
                                     <input
+                                     required 
                                         className={styles.inputBox}
-                                        type="text"
+                                        type="number"  min="1" max="9" 
                                         value={decimal}
                                         onChange={(e) => {
                                             setDecimal(e.target.value);
@@ -225,8 +223,9 @@ export function LaunchScreen({
 
                                 <div className={styles.textLabelInput}>
                                     <input
+                                     required 
                                         className={styles.inputBox}
-                                        type="text"
+                                        type="number"
                                         value={mints}
                                         onChange={(e) => {
                                             setMints(e.target.value);
@@ -240,8 +239,9 @@ export function LaunchScreen({
 
                                 <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <input
+                                     required 
                                         className={styles.inputBox}
-                                        type="text"
+                                        type="number"
                                         value={totalPrice}
                                         onChange={(e) => {
                                             setTotalPrice(e.target.value);
@@ -257,12 +257,14 @@ export function LaunchScreen({
 
                                 <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <input
+                                     required 
                                         className={styles.inputBox}
-                                        type="text"
-                                        value={liquidity}
-                                        onChange={(e) => {
-                                            setLiquidity(e.target.value);
-                                        }}
+                                        type="number"
+                                        value={parseFloat(mints) * parseFloat(totalPrice)}
+                                        disabled
+                                        // onChange={(e) => {
+                                        //     setLiquidity(e.target.value);
+                                        // }}
                                     />
                                     <img className={styles.sol} src="./images/sol.png" alt="" />
                                 </div>
@@ -273,18 +275,22 @@ export function LaunchScreen({
 
                     <div className={styles.distributionBox}>
                         <div className={styles.distributionBoxFields}>
-                            <div className={`${styles.textLabel} font-face-kg`}>Distribution </div>
+                            <div style={{color:'white'}} className={`${styles.textLabel} font-face-kg`}>Distribution </div>
 
                             <div className={styles.distributionBoxEachFields}>
                                 <div className={styles.colorBox1}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>LetsCookRaffle</div>
                                 <div className={styles.distributionField}>
                                     <input
+                                    required
                                         value={distribution1}
                                         onChange={(e) => {
                                             setDistribution1(e.target.value);
                                         }}
-                                        type="text"
+                                        type="number"
+                                        min='0'
+                                        max="100"
+                                        disabled={totalPercentage ===100 && parseFloat(distribution1)===0 ? true:false}
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -295,11 +301,16 @@ export function LaunchScreen({
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Pool</div>
                                 <div className={styles.distributionField}>
                                     <input
+                                    required
                                         value={distribution2}
                                         onChange={(e) => {
                                             setDistribution2(e.target.value);
                                         }}
-                                        type="text"
+                                        type="number"
+                                        min='0'
+                                        max="100"
+                                        disabled={totalPercentage ===100&& parseFloat(distribution2)===0 ? true:false}
+
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -314,7 +325,11 @@ export function LaunchScreen({
                                         onChange={(e) => {
                                             setDistribution3(e.target.value);
                                         }}
-                                        type="text"
+                                        type="number"
+                                        min='0'
+                                        max="100"
+                                        disabled={totalPercentage ===100 && parseFloat(distribution3)===0? true:false}
+
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -329,7 +344,11 @@ export function LaunchScreen({
                                         onChange={(e) => {
                                             setDistribution4(e.target.value);
                                         }}
-                                        type="text"
+                                        type="number"
+                                        min='0'
+                                        max="100"
+                                        disabled={totalPercentage ===100 && parseFloat(distribution4)===0 ? true:false}
+
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -344,7 +363,11 @@ export function LaunchScreen({
                                         onChange={(e) => {
                                             setDistribution5(e.target.value);
                                         }}
-                                        type="text"
+                                        type="number"
+                                        min='0'
+                                        max="100"
+                                        disabled={totalPercentage === 100 && parseFloat(distribution5) === 0 ?  true:false}
+
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -359,7 +382,11 @@ export function LaunchScreen({
                                         onChange={(e) => {
                                             setDistribution6(e.target.value);
                                         }}
-                                        type="text"
+                                        type="number"
+                                        min='0'
+                                        max="100"
+                                        disabled={totalPercentage ===100 && parseFloat(distribution6)===0 ? true:false}
+
                                     />
                                     <img className={styles.percentage} src="./images/perc.png" alt="" />
                                 </div>
@@ -367,25 +394,28 @@ export function LaunchScreen({
                         </div>
 
                         <div className={styles.piechart}>
-                            <PieChart
-                                data={[
-                                    { title: "LetsCookRaffle", value: parseInt(distribution1), color: "#FF5151" },
-                                    { title: "Liquidity Pool", value: parseInt(distribution2), color: "#489CFF" },
-                                    { title: "LP Rewards", value: parseInt(distribution3), color: "#74DD5A" },
-                                    { title: "Airdrops", value: parseInt(distribution4), color: "#FFEF5E" },
-                                    { title: "Team", value: parseInt(distribution5), color: "#B96CF6" },
-                                    { title: "Other", value: parseInt(distribution6), color: "#FF994E" },
-                                ]}
-                            />
+                        <PieChart
+      animate={true}
+      totalValue={100}
+      data={[
+        { title: "LetsCookRaffle", value: percentage1, color: "#FF5151" },
+        { title: "Liquidity Pool", value: percentage2, color: "#489CFF" },
+        { title: "LP Rewards", value: percentage3, color: "#74DD5A" },
+        { title: "Airdrops", value: percentage4, color: "#FFEF5E" },
+        { title: "Team", value: percentage5, color: "#B96CF6" },
+        { title: "Other", value: percentage6, color: "#FF994E" },
+        { title: "Blank", value: 100 - totalPercentage, color: "transparent" }
+      ]}
+    />
                         </div>
                     </div>
 
                     <div>
-                        <button onClick={setLaunchData} className={`${styles.nextBtn} font-face-kg `}>
+                        <button type="submit"  className={`${styles.nextBtn} font-face-kg `}>
                             NEXT
                         </button>
                     </div>
-                </div>
+                </form>
             </VStack>
         </Center>
     );
