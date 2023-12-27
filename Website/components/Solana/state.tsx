@@ -344,11 +344,8 @@ const enum LaunchInstruction {
     init = 0,
     create_game = 1,
     join_game = 2,
-    cancel_game = 3,
-    take_move = 4,
-    reveal_move = 5,
-    claim_reward = 6,
-    forfeit = 7,
+    claim_reward = 3,
+    init_market = 4
 }
 
 export interface LaunchDataUserInput {
@@ -670,7 +667,10 @@ class CreateLaunch_Instruction {
         readonly total_supply : bignum,
         readonly decimals : number,
         readonly launch_date: bignum,
-        readonly description: String
+        readonly description: String,
+        readonly distribution : number[],
+        readonly num_mints : number,
+        readonly ticket_price : bignum
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -683,9 +683,12 @@ class CreateLaunch_Instruction {
             ["decimals", u8],
             ["launch_date", u64],
             ["description", utf8String],
+            ["distribution", uniformFixedSizeArray(u8, 6)],
+            ["num_mints", u32],
+            ["ticket_price", u64],
 
         ],
-        (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.total_supply!, args.decimals!, args.launch_date!, args.description!),
+        (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.total_supply!, args.decimals!, args.launch_date!, args.description!, args.distribution!, args.num_mints!, args.ticket_price!),
         "CreateLaunch_Instruction",
     );
 }
@@ -700,9 +703,37 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.total_supply,
         new_launch_data.decimals,
         new_launch_data.launch_date,
-        new_launch_data.description
+        new_launch_data.description,
+        new_launch_data.distribution,
+        new_launch_data.num_mints,
+        new_launch_data.ticket_price
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+
+class InitMarket_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly vaultSignerNonce: bignum,
+
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<InitMarket_Instruction>(
+        [
+            ["instruction", u8],
+            ["vaultSignerNonce", u64],
+        ],
+        (args) => new InitMarket_Instruction(args.instruction, args.vaultSignerNonce!),
+        "InitMarket_Instruction",
+    );
+}
+
+export function serialise_InitMarket_Instruction(vaultSignerNonce : bignum): Buffer {
+    const data = new InitMarket_Instruction(LaunchInstruction.init_market, vaultSignerNonce);
+    const [buf] = InitMarket_Instruction.struct.serialize(data);
 
     return buf;
 }
@@ -716,6 +747,41 @@ export function bignum_to_num(bn: bignum): number {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////// Raydium Instructions and MetaData //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class RaydiumInitMarket_Instruction {
+    constructor(
+        readonly version: number,
+        readonly instruction: number,
+        readonly baseLotSize: bignum,
+        readonly quoteLotSize: bignum,
+        readonly feeRateBps: number,
+        readonly vaultSignerNonce: bignum,
+        readonly quoteDustThreshold: bignum,
+
+    ) {}
+
+    static readonly struct = new BeetStruct<RaydiumInitMarket_Instruction>(
+        [
+            ["version", u8],
+            ["instruction", u32],
+            ["baseLotSize", u64],
+            ["quoteLotSize", u64],
+            ["feeRateBps", u16],
+            ["vaultSignerNonce", u64],
+            ["quoteDustThreshold", u64],
+        ],
+        (args) => new RaydiumInitMarket_Instruction(args.version!, args.instruction!, args.baseLotSize!, args.quoteLotSize!, args.feeRateBps!, args.vaultSignerNonce!, args.quoteDustThreshold!),
+        "RaydiumInitMarket_Instruction",
+    );
+}
+
+export function serialise_RaydiumInitMarket_Instruction(version : number, instruction: number, baseLotSize : bignum, quoteLotSize : bignum, feeRateBps : number, vaultSignerNonce : bignum, quoteDustThreshold : bignum): Buffer {
+    const data = new RaydiumInitMarket_Instruction(version, instruction, baseLotSize, quoteLotSize, feeRateBps, vaultSignerNonce, quoteDustThreshold);
+    const [buf] = RaydiumInitMarket_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
 
 class RaydiumCreatePool_Instruction {
     constructor(
@@ -744,4 +810,85 @@ export function serialise_RaydiumCreatePool_Instruction(nonce: number, openTime:
     const [buf] = RaydiumCreatePool_Instruction.struct.serialize(data);
 
     return buf;
+}
+
+export class MarketStateLayoutV2 {
+    constructor(
+        readonly header: number[],
+        readonly accountFlags: bignum,
+        readonly ownAddress: PublicKey,
+        readonly vaultSignerNonce: bignum,
+        readonly baseMint : PublicKey,
+        readonly quoteMint : PublicKey,
+        readonly baseVault : PublicKey,
+        readonly baseDepositsTotal : bignum,
+        readonly baseFeesAccrued : bignum,
+        readonly quoteVault : PublicKey,
+        readonly quoteDepositsTotal: bignum,
+        readonly quoteFeesAccrued: bignum,
+        readonly quoteDustThreshold: bignum,
+        readonly requestQueue : PublicKey,
+        readonly eventQueue : PublicKey,
+        readonly bids : PublicKey,
+        readonly asks : PublicKey,
+        readonly baseLotSize: bignum,
+        readonly quoteLotSize: bignum,
+        readonly feeRateBps: bignum,
+        readonly referrerRebatesAccrued: bignum,
+        readonly footer : number[]
+    ) {}
+
+    static readonly struct = new BeetStruct<MarketStateLayoutV2>(
+        [
+            ["header", uniformFixedSizeArray(u8, 5)],
+            ["accountFlags", u64],
+            ["ownAddress", publicKey],
+            ["vaultSignerNonce", u64],
+            ["baseMint", publicKey],
+            ["quoteMint", publicKey],
+            ["baseVault", publicKey],
+            ["baseDepositsTotal", u64],
+            ["baseFeesAccrued", u64],
+            ["quoteVault", publicKey],
+            ["quoteDepositsTotal", u64],
+            ["quoteFeesAccrued", u64],
+            ["quoteDustThreshold", u64],
+            ["requestQueue", publicKey],
+            ["eventQueue", publicKey],
+            ["bids", publicKey],
+            ["asks", publicKey],
+            ["baseLotSize", u64],
+            ["quoteLotSize", u64],
+            ["feeRateBps", u64],
+            ["referrerRebatesAccrued", u64],
+            ["footer", uniformFixedSizeArray(u8, 7)],
+
+        ],
+        (args) =>
+            new MarketStateLayoutV2(
+                args.header!,
+                args.accountFlags!,
+                args.ownAddress!,
+                args.vaultSignerNonce!,
+                args.baseMint!,
+                args.quoteMint!,
+                args.baseVault!,
+                args.baseDepositsTotal!,
+                args.baseFeesAccrued!,
+                args.quoteVault!,
+                args.quoteDepositsTotal!,
+                args.quoteFeesAccrued!,
+                args.quoteDustThreshold!,
+                args.requestQueue!,
+                args.eventQueue!,
+                args.bids!,
+                args.asks!,
+                args.baseLotSize!,
+                args.quoteLotSize!,
+                args.feeRateBps!,
+                args.referrerRebatesAccrued!,
+                args.footer!,
+            ),
+        "MarketStateLayoutV2",
+    );
 }

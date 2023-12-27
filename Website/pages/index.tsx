@@ -220,7 +220,7 @@ function LetsCook() {
 
         let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
 
-        let game_data_account = PublicKey.findProgramAddressSync(
+        let launch_data_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), Buffer.from(newLaunchData.current.name), Buffer.from("Game")],
             PROGRAM,
         )[0];
@@ -230,7 +230,7 @@ function LetsCook() {
             PROGRAM,
         )[0];
 
-        let sol_data_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
+        let fees_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
 
         const token_mint_keypair = Keypair.generate();
         var token_mint_pubkey = token_mint_keypair.publicKey;
@@ -251,20 +251,29 @@ function LetsCook() {
             true, // allow owner off curve
         );
 
+        let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0,32)
+        let wrapped_sol_account =  await PublicKey.createWithSeed(arena_account, wrapped_sol_seed, TOKEN_PROGRAM_ID)
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
         if (DEBUG) {
             console.log("arena: ", arena_account.toString());
-            console.log("game_data_account: ", game_data_account.toString());
-            console.log("sol_data_account: ", sol_data_account.toString());
+            console.log("game_data_account: ", launch_data_account.toString());
+            console.log("sol_data_account: ", fees_account.toString());
+            console.log("wsol seed", wrapped_sol_seed)
         }
+
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: game_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
-            { pubkey: sol_data_account, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_account, isSigner: false, isWritable: true },
+
+            { pubkey: fees_account, isSigner: false, isWritable: true },
             { pubkey: arena_account, isSigner: false, isWritable: true },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
