@@ -7,6 +7,7 @@ import styles from "./header.module.css";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
+import MainButton from "./Buttons/mainButton";
 
 function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>> }) {
     const wallet = useWallet();
@@ -14,33 +15,17 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
 
-    const LaunchTokenButton = () => (
-        <Box
-            as="button"
-            onClick={() => {
-                setScreen(Screen.LAUNCH_SCREEN);
-            }}
-        >
-            <Text
-                m="auto 0"
-                align="center"
-                className={styles.launch}
-                style={{
-                    backgroundColor: "#683309",
-                    borderRadius: 20,
-                    padding: "5px 10px 2px 10px",
-                }}
-                color="white"
-            >
-                LAUNCH
-            </Text>
-        </Box>
-    );
-
     return (
         <>
             <div className={styles.headerImage}>
-                <HStack px={4} h="100%" w="100%" alignItems="center" justify="space-between">
+                <HStack
+                    boxShadow="0px 3px 13px 0px rgba(0, 0, 0, 0.75)"
+                    px={4}
+                    h="100%"
+                    w="100%"
+                    alignItems="center"
+                    justify="space-between"
+                >
                     <Text
                         fontSize={md ? "large" : "x-large"}
                         color={"#683309"}
@@ -96,7 +81,8 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                             <>
                                 {wallet.publicKey && <DisconnectWalletButton />}
                                 {wallet.publicKey === null && <ConnectWalletButton />}
-                                <LaunchTokenButton />
+
+                                <MainButton action={() => setScreen(Screen.LAUNCH_SCREEN)} label="LAUNCH" />
                             </>
                         )}
                     </HStack>

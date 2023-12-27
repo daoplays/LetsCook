@@ -6,6 +6,7 @@ import telegram from "../public/images/Telegram.png";
 
 import styles from "./header.module.css";
 import { TermsModal } from "./Solana/modals";
+import MainButton from "./Buttons/mainButton";
 
 function Footer() {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -13,18 +14,8 @@ function Footer() {
     return (
         <>
             <div className={styles.footerImage}>
-                <HStack py={2} px={4} justify="start" gap={3}>
-                    <Box
-                        as="button"
-                        onClick={onOpen}
-                        style={{ backgroundColor: "#683309", borderRadius: "20px", padding: "5px 10px", height: 30 }}
-                    >
-                        <div className="font-face-rk">
-                            <Text align="center" fontSize={14} color="white">
-                                TERMS
-                            </Text>
-                        </div>
-                    </Box>
+                <HStack boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.75)" py={2} px={4} justify="start" gap={3}>
+                    <MainButton action={onOpen} label="TERMS" />
                     <img
                         src={twitter.src}
                         width="auto"

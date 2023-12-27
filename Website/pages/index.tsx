@@ -1,4 +1,4 @@
-import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex } from "@chakra-ui/react";
+import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer } from "@chakra-ui/react";
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -62,34 +62,70 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
+    const { sm, md, lg } = useResponsive();
     let name = launch.name;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
     return (
         <tr
+            style={{
+                cursor: "pointer",
+                height: "60px",
+                transition: "background-color 0.3s",
+            }}
             onClick={() => {
                 setLaunchData(launch);
                 setScreen(Screen.TOKEN_SCREEN);
             }}
+            onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+            }}
+            onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+            }}
         >
-            <td>
+            <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
-                    <img src={logo.src} width="auto" alt={""} style={{ maxHeight: "30px", maxWidth: "30px" }} />
+                    <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}></Box>
                 </Center>
             </td>
-            <td>{name}</td>
-            <td>
-                <Center>
-                    <HStack>
-                        <FaTwitter />
-                        <FaTwitch />
-                    </HStack>
-                </Center>
+            <td style={{ minWidth: sm ? "150px" : "200px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {name}
+                </Text>
             </td>
-            <td>100%</td>
-            <td>100 SOL</td>
-            <td>{date}</td>
-            <td></td>
+            <td style={{ minWidth: "200px" }}>
+                <HStack justify="center" gap={3}>
+                    <Link href="#">
+                        <img src={twitter.src} width={md ? 30 : 40} />
+                    </Link>
+                    <Link href="#">
+                        <img src={telegram.src} width={md ? 30 : 40} />
+                    </Link>
+                    <Link href="#">
+                        <img src={discord.src} width={md ? 30 : 40} />
+                    </Link>
+                    <Link href="#">
+                        <img src={website.src} width={md ? 30 : 40} />
+                    </Link>
+                </HStack>
+            </td>
+            <td style={{ minWidth: sm ? "120px" : "150px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    100%
+                </Text>
+            </td>
+            <td style={{ minWidth: sm ? "170px" : "200px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    100 SOL
+                </Text>
+            </td>
+            <td style={{ minWidth: sm ? "150px" : "200px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {date}
+                </Text>
+            </td>
+            <td />
         </tr>
     );
 };
@@ -307,8 +343,8 @@ function LetsCook() {
         );
 
         return (
-            <Box h={md ? 300 : 320} bg="url(/images/Banner.png)" bgSize="cover" boxShadow="0px 3px 13px 0px rgba(0, 0, 0, 0.75) inset">
-                <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -50%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
+            <Box h={md ? 300 : 320} bg="url(/images/Banner.png)" bgSize="cover">
+                <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
                     <Flex
                         flexDirection={md ? "column" : "row"}
                         align="center"
@@ -358,7 +394,7 @@ function LetsCook() {
                             h={md ? 45 : 90}
                             w={md ? 150 : 280}
                             mt={4}
-                            bg="url(/images/wood-panel.png)"
+                            bg="url(/images/Wood\ Panel.png)"
                             backgroundSize="cover"
                             borderRadius={md ? 10 : 20}
                             px={5}
@@ -382,41 +418,41 @@ function LetsCook() {
     };
 
     const GameTable = () => {
+        const { sm } = useResponsive();
+        const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
+
         return (
-            <Box width="100%">
-                <div className="font-face-rk" style={{ color: "white", fontSize: 14 }}>
-                    <Table className="custom-centered-table">
-                        <thead>
-                            <tr>
-                                <th>LOGO</th>
-                                <th>TICKER</th>
-                                <th>SOCIALS</th>
-                                <th>HYPE</th>
-                                <th>MIN.LIQUIDITY</th>
-                                <th>LAUNCH</th>
-                                <th>
-                                    <Box
-                                        as="button"
-                                        onClick={() => {
-                                            check_launch_data.current = true;
-                                            CheckLaunchData();
-                                        }}
-                                    >
-                                        <TfiReload />
-                                    </Box>
+            <TableContainer>
+                <table width="100%" className="custom-centered-table font-face-rk">
+                    <thead>
+                        <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
+                            {tableHeaders.map((i) => (
+                                <th key={i}>
+                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
+                                        {i}
+                                    </Text>
                                 </th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            style={{
-                                backgroundColor: "black",
-                            }}
-                        >
-                            <Listings launch_list={launch_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
-                        </tbody>
-                    </Table>
-                </div>
-            </Box>
+                            ))}
+
+                            <th>
+                                <Box
+                                    mr={sm ? 4 : 8}
+                                    as="button"
+                                    onClick={() => {
+                                        check_launch_data.current = true;
+                                        CheckLaunchData();
+                                    }}
+                                >
+                                    <TfiReload size={20} />
+                                </Box>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <Listings launch_list={launch_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
+                    </tbody>
+                </table>
+            </TableContainer>
         );
     };
 
@@ -424,16 +460,16 @@ function LetsCook() {
         return (
             <>
                 <Featured />
-                {/* <GameTable /> */}
+                <GameTable />
             </>
         );
     };
 
     return (
-        <>
+        <main style={{ padding: "50px 0" }}>
             <Navigation setScreen={setScreen} />
             {screen === Screen.HOME_SCREEN && <HomeScreen />}
-            {/* 
+
             {screen === Screen.FAQ_SCREEN && <FAQScreen />}
             {screen === Screen.LAUNCH_BOOK && (
                 <LaunchBook setScreen={setScreen} newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena} />
@@ -441,9 +477,9 @@ function LetsCook() {
             {screen === Screen.LAUNCH_DETAILS && <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.LAUNCH_SCREEN && <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
-            {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data} />} */}
+            {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data} />}
             <Footer />
-        </>
+        </main>
     );
 }
 

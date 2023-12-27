@@ -2,9 +2,13 @@
 
 .headerImage {
     background-image: url("/images/header_fill.jpeg");
+    background-size: cover;
     width: 100vw;
     height: 50px;
+    position: fixed;
+    top: 0;
     font-family: "Kufam", sans-serif;
+    z-index: 999;
 }
 
 .sauce {
