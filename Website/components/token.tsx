@@ -3,7 +3,7 @@ import { Center, VStack, Text, Box, HStack } from "@chakra-ui/react";
 import { FaTwitter, FaTwitch } from "react-icons/fa";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "./Solana/constants";
-import { LaunchData } from "./Solana/state";
+import { LaunchData, bignum_to_num } from "./Solana/state";
 import {Raydium} from "./Solana/raydium"
 
 import logo from "../public/images/sauce.png";
@@ -35,7 +35,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                             <Text m="0" color="white" className="font-face-rk" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
                                 24 Jan 2024
                             </Text>
-                            <Raydium />
+                            <Raydium launch_data={launch_data}/>
                         </HStack>
                     </VStack>
                 </HStack>
