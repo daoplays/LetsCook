@@ -1,24 +1,18 @@
 import { useCallback } from "react";
-
 import { Text, Box } from "@chakra-ui/react";
-import styles from "../header.module.css";
-
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
+import styles from "../header.module.css";
+import UseWalletConnection from "../../hooks/useWallet";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 export function DisconnectWalletButton() {
-    const wallet = useWallet();
-
-    const DisconnectWallet = useCallback(async () => {
-        console.log("call wallet disconnect");
-        await wallet.disconnect();
-    }, [wallet]);
+    const { handleDisconnectWallet } = UseWalletConnection();
 
     return (
         <>
-            <Box as="button" onClick={() => DisconnectWallet()}>
+            <Box as="button" onClick={() => handleDisconnectWallet()}>
                 <div className="font-face-rk">
                     <Text
                         className={styles.connect}
@@ -41,11 +35,7 @@ export function DisconnectWalletButton() {
 }
 
 export function ConnectWalletButton() {
-    const { setVisible } = useWalletModal();
-
-    const handleConnectWallet = useCallback(async () => {
-        setVisible(true);
-    }, [setVisible]);
+    const { handleConnectWallet } = UseWalletConnection();
 
     return (
         <>

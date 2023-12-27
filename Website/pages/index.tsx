@@ -1,4 +1,4 @@
-import { Center, VStack, Text, Box, HStack } from "@chakra-ui/react";
+import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex } from "@chakra-ui/react";
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -12,6 +12,11 @@ import { useWallet } from "@solana/wallet-adapter-react";
 
 import { FaTwitter, FaTwitch } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
+
+import twitter from "../public/socialIcons/twitter.svg";
+import telegram from "../public/socialIcons/telegram.svg";
+import discord from "../public/socialIcons/discord.svg";
+import website from "../public/socialIcons/website.svg";
 
 import bs58 from "bs58";
 
@@ -27,7 +32,7 @@ import {
     serialise_CreateLaunch_instruction,
     bignum_to_num,
     UserData,
-    run_user_data_GPA
+    run_user_data_GPA,
 } from "../components/Solana/state";
 import Navigation from "../components/Navigation";
 import { FAQScreen } from "../components/faq";
@@ -43,6 +48,8 @@ import styles from "../components/css/featured.module.css";
 import { LaunchDetails } from "../components/launch_details";
 import { LaunchBook } from "../components/launch_book";
 import { Leaderboard } from "../components/leaderboard";
+import Link from "next/link";
+import useResponsive from "../hooks/useResponsive";
 
 const ArenaGameCard = ({
     launch,
@@ -111,6 +118,7 @@ const Listings = ({
 
 function LetsCook() {
     const wallet = useWallet();
+    const { sm, md, lg } = useResponsive();
 
     // refs for checking signatures
     const signature_interval = useRef<number | null>(null);
@@ -120,7 +128,6 @@ function LetsCook() {
 
     const [processing_transaction, setProcessingTransaction] = useState<boolean>(false);
     const [show_new_game, setShowNewGame] = useState<boolean>(false);
-    const [show_terms, setShowTerms] = useState<boolean>(false);
 
     const game_interval = useRef<number | null>(null);
     const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
@@ -147,62 +154,6 @@ function LetsCook() {
         check_launch_data.current = false;
     }, []);
 
-    // interval for checking state
-    useEffect(() => {
-        if (game_interval.current === null) {
-            game_interval.current = window.setInterval(CheckLaunchData, 5000);
-        } else {
-            window.clearInterval(game_interval.current);
-            game_interval.current = null;
-        }
-        // here's the cleanup function
-        return () => {
-            if (game_interval.current !== null) {
-                window.clearInterval(game_interval.current);
-                game_interval.current = null;
-            }
-        };
-    }, [CheckLaunchData]);
-
-    const GameTable = () => {
-        return (
-            <Box width="100%">
-                <div className="font-face-rk" style={{ color: "white", fontSize: 14 }}>
-                    <Table className="custom-centered-table">
-                        <thead>
-                            <tr>
-                                <th>LOGO</th>
-                                <th>TICKER</th>
-                                <th>SOCIALS</th>
-                                <th>HYPE</th>
-                                <th>MIN.LIQUIDITY</th>
-                                <th>LAUNCH</th>
-                                <th>
-                                    <Box
-                                        as="button"
-                                        onClick={() => {
-                                            check_launch_data.current = true;
-                                            CheckLaunchData();
-                                        }}
-                                    >
-                                        <TfiReload />
-                                    </Box>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody
-                            style={{
-                                backgroundColor: "black",
-                            }}
-                        >
-                            <Listings launch_list={launch_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
-                        </tbody>
-                    </Table>
-                </div>
-            </Box>
-        );
-    };
-
     const ListGameOnArena = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -225,10 +176,7 @@ function LetsCook() {
             PROGRAM,
         )[0];
 
-        let user_data_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(),Buffer.from("User")],
-            PROGRAM,
-        )[0];
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let sol_data_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
 
@@ -323,46 +271,160 @@ function LetsCook() {
         setShowNewGame(false);
     }, [wallet]);
 
+    // interval for checking state
+    useEffect(() => {
+        if (game_interval.current === null) {
+            game_interval.current = window.setInterval(CheckLaunchData, 5000);
+        } else {
+            window.clearInterval(game_interval.current);
+            game_interval.current = null;
+        }
+        // here's the cleanup function
+        return () => {
+            if (game_interval.current !== null) {
+                window.clearInterval(game_interval.current);
+                game_interval.current = null;
+            }
+        };
+    }, [CheckLaunchData]);
+
+    const Featured = () => {
+        const Links = () => (
+            <HStack gap={3}>
+                <Link href="#">
+                    <img src={twitter.src} width={md ? 30 : 40} />
+                </Link>
+                <Link href="#">
+                    <img src={telegram.src} width={md ? 30 : 40} />
+                </Link>
+                <Link href="#">
+                    <img src={discord.src} width={md ? 30 : 40} />
+                </Link>
+                <Link href="#">
+                    <img src={website.src} width={md ? 30 : 40} />
+                </Link>
+            </HStack>
+        );
+
+        return (
+            <Box h={md ? 300 : 320} bg="url(/images/Banner.png)" bgSize="cover" boxShadow="0px 3px 13px 0px rgba(0, 0, 0, 0.75) inset">
+                <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -50%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
+                    <Flex
+                        flexDirection={md ? "column" : "row"}
+                        align="center"
+                        justify={md ? "center" : "space-between"}
+                        px={sm ? 3 : 12}
+                        pb={5}
+                        h="100%"
+                    >
+                        <HStack w="fit-content" gap={md ? 5 : 8}>
+                            <img
+                                src={logo.src}
+                                width="auto"
+                                alt="$SAUCE LOGO"
+                                style={{ maxHeight: md ? 130 : 200, maxWidth: md ? 130 : 200 }}
+                                hidden={md}
+                            />
+                            <VStack gap={md ? 1 : 3} alignItems={md ? "center" : "left"}>
+                                <Flex ml={-5} gap={md ? 2 : 6}>
+                                    <img
+                                        src={logo.src}
+                                        width="auto"
+                                        alt="$SAUCE LOGO"
+                                        style={{ maxHeight: 50, maxWidth: 50 }}
+                                        hidden={!md}
+                                    />
+                                    <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
+                                        $Sauce
+                                    </Text>
+                                    {!md && <Links />}
+                                </Flex>
+                                <Text
+                                    fontFamily="ReemKufiRegular"
+                                    fontSize={md ? "large" : "x-large"}
+                                    color="white"
+                                    maxW={sm ? "100%" : md ? "600px" : "850px"}
+                                    mr={md ? 0 : 25}
+                                    lineHeight={1.15}
+                                    align={md ? "center" : "start"}
+                                >
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus dapibus massa vitae magna elementum,
+                                    sit amet sagittis urna imperdiet.
+                                </Text>
+                            </VStack>
+                        </HStack>
+                        {md && <Links />}
+                        <Box
+                            h={md ? 45 : 90}
+                            w={md ? 150 : 280}
+                            mt={4}
+                            bg="url(/images/wood-panel.png)"
+                            backgroundSize="cover"
+                            borderRadius={md ? 10 : 20}
+                            px={5}
+                        >
+                            <VStack h="100%" align="center" justify="center">
+                                <Text
+                                    m={0}
+                                    w={md ? "fit-content" : 240}
+                                    fontSize={md ? "medium" : 35}
+                                    color="#683309"
+                                    className="font-face-kg"
+                                >
+                                    Mint Live
+                                </Text>
+                            </VStack>
+                        </Box>
+                    </Flex>
+                </Box>
+            </Box>
+        );
+    };
+
+    const GameTable = () => {
+        return (
+            <Box width="100%">
+                <div className="font-face-rk" style={{ color: "white", fontSize: 14 }}>
+                    <Table className="custom-centered-table">
+                        <thead>
+                            <tr>
+                                <th>LOGO</th>
+                                <th>TICKER</th>
+                                <th>SOCIALS</th>
+                                <th>HYPE</th>
+                                <th>MIN.LIQUIDITY</th>
+                                <th>LAUNCH</th>
+                                <th>
+                                    <Box
+                                        as="button"
+                                        onClick={() => {
+                                            check_launch_data.current = true;
+                                            CheckLaunchData();
+                                        }}
+                                    >
+                                        <TfiReload />
+                                    </Box>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody
+                            style={{
+                                backgroundColor: "black",
+                            }}
+                        >
+                            <Listings launch_list={launch_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
+                        </tbody>
+                    </Table>
+                </div>
+            </Box>
+        );
+    };
+
     const HomeScreen = () => {
         return (
             <>
-                <div className={styles.featuredImage}>
-                    <Center className={styles.featuredBox}>
-                        <HStack marginLeft={"50px"}>
-                            <img src={logo.src} width="auto" alt={""} style={{ maxHeight: "200px", maxWidth: "200px" }} />
-                            <VStack alignItems="left">
-                                <HStack>
-                                    <Text className={styles.featuredTitle}>$SAUCE</Text>
-                                    <FaTwitter size="50" />
-                                    <FaTwitch size="50" />
-                                </HStack>
-                                <Text className={styles.featuredText}>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet semper purus. Proin lorem sapien,
-                                    placerat vel urna quis, blandit pulvinar purus. Vestibulum lobortis risus ut egestas placerat. Donec
-                                    lorem quam, tristique at nibh quis, facilisis rhoncus magna. Nam fermentum sodales lectus sit amet
-                                    vehicula.
-                                </Text>
-                            </VStack>
-                            <Box
-                                borderColor="brown"
-                                borderWidth="5px"
-                                borderRadius="1px"
-                                backgroundColor={"white"}
-                                aspectRatio={1}
-                                height="100px"
-                                style={{ maxHeight: "200px", maxWidth: "200px" }}
-                            >
-                                <Text mt="5px" textAlign="center" className={styles.featuredDate}>
-                                    20 Jan <br />
-                                    2024
-                                </Text>
-                            </Box>
-                        </HStack>
-                    </Center>
-                </div>
-                <Center width="100%" marginBottom="5rem">
-                    <GameTable />
-                </Center>
+                <Featured />
+                {/* <GameTable /> */}
             </>
         );
     };
@@ -370,8 +432,8 @@ function LetsCook() {
     return (
         <>
             <Navigation setScreen={setScreen} />
-            <TermsModal show_value={show_terms} showFunction={setShowTerms} />
             {screen === Screen.HOME_SCREEN && <HomeScreen />}
+            {/* 
             {screen === Screen.FAQ_SCREEN && <FAQScreen />}
             {screen === Screen.LAUNCH_BOOK && (
                 <LaunchBook setScreen={setScreen} newLaunch={newLaunchData} ListGameOnArena={ListGameOnArena} />
@@ -379,8 +441,8 @@ function LetsCook() {
             {screen === Screen.LAUNCH_DETAILS && <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.LAUNCH_SCREEN && <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
-            {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data}/>}
-            <Footer showTerms={setShowTerms} />
+            {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data} />} */}
+            <Footer />
         </>
     );
 }
