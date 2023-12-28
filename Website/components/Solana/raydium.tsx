@@ -524,8 +524,28 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
 
 
         //console.log(poolInfo);
+        let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
+        let sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
 
         let createPool_data = serialise_RaydiumCreatePool_Instruction(poolInfo.nonce, startTime, addBaseAmount, addQuoteAmount);
+
+        let program_base_account = await getAssociatedTokenAddress(
+          launch_data.mint_address, // mint
+          sol_account, // owner
+          true, // allow owner off curve
+      );
+
+      let program_quote_account = await getAssociatedTokenAddress(
+        quoteToken.mint, // mint
+        sol_account, // owner
+        true, // allow owner off curve
+    );
+
+      let program_lp_account = await getAssociatedTokenAddress(
+        poolInfo.lpMint, // mint
+        sol_account, // owner
+        true, // allow owner off curve
+    );
 
         let user_base_account = await getAssociatedTokenAddress(
             launch_data.mint_address, // mint
@@ -544,14 +564,20 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
+
+        console.log(user_base_account.toString())
+        console.log(user_quote_account.toString())
+        console.log(user_lp_account.toString())
+        console.log(program_quote_account.toString())
+        console.log(program_base_account.toString())
+
         //https://github.com/raydium-io/raydium-amm
         let feeAccount = new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR");
-        let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
 
         const keys = [
           { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
           { pubkey: poolInfo.id, isSigner: false, isWritable: true },
-          { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
+          { pubkey: poolInfo.authority, isSigner: false, isWritable: true },
           { pubkey: poolInfo.openOrders, isSigner: false, isWritable: true },
           { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
           { pubkey: poolInfo.baseMint, isSigner: false, isWritable: false },
@@ -564,15 +590,17 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
           { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
           { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
          
-          { pubkey: user_base_account, isSigner: false, isWritable: true },
-          { pubkey: user_quote_account, isSigner: false, isWritable: true },
-          { pubkey: user_lp_account, isSigner: false, isWritable: true },
+          { pubkey: program_base_account, isSigner: false, isWritable: true },
+          { pubkey: launch_data.sol_address, isSigner: false, isWritable: true },
+          { pubkey: program_lp_account, isSigner: false, isWritable: true },
+
           { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
           { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
           { pubkey: RENT_PROGRAM_ID, isSigner: false, isWritable: false },
 
-          { pubkey: arena_account, isSigner: false, isWritable: false },
+          { pubkey: arena_account, isSigner: false, isWritable: true },
+          { pubkey: sol_account, isSigner: false, isWritable: true },
           { pubkey: PROGRAMIDS.AmmV4, isSigner: false, isWritable: false },
       ];
 
@@ -647,7 +675,7 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
       <Box
             as="button"
             onClick={() => {
-                createMarket();
+              createPool();
             }}
         >
             <Text m="0" color={"white"}>Launch LP</Text>

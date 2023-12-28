@@ -38,6 +38,9 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
         const game_id = new myU64(launch_data.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
         console.log("game id " , launch_data.game_id,game_id_buf);
+        console.log("Mint", launch_data.mint_address.toString());
+        console.log("sol", launch_data.sol_address.toString());
+
         let user_join_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")], PROGRAM)[0];
 
         
@@ -50,11 +53,13 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data.sol_address, isSigner: false, isWritable: true },
 
         
         ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

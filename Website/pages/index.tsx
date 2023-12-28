@@ -93,7 +93,7 @@ const ArenaGameCard = ({
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
                     <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
-                    <img src={launch.icon} width={md ? 30 : 40} />
+                    <img src={launch.icon} width={md ? 45 : 75} height={md ? 45 : 75} />
                     </Box>
                 </Center>
             </td>
@@ -214,7 +214,8 @@ function LetsCook() {
         newLaunchData.current.uri = meta_data_url;
         newLaunchData.current.icon = image_url;
 
-        let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
+        let program_data_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
+        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), Buffer.from(newLaunchData.current.name), Buffer.from("Game")],
@@ -234,7 +235,7 @@ function LetsCook() {
 
         let token_raffle_account_key = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
-            arena_account, // owner
+            program_sol_account, // owner
             true, // allow owner off curve
         );
 
@@ -245,11 +246,11 @@ function LetsCook() {
         );
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0,32)
-        let wrapped_sol_account =  await PublicKey.createWithSeed(arena_account, wrapped_sol_seed, TOKEN_PROGRAM_ID)
+        let wrapped_sol_account =  await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID)
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         if (DEBUG) {
-            console.log("arena: ", arena_account.toString());
+            console.log("arena: ", program_data_account.toString());
             console.log("game_data_account: ", launch_data_account.toString());
             console.log("sol_data_account: ", fees_account.toString());
             console.log("wsol seed", wrapped_sol_seed)
@@ -268,7 +269,8 @@ function LetsCook() {
             { pubkey: wrapped_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: fees_account, isSigner: false, isWritable: true },
-            { pubkey: arena_account, isSigner: false, isWritable: true },
+            { pubkey: program_data_account, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
