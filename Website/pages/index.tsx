@@ -62,6 +62,7 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
+    console.log(launch.icon)
     const { sm, md, lg } = useResponsive();
     let name = launch.name;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
@@ -86,7 +87,9 @@ const ArenaGameCard = ({
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
-                    <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}></Box>
+                    <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                    <img src={launch.icon} width={md ? 30 : 40} />
+                    </Box>
                 </Center>
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
