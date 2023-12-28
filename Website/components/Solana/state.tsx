@@ -81,6 +81,7 @@ export function uInt32ToLEBytes(num: number): Buffer {
     return bytes;
 }
 
+
 interface BasicReply {
     id: number;
     jsonrpc: string;
@@ -340,12 +341,13 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const enum LaunchInstruction {
+export const enum LaunchInstruction {
     init = 0,
     create_game = 1,
-    join_game = 2,
+    buy_tickets = 2,
     claim_reward = 3,
-    init_market = 4
+    init_market = 4,
+    init_amm = 5
 }
 
 export interface LaunchDataUserInput {
@@ -405,6 +407,26 @@ export const defaultUserInput: LaunchDataUserInput = {
     opentimeLP: "",
     team_wallet: "",
 };
+
+
+
+export class myU64 {
+    constructor(
+        readonly value: bignum,
+    ) {}
+
+    static readonly struct = new BeetStruct<myU64>(
+        [
+            ["value", u64],
+        ],
+        (args) =>
+            new myU64(
+                args.value!,
+            ),
+        "myU64",
+    );
+}
+
 
 export class LaunchData {
     constructor(
@@ -709,6 +731,33 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.ticket_price
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+class BuyTickets_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly num_tickets: number,
+    ) {}
+
+    static readonly struct = new BeetStruct<BuyTickets_Instruction>(
+        [
+            ["instruction", u8],
+            ["num_tickets", u16],
+        ],
+        (args) => new BuyTickets_Instruction(args.instruction!, args.num_tickets!),
+        "BuyTickets_Instruction",
+    );
+}
+
+export function serialise_BuyTickets_instruction(num_tickets: number): Buffer {
+
+    const data = new BuyTickets_Instruction(
+        LaunchInstruction.buy_tickets,
+        num_tickets
+    );
+    const [buf] = BuyTickets_Instruction.struct.serialize(data);
 
     return buf;
 }

@@ -28,7 +28,7 @@ import { getAssociatedTokenAddress, AccountLayout, getAssociatedTokenAddressSync
 
 import bs58 from "bs58";
 
-import { send_transaction, get_current_blockhash, serialise_RaydiumCreatePool_Instruction, serialise_basic_instruction, serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num, serialise_InitMarket_Instruction, LaunchData } from "./state";
+import { send_transaction, get_current_blockhash, serialise_RaydiumCreatePool_Instruction, serialise_basic_instruction, serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num, serialise_InitMarket_Instruction, LaunchData, LaunchInstruction } from "./state";
 import {RPC_NODE, PROGRAM} from "./constants";
 
 const PROGRAMIDS = DEVNET_PROGRAM_ID;
@@ -259,7 +259,7 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
         const baseVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed : seed_base+"6", programId: TOKEN_PROGRAM_ID })
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed : seed_base+"7", programId: TOKEN_PROGRAM_ID })
 
-        
+        console.log("mint", launch_data.mint_address.toString())
         console.log("market", market.publicKey.toString())
 
 
@@ -326,6 +326,7 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
         const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
         var transaction_response = await send_transaction("", encoded_transaction);
+        console.log("init market accounts")
         console.log(transaction_response)
 
     
@@ -545,7 +546,37 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
         );
         //https://github.com/raydium-io/raydium-amm
         let feeAccount = new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR");
-        
+        let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
+
+        const keys = [
+          { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+          { pubkey: poolInfo.id, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
+          { pubkey: poolInfo.openOrders, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.baseMint, isSigner: false, isWritable: false },
+          { pubkey: poolInfo.quoteMint, isSigner: false, isWritable: false },
+          { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.configId, isSigner: false, isWritable: false },
+          { pubkey: feeAccount, isSigner: false, isWritable: true },
+          { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
+          { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
+         
+          { pubkey: user_base_account, isSigner: false, isWritable: true },
+          { pubkey: user_quote_account, isSigner: false, isWritable: true },
+          { pubkey: user_lp_account, isSigner: false, isWritable: true },
+          { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
+          { pubkey: RENT_PROGRAM_ID, isSigner: false, isWritable: false },
+
+          { pubkey: arena_account, isSigner: false, isWritable: false },
+          { pubkey: PROGRAMIDS.AmmV4, isSigner: false, isWritable: false },
+      ];
+
+        /*
         const keys = [
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -569,19 +600,27 @@ export function Raydium({launch_data} : {launch_data : LaunchData}) {
             { pubkey: user_quote_account, isSigner: false, isWritable: true },
             { pubkey: user_lp_account, isSigner: false, isWritable: true },
         ];
-
+*/
         console.log("id", poolInfo.id.toString())
         console.log("authority", poolInfo.authority.toString())
         console.log("openOrders", poolInfo.openOrders.toString())
         console.log("withdrawQueue", poolInfo.withdrawQueue.toString())
         console.log("targetOrders", poolInfo.targetOrders.toString())
 
+        let create_amm_data = serialise_basic_instruction(LaunchInstruction.init_amm)
+        
+        const list_instruction = new TransactionInstruction({
+          keys: keys,
+          programId: PROGRAM,
+          data: create_amm_data,
+      });
+        /*
         const list_instruction = new TransactionInstruction({
             keys: keys,
             programId: PROGRAMIDS.AmmV4,
             data: createPool_data,
         });
-
+*/
         console.log(list_instruction)
 
         let txArgs = await get_current_blockhash("");

@@ -62,7 +62,12 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
-    console.log(launch.icon)
+    console.log(launch)
+    console.log(launch.seller.toString());
+    console.log(launch.sol_address.toString());
+    console.log(launch.team_wallet.toString());
+    console.log(launch.mint_address.toString());
+
     const { sm, md, lg } = useResponsive();
     let name = launch.name;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
@@ -203,10 +208,11 @@ function LetsCook() {
 
         // first upload the png file to arweave and get the url
         let image_url = await arweave_upload(newLaunchData.current.icon);
-        let meta_data_url = await arweave_json_upload(newLaunchData.current.name, "LC", newLaunchData.current.icon);
+        let meta_data_url = await arweave_json_upload(newLaunchData.current.name, "LC", image_url);
         console.log("list game with url", image_url, meta_data_url);
 
         newLaunchData.current.uri = meta_data_url;
+        newLaunchData.current.icon = image_url;
 
         let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
 
@@ -247,6 +253,7 @@ function LetsCook() {
             console.log("game_data_account: ", launch_data_account.toString());
             console.log("sol_data_account: ", fees_account.toString());
             console.log("wsol seed", wrapped_sol_seed)
+            console.log("mint", token_mint_pubkey.toString());
         }
 
 
