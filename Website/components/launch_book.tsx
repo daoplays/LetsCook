@@ -21,11 +21,11 @@ export function LaunchBook({
     ListGameOnArena: MouseEventHandler<HTMLParagraphElement>;
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) {
-    const [openDate, setOpenDate] = useState<string>(newLaunch.current.opendate);
+    const [openDate, setOpenDate] = useState<Date>(newLaunch.current.opendate);
     const [openTime, setOpenTime] = useState<string>(newLaunch.current.opentime);
-    const [closeDate, setcloseDate] = useState<string>(newLaunch.current.closedate);
+    const [closeDate, setcloseDate] = useState<Date>(newLaunch.current.closedate);
     const [closeTime, setcloseTime] = useState<string>(newLaunch.current.closetime);
-    const [openDateLP, setOpenDateLP] = useState<string>(newLaunch.current.opendateLP);
+    const [openDateLP, setOpenDateLP] = useState<Date>(newLaunch.current.opendateLP);
     const [openTimeLP, setOpenTimeLP] = useState<string>(newLaunch.current.opentimeLP);
     const [wallet, setWallet] = useState<string>(newLaunch.current.team_wallet);
 
@@ -33,6 +33,7 @@ export function LaunchBook({
         query: "(max-width: 1000px)",
     });
     function setLaunchData(e) {
+        console.log("openDate, openTime", openTime, openDate)
         newLaunch.current.opentime = openTime;
         newLaunch.current.opendate = openDate;
         newLaunch.current.closetime = closeTime;
@@ -67,15 +68,12 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        {/* <input
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={mints}
-                                            onChange={(e) => {
-                                                setMints(e.target.value);
-                                            }}
-                                        /> */}
-                                        <DatePicker selected={openDate} onChange={(date) => setOpenDate(date)} />
+                                        <DatePicker 
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        timeIntervals={15}
+                                        selected={openDate} 
+                                        onChange={(date) => setOpenDate(date)} />
                                     </div>
                                 </div>
 
@@ -83,14 +81,6 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN TIME:</div>
 
                                     <div className={`${styles.textLabelInputTime} font-face-kg`}>
-                                        {/* <input
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={totalPrice}
-                                            onChange={(e) => {
-                                                setTotalPrice(e.target.value);
-                                            }}
-                                        /> */}
                                         <TimePicker format="h:m a" disableClock={true} onChange={setOpenTime} value={openTime} />
                                     </div>
                                 </div>
@@ -101,15 +91,12 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>CLOSE DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        {/* <input
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={mints}
-                                            onChange={(e) => {
-                                                setMints(e.target.value);
-                                            }}
-                                        /> */}
-                                        <DatePicker selected={closeDate} onChange={(date) => setcloseDate(date)} />
+                                        <DatePicker 
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        timeIntervals={15}
+                                        selected={closeDate} 
+                                        onChange={(date) => setcloseDate(date)} />
                                     </div>
                                 </div>
 
@@ -117,14 +104,6 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>CLOSE TIME:</div>
 
                                     <div className={`${styles.textLabelInputTime} font-face-kg`}>
-                                        {/* <input
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={totalPrice}
-                                            onChange={(e) => {
-                                                setTotalPrice(e.target.value);
-                                            }}
-                                        /> */}
                                         <TimePicker format="h:m a" disableClock={true} onChange={setcloseTime} value={closeTime} />
                                     </div>
                                 </div>
@@ -136,15 +115,12 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        {/* <input
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={mints}
-                                            onChange={(e) => {
-                                                setMints(e.target.value);
-                                            }}
-                                        /> */}
-                                        <DatePicker selected={openDateLP} onChange={(date) => setOpenDateLP(date)} />
+                                        <DatePicker 
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        timeIntervals={15}
+                                        selected={openDateLP} 
+                                        onChange={(date) => setOpenDateLP(date)} />
                                     </div>
                                 </div>
 
@@ -152,14 +128,6 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN TIME:</div>
 
                                     <div className={`${styles.textLabelInputTime} font-face-kg`}>
-                                        {/* <input
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={totalPrice}
-                                            onChange={(e) => {
-                                                setTotalPrice(e.target.value);
-                                            }}
-                                        /> */}
                                         <TimePicker format="h:m a" disableClock={true} onChange={setOpenTimeLP} value={openTimeLP} />
                                     </div>
                                 </div>
