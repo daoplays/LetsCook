@@ -148,7 +148,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                            <img className={styles.mediaLogo} src="./images/web.png" alt="" />
+                                <img className={styles.mediaLogo} src="./images/web.png" alt="" />
                                 <div className={styles.textLabelInput}>
                                     <input
                                         placeholder="URL"

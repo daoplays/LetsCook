@@ -33,10 +33,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(launch_data.page_name), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch_data.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

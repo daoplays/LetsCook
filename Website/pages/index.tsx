@@ -62,7 +62,7 @@ const ArenaGameCard = ({
     index,
 }: {
     launch: LaunchData;
-    user_data : UserData | null;
+    user_data: UserData | null;
     setLaunchData: Dispatch<SetStateAction<LaunchData>>;
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
@@ -165,7 +165,14 @@ const Listings = ({
     return (
         <>
             {launch_list.map((item: LaunchData, index) => (
-                <ArenaGameCard key={index} launch={item} user_data={user_data} setLaunchData={setLaunchData} setScreen={setScreen} index={index} />
+                <ArenaGameCard
+                    key={index}
+                    launch={item}
+                    user_data={user_data}
+                    setLaunchData={setLaunchData}
+                    setScreen={setScreen}
+                    index={index}
+                />
             ))}
         </>
     );
@@ -209,8 +216,8 @@ function LetsCook() {
 
         if (wallet.publicKey !== null) {
             for (let i = 0; i < user_list.length; i++) {
-                if (user_list[i].user_key.toString() == (wallet.publicKey.toString())) {
-                    console.log("have current user", user_list[i])
+                if (user_list[i].user_key.toString() == wallet.publicKey.toString()) {
+                    console.log("have current user", user_list[i]);
                     setCurrentUserData(user_list[i]);
                     break;
                 }
@@ -348,8 +355,6 @@ function LetsCook() {
         setShowNewGame(false);
     }, [wallet]);
 
-    
-
     // interval for checking state
     useEffect(() => {
         if (game_interval.current === null) {
@@ -369,7 +374,7 @@ function LetsCook() {
 
     useEffect(() => {
         check_launch_data.current = true;
-    },[wallet]);
+    }, [wallet]);
 
     const Featured = () => {
         const Links = () => (
@@ -484,7 +489,12 @@ function LetsCook() {
                         </tr>
                     </thead>
                     <tbody>
-                        <Listings launch_list={launch_data} user_data={current_user_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
+                        <Listings
+                            launch_list={launch_data}
+                            user_data={current_user_data}
+                            setLaunchData={setCurrentLaunchData}
+                            setScreen={setScreen}
+                        />
                     </tbody>
                 </table>
             </TableContainer>

@@ -5,13 +5,21 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { Center, VStack, Text, Box, HStack, Tooltip } from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
-import { LaunchData, bignum_to_num, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, myU64, UserData } from "./Solana/state";
+import {
+    LaunchData,
+    bignum_to_num,
+    get_current_blockhash,
+    send_transaction,
+    serialise_HypeVote_instruction,
+    myU64,
+    UserData,
+} from "./Solana/state";
 import { Raydium } from "./Solana/raydium";
 import bs58 from "bs58";
 import BN from "bn.js";
 import Image from "next/image";
 
-export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData, user_data: UserData }) {
+export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
     let name = launch_data.name;
     console.log(launch_data.mint_address.toString());
@@ -66,7 +74,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData, 
         [wallet],
     );
 
-    let has_voted : boolean = false;
+    let has_voted: boolean = false;
     if (user_data !== null) {
         for (let i = 0; i < user_data.votes.length; i++) {
             if (user_data.votes[i].toString() == launch_data.game_id.toString()) {
@@ -79,51 +87,45 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData, 
     let total_votes = launch_data.positive_votes + launch_data.negative_votes;
     let vote_ratio = 0;
     let vote_color = "";
-    if (total_votes > 0){
-        vote_ratio = 100 * launch_data.positive_votes / total_votes;
+    if (total_votes > 0) {
+        vote_ratio = (100 * launch_data.positive_votes) / total_votes;
         if (vote_ratio >= 70) {
             vote_color = "green";
-        }
-        else if (vote_ratio > 50 && vote_ratio < 70) {
-            vote_color = "yellow"
-        }
-        else {
-            vote_color = "red"
+        } else if (vote_ratio > 50 && vote_ratio < 70) {
+            vote_color = "yellow";
+        } else {
+            vote_color = "red";
         }
     }
 
     if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.seller.toString()) {
-        return(
+        return (
             <>
-            {total_votes > 0 &&
-                <Text m="0" fontSize="large" color={vote_color}>
-                    {vote_ratio.toFixed(0) + "%"}
-                </Text>
-            }
-            {total_votes === 0 &&
-                <Text m="0" fontSize="large" color="white">
-                --
-                </Text>
-    
-            }
+                {total_votes > 0 && (
+                    <Text m="0" fontSize="large" color={vote_color}>
+                        {vote_ratio.toFixed(0) + "%"}
+                    </Text>
+                )}
+                {total_votes === 0 && (
+                    <Text m="0" fontSize="large" color="white">
+                        --
+                    </Text>
+                )}
             </>
-           
         );
     }
 
     if (has_voted) {
-        return(
+        return (
             <>
-            <Text m="0" fontSize="large" color={vote_color}>
-                {vote_ratio.toFixed(0) + "%"}
-            </Text>
+                <Text m="0" fontSize="large" color={vote_color}>
+                    {vote_ratio.toFixed(0) + "%"}
+                </Text>
             </>
-           
         );
     }
     return (
         <>
-        
             <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image

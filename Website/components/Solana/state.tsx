@@ -409,7 +409,6 @@ export const defaultUserInput: LaunchDataUserInput = {
     opendateLP: new Date(new Date().setHours(0, 0, 0, 0)),
     opentimeLP: "",
     team_wallet: "",
-
 };
 
 export class myU64 {
@@ -449,8 +448,8 @@ export class LaunchData {
         readonly tickets_sold: number,
         readonly tickets_claimed: number,
         readonly mints_won: number,
-        readonly positive_votes : number,
-        readonly negative_votes : number
+        readonly positive_votes: number,
+        readonly negative_votes: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchData>(
@@ -486,7 +485,6 @@ export class LaunchData {
             ["mints_won", u32],
             ["positive_votes", u32],
             ["negative_votes", u32],
-
         ],
         (args) =>
             new LaunchData(
@@ -521,7 +519,6 @@ export class LaunchData {
                 args.mints_won!,
                 args.positive_votes!,
                 args.negative_votes!,
-
             ),
         "LaunchData",
     );
@@ -564,7 +561,7 @@ export class UserData {
         readonly account_type: number,
         readonly user_key: PublicKey,
         readonly total_points: number,
-        readonly votes : number[]
+        readonly votes: number[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<UserData>(
@@ -721,7 +718,7 @@ class CreateLaunch_Instruction {
                 args.distribution!,
                 args.num_mints!,
                 args.ticket_price!,
-                args.page_name!
+                args.page_name!,
             ),
         "CreateLaunch_Instruction",
     );
@@ -743,7 +740,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.distribution,
         new_launch_data.num_mints,
         new_launch_data.ticket_price,
-        new_launch_data.pagename
+        new_launch_data.pagename,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
