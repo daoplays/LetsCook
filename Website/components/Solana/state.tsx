@@ -10,7 +10,7 @@ import {
     i64,
     bignum,
     utf8String,
-    array
+    array,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 
@@ -348,7 +348,7 @@ export const enum LaunchInstruction {
     claim_reward = 3,
     init_market = 4,
     init_amm = 5,
-    hype_vote = 6
+    hype_vote = 6,
 }
 
 export interface LaunchDataUserInput {
@@ -391,7 +391,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     minimum_liquidity: 0,
     ticket_price: 0,
     distribution: [0, 0, 0, 0, 0, 0],
-    launch_date: new Date(new Date().setHours(0,0,0,0)),
+    launch_date: new Date(new Date().setHours(0, 0, 0, 0)),
     uri: "",
     pagename: "",
     iconpage2: "",
@@ -400,11 +400,11 @@ export const defaultUserInput: LaunchDataUserInput = {
     tele_url: "",
     twt_url: "",
     disc_url: "",
-    opendate: new Date(new Date().setHours(0,0,0,0)),
+    opendate: new Date(new Date().setHours(0, 0, 0, 0)),
     opentime: "",
-    closedate: new Date(new Date().setHours(0,0,0,0)),
+    closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     closetime: "",
-    opendateLP: new Date(new Date().setHours(0,0,0,0)),
+    opendateLP: new Date(new Date().setHours(0, 0, 0, 0)),
     opentimeLP: "",
     team_wallet: "",
 };
@@ -553,7 +553,7 @@ export class UserData {
         readonly account_type: number,
         readonly user_key: PublicKey,
         readonly total_points: number,
-        readonly votes : number[]
+        //readonly votes : number[]
     ) {}
 
     static readonly struct = new FixableBeetStruct<UserData>(
@@ -561,9 +561,9 @@ export class UserData {
             ["account_type", u8],
             ["user_key", publicKey],
             ["total_points", u32],
-            ["votes", array(u64)],
+            //["votes", array(u64)],
         ],
-        (args) => new UserData(args.account_type!, args.user_key!, args.total_points!, args.votes!),
+        (args) => new UserData(args.account_type!, args.user_key!, args.total_points!), //, args.votes!),
         "UserData",
     );
 }
@@ -735,27 +735,26 @@ class HypeVote_Instruction {
     constructor(
         readonly instruction: number,
         readonly game_id: bignum,
-        readonly vote : number
+        readonly vote: number,
     ) {}
 
     static readonly struct = new BeetStruct<HypeVote_Instruction>(
         [
             ["instruction", u8],
             ["game_id", u64],
-            ["vote", u8]
+            ["vote", u8],
         ],
         (args) => new HypeVote_Instruction(args.instruction!, args.game_id!, args.vote!),
         "HypeVote_Instruction",
     );
 }
 
-export function serialise_HypeVote_instruction(game_id: bignum, vote : number): Buffer {
+export function serialise_HypeVote_instruction(game_id: bignum, vote: number): Buffer {
     const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, game_id, vote);
     const [buf] = HypeVote_Instruction.struct.serialize(data);
 
     return buf;
 }
-
 
 class BuyTickets_Instruction {
     constructor(
@@ -779,7 +778,6 @@ export function serialise_BuyTickets_instruction(num_tickets: number): Buffer {
 
     return buf;
 }
-
 
 class InitMarket_Instruction {
     constructor(

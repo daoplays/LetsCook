@@ -1,4 +1,4 @@
-import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer } from "@chakra-ui/react";
+import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer, Tooltip } from "@chakra-ui/react";
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -10,7 +10,7 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { FaTwitter, FaTwitch } from "react-icons/fa";
+import { FaTwitter, FaTwitch, FaThumbsDown, FaThumbsUp } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 
 import twitter from "../public/socialIcons/twitter.svg";
@@ -48,8 +48,11 @@ import styles from "../components/css/featured.module.css";
 import { LaunchDetails } from "../components/launch_details";
 import { LaunchBook } from "../components/launch_book";
 import { Leaderboard } from "../components/leaderboard";
+import { HypeVote } from "../components/hypeVote";
+
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
+import Image from "next/image";
 
 const ArenaGameCard = ({
     launch,
@@ -92,8 +95,14 @@ const ArenaGameCard = ({
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
-                    <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
-                        <img src={launch.icon} width={md ? 45 : 75} height={md ? 45 : 75} />
+                    <Box m={5} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                        <Image
+                            alt="Launch icon"
+                            src={launch.icon}
+                            width={md ? 45 : 75}
+                            height={md ? 45 : 75}
+                            style={{ borderRadius: "8px" }}
+                        />
                     </Box>
                 </Center>
             </td>
@@ -103,25 +112,23 @@ const ArenaGameCard = ({
                 </Text>
             </td>
             <td style={{ minWidth: "200px" }}>
-                <HStack justify="center" gap={3}>
+                <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
                     <Link href="#">
-                        <img src={twitter.src} width={md ? 30 : 40} />
+                        <Image alt="Twitter Icon" src={twitter.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                     <Link href="#">
-                        <img src={telegram.src} width={md ? 30 : 40} />
+                        <Image alt="Telegram Icon" src={telegram.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                     <Link href="#">
-                        <img src={discord.src} width={md ? 30 : 40} />
+                        <Image alt="Discord Icon" src={discord.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                     <Link href="#">
-                        <img src={website.src} width={md ? 30 : 40} />
+                        <Image alt="Website Icon" src={website.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                 </HStack>
             </td>
-            <td style={{ minWidth: sm ? "120px" : "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    100%
-                </Text>
+            <td style={{ minWidth: "120px" }}>
+                <HypeVote launch_data={launch} />
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
@@ -348,16 +355,16 @@ function LetsCook() {
         const Links = () => (
             <HStack gap={3}>
                 <Link href="#">
-                    <img src={twitter.src} width={md ? 30 : 40} />
+                    <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
                 <Link href="#">
-                    <img src={telegram.src} width={md ? 30 : 40} />
+                    <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
                 <Link href="#">
-                    <img src={discord.src} width={md ? 30 : 40} />
+                    <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
                 <Link href="#">
-                    <img src={website.src} width={md ? 30 : 40} />
+                    <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
             </HStack>
         );
@@ -374,22 +381,10 @@ function LetsCook() {
                         h="100%"
                     >
                         <HStack w="fit-content" gap={md ? 5 : 8}>
-                            <img
-                                src={logo.src}
-                                width="auto"
-                                alt="$SAUCE LOGO"
-                                style={{ maxHeight: md ? 130 : 200, maxWidth: md ? 130 : 200 }}
-                                hidden={md}
-                            />
+                            <Image src={logo.src} width={md ? 130 : 200} height={md ? 130 : 200} alt="$SAUCE LOGO" hidden={md} />
                             <VStack gap={md ? 1 : 3} alignItems={md ? "center" : "left"}>
                                 <Flex ml={-5} gap={md ? 2 : 6}>
-                                    <img
-                                        src={logo.src}
-                                        width="auto"
-                                        alt="$SAUCE LOGO"
-                                        style={{ maxHeight: 50, maxWidth: 50 }}
-                                        hidden={!md}
-                                    />
+                                    <Image src={logo.src} width={50} height={50} alt="$SAUCE LOGO" hidden={!md} />
                                     <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
                                         $Sauce
                                     </Text>

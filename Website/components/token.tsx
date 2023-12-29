@@ -23,6 +23,7 @@ import logo from "../public/images/sauce.png";
 import tickets from "../public/images/Mint.png";
 import tickets2 from "../public/images/Mint2.png";
 import bar from "../public/images/bar.png";
+import Image from "next/image";
 
 export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
     const wallet = useWallet();
@@ -95,7 +96,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
         <Center mt="20px" width="90%">
             <VStack>
                 <HStack>
-                    <img src={logo.src} width="auto" alt={""} style={{ maxHeight: "200px", maxWidth: "200px" }} />
+                    <Image src={logo.src} width={200} height={200} alt={"Logo"} />
                     <VStack>
                         <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                             {name}
@@ -126,7 +127,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                             <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
                                 1 MINT = 2000000
                             </Text>
-                            <img src={logo.src} width="auto" alt={""} style={{ maxHeight: "50px", maxWidth: "50px" }} />
+                            <Image src={logo.src} width={50} height={50} alt={"Logo"} />
                         </HStack>
                         <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
                             0.5 SOL PER TICKET
@@ -134,15 +135,15 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                     </VStack>
                     <VStack>
                         <HStack>
-                            <img src={tickets2.src} width="auto" alt={""} style={{ maxHeight: "160px", maxWidth: "160px" }} />
-                            <img
+                            <Image src={tickets2.src} width={160} height={160} alt={"Tickets"} />
+                            <Image
                                 src={tickets.src}
                                 onClick={() => {
                                     BuyTickets();
                                 }}
-                                width="auto"
-                                alt={""}
-                                style={{ maxHeight: "200px", maxWidth: "200px" }}
+                                width={200}
+                                height={200}
+                                alt={"Tickets"}
                             />
                         </HStack>
                         <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
@@ -159,7 +160,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                         <br />
                         Guaranteed Liquidity (SOL): 714/1000
                     </Text>
-                    <img src={bar.src} width="auto" alt={""} style={{ maxHeight: "160px", maxWidth: "700px" }} />
+                    <Image src={bar.src} width={700} height={160} alt={"Progress Bar"} />
                     <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
                         REFUND FOR ALL IF LIQUIDITY THRESHOLD NOT REACHED
                         <br />

@@ -22,10 +22,6 @@
     border-radius: 20px;
 }
 
-.sauce img {
-    width: 20px;
-}
-
 .footerImage {
     background-image: url("/images/footer_fill.jpeg");
     background-size: cover;

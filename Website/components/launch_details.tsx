@@ -6,6 +6,7 @@ import { Center, VStack, Text } from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
+import Image from "next/image";
 
 export function LaunchDetails({
     newLaunch,
@@ -79,7 +80,14 @@ export function LaunchDetails({
     }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
+            <Image
+                onClick={() => setScreen(Screen.FAQ_SCREEN)}
+                className={styles.help}
+                width={40}
+                height={40}
+                src="/images/help.png"
+                alt="Help"
+            />
 
             <VStack>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
@@ -140,7 +148,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <img className={styles.mediaLogo} src="./images/web.png" alt="" />
+                                <Image className={styles.mediaLogo} src="/images/web.png" alt="Website" />
 
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -158,7 +166,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <img className={styles.mediaLogo} src="./images/tele.png" alt="" />
+                                <Image className={styles.mediaLogo} src="/images/tele.png" alt="Telegram" />
 
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -175,7 +183,7 @@ export function LaunchDetails({
                         </div>
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <img className={styles.mediaLogo} src="./images/twt.png" alt="" />
+                                <Image className={styles.mediaLogo} src="/images/twt.png" alt="Twitter" />
 
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -194,7 +202,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <img className={styles.mediaLogo} src="./images/discord.png" alt="" />
+                                <Image className={styles.mediaLogo} src="/images/discord.png" alt="Discord" />
 
                                 <div className={styles.textLabelInput}>
                                     <input

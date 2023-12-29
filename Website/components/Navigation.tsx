@@ -37,45 +37,43 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                     </Text>
                     <HStack gap={4}>
                         <div className={styles.sauce}>
-                            <img src="./images/sauce 2.png" alt="" />
+                            <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
                             <div>1,400</div>
                         </div>
 
                         {!md && (
-                            <img
-                                src="./images/points.png"
-                                width="auto"
-                                alt={""}
-                                style={{ maxHeight: "35px", maxWidth: "35px", cursor: "pointer" }}
+                            <Image
+                                src="/images/points.png"
+                                width={35}
+                                height={35}
+                                alt={"Points"}
+                                style={{ cursor: "pointer" }}
                                 onClick={() => setScreen(Screen.LEADERBOARD)}
                             />
                         )}
 
                         {!md && (
-                            <img
-                                src="./images/money-bag.png"
-                                width="auto"
-                                alt={""}
-                                style={{ maxHeight: "35px", maxWidth: "35px", cursor: "not-allowed" }}
-                            />
+                            <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
                         )}
 
                         {!md && (
-                            <img
-                                src="./images/question-mark.png"
-                                width="auto"
-                                alt={""}
-                                style={{ maxHeight: "35px", maxWidth: "35px", cursor: "not-allowed" }}
+                            <Image
+                                src="/images/question-mark.png"
+                                width={35}
+                                height={35}
+                                alt={"Question Mark"}
+                                style={{ cursor: "not-allowed" }}
                             />
                         )}
 
                         {md ? (
-                            <img
+                            <Image
                                 onClick={onToggle}
-                                src="./images/Group (6).png"
-                                width="auto"
-                                alt={""}
-                                style={{ maxHeight: "40px", maxWidth: "40px", marginRight: 5 }}
+                                src="/images/Group (6).png"
+                                width={40}
+                                height={40}
+                                alt={"Burger Icon"}
+                                style={{ marginRight: 5 }}
                             />
                         ) : (
                             <>
@@ -102,7 +100,7 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                 backgroundSize="cover"
                 borderBottomRadius={12}
                 spacing={6}
-                hidden={!md || isOpen}
+                hidden={!md || !isOpen}
                 boxShadow="0px 3px 13px 0px rgba(0,0,0,0.75) inset"
             >
                 <VStack spacing={3} mb={6} className="font-face-kg">

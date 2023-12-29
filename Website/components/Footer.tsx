@@ -7,6 +7,7 @@ import telegram from "../public/images/Telegram.png";
 import styles from "./header.module.css";
 import { TermsModal } from "./Solana/modals";
 import MainButton from "./Buttons/mainButton";
+import Image from "next/image";
 
 function Footer() {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -16,26 +17,24 @@ function Footer() {
             <div className={styles.footerImage}>
                 <HStack boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.75)" py={2} px={4} justify="start" gap={3}>
                     <MainButton action={onOpen} label="TERMS" />
-                    <img
+                    <Image
                         src={twitter.src}
-                        width="auto"
-                        alt={""}
+                        width={30}
+                        height={30}
+                        alt={"Twitter"}
                         style={{
-                            maxHeight: "30px",
-                            maxWidth: "30px",
                             backgroundColor: "#683309",
                             borderRadius: "50%",
                             padding: 5,
                             cursor: "not-allowed",
                         }}
                     />
-                    <img
+                    <Image
                         src={telegram.src}
-                        width="auto"
-                        alt={""}
+                        width={30}
+                        height={30}
+                        alt={"Telegram"}
                         style={{
-                            maxHeight: "30px",
-                            maxWidth: "30px",
                             backgroundColor: "#683309",
                             borderRadius: "50%",
                             padding: 5,

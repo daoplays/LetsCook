@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
 import { useMediaQuery } from "react-responsive";
+import Image from "next/image";
 
 export function LaunchBook({
     newLaunch,
@@ -33,7 +34,7 @@ export function LaunchBook({
         query: "(max-width: 1000px)",
     });
     function setLaunchData(e) {
-        console.log("openDate, openTime", openTime, openDate)
+        console.log("openDate, openTime", openTime, openDate);
         newLaunch.current.opentime = openTime;
         newLaunch.current.opendate = openDate;
         newLaunch.current.closetime = closeTime;
@@ -53,7 +54,14 @@ export function LaunchBook({
     }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
+            <Image
+                onClick={() => setScreen(Screen.FAQ_SCREEN)}
+                className={styles.help}
+                width={40}
+                height={40}
+                src="/images/help.png"
+                alt="Help"
+            />
 
             <VStack>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
@@ -68,12 +76,13 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker 
-                                        showTimeSelect
-                                        timeFormat="HH:mm"
-                                        timeIntervals={15}
-                                        selected={openDate} 
-                                        onChange={(date) => setOpenDate(date)} />
+                                        <DatePicker
+                                            showTimeSelect
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            selected={openDate}
+                                            onChange={(date) => setOpenDate(date)}
+                                        />
                                     </div>
                                 </div>
 
@@ -91,12 +100,13 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>CLOSE DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker 
-                                        showTimeSelect
-                                        timeFormat="HH:mm"
-                                        timeIntervals={15}
-                                        selected={closeDate} 
-                                        onChange={(date) => setcloseDate(date)} />
+                                        <DatePicker
+                                            showTimeSelect
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            selected={closeDate}
+                                            onChange={(date) => setcloseDate(date)}
+                                        />
                                     </div>
                                 </div>
 
@@ -115,12 +125,13 @@ export function LaunchBook({
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker 
-                                        showTimeSelect
-                                        timeFormat="HH:mm"
-                                        timeIntervals={15}
-                                        selected={openDateLP} 
-                                        onChange={(date) => setOpenDateLP(date)} />
+                                        <DatePicker
+                                            showTimeSelect
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            selected={openDateLP}
+                                            onChange={(date) => setOpenDateLP(date)}
+                                        />
                                     </div>
                                 </div>
 
