@@ -92,6 +92,25 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData, 
         }
     }
 
+    if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.seller.toString()) {
+        return(
+            <>
+            {total_votes > 0 &&
+                <Text m="0" fontSize="large" color={vote_color}>
+                    {vote_ratio.toFixed(0) + "%"}
+                </Text>
+            }
+            {total_votes === 0 &&
+                <Text m="0" fontSize="large" color="white">
+                --
+                </Text>
+    
+            }
+            </>
+           
+        );
+    }
+
     if (has_voted) {
         return(
             <>
