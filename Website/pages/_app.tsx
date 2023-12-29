@@ -2,10 +2,10 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { theme } from "../chakra";
 
 import { useMemo } from "react";
-import {clusterApiUrl} from "@solana/web3.js";
+import { clusterApiUrl } from "@solana/web3.js";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
-import {  WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 
 import "bootstrap/dist/css/bootstrap.css";
 import "../styles/fonts.css";

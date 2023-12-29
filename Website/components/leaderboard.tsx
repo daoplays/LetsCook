@@ -8,39 +8,20 @@ import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
 import Table from "react-bootstrap/Table";
 
 export function Leaderboard({ user_data }: { user_data: UserData[] }) {
+    const Card = ({ launch, index }: { launch: UserData; index: number }) => {
+        return (
+            <tr>
+                <td>{launch.user_key.toString()}</td>
+                <td>{launch.total_points.toString()}</td>
+            </tr>
+        );
+    };
 
-
-const Card = ({
-    launch,
-    index,
-}: {
-    launch: UserData;
-    index: number;
-}) => {
-   
-    return (
-        <tr
-           
-        >
-           
-            <td>{launch.user_key.toString()}</td>
-            <td>
-                {launch.total_points.toString()}
-            </td>
-           
-        </tr>
-    );
-};
-
-    const Listings = ({
-        launch_list,
-    }: {
-        launch_list: UserData[];
-    }) => {
+    const Listings = ({ launch_list }: { launch_list: UserData[] }) => {
         if (launch_list.length === 0) {
             return <></>;
         }
-    
+
         return (
             <>
                 {launch_list.map((item: UserData, index) => (
@@ -58,7 +39,7 @@ const Card = ({
                         <thead>
                             <tr>
                                 <th>KEY</th>
-                                <th>SCORE</th>                                
+                                <th>SCORE</th>
                             </tr>
                         </thead>
                         <tbody
@@ -66,7 +47,7 @@ const Card = ({
                                 backgroundColor: "black",
                             }}
                         >
-                            <Listings launch_list={user_data}  />
+                            <Listings launch_list={user_data} />
                         </tbody>
                     </Table>
                 </div>
@@ -76,7 +57,7 @@ const Card = ({
 
     return (
         <Center width="100%" marginBottom="5rem">
-                    <GameTable />
-                </Center>
+            <GameTable />
+        </Center>
     );
 }

@@ -81,7 +81,6 @@ export function uInt32ToLEBytes(num: number): Buffer {
     return bytes;
 }
 
-
 interface BasicReply {
     id: number;
     jsonrpc: string;
@@ -347,7 +346,7 @@ export const enum LaunchInstruction {
     buy_tickets = 2,
     claim_reward = 3,
     init_market = 4,
-    init_amm = 5
+    init_amm = 5,
 }
 
 export interface LaunchDataUserInput {
@@ -408,25 +407,11 @@ export const defaultUserInput: LaunchDataUserInput = {
     team_wallet: "",
 };
 
-
-
 export class myU64 {
-    constructor(
-        readonly value: bignum,
-    ) {}
+    constructor(readonly value: bignum) {}
 
-    static readonly struct = new BeetStruct<myU64>(
-        [
-            ["value", u64],
-        ],
-        (args) =>
-            new myU64(
-                args.value!,
-            ),
-        "myU64",
-    );
+    static readonly struct = new BeetStruct<myU64>([["value", u64]], (args) => new myU64(args.value!), "myU64");
 }
-
 
 export class LaunchData {
     constructor(
@@ -455,10 +440,10 @@ export class LaunchData {
         readonly telegram: string,
         readonly team_wallet: PublicKey,
         readonly mint_address: PublicKey,
-        readonly sol_address : PublicKey,
-        readonly tickets_sold : number,
-        readonly tickets_claimed : number,
-        readonly mints_won : number
+        readonly sol_address: PublicKey,
+        readonly tickets_sold: number,
+        readonly tickets_claimed: number,
+        readonly mints_won: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchData>(
@@ -492,7 +477,6 @@ export class LaunchData {
             ["tickets_sold", u32],
             ["tickets_claimed", u32],
             ["mints_won", u32],
-
         ],
         (args) =>
             new LaunchData(
@@ -524,12 +508,11 @@ export class LaunchData {
                 args.sol_address!,
                 args.tickets_sold!,
                 args.tickets_claimed!,
-                args.mints_won!
+                args.mints_won!,
             ),
         "LaunchData",
     );
 }
-
 
 export class JoinData {
     constructor(
@@ -539,7 +522,6 @@ export class JoinData {
         readonly num_tickets: number,
         readonly num_winning_tickets: number,
         readonly ticket_status: number,
-        
     ) {}
 
     static readonly struct = new BeetStruct<JoinData>(
@@ -568,22 +550,16 @@ export class UserData {
     constructor(
         readonly account_type: number,
         readonly user_key: PublicKey,
-        readonly total_points: bignum
-        
+        readonly total_points: bignum,
     ) {}
 
     static readonly struct = new BeetStruct<UserData>(
         [
             ["account_type", u8],
             ["user_key", publicKey],
-            ["total_points", u64]
+            ["total_points", u64],
         ],
-        (args) =>
-            new UserData(
-                args.account_type!,
-                args.user_key!,
-                args.total_points!,
-            ),
+        (args) => new UserData(args.account_type!, args.user_key!, args.total_points!),
         "UserData",
     );
 }
@@ -686,14 +662,14 @@ class CreateLaunch_Instruction {
         readonly name: String,
         readonly symbol: String,
         readonly uri: String,
-        readonly icon : String,
-        readonly total_supply : bignum,
-        readonly decimals : number,
+        readonly icon: String,
+        readonly total_supply: bignum,
+        readonly decimals: number,
         readonly launch_date: bignum,
         readonly description: String,
-        readonly distribution : number[],
-        readonly num_mints : number,
-        readonly ticket_price : bignum
+        readonly distribution: number[],
+        readonly num_mints: number,
+        readonly ticket_price: bignum,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -710,9 +686,22 @@ class CreateLaunch_Instruction {
             ["distribution", uniformFixedSizeArray(u8, 6)],
             ["num_mints", u32],
             ["ticket_price", u64],
-
         ],
-        (args) => new CreateLaunch_Instruction(args.instruction!, args.name!, args.symbol!, args.uri!, args.icon!, args.total_supply!, args.decimals!, args.launch_date!, args.description!, args.distribution!, args.num_mints!, args.ticket_price!),
+        (args) =>
+            new CreateLaunch_Instruction(
+                args.instruction!,
+                args.name!,
+                args.symbol!,
+                args.uri!,
+                args.icon!,
+                args.total_supply!,
+                args.decimals!,
+                args.launch_date!,
+                args.description!,
+                args.distribution!,
+                args.num_mints!,
+                args.ticket_price!,
+            ),
         "CreateLaunch_Instruction",
     );
 }
@@ -731,7 +720,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.description,
         new_launch_data.distribution,
         new_launch_data.num_mints,
-        new_launch_data.ticket_price
+        new_launch_data.ticket_price,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -755,22 +744,16 @@ class BuyTickets_Instruction {
 }
 
 export function serialise_BuyTickets_instruction(num_tickets: number): Buffer {
-
-    const data = new BuyTickets_Instruction(
-        LaunchInstruction.buy_tickets,
-        num_tickets
-    );
+    const data = new BuyTickets_Instruction(LaunchInstruction.buy_tickets, num_tickets);
     const [buf] = BuyTickets_Instruction.struct.serialize(data);
 
     return buf;
 }
 
-
 class InitMarket_Instruction {
     constructor(
         readonly instruction: number,
         readonly vaultSignerNonce: bignum,
-
     ) {}
 
     static readonly struct = new FixableBeetStruct<InitMarket_Instruction>(
@@ -783,7 +766,7 @@ class InitMarket_Instruction {
     );
 }
 
-export function serialise_InitMarket_Instruction(vaultSignerNonce : bignum): Buffer {
+export function serialise_InitMarket_Instruction(vaultSignerNonce: bignum): Buffer {
     const data = new InitMarket_Instruction(LaunchInstruction.init_market, vaultSignerNonce);
     const [buf] = InitMarket_Instruction.struct.serialize(data);
 
@@ -809,7 +792,6 @@ class RaydiumInitMarket_Instruction {
         readonly feeRateBps: number,
         readonly vaultSignerNonce: bignum,
         readonly quoteDustThreshold: bignum,
-
     ) {}
 
     static readonly struct = new BeetStruct<RaydiumInitMarket_Instruction>(
@@ -822,18 +804,42 @@ class RaydiumInitMarket_Instruction {
             ["vaultSignerNonce", u64],
             ["quoteDustThreshold", u64],
         ],
-        (args) => new RaydiumInitMarket_Instruction(args.version!, args.instruction!, args.baseLotSize!, args.quoteLotSize!, args.feeRateBps!, args.vaultSignerNonce!, args.quoteDustThreshold!),
+        (args) =>
+            new RaydiumInitMarket_Instruction(
+                args.version!,
+                args.instruction!,
+                args.baseLotSize!,
+                args.quoteLotSize!,
+                args.feeRateBps!,
+                args.vaultSignerNonce!,
+                args.quoteDustThreshold!,
+            ),
         "RaydiumInitMarket_Instruction",
     );
 }
 
-export function serialise_RaydiumInitMarket_Instruction(version : number, instruction: number, baseLotSize : bignum, quoteLotSize : bignum, feeRateBps : number, vaultSignerNonce : bignum, quoteDustThreshold : bignum): Buffer {
-    const data = new RaydiumInitMarket_Instruction(version, instruction, baseLotSize, quoteLotSize, feeRateBps, vaultSignerNonce, quoteDustThreshold);
+export function serialise_RaydiumInitMarket_Instruction(
+    version: number,
+    instruction: number,
+    baseLotSize: bignum,
+    quoteLotSize: bignum,
+    feeRateBps: number,
+    vaultSignerNonce: bignum,
+    quoteDustThreshold: bignum,
+): Buffer {
+    const data = new RaydiumInitMarket_Instruction(
+        version,
+        instruction,
+        baseLotSize,
+        quoteLotSize,
+        feeRateBps,
+        vaultSignerNonce,
+        quoteDustThreshold,
+    );
     const [buf] = RaydiumInitMarket_Instruction.struct.serialize(data);
 
     return buf;
 }
-
 
 class RaydiumCreatePool_Instruction {
     constructor(
@@ -870,24 +876,24 @@ export class MarketStateLayoutV2 {
         readonly accountFlags: bignum,
         readonly ownAddress: PublicKey,
         readonly vaultSignerNonce: bignum,
-        readonly baseMint : PublicKey,
-        readonly quoteMint : PublicKey,
-        readonly baseVault : PublicKey,
-        readonly baseDepositsTotal : bignum,
-        readonly baseFeesAccrued : bignum,
-        readonly quoteVault : PublicKey,
+        readonly baseMint: PublicKey,
+        readonly quoteMint: PublicKey,
+        readonly baseVault: PublicKey,
+        readonly baseDepositsTotal: bignum,
+        readonly baseFeesAccrued: bignum,
+        readonly quoteVault: PublicKey,
         readonly quoteDepositsTotal: bignum,
         readonly quoteFeesAccrued: bignum,
         readonly quoteDustThreshold: bignum,
-        readonly requestQueue : PublicKey,
-        readonly eventQueue : PublicKey,
-        readonly bids : PublicKey,
-        readonly asks : PublicKey,
+        readonly requestQueue: PublicKey,
+        readonly eventQueue: PublicKey,
+        readonly bids: PublicKey,
+        readonly asks: PublicKey,
         readonly baseLotSize: bignum,
         readonly quoteLotSize: bignum,
         readonly feeRateBps: bignum,
         readonly referrerRebatesAccrued: bignum,
-        readonly footer : number[]
+        readonly footer: number[],
     ) {}
 
     static readonly struct = new BeetStruct<MarketStateLayoutV2>(
@@ -914,7 +920,6 @@ export class MarketStateLayoutV2 {
             ["feeRateBps", u64],
             ["referrerRebatesAccrued", u64],
             ["footer", uniformFixedSizeArray(u8, 7)],
-
         ],
         (args) =>
             new MarketStateLayoutV2(

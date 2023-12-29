@@ -62,7 +62,7 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
-    console.log(launch)
+    console.log(launch);
     console.log(launch.seller.toString());
     console.log(launch.sol_address.toString());
     console.log(launch.team_wallet.toString());
@@ -93,7 +93,7 @@ const ArenaGameCard = ({
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
                     <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
-                    <img src={launch.icon} width={md ? 45 : 75} height={md ? 45 : 75} />
+                        <img src={launch.icon} width={md ? 45 : 75} height={md ? 45 : 75} />
                     </Box>
                 </Center>
             </td>
@@ -245,18 +245,17 @@ function LetsCook() {
             true, // allow owner off curve
         );
 
-        let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0,32)
-        let wrapped_sol_account =  await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID)
+        let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
+        let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         if (DEBUG) {
             console.log("arena: ", program_data_account.toString());
             console.log("game_data_account: ", launch_data_account.toString());
             console.log("sol_data_account: ", fees_account.toString());
-            console.log("wsol seed", wrapped_sol_seed)
+            console.log("wsol seed", wrapped_sol_seed);
             console.log("mint", token_mint_pubkey.toString());
         }
-
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
