@@ -5,13 +5,13 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { Center, VStack, Text, Box, HStack, Tooltip } from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
-import { LaunchData, bignum_to_num, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, myU64 } from "./Solana/state";
+import { LaunchData, bignum_to_num, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, myU64, UserData } from "./Solana/state";
 import { Raydium } from "./Solana/raydium";
 import bs58 from "bs58";
 import BN from "bn.js";
 import Image from "next/image";
 
-export function HypeVote({ launch_data }: { launch_data: LaunchData }) {
+export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData, user_data: UserData }) {
     const wallet = useWallet();
     let name = launch_data.name;
     console.log(launch_data.mint_address.toString());
@@ -57,7 +57,7 @@ export function HypeVote({ launch_data }: { launch_data: LaunchData }) {
 
                 let signature = transaction_response.result;
 
-                console.log("join sig: ", signature);
+                console.log("hype sig: ", signature);
             } catch (error) {
                 console.log(error);
                 return;
@@ -66,12 +66,45 @@ export function HypeVote({ launch_data }: { launch_data: LaunchData }) {
         [wallet],
     );
 
+    let has_voted : boolean = false;
+    if (user_data !== null) {
+        for (let i = 0; i < user_data.votes.length; i++) {
+            if (user_data.votes[i].toString() == launch_data.game_id.toString()) {
+                has_voted = true;
+                break;
+            }
+        }
+    }
+    console.log("has_voted: ", has_voted);
+    let total_votes = launch_data.positive_votes + launch_data.negative_votes;
+    let vote_ratio = 0;
+    let vote_color = "";
+    if (total_votes > 0){
+        vote_ratio = 100 * launch_data.positive_votes / total_votes;
+        if (vote_ratio >= 70) {
+            vote_color = "green";
+        }
+        else if (vote_ratio > 50 && vote_ratio < 70) {
+            vote_color = "yellow"
+        }
+        else {
+            vote_color = "red"
+        }
+    }
+
+    if (has_voted) {
+        return(
+            <>
+            <Text m="0" fontSize="large" color={vote_color}>
+                {vote_ratio.toFixed(0) + "%"}
+            </Text>
+            </>
+           
+        );
+    }
     return (
         <>
-            {/* Like % displays after voting.
-                >70% = Green #8EFF84
-                50 to 70 = Yellow #FFEE59
-                <50 = Red #FF8484 */}
+        
             <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image

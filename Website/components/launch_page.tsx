@@ -20,7 +20,7 @@ export function LaunchScreen({
     });
     const [name, setName] = useState<string>(newLaunch.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunch.current.symbol);
-    const [icon, setIcon] = useState<string>(newLaunch.current.icon);
+    const [icon, setIcon] = useState<string>(newLaunch.current.icon_data);
     const [displayImg, setDisplayImg] = useState<string>(newLaunch.current.displayImg);
     const [totalSupply, setTotalSupply] = useState<string>(newLaunch.current.total_supply.toString());
     const [decimal, setDecimal] = useState<string>(newLaunch.current.decimals.toString());
@@ -92,7 +92,7 @@ export function LaunchScreen({
             if (totalPercentage === 100) {
                 newLaunch.current.name = name;
                 newLaunch.current.symbol = symbol;
-                newLaunch.current.icon = icon;
+                newLaunch.current.icon_data = icon;
                 newLaunch.current.displayImg = displayImg;
                 newLaunch.current.total_supply = parseInt(totalSupply);
                 newLaunch.current.decimals = parseInt(decimal);
@@ -132,7 +132,7 @@ export function LaunchScreen({
                 <form onSubmit={setLaunchData} className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
                         {displayImg ? (
-                            <Image src={displayImg} alt="Display Image" className={styles.imgFrame} />
+                            <img src={displayImg} alt="" className={styles.imgFrame} />
                         ) : (
                             <Image className={styles.imgFrame} src="/images/Frame 49 (1).png" width={200} height={200} alt="Image Frame" />
                         )}

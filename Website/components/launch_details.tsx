@@ -148,8 +148,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <Image className={styles.mediaLogo} src="/images/web.png" alt="Website" />
-
+                            <img className={styles.mediaLogo} src="./images/web.png" alt="" />
                                 <div className={styles.textLabelInput}>
                                     <input
                                         placeholder="URL"
@@ -166,7 +165,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <Image className={styles.mediaLogo} src="/images/tele.png" alt="Telegram" />
+                                <img className={styles.mediaLogo} src="/images/tele.png" alt="Telegram" />
 
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -183,7 +182,7 @@ export function LaunchDetails({
                         </div>
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <Image className={styles.mediaLogo} src="/images/twt.png" alt="Twitter" />
+                                <img className={styles.mediaLogo} src="/images/twt.png" alt="Twitter" />
 
                                 <div className={styles.textLabelInput}>
                                     <input
@@ -202,7 +201,7 @@ export function LaunchDetails({
 
                         <div className={styles.launchBodyLowerHorizontal}>
                             <div className={styles.eachField}>
-                                <Image className={styles.mediaLogo} src="/images/discord.png" alt="Discord" />
+                                <img className={styles.mediaLogo} src="/images/discord.png" alt="Discord" />
 
                                 <div className={styles.textLabelInput}>
                                     <input

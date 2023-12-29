@@ -56,11 +56,13 @@ import Image from "next/image";
 
 const ArenaGameCard = ({
     launch,
+    user_data,
     setLaunchData,
     setScreen,
     index,
 }: {
     launch: LaunchData;
+    user_data : UserData | null;
     setLaunchData: Dispatch<SetStateAction<LaunchData>>;
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
@@ -128,7 +130,7 @@ const ArenaGameCard = ({
                 </HStack>
             </td>
             <td style={{ minWidth: "120px" }}>
-                <HypeVote launch_data={launch} />
+                <HypeVote launch_data={launch} user_data={user_data} />
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
@@ -147,10 +149,12 @@ const ArenaGameCard = ({
 
 const Listings = ({
     launch_list,
+    user_data,
     setLaunchData,
     setScreen,
 }: {
     launch_list: LaunchData[];
+    user_data: UserData | null;
     setLaunchData: Dispatch<SetStateAction<LaunchData>>;
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) => {
@@ -161,7 +165,7 @@ const Listings = ({
     return (
         <>
             {launch_list.map((item: LaunchData, index) => (
-                <ArenaGameCard key={index} launch={item} setLaunchData={setLaunchData} setScreen={setScreen} index={index} />
+                <ArenaGameCard key={index} launch={item} user_data={user_data} setLaunchData={setLaunchData} setScreen={setScreen} index={index} />
             ))}
         </>
     );
@@ -202,6 +206,16 @@ function LetsCook() {
         let user_list = await run_user_data_GPA("");
         console.log(user_list);
         setUserData(user_list);
+
+        if (wallet.publicKey !== null) {
+            for (let i = 0; i < user_list.length; i++) {
+                if (user_list[i].user_key.toString() == (wallet.publicKey.toString())) {
+                    console.log("have current user", user_list[i])
+                    setCurrentUserData(user_list[i]);
+                    break;
+                }
+            }
+        }
         check_launch_data.current = false;
     }, []);
 
@@ -214,12 +228,12 @@ function LetsCook() {
         console.log(newLaunchData.current);
 
         // first upload the png file to arweave and get the url
-        let image_url = await arweave_upload(newLaunchData.current.icon);
+        let image_url = await arweave_upload(newLaunchData.current.icon_data);
         let meta_data_url = await arweave_json_upload(newLaunchData.current.name, "LC", image_url);
         console.log("list game with url", image_url, meta_data_url);
 
         newLaunchData.current.uri = meta_data_url;
-        newLaunchData.current.icon = image_url;
+        newLaunchData.current.icon_url = image_url;
 
         let program_data_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
@@ -353,6 +367,10 @@ function LetsCook() {
         };
     }, [CheckLaunchData]);
 
+    useEffect(() => {
+        check_launch_data.current = true;
+    },[wallet]);
+
     const Featured = () => {
         const Links = () => (
             <HStack gap={3}>
@@ -466,7 +484,7 @@ function LetsCook() {
                         </tr>
                     </thead>
                     <tbody>
-                        <Listings launch_list={launch_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
+                        <Listings launch_list={launch_data} user_data={current_user_data} setLaunchData={setCurrentLaunchData} setScreen={setScreen} />
                     </tbody>
                 </table>
             </TableContainer>

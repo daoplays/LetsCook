@@ -354,7 +354,8 @@ export const enum LaunchInstruction {
 export interface LaunchDataUserInput {
     name: string;
     symbol: string;
-    icon: string;
+    icon_data: string;
+    icon_url: string;
     total_supply: number;
     decimals: number;
     num_mints: number;
@@ -383,7 +384,8 @@ export interface LaunchDataUserInput {
 export const defaultUserInput: LaunchDataUserInput = {
     name: "",
     symbol: "",
-    icon: "",
+    icon_data: "",
+    icon_url: "",
     displayImg: null,
     total_supply: 0,
     decimals: 0,
@@ -702,7 +704,7 @@ class CreateLaunch_Instruction {
             ["distribution", uniformFixedSizeArray(u8, 6)],
             ["num_mints", u32],
             ["ticket_price", u64],
-            ["page_name", u64],
+            ["page_name", utf8String],
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -732,7 +734,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.name,
         new_launch_data.symbol,
         new_launch_data.uri,
-        new_launch_data.icon,
+        new_launch_data.icon_url,
         new_launch_data.total_supply,
         new_launch_data.decimals,
         new_launch_data.opendate.getTime(),
