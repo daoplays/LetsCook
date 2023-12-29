@@ -6,6 +6,7 @@ import { Center, VStack, Text } from "@chakra-ui/react";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
+import Image from "next/image";
 
 export function LaunchScreen({
     newLaunch,
@@ -115,7 +116,14 @@ export function LaunchScreen({
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
+            <Image
+                onClick={() => setScreen(Screen.FAQ_SCREEN)}
+                className={styles.help}
+                width={40}
+                height={40}
+                src="/images/help.png"
+                alt="Help"
+            />
 
             <VStack>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
@@ -124,9 +132,9 @@ export function LaunchScreen({
                 <form onSubmit={setLaunchData} className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
                         {displayImg ? (
-                            <img src={displayImg} alt="" className={styles.imgFrame} />
+                            <Image src={displayImg} alt="Display Image" className={styles.imgFrame} />
                         ) : (
-                            <img className={styles.imgFrame} src="./images/Frame 49 (1).png" alt="" />
+                            <Image className={styles.imgFrame} src="/images/Frame 49 (1).png" width={200} height={200} alt="Image Frame" />
                         )}
 
                         <div className={styles.launchBodyUpperFields}>
@@ -236,7 +244,7 @@ export function LaunchScreen({
                                             setTotalPrice(e.target.value);
                                         }}
                                     />
-                                    <img className={styles.sol} src="./images/sol.png" alt="" />
+                                    <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
                                 </div>
                             </div>
                         </div>
@@ -255,7 +263,7 @@ export function LaunchScreen({
                                         //     setLiquidity(e.target.value);
                                         // }}
                                     />
-                                    <img className={styles.sol} src="./images/sol.png" alt="" />
+                                    <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
                                 </div>
                             </div>
                         </div>
@@ -283,7 +291,7 @@ export function LaunchScreen({
                                         max="100"
                                         disabled={totalPercentage === 100 && parseFloat(distribution1) === 0 ? true : false}
                                     />
-                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                    <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
                             </div>
 
@@ -302,7 +310,7 @@ export function LaunchScreen({
                                         max="100"
                                         disabled={totalPercentage === 100 && parseFloat(distribution2) === 0 ? true : false}
                                     />
-                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                    <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
                             </div>
 
@@ -320,7 +328,7 @@ export function LaunchScreen({
                                         max="100"
                                         disabled={totalPercentage === 100 && parseFloat(distribution3) === 0 ? true : false}
                                     />
-                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                    <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
                             </div>
 
@@ -338,7 +346,7 @@ export function LaunchScreen({
                                         max="100"
                                         disabled={totalPercentage === 100 && parseFloat(distribution4) === 0 ? true : false}
                                     />
-                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                    <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
                             </div>
 
@@ -356,7 +364,7 @@ export function LaunchScreen({
                                         max="100"
                                         disabled={totalPercentage === 100 && parseFloat(distribution5) === 0 ? true : false}
                                     />
-                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                    <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
                             </div>
 
@@ -374,7 +382,7 @@ export function LaunchScreen({
                                         max="100"
                                         disabled={totalPercentage === 100 && parseFloat(distribution6) === 0 ? true : false}
                                     />
-                                    <img className={styles.percentage} src="./images/perc.png" alt="" />
+                                    <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
                             </div>
                         </div>

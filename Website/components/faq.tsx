@@ -6,6 +6,7 @@ import salad2 from "../public/images/salad2.png";
 import hotdog from "../public/images/hotdog.png";
 import pizza from "../public/images/pizza.png";
 import pasta from "../public/images/Pasta.png";
+import Image from "next/image";
 
 export function FAQScreen() {
     return (
@@ -29,7 +30,7 @@ export function FAQScreen() {
                                 quam, tristique at nibh quis, facilisis rhoncus magna. Nam fermentum sodales lectus sit amet vehicula.
                             </Text>
 
-                            <img src={hotdog.src} width="auto" alt={""} style={{ maxHeight: "150px", maxWidth: "150px" }} />
+                            <Image src={hotdog.src} width={150} height={150} alt={"Hotdog"} />
                         </HStack>
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
@@ -38,7 +39,7 @@ export function FAQScreen() {
                         <br />
 
                         <HStack>
-                            <img src={pizza.src} width="auto" alt={""} style={{ maxHeight: "150px", maxWidth: "150px" }} />
+                            <Image src={pizza.src} width={150} height={150} alt={"Pizza"} />
 
                             <Text>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet semper purus. Proin lorem sapien,
@@ -59,7 +60,7 @@ export function FAQScreen() {
                                 quam, tristique at nibh quis, facilisis rhoncus magna. Nam fermentum sodales lectus sit amet vehicula.
                             </Text>
 
-                            <img src={pasta.src} width="auto" alt={""} style={{ maxHeight: "150px", maxWidth: "150px" }} />
+                            <Image src={pasta.src} width={150} height={150} alt={"Hotdog"} />
                         </HStack>
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
@@ -68,7 +69,7 @@ export function FAQScreen() {
                         <br />
 
                         <HStack>
-                            <img src={salad2.src} width="auto" alt={""} style={{ maxHeight: "150px", maxWidth: "150px" }} />
+                            <Image src={salad2.src} width={150} height={150} alt={"Salad"} />
                             <Text>
                                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. In sit amet semper purus. Proin lorem sapien,
                                 placerat vel urna quis, blandit pulvinar purus. Vestibulum lobortis risus ut egestas placerat. Donec lorem

@@ -11,6 +11,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
 import { useMediaQuery } from "react-responsive";
+import Image from "next/image";
 
 export function LaunchBook({
     newLaunch,
@@ -52,7 +53,14 @@ export function LaunchBook({
     }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <img onClick={() => setScreen(Screen.FAQ_SCREEN)} className={styles.help} src="./images/help.png" alt="" />
+            <Image
+                onClick={() => setScreen(Screen.FAQ_SCREEN)}
+                className={styles.help}
+                width={40}
+                height={40}
+                src="/images/help.png"
+                alt="Help"
+            />
 
             <VStack>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>

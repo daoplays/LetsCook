@@ -1,4 +1,4 @@
-import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer } from "@chakra-ui/react";
+import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer, Tooltip } from "@chakra-ui/react";
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -10,7 +10,7 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { FaTwitter, FaTwitch } from "react-icons/fa";
+import { FaTwitter, FaTwitch, FaThumbsDown, FaThumbsUp } from "react-icons/fa";
 import { TfiReload } from "react-icons/tfi";
 
 import twitter from "../public/socialIcons/twitter.svg";
@@ -50,6 +50,7 @@ import { LaunchBook } from "../components/launch_book";
 import { Leaderboard } from "../components/leaderboard";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
+import Image from "next/image";
 
 const ArenaGameCard = ({
     launch,
@@ -62,7 +63,7 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
-    console.log(launch)
+    console.log(launch);
     console.log(launch.seller.toString());
     console.log(launch.sol_address.toString());
     console.log(launch.team_wallet.toString());
@@ -92,8 +93,14 @@ const ArenaGameCard = ({
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
-                    <Box m={3} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
-                    <img src={launch.icon} width={md ? 45 : 75} height={md ? 45 : 75} />
+                    <Box m={5} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                        <Image
+                            alt="Launch icon"
+                            src={launch.icon}
+                            width={md ? 45 : 75}
+                            height={md ? 45 : 75}
+                            style={{ borderRadius: "8px" }}
+                        />
                     </Box>
                 </Center>
             </td>
@@ -103,25 +110,39 @@ const ArenaGameCard = ({
                 </Text>
             </td>
             <td style={{ minWidth: "200px" }}>
-                <HStack justify="center" gap={3}>
+                <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
                     <Link href="#">
-                        <img src={twitter.src} width={md ? 30 : 40} />
+                        <Image alt="Twitter Icon" src={twitter.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                     <Link href="#">
-                        <img src={telegram.src} width={md ? 30 : 40} />
+                        <Image alt="Telegram Icon" src={telegram.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                     <Link href="#">
-                        <img src={discord.src} width={md ? 30 : 40} />
+                        <Image alt="Discord Icon" src={discord.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                     <Link href="#">
-                        <img src={website.src} width={md ? 30 : 40} />
+                        <Image alt="Website Icon" src={website.src} width={md ? 30 : 40} height={md ? 30 : 40} />
                     </Link>
                 </HStack>
             </td>
-            <td style={{ minWidth: sm ? "120px" : "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+            <td style={{ minWidth: "120px" }}>
+                <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
+                    <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
+                        <Image src="/images/thumbs-up.svg" width={40} height={40} alt="Thumbs Up" />
+                    </Tooltip>
+                    <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
+                        <Image src="/images/thumbs-Down.svg" width={40} height={40} alt="Thumbs Down" />
+                    </Tooltip>
+                </HStack>
+
+                {/* Like % displays after voting.
+                >70% = Green #8EFF84
+                50 to 70 = Yellow #FFEE59
+                <50 = Red #FF8484 */}
+
+                {/* <Text fontSize={lg ? "large" : "x-large"} m={0} color="#83FF81">
                     100%
-                </Text>
+                </Text> */}
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
@@ -245,18 +266,17 @@ function LetsCook() {
             true, // allow owner off curve
         );
 
-        let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0,32)
-        let wrapped_sol_account =  await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID)
+        let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
+        let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         if (DEBUG) {
             console.log("arena: ", program_data_account.toString());
             console.log("game_data_account: ", launch_data_account.toString());
             console.log("sol_data_account: ", fees_account.toString());
-            console.log("wsol seed", wrapped_sol_seed)
+            console.log("wsol seed", wrapped_sol_seed);
             console.log("mint", token_mint_pubkey.toString());
         }
-
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
@@ -349,16 +369,16 @@ function LetsCook() {
         const Links = () => (
             <HStack gap={3}>
                 <Link href="#">
-                    <img src={twitter.src} width={md ? 30 : 40} />
+                    <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
                 <Link href="#">
-                    <img src={telegram.src} width={md ? 30 : 40} />
+                    <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
                 <Link href="#">
-                    <img src={discord.src} width={md ? 30 : 40} />
+                    <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
                 <Link href="#">
-                    <img src={website.src} width={md ? 30 : 40} />
+                    <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
             </HStack>
         );
@@ -375,22 +395,10 @@ function LetsCook() {
                         h="100%"
                     >
                         <HStack w="fit-content" gap={md ? 5 : 8}>
-                            <img
-                                src={logo.src}
-                                width="auto"
-                                alt="$SAUCE LOGO"
-                                style={{ maxHeight: md ? 130 : 200, maxWidth: md ? 130 : 200 }}
-                                hidden={md}
-                            />
+                            <Image src={logo.src} width={md ? 130 : 200} height={md ? 130 : 200} alt="$SAUCE LOGO" hidden={md} />
                             <VStack gap={md ? 1 : 3} alignItems={md ? "center" : "left"}>
                                 <Flex ml={-5} gap={md ? 2 : 6}>
-                                    <img
-                                        src={logo.src}
-                                        width="auto"
-                                        alt="$SAUCE LOGO"
-                                        style={{ maxHeight: 50, maxWidth: 50 }}
-                                        hidden={!md}
-                                    />
+                                    <Image src={logo.src} width={50} height={50} alt="$SAUCE LOGO" hidden={!md} />
                                     <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
                                         $Sauce
                                     </Text>
