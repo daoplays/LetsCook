@@ -225,7 +225,7 @@ function LetsCook() {
         let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), Buffer.from(newLaunchData.current.name), Buffer.from("Game")],
+            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
             PROGRAM,
         )[0];
 
@@ -333,6 +333,8 @@ function LetsCook() {
 
         setShowNewGame(false);
     }, [wallet]);
+
+    
 
     // interval for checking state
     useEffect(() => {

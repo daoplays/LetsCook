@@ -407,6 +407,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     opendateLP: new Date(new Date().setHours(0, 0, 0, 0)),
     opentimeLP: "",
     team_wallet: "",
+
 };
 
 export class myU64 {
@@ -446,6 +447,8 @@ export class LaunchData {
         readonly tickets_sold: number,
         readonly tickets_claimed: number,
         readonly mints_won: number,
+        readonly positive_votes : number,
+        readonly negative_votes : number
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchData>(
@@ -479,6 +482,9 @@ export class LaunchData {
             ["tickets_sold", u32],
             ["tickets_claimed", u32],
             ["mints_won", u32],
+            ["positive_votes", u32],
+            ["negative_votes", u32],
+
         ],
         (args) =>
             new LaunchData(
@@ -511,6 +517,9 @@ export class LaunchData {
                 args.tickets_sold!,
                 args.tickets_claimed!,
                 args.mints_won!,
+                args.positive_votes!,
+                args.negative_votes!,
+
             ),
         "LaunchData",
     );
@@ -553,7 +562,7 @@ export class UserData {
         readonly account_type: number,
         readonly user_key: PublicKey,
         readonly total_points: number,
-        //readonly votes : number[]
+        readonly votes : number[]
     ) {}
 
     static readonly struct = new FixableBeetStruct<UserData>(
@@ -561,9 +570,9 @@ export class UserData {
             ["account_type", u8],
             ["user_key", publicKey],
             ["total_points", u32],
-            //["votes", array(u64)],
+            ["votes", array(u64)],
         ],
-        (args) => new UserData(args.account_type!, args.user_key!, args.total_points!), //, args.votes!),
+        (args) => new UserData(args.account_type!, args.user_key!, args.total_points!, args.votes!),
         "UserData",
     );
 }
@@ -663,17 +672,19 @@ export async function run_user_data_GPA(bearer: string): Promise<UserData[]> {
 class CreateLaunch_Instruction {
     constructor(
         readonly instruction: number,
-        readonly name: String,
-        readonly symbol: String,
-        readonly uri: String,
-        readonly icon: String,
+        readonly name: string,
+        readonly symbol: string,
+        readonly uri: string,
+        readonly icon: string,
         readonly total_supply: bignum,
         readonly decimals: number,
         readonly launch_date: bignum,
-        readonly description: String,
+        readonly close_date: bignum,
+        readonly description: string,
         readonly distribution: number[],
         readonly num_mints: number,
         readonly ticket_price: bignum,
+        readonly page_name: string,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -686,10 +697,12 @@ class CreateLaunch_Instruction {
             ["total_supply", u64],
             ["decimals", u8],
             ["launch_date", u64],
+            ["close_date", u64],
             ["description", utf8String],
             ["distribution", uniformFixedSizeArray(u8, 6)],
             ["num_mints", u32],
             ["ticket_price", u64],
+            ["page_name", u64],
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -701,10 +714,12 @@ class CreateLaunch_Instruction {
                 args.total_supply!,
                 args.decimals!,
                 args.launch_date!,
+                args.close_date!,
                 args.description!,
                 args.distribution!,
                 args.num_mints!,
                 args.ticket_price!,
+                args.page_name!
             ),
         "CreateLaunch_Instruction",
     );
@@ -721,10 +736,12 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.total_supply,
         new_launch_data.decimals,
         new_launch_data.opendate.getTime(),
+        new_launch_data.closedate.getTime(),
         new_launch_data.description,
         new_launch_data.distribution,
         new_launch_data.num_mints,
         new_launch_data.ticket_price,
+        new_launch_data.pagename
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

@@ -21,7 +21,7 @@ export function HypeVote({ launch_data }: { launch_data: LaunchData }) {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             let launch_data_account = PublicKey.findProgramAddressSync(
-                [launch_data.seller.toBytes(), Buffer.from(launch_data.name), Buffer.from("Game")],
+                [Buffer.from(launch_data.page_name), Buffer.from("Launch")],
                 PROGRAM,
             )[0];
 

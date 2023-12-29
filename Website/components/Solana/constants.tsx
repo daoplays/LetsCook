@@ -8,7 +8,7 @@ const PROD_RPC_NODE = "https://practical-fragrant-wind.solana-mainnet.quiknode.p
 const PROD_WSS_NODE = "wss://practical-fragrant-wind.solana-mainnet.quiknode.pro/99ae430d9ebfdeba7c6dc64be19e93e2a5210e7a";
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-export const PROGRAM = new PublicKey("82cvbdZtgki1rXgGiXD8QzEYgUNzg4LHcm4cDcZm66YP");
+export const PROGRAM = new PublicKey("9RMAeCgFVSDGbj8TCsQ2pqwhwtrjMbKr9DeonLgQe35p");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
 
 // account seeds
