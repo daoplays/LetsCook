@@ -23,30 +23,22 @@ export function LaunchBook({
     setScreen: Dispatch<SetStateAction<Screen>>;
 }) {
     const [openDate, setOpenDate] = useState<Date>(newLaunch.current.opendate);
-    const [openTime, setOpenTime] = useState<string>(newLaunch.current.opentime);
     const [closeDate, setcloseDate] = useState<Date>(newLaunch.current.closedate);
-    const [closeTime, setcloseTime] = useState<string>(newLaunch.current.closetime);
-    const [openDateLP, setOpenDateLP] = useState<Date>(newLaunch.current.opendateLP);
-    const [openTimeLP, setOpenTimeLP] = useState<string>(newLaunch.current.opentimeLP);
+
     const [wallet, setWallet] = useState<string>(newLaunch.current.team_wallet);
 
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
     function setLaunchData(e) {
-        console.log("openDate, openTime", openTime, openDate);
-        newLaunch.current.opentime = openTime;
         newLaunch.current.opendate = openDate;
-        newLaunch.current.closetime = closeTime;
         newLaunch.current.closedate = closeDate;
-        newLaunch.current.opentimeLP = openTimeLP;
-        newLaunch.current.opendateLP = openDateLP;
         newLaunch.current.team_wallet = wallet;
         setScreen(Screen.LAUNCH_DETAILS);
     }
     function confirm(e) {
         e.preventDefault();
-        if (openTime && openDate && closeTime && closeTime && openDateLP && openTimeLP && wallet) {
+        if (closeDate && openDate && wallet) {
             ListGameOnArena(e);
         } else {
             alert("Please fill all the details on this page.");
@@ -85,14 +77,6 @@ export function LaunchBook({
                                         />
                                     </div>
                                 </div>
-
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>OPEN TIME:</div>
-
-                                    <div className={`${styles.textLabelInputTime} font-face-kg`}>
-                                        <TimePicker format="h:m a" disableClock={true} onChange={setOpenTime} value={openTime} />
-                                    </div>
-                                </div>
                             </div>
 
                             <div className={styles.launchBodyLowerHorizontal}>
@@ -107,39 +91,6 @@ export function LaunchBook({
                                             selected={closeDate}
                                             onChange={(date) => setcloseDate(date)}
                                         />
-                                    </div>
-                                </div>
-
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>CLOSE TIME:</div>
-
-                                    <div className={`${styles.textLabelInputTime} font-face-kg`}>
-                                        <TimePicker format="h:m a" disableClock={true} onChange={setcloseTime} value={closeTime} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={`${styles.textLabel} font-face-kg`}>LIQUIDITY POOL</div>
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
-
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker
-                                            showTimeSelect
-                                            timeFormat="HH:mm"
-                                            timeIntervals={15}
-                                            selected={openDateLP}
-                                            onChange={(date) => setOpenDateLP(date)}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>OPEN TIME:</div>
-
-                                    <div className={`${styles.textLabelInputTime} font-face-kg`}>
-                                        <TimePicker format="h:m a" disableClock={true} onChange={setOpenTimeLP} value={openTimeLP} />
                                     </div>
                                 </div>
                             </div>
