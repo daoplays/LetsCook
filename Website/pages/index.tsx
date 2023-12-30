@@ -53,6 +53,7 @@ import { HypeVote } from "../components/hypeVote";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
+import WoodenButton from "../components/Buttons/woodenButton";
 
 const ArenaGameCard = ({
     launch,
@@ -430,27 +431,7 @@ function LetsCook() {
                             </VStack>
                         </HStack>
                         {md && <Links />}
-                        <Box
-                            h={md ? 45 : 90}
-                            w={md ? 150 : 280}
-                            mt={4}
-                            bg="url(/images/Wood\ Panel.png)"
-                            backgroundSize="cover"
-                            borderRadius={md ? 10 : 20}
-                            px={5}
-                        >
-                            <VStack h="100%" align="center" justify="center">
-                                <Text
-                                    m={0}
-                                    w={md ? "fit-content" : 240}
-                                    fontSize={md ? "medium" : 35}
-                                    color="#683309"
-                                    className="font-face-kg"
-                                >
-                                    Mint Live
-                                </Text>
-                            </VStack>
-                        </Box>
+                        <WoodenButton label="Mint Live" size={35} />
                     </Flex>
                 </Box>
             </Box>

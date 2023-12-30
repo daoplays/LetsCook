@@ -25,18 +25,14 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } fr
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { FaTwitter, FaTwitch, FaCopy } from "react-icons/fa";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, MintPageState, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
 import { Raydium } from "./Solana/raydium";
 import { PieChart } from "react-minimal-pie-chart";
 import { Fee } from "@raydium-io/raydium-sdk";
 import bs58 from "bs58";
 import BN from "bn.js";
 import logo from "../public/images/sauce.png";
-import tickets from "../public/images/Mint.png";
-import tickets2 from "../public/images/Mint2.png";
-import bar from "../public/images/bar.png";
 import Image from "next/image";
 import useResponsive from "../hooks/useResponsive";
 import twitter from "../public/socialIcons/twitter.svg";
@@ -44,10 +40,12 @@ import telegram from "../public/socialIcons/telegram.svg";
 import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
 import Link from "next/link";
+import WoodenButton from "./Buttons/woodenButton";
 
 export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
     const wallet = useWallet();
     const { xs, sm, md, lg } = useResponsive();
+    const [tokenPage] = useState(MintPageState.MINT_FAILED);
     let name = launch_data.name;
     console.log(launch_data.mint_address.toString());
 
@@ -254,6 +252,7 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                 >
                     <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
                         <VStack align="start" gap={xs ? 3 : 5}>
+                            {/* Ticket Price  */}
                             <HStack>
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Price per ticket: 0.25
@@ -261,13 +260,18 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                                 <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                             </HStack>
 
+                            {/* Winning Tickets  */}
                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                 Total Winning Tickets: 2,000
                             </Text>
+
+                            {/* Tokens per winning ticket */}
                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                 Tokens Per Winning Ticket: 1,000,000 <br />
                                 (0.01% of total supply)
                             </Text>
+
+                            {/* Auto refund function */}
                             <HStack align="center" gap={3}>
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Auto Refund:
@@ -285,8 +289,9 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                             </HStack>
                         </VStack>
 
-                        <VStack gap={3}>
+                        <VStack align="center" justify="center" gap={3}>
                             <HStack>
+                                {/* Total Cost & States */}
                                 <Text
                                     m="0"
                                     color="white"
@@ -294,22 +299,75 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                                     textAlign={"center"}
                                     fontSize={lg ? "x-large" : "xxx-large"}
                                 >
-                                    Total: 0.52
+                                    {tokenPage === MintPageState.PRE_LAUNCH
+                                        ? "Warming Up"
+                                        : tokenPage === MintPageState.ACTIVE
+                                          ? "Total: 0.52"
+                                          : tokenPage === MintPageState.MINTED_OUT
+                                            ? "Cooked Out!"
+                                            : tokenPage === MintPageState.MINT_FAILED
+                                              ? "Cook Failed"
+                                              : "none"}
                                 </Text>
-                                <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />
+                                {tokenPage === MintPageState.ACTIVE && (
+                                    <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />
+                                )}
                             </HStack>
-                            <HStack maxW="320px">
-                                <Button {...dec} size="lg">
+
+                            <Box mt={-3}>
+                                {(tokenPage === MintPageState.MINTED_OUT || tokenPage === MintPageState.MINT_FAILED) && (
+                                    <VStack>
+                                        <WoodenButton
+                                            // pass action here (check tickets / refund tickets)
+                                            label={
+                                                tokenPage === MintPageState.MINTED_OUT
+                                                    ? "Check Tickets"
+                                                    : tokenPage === MintPageState.MINT_FAILED
+                                                      ? "Refund Tickets"
+                                                      : ""
+                                            }
+                                            size={28}
+                                        />
+                                        {tokenPage === MintPageState.MINTED_OUT && (
+                                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                                41.5% chance per ticket
+                                            </Text>
+                                        )}
+                                    </VStack>
+                                )}
+                            </Box>
+
+                            {/* Mint Quantity  */}
+                            <HStack maxW="320px" hidden={tokenPage === MintPageState.MINTED_OUT || tokenPage === MintPageState.MINT_FAILED}>
+                                <Button {...dec} size="lg" isDisabled={tokenPage === MintPageState.PRE_LAUNCH}>
                                     -
                                 </Button>
 
-                                <Input {...input} size="lg" fontSize="x-large" color="white" alignItems="center" justifyContent="center" />
-                                <Button {...inc} size="lg">
+                                <Input
+                                    {...input}
+                                    size="lg"
+                                    fontSize="x-large"
+                                    color="white"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    isDisabled={tokenPage === MintPageState.PRE_LAUNCH}
+                                />
+                                <Button {...inc} size="lg" isDisabled={tokenPage === MintPageState.PRE_LAUNCH}>
                                     +
                                 </Button>
                             </HStack>
-                            <Button size="lg">Mint</Button>
-                            <VStack>
+
+                            {/* Mint Button  */}
+                            <Button
+                                size="lg"
+                                isDisabled={tokenPage === MintPageState.PRE_LAUNCH}
+                                hidden={tokenPage === MintPageState.MINTED_OUT || tokenPage === MintPageState.MINT_FAILED}
+                            >
+                                Mint
+                            </Button>
+
+                            {/* Platform fee  */}
+                            <VStack hidden={tokenPage === MintPageState.MINTED_OUT || tokenPage === MintPageState.MINT_FAILED}>
                                 <HStack>
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                         Platform fee: 0.01
@@ -324,10 +382,32 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                     </Flex>
 
                     <VStack w={xs ? "100%" : "85%"}>
-                        <Progress mb={2} w="100%" h={25} borderRadius={12} colorScheme="whatsapp" size="sm" value={35} />
+                        {/* Mint Progress  */}
+                        <Progress
+                            mb={2}
+                            w="100%"
+                            h={25}
+                            borderRadius={12}
+                            colorScheme={
+                                tokenPage === MintPageState.PRE_LAUNCH
+                                    ? "none"
+                                    : tokenPage === MintPageState.ACTIVE
+                                      ? "whatsapp"
+                                      : tokenPage === MintPageState.MINTED_OUT
+                                        ? "linkedin"
+                                        : tokenPage === MintPageState.MINT_FAILED
+                                          ? "red"
+                                          : "none"
+                            }
+                            size="sm"
+                            value={35}
+                        />
+
+                        {/* Total tickets sold  */}
                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                             Tickets Sold: 1400
                         </Text>
+                        {/* Liquidity  */}
                         <Flex direction={md ? "column" : "row"}>
                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                 Guaranteed Liquidity:
@@ -342,11 +422,13 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
                     </VStack>
                 </VStack>
 
+                {/* Token Distribution  */}
                 <VStack w="100%" mt={12}>
                     <Text m={0} fontSize={md ? "xl" : 30} color="white" className="font-face-kg">
                         Distribution
                     </Text>
                     <HStack align="center" justify="center" style={{ cursor: "pointer" }}>
+                        {/* Token Supply  */}
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
                             Total Supply: 10B
                         </Text>

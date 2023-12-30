@@ -47,3 +47,10 @@ export const enum Screen {
     LAUNCH_BOOK = 5,
     LEADERBOARD = 6,
 }
+
+export const enum MintPageState {
+    PRE_LAUNCH = 0,
+    ACTIVE = 1,
+    MINTED_OUT = 2,
+    MINT_FAILED = 3,
+}
