@@ -1,12 +1,18 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Center, VStack, Text, Box, HStack } from "@chakra-ui/react";
-
-import { FaTwitter, FaTwitch } from "react-icons/fa";
-
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
+import {
+    Center,
+    VStack,
+    Text,
+    Box,
+    HStack,
+    Flex,
+    Tooltip,
+    Checkbox,
+    Input,
+    Button,
+    useNumberInput,
+    Progress,
+    Divider,
+} from "@chakra-ui/react";
 import {
     LaunchData,
     bignum_to_num,
@@ -15,18 +21,33 @@ import {
     serialise_BuyTickets_instruction,
     myU64,
 } from "./Solana/state";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { FaTwitter, FaTwitch, FaCopy } from "react-icons/fa";
+import { MdOutlineContentCopy } from "react-icons/md";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
 import { Raydium } from "./Solana/raydium";
+import { PieChart } from "react-minimal-pie-chart";
+import { Fee } from "@raydium-io/raydium-sdk";
 import bs58 from "bs58";
 import BN from "bn.js";
-
 import logo from "../public/images/sauce.png";
 import tickets from "../public/images/Mint.png";
 import tickets2 from "../public/images/Mint2.png";
 import bar from "../public/images/bar.png";
 import Image from "next/image";
+import useResponsive from "../hooks/useResponsive";
+import twitter from "../public/socialIcons/twitter.svg";
+import telegram from "../public/socialIcons/telegram.svg";
+import discord from "../public/socialIcons/discord.svg";
+import website from "../public/socialIcons/website.svg";
+import Link from "next/link";
 
 export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
     const wallet = useWallet();
+    const { xs, sm, md, lg } = useResponsive();
     let name = launch_data.name;
     console.log(launch_data.mint_address.toString());
 
@@ -89,89 +110,266 @@ export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
         }
     }, [wallet]);
 
+    const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
+        step: 1,
+        defaultValue: 1,
+        min: 1,
+        max: 100,
+    });
+
+    const inc = getIncrementButtonProps();
+    const dec = getDecrementButtonProps();
+    const input = getInputProps();
+
+    const distribution = [
+        {
+            title: "Let's Cook Raffle",
+            value: 20,
+            color: "#FF5151",
+        },
+        {
+            title: "Liquidity Pool",
+            value: 20,
+            color: "#489CFF",
+        },
+        {
+            title: "LP Rewards",
+            value: 10,
+            color: "#74DD5A",
+        },
+        {
+            title: "Airdrops",
+            value: 15,
+            color: "#FFEF5E",
+        },
+        {
+            title: "Team",
+            value: 25,
+            color: "#B96CF6",
+        },
+        {
+            title: "Others",
+            value: 10,
+            color: "#FF994E",
+        },
+    ];
+
+    const Links = () => (
+        <HStack gap={3}>
+            <Link href="#" target="_blank">
+                <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
+            </Link>
+            <Link href="#" target="_blank">
+                <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
+            </Link>
+            <Link href="#" target="_blank">
+                <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
+            </Link>
+            <Link href="#" target="_blank">
+                <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
+            </Link>
+        </HStack>
+    );
+
     return (
-        <Center mt="20px" width="90%">
-            <VStack>
-                <HStack>
-                    <Image src={logo.src} width={200} height={200} alt={"Logo"} />
-                    <VStack>
-                        <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
-                            {name}
-                        </Text>
-                        <Text color="white" className="font-face-rk" textAlign={"center"} fontSize={10}>
-                            solscan link
-                        </Text>
-                        <Text color="white" className="font-face-rk" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                            {launch_data.description}
-                        </Text>
-                        <HStack>
-                            <FaTwitter color="white" />
-                            <FaTwitch color="white" />
-                            <Text m="0" color="white" className="font-face-rk" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                                24 Jan 2024
-                            </Text>
-                            <Raydium launch_data={launch_data} />
-                        </HStack>
-                    </VStack>
-                </HStack>
+        <Center>
+            <VStack spacing={3} px={sm ? 3 : 0} my={xs ? "25px" : "50px"} width={sm ? "100%" : "80%"}>
+                <VStack>
+                    {/* Token Logo - Mobile View  */}
+                    <Image src={logo.src} width={200} height={200} alt="$SAUCE LOGO" hidden={!md} />
 
-                <HStack mt="50px" spacing={"200px"}>
-                    <VStack>
-                        <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                            2000 MINTS = 20% OF TOTAL SUPPLY
-                        </Text>
-                        <HStack>
-                            <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                                1 MINT = 2000000
-                            </Text>
-                            <Image src={logo.src} width={50} height={50} alt={"Logo"} />
-                        </HStack>
-                        <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                            0.5 SOL PER TICKET
-                        </Text>
-                    </VStack>
-                    <VStack>
-                        <HStack>
-                            <Image src={tickets2.src} width={160} height={160} alt={"Tickets"} />
-                            <Image
-                                src={tickets.src}
-                                onClick={() => {
-                                    BuyTickets();
-                                }}
-                                width={200}
-                                height={200}
-                                alt={"Tickets"}
-                            />
-                        </HStack>
-                        <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                            Platform Fee: 0.02 SOL per ticket
-                            <br />
-                            (50% goes to token LP)
-                        </Text>
-                    </VStack>
-                </HStack>
+                    {/* Token Name  */}
+                    <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
+                        $Sauce
+                    </Text>
 
-                <VStack mt="50px">
-                    <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                        Tickets Sold: 1400
-                        <br />
-                        Guaranteed Liquidity (SOL): 714/1000
-                    </Text>
-                    <Image src={bar.src} width={700} height={160} alt={"Progress Bar"} />
-                    <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                        REFUND FOR ALL IF LIQUIDITY THRESHOLD NOT REACHED
-                        <br />
-                        REFUND FOR LOSING TICKETS
-                    </Text>
+                    <HStack spacing={3} align="center" justify="center">
+                        {/* Contract Address  */}
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
+                            {md ? "H6bmfg...LupA2v" : "H6bmfgE1V7UHCf9VmuzEhsYgU6DkpAtMeqXwzjLupA2v"}
+                        </Text>
+
+                        {/* Copy Button for Contract Address  */}
+                        <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
+                            <div style={{ cursor: "pointer" }}>
+                                <MdOutlineContentCopy color="white" size={sm ? 25 : 40} />
+                            </div>
+                        </Tooltip>
+
+                        {/* Solscan Link */}
+                        <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                            <Link href="" target="_blank">
+                                <Image src="/images/solscan.png" width={sm ? 25 : 40} height={sm ? 30 : 40} alt="Solscan icon" />
+                            </Link>
+                        </Tooltip>
+                    </HStack>
                 </VStack>
 
-                <VStack mt="50px">
-                    <Text m="0" color="white" className="font-face-kg" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                        DISTRIBUTION
+                <Flex flexDirection={md ? "column" : "row"} align="center" justify={md ? "center" : "space-between"} h="100%">
+                    <HStack w="fit-content" gap={5}>
+                        {/* Token Logo - Desktop View  */}
+                        <Image src={logo.src} width={md ? 130 : 200} height={md ? 130 : 200} alt="$SAUCE LOGO" hidden={md} />
+
+                        {/* Token Description and Social Links  */}
+                        <VStack gap={md ? 1 : 2} alignItems={md ? "center" : "left"}>
+                            <Text
+                                fontFamily="ReemKufiRegular"
+                                fontSize={sm ? "large" : "x-large"}
+                                color="white"
+                                maxW={sm ? "100%" : md ? "600px" : "850px"}
+                                mr={md ? 0 : 25}
+                                lineHeight={1.15}
+                                align={md ? "center" : "start"}
+                                m={0}
+                            >
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus dapibus massa vitae magna elementum, sit
+                                amet sagittis urna imperdiet.
+                            </Text>
+                            <HStack mt={3} hidden={sm}>
+                                {!md && <Links />}
+                            </HStack>
+                        </VStack>
+                    </HStack>
+                </Flex>
+
+                {/* Open & Close Date  */}
+                <HStack mt={xs ? 5 : 0} spacing={5}>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
+                        Opens: Dec 02, 2023 @10:00 UTC
                     </Text>
-                    <Text m="0" color="white" className="font-face-rt" textAlign={"center"} fontSize={DUNGEON_FONT_SIZE}>
-                        Total Supply: 4.20B
+                    <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="white" />
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
+                        Closes: Dec 02, 2023 @10:00 UTC
                     </Text>
+                </HStack>
+
+                <VStack
+                    gap={50}
+                    p={md ? 25 : 50}
+                    bg="rgba(255, 255, 255, 0.20)"
+                    borderRadius={12}
+                    border="1px solid white"
+                    h="fit-content"
+                    mx={3}
+                >
+                    <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
+                        <VStack align="start" gap={xs ? 3 : 5}>
+                            <HStack>
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    Price per ticket: 0.25
+                                </Text>
+                                <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                            </HStack>
+
+                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                Total Winning Tickets: 2,000
+                            </Text>
+                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                Tokens Per Winning Ticket: 1,000,000 <br />
+                                (0.01% of total supply)
+                            </Text>
+                            <HStack align="center" gap={3}>
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    Auto Refund:
+                                </Text>
+                                <Checkbox size="lg" />
+                                <Tooltip
+                                    label="You will get a refund if liquidity threshhold is not reached."
+                                    hasArrow
+                                    w={270}
+                                    fontSize="large"
+                                    offset={[0, 10]}
+                                >
+                                    <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                </Tooltip>
+                            </HStack>
+                        </VStack>
+
+                        <VStack gap={3}>
+                            <HStack>
+                                <Text
+                                    m="0"
+                                    color="white"
+                                    className="font-face-kg"
+                                    textAlign={"center"}
+                                    fontSize={lg ? "x-large" : "xxx-large"}
+                                >
+                                    Total: 0.52
+                                </Text>
+                                <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />
+                            </HStack>
+                            <HStack maxW="320px">
+                                <Button {...dec} size="lg">
+                                    -
+                                </Button>
+
+                                <Input {...input} size="lg" fontSize="x-large" color="white" alignItems="center" justifyContent="center" />
+                                <Button {...inc} size="lg">
+                                    +
+                                </Button>
+                            </HStack>
+                            <Button size="lg">Mint</Button>
+                            <VStack>
+                                <HStack>
+                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                        Platform fee: 0.01
+                                    </Text>
+                                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                </HStack>
+                                <Text m="0" mt={-3} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    per ticket
+                                </Text>
+                            </VStack>
+                        </VStack>
+                    </Flex>
+
+                    <VStack w={xs ? "100%" : "85%"}>
+                        <Progress mb={2} w="100%" h={25} borderRadius={12} colorScheme="whatsapp" size="sm" value={35} />
+                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                            Tickets Sold: 1400
+                        </Text>
+                        <Flex direction={md ? "column" : "row"}>
+                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                Guaranteed Liquidity:
+                            </Text>
+                            <HStack justify="center">
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    &nbsp;350/500
+                                </Text>
+                                <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                            </HStack>
+                        </Flex>
+                    </VStack>
+                </VStack>
+
+                <VStack w="100%" mt={12}>
+                    <Text m={0} fontSize={md ? "xl" : 30} color="white" className="font-face-kg">
+                        Distribution
+                    </Text>
+                    <HStack align="center" justify="center" style={{ cursor: "pointer" }}>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
+                            Total Supply: 10B
+                        </Text>
+                    </HStack>
+
+                    <Flex align="center" justify="center" flexDirection={md ? "column" : "row"} w="100%" gap={xs ? 3 : 12} mt={3}>
+                        <PieChart
+                            animate={true}
+                            totalValue={100}
+                            data={distribution}
+                            style={{ width: xs ? "100%" : "400px", height: "400px" }}
+                        />
+                        <VStack gap={6} align="start">
+                            {distribution.map((i) => (
+                                <HStack gap={4}>
+                                    <Box borderRadius={6} bg={i.color} h={35} w={35} />{" "}
+                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
+                                        {i.title}
+                                    </Text>
+                                </HStack>
+                            ))}
+                        </VStack>
+                    </Flex>
                 </VStack>
             </VStack>
         </Center>
