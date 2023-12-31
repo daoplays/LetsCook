@@ -3,6 +3,7 @@ import { PieChart } from "react-minimal-pie-chart";
 import styles from "../styles/Launch.module.css";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text } from "@chakra-ui/react";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
@@ -97,7 +98,7 @@ export function LaunchScreen({
                 newLaunch.current.total_supply = parseInt(totalSupply);
                 newLaunch.current.decimals = parseInt(decimal);
                 newLaunch.current.num_mints = parseInt(mints);
-                newLaunch.current.ticket_price = parseFloat(totalPrice);
+                newLaunch.current.ticket_price = Math.round((parseFloat(totalPrice) * LAMPORTS_PER_SOL))
                 newLaunch.current.minimum_liquidity = parseInt(liquidity);
                 newLaunch.current.distribution[0] = parseFloat(distribution1);
                 newLaunch.current.distribution[1] = parseFloat(distribution2);

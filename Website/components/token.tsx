@@ -42,10 +42,13 @@ import website from "../public/socialIcons/website.svg";
 import Link from "next/link";
 import WoodenButton from "./Buttons/woodenButton";
 
+import styles from "../styles/Launch.module.css";
+
+
 export function TokenScreen({ launch_data }: { launch_data: LaunchData }) {
     const wallet = useWallet();
     const { xs, sm, md, lg } = useResponsive();
-    const [tokenPage] = useState(MintPageState.MINT_FAILED);
+    const [tokenPage] = useState(MintPageState.MINTED_OUT);
     let name = launch_data.name;
     console.log(launch_data.mint_address.toString());
 
