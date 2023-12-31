@@ -3,7 +3,6 @@ import { PieChart } from "react-minimal-pie-chart";
 import styles from "../styles/Launch.module.css";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text } from "@chakra-ui/react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
 import { LaunchDataUserInput } from "./Solana/state";
@@ -26,8 +25,7 @@ export function LaunchScreen({
     const [totalSupply, setTotalSupply] = useState<string>(newLaunch.current.total_supply.toString());
     const [decimal, setDecimal] = useState<string>(newLaunch.current.decimals.toString());
     const [mints, setMints] = useState<string>(newLaunch.current.num_mints.toString());
-    const [totalPrice, setTotalPrice] = useState<string>(newLaunch.current.ticket_price.toString());
-    const [liquidity, setLiquidity] = useState<string>(newLaunch.current.minimum_liquidity.toString());
+    const [ticketPrice, setTotalPrice] = useState<string>(newLaunch.current.ticket_price.toString());
     const [distribution1, setDistribution1] = useState(newLaunch.current.distribution[0].toString());
     const [distribution2, setDistribution2] = useState(newLaunch.current.distribution[1].toString());
     const [distribution3, setDistribution3] = useState(newLaunch.current.distribution[2].toString());
@@ -98,8 +96,8 @@ export function LaunchScreen({
                 newLaunch.current.total_supply = parseInt(totalSupply);
                 newLaunch.current.decimals = parseInt(decimal);
                 newLaunch.current.num_mints = parseInt(mints);
-                newLaunch.current.ticket_price = Math.round((parseFloat(totalPrice) * LAMPORTS_PER_SOL))
-                newLaunch.current.minimum_liquidity = parseInt(liquidity);
+                newLaunch.current.ticket_price = parseFloat(ticketPrice);
+                newLaunch.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
                 newLaunch.current.distribution[0] = parseFloat(distribution1);
                 newLaunch.current.distribution[1] = parseFloat(distribution2);
                 newLaunch.current.distribution[2] = parseFloat(distribution3);
@@ -240,7 +238,7 @@ export function LaunchScreen({
                                         required
                                         className={styles.inputBox}
                                         type="number"
-                                        value={totalPrice}
+                                        value={ticketPrice}
                                         onChange={(e) => {
                                             setTotalPrice(e.target.value);
                                         }}
@@ -258,7 +256,7 @@ export function LaunchScreen({
                                         required
                                         className={styles.inputBox}
                                         type="number"
-                                        value={parseFloat(mints) * parseFloat(totalPrice)}
+                                        value={parseFloat(mints) * parseFloat(ticketPrice)}
                                         disabled
                                         // onChange={(e) => {
                                         //     setLiquidity(e.target.value);

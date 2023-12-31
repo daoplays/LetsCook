@@ -726,6 +726,9 @@ class CreateLaunch_Instruction {
 
 export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
     console.log(new_launch_data);
+    console.log(new_launch_data.opendate.toString());
+    console.log(new_launch_data.closedate.toString());
+
     const data = new CreateLaunch_Instruction(
         LaunchInstruction.create_game,
         new_launch_data.name,
@@ -739,7 +742,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.description,
         new_launch_data.distribution,
         new_launch_data.num_mints,
-        new_launch_data.ticket_price,
+        new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);

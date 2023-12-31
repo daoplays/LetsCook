@@ -31,6 +31,8 @@ export function LaunchBook({
         query: "(max-width: 1000px)",
     });
     function setLaunchData(e) {
+        console.log(openDate.toString());
+        console.log(closeDate.toString());
         newLaunch.current.opendate = openDate;
         newLaunch.current.closedate = closeDate;
         newLaunch.current.team_wallet = wallet;

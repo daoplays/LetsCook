@@ -502,7 +502,9 @@ function LetsCook() {
             )}
             {screen === Screen.LAUNCH_DETAILS && <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.LAUNCH_SCREEN && <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />}
-            {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && <TokenScreen launch_data={current_launch_data} />}
+            {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && (
+                <TokenScreen launch_data={current_launch_data} join_data={null} />
+            )}
             {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data} />}
             <Footer />
         </main>
