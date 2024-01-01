@@ -20,7 +20,7 @@ import website from "../public/socialIcons/website.svg";
 
 import bs58 from "bs58";
 
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen } from "../components/Solana/constants";
+import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, RPC_NODE } from "../components/Solana/constants";
 import {
     run_launch_data_GPA,
     LaunchData,
@@ -33,6 +33,10 @@ import {
     bignum_to_num,
     UserData,
     run_user_data_GPA,
+    run_join_data_GPA,
+    JoinData,
+    uInt8ToLEBytes,
+    postData
 } from "../components/Solana/state";
 import Navigation from "../components/Navigation";
 import { FAQScreen } from "../components/faq";
@@ -68,11 +72,11 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
-    console.log(launch);
-    console.log(launch.seller.toString());
-    console.log(launch.sol_address.toString());
-    console.log(launch.team_wallet.toString());
-    console.log(launch.mint_address.toString());
+   // console.log(launch);
+   /// console.log(launch.seller.toString());
+    //console.log(launch.sol_address.toString());
+    //console.log(launch.team_wallet.toString());
+    //console.log(launch.mint_address.toString());
 
     const { sm, md, lg } = useResponsive();
     let name = launch.name;
@@ -202,17 +206,74 @@ function LetsCook() {
 
     const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
 
+    const [join_data, setJoinData] = useState<Map<number, JoinData> | null>(null);
+
     const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
 
+    const run_join_data_GPA2 = useCallback(async () => {
+
+        let index_buffer = uInt8ToLEBytes(3);
+        let account_bytes = bs58.encode(index_buffer);
+        let wallet_bytes = PublicKey.default.toBase58();
+    
+        console.log("wallet", wallet.publicKey !== null ?  wallet.publicKey.toString(): "null");
+        if (wallet.publicKey !== null) {
+            wallet_bytes = wallet.publicKey.toBase58();
+        }
+    
+        var body = {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "getProgramAccounts",
+            params: [
+                PROGRAM.toString(),
+                { filters: [{ memcmp: { offset: 0, bytes: account_bytes }}, { memcmp: { offset: 1, bytes: wallet_bytes } }], encoding: "base64", commitment: "confirmed" },
+            ],
+        };
+    
+        var program_accounts_result;
+        try {
+            program_accounts_result = await postData(RPC_NODE, "", body);
+        } catch (error) {
+            console.log(error);
+            return [];
+        }
+    
+        console.log("check join accounts")
+        console.log(program_accounts_result["result"]);
+    
+        let result: JoinData[] = [];
+        for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
+            //console.log(program_accounts_result["result"][i]);
+            let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
+            let decoded_data = Buffer.from(encoded_data, "base64");
+            try {
+                const [joiner] = JoinData.struct.deserialize(decoded_data);
+                result.push(joiner);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        if (result.length > 0) {
+            let joiner_map = new Map<number, JoinData>();
+            for (let i = 0; i < result.length; i++) {
+                joiner_map.set(bignum_to_num(result[i].game_id), result[i])
+            }
+            setJoinData(joiner_map);
+        }    
+    }, [wallet]);
+
+    
     const CheckLaunchData = useCallback(async () => {
         if (!check_launch_data.current) return;
 
         let list = await run_launch_data_GPA("");
-        console.log(list);
+        //console.log(list);
         setLaunchData(list);
 
         let user_list = await run_user_data_GPA("");
-        console.log(user_list);
+        //console.log(user_list);
         setUserData(user_list);
 
         if (wallet.publicKey !== null) {
@@ -224,8 +285,9 @@ function LetsCook() {
                 }
             }
         }
+        await run_join_data_GPA2();
         check_launch_data.current = false;
-    }, []);
+    }, [run_join_data_GPA2]);
 
     const ListGameOnArena = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
@@ -503,7 +565,7 @@ function LetsCook() {
             {screen === Screen.LAUNCH_DETAILS && <LaunchDetails setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.LAUNCH_SCREEN && <LaunchScreen setScreen={setScreen} newLaunch={newLaunchData} />}
             {screen === Screen.TOKEN_SCREEN && current_launch_data !== null && (
-                <TokenScreen launch_data={current_launch_data} join_data={null} />
+                <TokenScreen launch_data={current_launch_data} join_data={join_data !== null && join_data.has(bignum_to_num(current_launch_data.game_id)) ? join_data.get(bignum_to_num(current_launch_data.game_id)) : null} />
             )}
             {screen === Screen.LEADERBOARD && <Leaderboard user_data={user_data} />}
             <Footer />

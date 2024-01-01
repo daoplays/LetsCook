@@ -21,6 +21,8 @@ import {
     serialise_BuyTickets_instruction,
     myU64,
     JoinData,
+    serialise_basic_instruction,
+    LaunchInstruction
 } from "./Solana/state";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -52,8 +54,17 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
 
     const [totalCost, setTotalCost] = useState(0);
 
-    let name = launch_data.name;
 
+    let win_prob = 0;
+    if (join_data === null){
+        console.log("no joiner info")
+    }
+    if (join_data !== null) {
+        console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launch_data.game_id));
+        win_prob = (join_data.num_tickets - join_data.num_claimed_tickets) / (launch_data.tickets_sold - launch_data.tickets_claimed);
+    }
+
+    let name = launch_data.name;
     let ticketPrice = bignum_to_num(launch_data.ticket_price) / LAMPORTS_PER_SOL;
 
     console.log("dates");
@@ -82,6 +93,84 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
     const input = getInputProps();
 
     const { value } = input;
+
+    const RefundTickets = useCallback(async () => {
+        if (wallet.publicKey === null) {
+            handleConnectWallet();
+        }
+
+        if (wallet.signTransaction === undefined) return;
+
+        if (wallet.publicKey.toString() == launch_data.seller.toString()) {
+            alert("Launch creator cannot buy tickets");
+            return;
+        }
+
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch_data.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), launch_data.mint_address.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
+
+        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+
+        const game_id = new myU64(launch_data.game_id);
+        const [game_id_buf] = myU64.struct.serialize(game_id);
+        console.log("game id ", launch_data.game_id, game_id_buf);
+        console.log("Mint", launch_data.mint_address.toString());
+        console.log("sol", launch_data.sol_address.toString());
+
+        let user_join_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            PROGRAM,
+        )[0];
+
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_refund);
+
+        var account_vector = [
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_join_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data.sol_address, isSigner: false, isWritable: true },
+            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },         
+            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+
+        ];
+
+        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        
+
+        const list_instruction = new TransactionInstruction({
+            keys: account_vector,
+            programId: PROGRAM,
+            data: instruction_data,
+        });
+
+        let txArgs = await get_current_blockhash("");
+
+        let transaction = new Transaction(txArgs);
+        transaction.feePayer = wallet.publicKey;
+
+        transaction.add(list_instruction);
+
+        try {
+            let signed_transaction = await wallet.signTransaction(transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+            let signature = transaction_response.result;
+
+            console.log("join sig: ", signature);
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+    }, [wallet]);
 
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -376,17 +465,22 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
                                 {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
                             </HStack>
 
-                            <Box mt={-3}>
+                            <Box mt={-3}
+                            onClick={MINT_FAILED ? () => {
+                                RefundTickets()
+                            } : () => {}}
+                            >
                                 {(MINTED_OUT || MINT_FAILED) && (
                                     <VStack>
                                         <WoodenButton
                                             // pass action here (check tickets / refund tickets)
                                             label={MINTED_OUT ? "Check Tickets" : MINT_FAILED ? "Refund Tickets" : ""}
                                             size={28}
+                                            
                                         />
                                         {MINTED_OUT && (
                                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                41.5% chance per ticket
+                                                {win_prob}% chance per ticket
                                             </Text>
                                         )}
                                     </VStack>
