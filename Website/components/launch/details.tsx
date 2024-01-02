@@ -58,8 +58,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         setImages(imageList);
     };
 
-    function setData() : boolean {
-
+    function setData(): boolean {
         if (description.length > 950) {
             alert("Description can be at most 950 characters long");
             return false;
@@ -92,12 +91,10 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     }
 
     function setLaunchData(e) {
-        if (setData())
-            setScreen("book");
+        if (setData()) setScreen("book");
     }
     function setLaunchDataPrevious(e) {
-        if(setData())
-            setScreen("details");
+        if (setData()) setScreen("details");
     }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">

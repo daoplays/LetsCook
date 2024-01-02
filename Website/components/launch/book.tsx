@@ -46,8 +46,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         query: "(max-width: 1000px)",
     });
 
-    function setData() : boolean{
-
+    function setData(): boolean {
         console.log(openDate.toString());
         console.log(closeDate.toString());
 
@@ -62,13 +61,10 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                 alert("Team Wallet does not exist");
                 return false;
             }
-        }
-        catch (error) {
+        } catch (error) {
             alert("Invalid Team Wallet");
             return false;
         }
-
-        
 
         if (closeDate.getTime() < openDate.getTime()) {
             alert("Close date must be after launch date");
@@ -83,13 +79,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     }
 
     function setLaunchData(e) {
-        if (setData())
-            setScreen("details");
+        if (setData()) setScreen("details");
     }
 
     function Launch(e) {
-        if (setData())
-            CreateLaunch();
+        if (setData()) CreateLaunch();
     }
 
     const EditLaunch = useCallback(async () => {
@@ -161,7 +155,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         // first upload the png file to arweave and get the url
         let image_url = await arweave_upload(newLaunchData.current.icon_data);
-        let meta_data_url = await arweave_json_upload(newLaunchData.current.name, newLaunchData.current.symbol, newLaunchData.current.description, image_url);
+        let meta_data_url = await arweave_json_upload(
+            newLaunchData.current.name,
+            newLaunchData.current.symbol,
+            newLaunchData.current.description,
+            image_url,
+        );
         console.log("list game with url", image_url, meta_data_url);
 
         newLaunchData.current.uri = meta_data_url;
@@ -274,12 +273,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         } catch (error) {
             console.log(error);
             setProcessingTransaction(false);
-            
+
             return;
         }
 
         await EditLaunch();
-        
     }, [wallet, EditLaunch, newLaunchData]);
 
     function confirm(e) {

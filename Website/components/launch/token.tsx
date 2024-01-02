@@ -77,12 +77,12 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
     // Calculate the total sum of all percentages
     const totalPercentage =
-    parseInt(distribution1) +
-    parseInt(distribution2) +
-    parseInt(distribution3) +
-    parseInt(distribution4) +
-    parseInt(distribution5) +
-    parseInt(distribution6);
+        parseInt(distribution1) +
+        parseInt(distribution2) +
+        parseInt(distribution3) +
+        parseInt(distribution4) +
+        parseInt(distribution5) +
+        parseInt(distribution6);
 
     function setLaunchData(e) {
         e.preventDefault();

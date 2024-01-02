@@ -27,6 +27,7 @@ const Home = () => {
     const game_interval = useRef<number | null>(null);
     const check_launch_data = useRef<boolean>(true);
     const [current_launch_data, setCurrentLaunchData] = useState<LaunchData | null>(null);
+    const [featured_launch, setFeaturedLaunch] = useState<LaunchData | null>(null);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
 
     const [screen, setScreen] = useState<Screen>(Screen.HOME_SCREEN);
@@ -38,6 +39,7 @@ const Home = () => {
         let list = await RunLaunchDataGPA("");
         console.log(list);
         setLaunchData(list);
+        setFeaturedLaunch(list[0]);
 
         let user_list = await RunUserDataGPA("");
         console.log(user_list);
@@ -135,16 +137,16 @@ const Home = () => {
     const Featured = () => {
         const Links = () => (
             <HStack gap={3}>
-                <Link href="#">
+                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.twitter : "#"}>
                     <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
-                <Link href="#">
+                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.telegram : "#"}>
                     <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
-                <Link href="#">
+                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.twitter : "#"}>
                     <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
-                <Link href="#">
+                <Link href={featured_launch !== null ? featured_launch.website : "#"}>
                     <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
             </HStack>
@@ -162,14 +164,18 @@ const Home = () => {
                         h="100%"
                     >
                         <HStack w="fit-content" gap={md ? 5 : 8}>
-                            <Image src={logo.src} width={md ? 130 : 200} height={md ? 130 : 200} alt="$SAUCE LOGO" hidden={md} />
+                            {featured_launch !== null && (
+                                <Image src={featured_launch.icon} width={md ? 130 : 200} height={md ? 130 : 200} alt="$LOGO" hidden={md} />
+                            )}
                             <VStack gap={md ? 1 : 3} alignItems={md ? "center" : "left"}>
                                 <Flex ml={-5} gap={md ? 2 : 6}>
-                                    <Image src={logo.src} width={50} height={50} alt="$SAUCE LOGO" hidden={!md} />
+                                    {featured_launch !== null && (
+                                        <Image src={featured_launch.icon} width={50} height={50} alt="$LOGO" hidden={!md} />
+                                    )}
                                     <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
-                                        $Sauce
+                                        {featured_launch !== null ? "$" + featured_launch.name : ""}
                                     </Text>
-                                    {!md && <Links />}
+                                    {!md && featured_launch !== null && <Links />}
                                 </Flex>
                                 <Text
                                     fontFamily="ReemKufiRegular"
@@ -180,13 +186,20 @@ const Home = () => {
                                     lineHeight={1.15}
                                     align={md ? "center" : "start"}
                                 >
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus dapibus massa vitae magna elementum,
-                                    sit amet sagittis urna imperdiet.
+                                    {featured_launch !== null ? featured_launch.description : ""}
                                 </Text>
                             </VStack>
                         </HStack>
                         {md && <Links />}
-                        <WoodenButton label="Mint Live" size={35} />
+                        {featured_launch !== null && new Date().getTime() >= featured_launch.launch_date && (
+                            <WoodenButton label="Mint Live" size={35} />
+                        )}
+                        {featured_launch !== null && new Date().getTime() < featured_launch.launch_date && (
+                            <WoodenButton label="Mint Pending" size={35} />
+                        )}
+                        {featured_launch !== null && new Date().getTime() >= featured_launch.end_date && (
+                            <WoodenButton label="Mint Closed" size={35} />
+                        )}
                     </Flex>
                 </Box>
             </Box>

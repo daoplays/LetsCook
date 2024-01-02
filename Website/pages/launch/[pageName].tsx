@@ -253,11 +253,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [
-        wallet,
-        launchData,
-        handleConnectWallet,
-    ]);
+    }, [wallet, launchData, handleConnectWallet]);
 
     const RefundTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -270,7 +266,6 @@ const MintPage = () => {
             alert("Launch creator cannot buy tickets");
             return;
         }
-
 
         if (launchData === null) {
             return;
@@ -341,11 +336,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [
-        wallet,
-        handleConnectWallet,
-        launchData
-    ]);
+    }, [wallet, handleConnectWallet, launchData]);
 
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
