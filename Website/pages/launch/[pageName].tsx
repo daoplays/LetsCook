@@ -123,11 +123,11 @@ const MintPage = () => {
                 joiner_map.set(bignum_to_num(result[i].game_id), result[i]);
             }
 
-            if (joiner_map !== null && joiner_map.has(bignum_to_num(launchData.game_id))) {
+            if (joiner_map !== null && launchData !== null && joiner_map.has(bignum_to_num(launchData.game_id))) {
                 setJoinData(joiner_map.get(bignum_to_num(launchData.game_id)));
             }
         }
-    }, [wallet, launchData.game_id]);
+    }, [wallet, launchData]);
 
     let win_prob = 0;
 
@@ -135,7 +135,7 @@ const MintPage = () => {
         console.log("no joiner info");
     }
 
-    if (join_data !== null) {
+    if (join_data !== null && launchData !== null) {
         console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
         win_prob = (join_data.num_tickets - join_data.num_claimed_tickets) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
@@ -189,6 +189,10 @@ const MintPage = () => {
         }
 
         if (wallet.signTransaction === undefined) return;
+
+        if (launchData === null) {
+            return;
+        }
 
         if (wallet.publicKey.toString() == launchData.seller.toString()) {
             alert("Launch creator cannot buy tickets");
@@ -251,11 +255,7 @@ const MintPage = () => {
         }
     }, [
         wallet,
-        launchData.game_id,
-        launchData.mint_address,
-        launchData.page_name,
-        launchData.seller,
-        launchData.sol_address,
+        launchData,
         handleConnectWallet,
     ]);
 
@@ -268,6 +268,11 @@ const MintPage = () => {
 
         if (wallet.publicKey.toString() == launchData.seller.toString()) {
             alert("Launch creator cannot buy tickets");
+            return;
+        }
+
+
+        if (launchData === null) {
             return;
         }
 
@@ -339,11 +344,7 @@ const MintPage = () => {
     }, [
         wallet,
         handleConnectWallet,
-        launchData.game_id,
-        launchData.mint_address,
-        launchData.page_name,
-        launchData.seller,
-        launchData.sol_address,
+        launchData
     ]);
 
     const BuyTickets = useCallback(async () => {
@@ -352,6 +353,10 @@ const MintPage = () => {
         }
 
         if (wallet.signTransaction === undefined) return;
+
+        if (launchData === null) {
+            return;
+        }
 
         if (wallet.publicKey.toString() == launchData.seller.toString()) {
             alert("Launch creator cannot buy tickets");
@@ -412,7 +417,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, value, handleConnectWallet, launchData.game_id, launchData.page_name, launchData.seller, launchData.sol_address]);
+    }, [wallet, value, handleConnectWallet, launchData]);
 
     useEffect(() => {
         if (launchData) {

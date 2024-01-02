@@ -58,7 +58,13 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         setImages(imageList);
     };
 
-    function setLaunchData(e) {
+    function setData() : boolean {
+
+        if (description.length > 950) {
+            alert("Description can be at most 950 characters long");
+            return false;
+        }
+
         newLaunchData.current.pagename = name;
         newLaunchData.current.iconpage2 = icon;
         newLaunchData.current.description = description;
@@ -66,16 +72,17 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         newLaunchData.current.twt_url = twitter;
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
-        setScreen("book");
+
+        return true;
+    }
+
+    function setLaunchData(e) {
+        if (setData())
+            setScreen("book");
     }
     function setLaunchDataPrevious(e) {
-        newLaunchData.current.pagename = name;
-        newLaunchData.current.description = description;
-        newLaunchData.current.web_url = web;
-        newLaunchData.current.twt_url = twitter;
-        newLaunchData.current.disc_url = discord;
-        newLaunchData.current.tele_url = telegram;
-        setScreen("details");
+        if(setData())
+            setScreen("details");
     }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">

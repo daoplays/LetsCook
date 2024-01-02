@@ -241,11 +241,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         } catch (error) {
             console.log(error);
             setProcessingTransaction(false);
-            EditLaunch();
+            
             return;
         }
 
-        EditLaunch();
+        await EditLaunch();
+        
     }, [wallet, EditLaunch, newLaunchData]);
 
     function confirm(e) {
