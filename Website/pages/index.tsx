@@ -236,7 +236,7 @@ const ArenaGameCard = ({
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => (window.location.href = `/launch/${launch.mint_address}`)}
+            onClick={() => (window.location.href = `/launch/${launch.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>

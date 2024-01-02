@@ -66,7 +66,7 @@ const MintPage = () => {
 
     const checkLaunchData = useRef<boolean>(true);
 
-    const { mintAddress } = router.query;
+    const { pageName } = router.query;
 
     const run_join_data_GPA2 = useCallback(async () => {
         let index_buffer = uInt8ToLEBytes(3);
@@ -146,7 +146,7 @@ const MintPage = () => {
             setIsLoading(true);
             const list = await run_launch_data_GPA("");
 
-            const launchItem = list.find((item: LaunchData) => (item.mint_address.toString() === mintAddress ? mintAddress : ""));
+            const launchItem = list.find((item: LaunchData) => (item.page_name.toString() === pageName ? pageName : ""));
 
             if (launchItem) {
                 setLaunchData(launchItem);
@@ -159,7 +159,7 @@ const MintPage = () => {
 
         await run_join_data_GPA2();
         checkLaunchData.current = false;
-    }, [mintAddress, run_join_data_GPA2]);
+    }, [pageName, run_join_data_GPA2]);
 
     useEffect(() => {
         checkLaunchData.current = true;
