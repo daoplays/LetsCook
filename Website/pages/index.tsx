@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "../components/hypeVote";
 import { Screen } from "../components/Solana/constants";
+
 import logo from "../public/images/sauce.png";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
@@ -213,11 +214,11 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
-    console.log(launch);
-    console.log(launch.seller.toString());
-    console.log(launch.sol_address.toString());
-    console.log(launch.team_wallet.toString());
-    console.log(launch.mint_address.toString());
+   // console.log(launch);
+   /// console.log(launch.seller.toString());
+    //console.log(launch.sol_address.toString());
+    //console.log(launch.team_wallet.toString());
+    //console.log(launch.mint_address.toString());
 
     const { sm, md, lg } = useResponsive();
     let name = launch.name;

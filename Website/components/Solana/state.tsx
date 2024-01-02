@@ -545,7 +545,7 @@ export class JoinData {
             ["joiner_key", publicKey],
             ["sol_key", publicKey],
             ["game_id", u64],
-            ["num_tickets", u16],
+            ["num_tickets", u16],   
             ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
             ["ticket_status", u8],
@@ -619,11 +619,11 @@ export async function run_launch_data_GPA(bearer: string): Promise<LaunchData[]>
         return [];
     }
 
-    // console.log(program_accounts_result["result"]);
+    //console.log(program_accounts_result["result"]);
 
     let result: LaunchData[] = [];
     for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        // console.log(program_accounts_result["result"][i]);
+        //console.log(program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
         try {

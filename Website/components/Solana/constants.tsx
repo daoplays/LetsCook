@@ -7,6 +7,15 @@ export const DEV_WSS_NODE = process.env.REACT_APP_DEVNET_WSS_URL;
 const PROD_RPC_NODE = "https://practical-fragrant-wind.solana-mainnet.quiknode.pro/99ae430d9ebfdeba7c6dc64be19e93e2a5210e7a";
 const PROD_WSS_NODE = "wss://practical-fragrant-wind.solana-mainnet.quiknode.pro/99ae430d9ebfdeba7c6dc64be19e93e2a5210e7a";
 
+//pyth oracles
+const PYTH_BTC_DEV = new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
+const PYTH_ETH_DEV = new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw");
+const PYTH_SOL_DEV = new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix");
+
+const PYTH_BTC_PROD = new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU");
+const PYTH_ETH_PROD = new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB");
+const PYTH_SOL_PROD = new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG");
+
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("9RMAeCgFVSDGbj8TCsQ2pqwhwtrjMbKr9DeonLgQe35p");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
@@ -28,6 +37,10 @@ if (isMobile) {
 export const PROD = false;
 export const TEST = true;
 export const DEBUG = true;
+
+export const PYTH_BTC = PYTH_BTC_DEV;
+export const PYTH_ETH = PYTH_ETH_DEV;
+export const PYTH_SOL = PYTH_SOL_DEV;
 
 export var network_string = "devnet";
 export var RPC_NODE = DEV_RPC_NODE;
