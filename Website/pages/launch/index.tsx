@@ -1,8 +1,8 @@
 import { LaunchDataUserInput, defaultUserInput } from "../../components/Solana/state";
 import { useRef, useState } from "react";
-import TokenPage from "./token";
-import DetailsPage from "./details";
-import BookPage from "./book";
+import TokenPage from "../../components/launch/token";
+import DetailsPage from "../../components/launch/details";
+import BookPage from "../../components/launch/book";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import Link from "next/link";
