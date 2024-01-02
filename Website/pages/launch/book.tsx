@@ -6,7 +6,7 @@ import {
     get_current_blockhash,
     send_transaction,
     serialise_CreateLaunch_instruction,
-    serialise_EditLaunch_instruction
+    serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
 import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -59,7 +59,6 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         setScreen("details");
     }
 
-
     const EditLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -76,10 +75,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true }
-
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
-
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -94,10 +91,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         transaction.add(list_instruction);
         try {
-
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
 
             var transaction_response = await send_transaction("", encoded_transaction);
 
@@ -121,7 +116,6 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             setProcessingTransaction(false);
             return;
         }
-
     }, [wallet, newLaunchData]);
 
     const CreateLaunch = useCallback(async () => {
@@ -224,10 +218,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         transaction.partialSign(token_mint_keypair);
 
         try {
-
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
 
             var transaction_response = await send_transaction("", encoded_transaction);
 
@@ -254,15 +246,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         }
 
         EditLaunch();
-
     }, [wallet, EditLaunch, newLaunchData]);
-
 
     function confirm(e) {
         e.preventDefault();
         if (closeDate && openDate && teamWallet) {
             CreateLaunch();
-            
         } else {
             alert("Please fill all the details on this page.");
         }

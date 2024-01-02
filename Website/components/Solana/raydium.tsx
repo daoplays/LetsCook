@@ -157,7 +157,6 @@ const DEFAULT_TOKEN = {
 
 export function Raydium({ launch_data }: { launch_data: LaunchData }) {
     const wallet = useWallet();
-    const connection = new Connection(RPC_NODE);
 
     function initializeMarketInstruction({
         programId,
@@ -475,6 +474,8 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
     }, [wallet, launch_data.decimals, launch_data.mint_address, launch_data.sol_address]);
 
     const createMarket = useCallback(async () => {
+        const connection = new Connection(RPC_NODE);
+
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
         const makeTxVersion = TxVersion.V0;
         let min_order_size = 1;
@@ -710,9 +711,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         }
 
         await createPool();
-    }, [wallet, connection, createPool, launch_data.decimals, launch_data.mint_address]);
-
-    
+    }, [wallet, createPool, launch_data.decimals, launch_data.mint_address]);
 
     return (
         <Box

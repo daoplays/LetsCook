@@ -29,7 +29,7 @@ import {
     postData,
 } from "../../components/Solana/state";
 
-import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL  } from "../../components/Solana/constants";
+import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL } from "../../components/Solana/constants";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -183,7 +183,6 @@ const MintPage = () => {
 
     const { value } = input;
 
-
     const ClaimReward = useCallback(async () => {
         if (wallet.publicKey === null) {
             handleConnectWallet();
@@ -220,9 +219,8 @@ const MintPage = () => {
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: PYTH_BTC, isSigner: false, isWritable: true },
             { pubkey: PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: PYTH_SOL, isSigner: false, isWritable: true },         
+            { pubkey: PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-
         ];
 
         const list_instruction = new TransactionInstruction({
@@ -251,7 +249,15 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, launchData.game_id, launchData.mint_address, launchData.page_name, launchData.seller, launchData.sol_address, handleConnectWallet]);
+    }, [
+        wallet,
+        launchData.game_id,
+        launchData.mint_address,
+        launchData.page_name,
+        launchData.seller,
+        launchData.sol_address,
+        handleConnectWallet,
+    ]);
 
     const RefundTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -330,7 +336,15 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, handleConnectWallet, launchData.game_id, launchData.mint_address, launchData.page_name, launchData.seller, launchData.sol_address]);
+    }, [
+        wallet,
+        handleConnectWallet,
+        launchData.game_id,
+        launchData.mint_address,
+        launchData.page_name,
+        launchData.seller,
+        launchData.sol_address,
+    ]);
 
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null) {

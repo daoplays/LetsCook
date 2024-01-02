@@ -351,7 +351,7 @@ export const enum LaunchInstruction {
     init_amm = 5,
     hype_vote = 6,
     claim_refund = 7,
-    edit_launch = 8
+    edit_launch = 8,
 }
 
 export interface LaunchDataUserInput {
@@ -545,7 +545,7 @@ export class JoinData {
             ["joiner_key", publicKey],
             ["sol_key", publicKey],
             ["game_id", u64],
-            ["num_tickets", u16],   
+            ["num_tickets", u16],
             ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
             ["ticket_status", u8],
@@ -743,8 +743,8 @@ class CreateLaunch_Instruction {
         readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly page_name: string,
-        readonly website: string, 
-        readonly twitter: string, 
+        readonly website: string,
+        readonly twitter: string,
         readonly telegram: string,
     ) {}
 
@@ -766,7 +766,6 @@ class CreateLaunch_Instruction {
             ["website", utf8String],
             ["twitter", utf8String],
             ["telegram", utf8String],
-
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -786,7 +785,6 @@ class CreateLaunch_Instruction {
                 args.website!,
                 args.twitter!,
                 args.telegram!,
-
             ),
         "CreateLaunch_Instruction",
     );
@@ -814,7 +812,6 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.web_url,
         new_launch_data.twt_url,
         new_launch_data.tele_url,
-
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -832,22 +829,13 @@ class EditLaunch_Instruction {
             ["instruction", u8],
             ["description", utf8String],
         ],
-        (args) =>
-            new EditLaunch_Instruction(
-                args.instruction!,
-                args.description!,
-            ),
+        (args) => new EditLaunch_Instruction(args.instruction!, args.description!),
         "EditLaunch_Instruction",
     );
 }
 
 export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
-  
-
-    const data = new EditLaunch_Instruction(
-        LaunchInstruction.edit_launch,
-        new_launch_data.description,
-    );
+    const data = new EditLaunch_Instruction(LaunchInstruction.edit_launch, new_launch_data.description);
     const [buf] = EditLaunch_Instruction.struct.serialize(data);
 
     return buf;

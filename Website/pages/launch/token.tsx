@@ -97,7 +97,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
             return;
         }
 
-        if ( parseFloat(ticketPrice) < 0.00001) {
+        if (parseFloat(ticketPrice) < 0.00001) {
             alert("Minimum ticket price is 0.00001");
             return;
         }
@@ -107,17 +107,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
             return;
         }
 
-
-
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;
         newLaunchData.current.icon_data = icon;
         newLaunchData.current.displayImg = displayImg;
         newLaunchData.current.total_supply = parseInt(totalSupply);
 
-        newLaunchData.current.decimals = parseInt(decimal);;
-        
-        
+        newLaunchData.current.decimals = parseInt(decimal);
+
         newLaunchData.current.num_mints = parseInt(mints);
         newLaunchData.current.ticket_price = parseFloat(ticketPrice);
         newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
@@ -128,8 +125,6 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         newLaunchData.current.distribution[4] = parseFloat(distribution5);
         newLaunchData.current.distribution[5] = parseFloat(distribution6);
         setScreen("details");
-        
-        
     }
 
     return (

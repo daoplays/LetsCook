@@ -214,8 +214,8 @@ const ArenaGameCard = ({
     setScreen: Dispatch<SetStateAction<Screen>>;
     index: number;
 }) => {
-   // console.log(launch);
-   /// console.log(launch.seller.toString());
+    // console.log(launch);
+    /// console.log(launch.seller.toString());
     //console.log(launch.sol_address.toString());
     //console.log(launch.team_wallet.toString());
     //console.log(launch.mint_address.toString());

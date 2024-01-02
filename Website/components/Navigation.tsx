@@ -34,7 +34,7 @@ function Navigation({ setScreen }: { setScreen?: Dispatch<SetStateAction<Screen>
                             className="font-face-kg"
                             style={{ cursor: "pointer", margin: "auto 0" }}
                         >
-                            LET'S COOK
+                            LET&apos;S COOK
                         </Text>
                     </Link>
                     <HStack gap={4}>
