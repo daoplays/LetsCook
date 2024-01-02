@@ -18,11 +18,11 @@ export const arweave_upload = async (b64string: string) => {
     return result.body;
 };
 
-export const arweave_json_upload = async (name: string, symbol: string, image_url: string) => {
+export const arweave_json_upload = async (name: string, symbol: string, description: string, image_url: string) => {
     var metadata = {
         name: name,
         symbol: symbol,
-        description: "placeholder description",
+        description: description,
         image: image_url,
     };
 

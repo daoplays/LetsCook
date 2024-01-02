@@ -42,21 +42,54 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const [processing_transaction, setProcessingTransaction] = useState<boolean>(false);
 
-    const game_interval = useRef<number | null>(null);
-
-    const check_launch_data = useRef<boolean>(true);
-
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
 
-    function setLaunchData(e) {
+    function setData() : boolean{
+
         console.log(openDate.toString());
         console.log(closeDate.toString());
+
+        let balance = 1;
+        try {
+            let teamPubKey = new PublicKey(teamWallet);
+            //balance = await request_current_balance("", teamPubKey);
+
+            console.log("check balance", teamPubKey.toString(), balance);
+
+            if (balance == 0) {
+                alert("Team Wallet does not exist");
+                return false;
+            }
+        }
+        catch (error) {
+            alert("Invalid Team Wallet");
+            return false;
+        }
+
+        
+
+        if (closeDate.getTime() < openDate.getTime()) {
+            alert("Close date must be after launch date");
+            return false;
+        }
+
         newLaunchData.current.opendate = openDate;
         newLaunchData.current.closedate = closeDate;
         newLaunchData.current.team_wallet = teamWallet;
-        setScreen("details");
+
+        return true;
+    }
+
+    function setLaunchData(e) {
+        if (setData())
+            setScreen("details");
+    }
+
+    function Launch(e) {
+        if (setData())
+            CreateLaunch();
     }
 
     const EditLaunch = useCallback(async () => {
@@ -128,7 +161,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         // first upload the png file to arweave and get the url
         let image_url = await arweave_upload(newLaunchData.current.icon_data);
-        let meta_data_url = await arweave_json_upload(newLaunchData.current.name, "LC", image_url);
+        let meta_data_url = await arweave_json_upload(newLaunchData.current.name, newLaunchData.current.symbol, newLaunchData.current.description, image_url);
         console.log("list game with url", image_url, meta_data_url);
 
         newLaunchData.current.uri = meta_data_url;
@@ -252,7 +285,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     function confirm(e) {
         e.preventDefault();
         if (closeDate && openDate && teamWallet) {
-            CreateLaunch();
+            Launch(e);
         } else {
             alert("Please fill all the details on this page.");
         }

@@ -3,10 +3,11 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { useMediaQuery } from "react-responsive";
 
 import { Center, VStack, Text } from "@chakra-ui/react";
+import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
 
 import Image from "next/image";
-import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
-import { LaunchDataUserInput, defaultUserInput } from "../../components/Solana/state";
+import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
+import { LaunchDataUserInput, defaultUserInput, request_current_balance } from "../../components/Solana/state";
 
 interface DetailsPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -50,7 +51,6 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     };
 
     const [images, setImages] = useState([]);
-    const maxNumber = 1000;
 
     const onChange = (imageList, addUpdateIndex) => {
         // data for submit
@@ -62,6 +62,21 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
 
         if (description.length > 950) {
             alert("Description can be at most 950 characters long");
+            return false;
+        }
+
+        let launch_data_account = PublicKey.findProgramAddressSync(
+            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
+            PROGRAM,
+        )[0];
+
+        let balance = 0;
+        //balance = await request_current_balance("", launch_data_account);
+
+        console.log("check balance", launch_data_account.toString(), balance);
+
+        if (balance > 0) {
+            alert("page name already taken");
             return false;
         }
 

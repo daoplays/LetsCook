@@ -68,21 +68,21 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         setImages(imageList);
     };
 
-    const percentage1 = parseFloat(distribution1);
-    const percentage2 = parseFloat(distribution2);
-    const percentage3 = parseFloat(distribution3);
-    const percentage4 = parseFloat(distribution4);
-    const percentage5 = parseFloat(distribution5);
-    const percentage6 = parseFloat(distribution6);
+    const percentage1 = parseInt(distribution1);
+    const percentage2 = parseInt(distribution2);
+    const percentage3 = parseInt(distribution3);
+    const percentage4 = parseInt(distribution4);
+    const percentage5 = parseInt(distribution5);
+    const percentage6 = parseInt(distribution6);
 
     // Calculate the total sum of all percentages
     const totalPercentage =
-        parseFloat(distribution1) +
-        parseFloat(distribution2) +
-        parseFloat(distribution3) +
-        parseFloat(distribution4) +
-        parseFloat(distribution5) +
-        parseFloat(distribution6);
+    parseInt(distribution1) +
+    parseInt(distribution2) +
+    parseInt(distribution3) +
+    parseInt(distribution4) +
+    parseInt(distribution5) +
+    parseInt(distribution6);
 
     function setLaunchData(e) {
         e.preventDefault();
@@ -98,12 +98,17 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         }
 
         if (parseFloat(ticketPrice) < 0.00001) {
-            alert("Minimum ticket price is 0.00001");
+            alert("Minimum ticket price is 0.00001 SOL");
             return;
         }
 
         if (symbol.length > 10) {
             alert("Maximum symbol length is 10 characters");
+            return;
+        }
+
+        if (name.length > 25) {
+            alert("Maximum name length is 25 characters");
             return;
         }
 
@@ -288,14 +293,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.distributionField}>
                                     <input
                                         required
-                                        value={distribution1}
+                                        value={parseInt(distribution1).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution1(e.target.value);
                                         }}
                                         type="number"
                                         min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution1) === 0 ? true : false}
+                                        disabled={totalPercentage === 100 && parseInt(distribution1) === 0 ? true : false}
                                     />
                                     <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
@@ -307,14 +312,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.distributionField}>
                                     <input
                                         required
-                                        value={distribution2}
+                                        value={parseInt(distribution2).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution2(e.target.value);
                                         }}
                                         type="number"
                                         min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution2) === 0 ? true : false}
+                                        disabled={totalPercentage === 100 && parseInt(distribution2) === 0 ? true : false}
                                     />
                                     <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
@@ -325,14 +330,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>LP Rewards</div>
                                 <div className={styles.distributionField}>
                                     <input
-                                        value={distribution3}
+                                        value={parseInt(distribution3).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution3(e.target.value);
                                         }}
                                         type="number"
                                         min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution3) === 0 ? true : false}
+                                        disabled={totalPercentage === 100 && parseInt(distribution3) === 0 ? true : false}
                                     />
                                     <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
@@ -343,14 +348,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops</div>
                                 <div className={styles.distributionField}>
                                     <input
-                                        value={distribution4}
+                                        value={parseInt(distribution4).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution4(e.target.value);
                                         }}
                                         type="number"
                                         min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution4) === 0 ? true : false}
+                                        disabled={totalPercentage === 100 && parseInt(distribution4) === 0 ? true : false}
                                     />
                                     <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
@@ -361,14 +366,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
                                 <div className={styles.distributionField}>
                                     <input
-                                        value={distribution5}
+                                        value={parseInt(distribution5).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution5(e.target.value);
                                         }}
                                         type="number"
                                         min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution5) === 0 ? true : false}
+                                        disabled={totalPercentage === 100 && parseInt(distribution5) === 0 ? true : false}
                                     />
                                     <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
@@ -379,14 +384,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Website)</div>
                                 <div className={styles.distributionField}>
                                     <input
-                                        value={distribution6}
+                                        value={parseInt(distribution6).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution6(e.target.value);
                                         }}
                                         type="number"
                                         min="0"
                                         max="100"
-                                        disabled={totalPercentage === 100 && parseFloat(distribution6) === 0 ? true : false}
+                                        disabled={totalPercentage === 100 && parseInt(distribution6) === 0 ? true : false}
                                     />
                                     <Image className={styles.percentage} width={20} height={20} src="/images/perc.png" alt="Percentage" />
                                 </div>
