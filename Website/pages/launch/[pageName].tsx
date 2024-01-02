@@ -28,7 +28,8 @@ import {
     uInt8ToLEBytes,
     postData,
 } from "../../components/Solana/state";
-import { PROGRAM, SYSTEM_KEY, RPC_NODE } from "../../components/Solana/constants";
+
+import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL  } from "../../components/Solana/constants";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } from "@solana/web3.js";
