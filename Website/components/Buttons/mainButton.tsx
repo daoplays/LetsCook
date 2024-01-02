@@ -2,7 +2,7 @@ import { Box, Text } from "@chakra-ui/react";
 import styles from "../header.module.css";
 
 interface MainButtonProps {
-    action: () => void;
+    action?: () => void;
     label: string;
 }
 

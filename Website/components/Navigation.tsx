@@ -8,8 +8,9 @@ import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
 import MainButton from "./Buttons/mainButton";
+import Link from "next/link";
 
-function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>> }) {
+function Navigation({ setScreen }: { setScreen?: Dispatch<SetStateAction<Screen>> }) {
     const wallet = useWallet();
     const { md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
@@ -26,15 +27,16 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                     alignItems="center"
                     justify="space-between"
                 >
-                    <Text
-                        fontSize={md ? "large" : "x-large"}
-                        color={"#683309"}
-                        onClick={() => setScreen(Screen.HOME_SCREEN)}
-                        className="font-face-kg"
-                        style={{ cursor: "pointer", margin: "auto 0" }}
-                    >
-                        LET'S COOK
-                    </Text>
+                    <Link href="/">
+                        <Text
+                            fontSize={md ? "large" : "x-large"}
+                            color={"#683309"}
+                            className="font-face-kg"
+                            style={{ cursor: "pointer", margin: "auto 0" }}
+                        >
+                            LET'S COOK
+                        </Text>
+                    </Link>
                     <HStack gap={4}>
                         <div className={styles.sauce}>
                             <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
@@ -42,14 +44,9 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                         </div>
 
                         {!md && (
-                            <Image
-                                src="/images/points.png"
-                                width={35}
-                                height={35}
-                                alt={"Points"}
-                                style={{ cursor: "pointer" }}
-                                onClick={() => setScreen(Screen.LEADERBOARD)}
-                            />
+                            <Link href="/leaderboard">
+                                <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
+                            </Link>
                         )}
 
                         {!md && (
@@ -57,13 +54,9 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                         )}
 
                         {!md && (
-                            <Image
-                                src="/images/question-mark.png"
-                                width={35}
-                                height={35}
-                                alt={"Question Mark"}
-                                style={{ cursor: "not-allowed" }}
-                            />
+                            <Link href="/faq">
+                                <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
+                            </Link>
                         )}
 
                         {md ? (
@@ -80,7 +73,9 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                                 {wallet.publicKey && <DisconnectWalletButton />}
                                 {wallet.publicKey === null && <ConnectWalletButton />}
 
-                                <MainButton action={() => setScreen(Screen.LAUNCH_SCREEN)} label="LAUNCH" />
+                                <Link href="/launch">
+                                    <MainButton label="LAUNCH" />
+                                </Link>
                             </>
                         )}
                     </HStack>
@@ -117,15 +112,25 @@ function Navigation({ setScreen }: { setScreen: Dispatch<SetStateAction<Screen>>
                     <Image src="/images/divider.png" alt="Divider" width="320" height={20} />
                 </VStack>
 
-                <Text className={styles.connect}>LAUNCH</Text>
+                <Link href="/launch" onClick={onToggle}>
+                    <Text className={styles.connect}>LAUNCH</Text>
+                </Link>
 
-                <Text className={styles.connect}>LEADERBOARD</Text>
+                <Link href="/leaderboard" onClick={onToggle}>
+                    <Text className={styles.connect}>LEADERBOARD</Text>
+                </Link>
 
-                <Text className={styles.connect}>MY BAGS</Text>
+                <Text className={styles.connect} style={{ opacity: 0.5 }}>
+                    MY BAGS
+                </Text>
 
-                <Text className={styles.connect}>HISTORY</Text>
+                <Text className={styles.connect} style={{ opacity: 0.5 }}>
+                    HISTORY
+                </Text>
 
-                <Text className={styles.connect}>FAQS</Text>
+                <Link href="/faq" onClick={onToggle}>
+                    <Text className={styles.connect}>FAQS</Text>
+                </Link>
             </VStack>
         </>
     );

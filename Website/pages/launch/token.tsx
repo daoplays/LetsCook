@@ -1,37 +1,36 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef } from "react";
 import { PieChart } from "react-minimal-pie-chart";
-import styles from "../styles/Launch.module.css";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text } from "@chakra-ui/react";
-
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
-import { LaunchDataUserInput } from "./Solana/state";
+import { LaunchDataUserInput, defaultUserInput } from "../../components/Solana/state";
+import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
+import styles from "../../styles/Launch.module.css";
 
-export function LaunchScreen({
-    newLaunch,
-    setScreen,
-}: {
-    newLaunch: MutableRefObject<LaunchDataUserInput>;
-    setScreen: Dispatch<SetStateAction<Screen>>;
-}) {
+interface TokenPageProps {
+    newLaunchData: MutableRefObject<LaunchDataUserInput>;
+    setScreen: Dispatch<SetStateAction<string>>;
+}
+
+const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
-    const [name, setName] = useState<string>(newLaunch.current.name);
-    const [symbol, setSymbol] = useState<string>(newLaunch.current.symbol);
-    const [icon, setIcon] = useState<string>(newLaunch.current.icon_data);
-    const [displayImg, setDisplayImg] = useState<string>(newLaunch.current.displayImg);
-    const [totalSupply, setTotalSupply] = useState<string>(newLaunch.current.total_supply.toString());
-    const [decimal, setDecimal] = useState<string>(newLaunch.current.decimals.toString());
-    const [mints, setMints] = useState<string>(newLaunch.current.num_mints.toString());
-    const [ticketPrice, setTotalPrice] = useState<string>(newLaunch.current.ticket_price.toString());
-    const [distribution1, setDistribution1] = useState(newLaunch.current.distribution[0].toString());
-    const [distribution2, setDistribution2] = useState(newLaunch.current.distribution[1].toString());
-    const [distribution3, setDistribution3] = useState(newLaunch.current.distribution[2].toString());
-    const [distribution4, setDistribution4] = useState(newLaunch.current.distribution[3].toString());
-    const [distribution5, setDistribution5] = useState(newLaunch.current.distribution[4].toString());
-    const [distribution6, setDistribution6] = useState(newLaunch.current.distribution[5].toString());
+
+    const [name, setName] = useState<string>(newLaunchData.current.name);
+    const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
+    const [icon, setIcon] = useState<string>(newLaunchData.current.icon_data);
+    const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
+    const [totalSupply, setTotalSupply] = useState<string>(newLaunchData.current.total_supply.toString());
+    const [decimal, setDecimal] = useState<string>(newLaunchData.current.decimals.toString());
+    const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
+    const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
+    const [distribution1, setDistribution1] = useState(newLaunchData.current.distribution[0].toString());
+    const [distribution2, setDistribution2] = useState(newLaunchData.current.distribution[1].toString());
+    const [distribution3, setDistribution3] = useState(newLaunchData.current.distribution[2].toString());
+    const [distribution4, setDistribution4] = useState(newLaunchData.current.distribution[3].toString());
+    const [distribution5, setDistribution5] = useState(newLaunchData.current.distribution[4].toString());
+    const [distribution6, setDistribution6] = useState(newLaunchData.current.distribution[5].toString());
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -89,22 +88,22 @@ export function LaunchScreen({
         e.preventDefault();
         if (icon) {
             if (totalPercentage === 100) {
-                newLaunch.current.name = name;
-                newLaunch.current.symbol = symbol;
-                newLaunch.current.icon_data = icon;
-                newLaunch.current.displayImg = displayImg;
-                newLaunch.current.total_supply = parseInt(totalSupply);
-                newLaunch.current.decimals = parseInt(decimal);
-                newLaunch.current.num_mints = parseInt(mints);
-                newLaunch.current.ticket_price = parseFloat(ticketPrice);
-                newLaunch.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
-                newLaunch.current.distribution[0] = parseFloat(distribution1);
-                newLaunch.current.distribution[1] = parseFloat(distribution2);
-                newLaunch.current.distribution[2] = parseFloat(distribution3);
-                newLaunch.current.distribution[3] = parseFloat(distribution4);
-                newLaunch.current.distribution[4] = parseFloat(distribution5);
-                newLaunch.current.distribution[5] = parseFloat(distribution6);
-                setScreen(Screen.LAUNCH_DETAILS);
+                newLaunchData.current.name = name;
+                newLaunchData.current.symbol = symbol;
+                newLaunchData.current.icon_data = icon;
+                newLaunchData.current.displayImg = displayImg;
+                newLaunchData.current.total_supply = parseInt(totalSupply);
+                newLaunchData.current.decimals = parseInt(decimal);
+                newLaunchData.current.num_mints = parseInt(mints);
+                newLaunchData.current.ticket_price = parseFloat(ticketPrice);
+                newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
+                newLaunchData.current.distribution[0] = parseFloat(distribution1);
+                newLaunchData.current.distribution[1] = parseFloat(distribution2);
+                newLaunchData.current.distribution[2] = parseFloat(distribution3);
+                newLaunchData.current.distribution[3] = parseFloat(distribution4);
+                newLaunchData.current.distribution[4] = parseFloat(distribution5);
+                newLaunchData.current.distribution[5] = parseFloat(distribution6);
+                setScreen("details");
             } else {
                 alert("The percentages must add upto 100%");
             }
@@ -115,15 +114,6 @@ export function LaunchScreen({
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <Image
-                onClick={() => setScreen(Screen.FAQ_SCREEN)}
-                className={styles.help}
-                width={40}
-                height={40}
-                src="/images/help.png"
-                alt="Help"
-            />
-
             <VStack>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Token
@@ -412,4 +402,6 @@ export function LaunchScreen({
             </VStack>
         </Center>
     );
-}
+};
+
+export default TokenPage;

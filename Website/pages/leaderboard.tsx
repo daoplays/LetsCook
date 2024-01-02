@@ -1,13 +1,34 @@
-import { Center, VStack, Text, Box, HStack } from "@chakra-ui/react";
-
-import { FaTwitter, FaTwitch } from "react-icons/fa";
-
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "./Solana/constants";
-import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
-
+import { Center, Box } from "@chakra-ui/react";
+import { UserData, run_user_data_GPA } from "../components/Solana/state";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import Table from "react-bootstrap/Table";
 
-export function Leaderboard({ user_data }: { user_data: UserData[] }) {
+const LeaderboardPage = () => {
+    const wallet = useWallet();
+    const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
+    const [user_data, setUserData] = useState<UserData[]>([]);
+
+    const CheckCurrentUserData = useCallback(async () => {
+        let user_list = await run_user_data_GPA("");
+        console.log(user_list);
+        setUserData(user_list);
+
+        if (wallet.publicKey !== null) {
+            for (let i = 0; i < user_list.length; i++) {
+                if (user_list[i].user_key.toString() == wallet.publicKey.toString()) {
+                    console.log("have current user", user_list[i]);
+                    setCurrentUserData(user_list[i]);
+                    break;
+                }
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        CheckCurrentUserData();
+    }, [CheckCurrentUserData]);
+
     const Card = ({ launch, index }: { launch: UserData; index: number }) => {
         return (
             <tr>
@@ -56,8 +77,10 @@ export function Leaderboard({ user_data }: { user_data: UserData[] }) {
     };
 
     return (
-        <Center width="100%" marginBottom="5rem">
+        <main style={{ padding: "50px 0" }}>
             <GameTable />
-        </Center>
+        </main>
     );
-}
+};
+
+export default LeaderboardPage;

@@ -1,27 +1,26 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler } from "react";
-import styles from "../styles/LaunchDetails.module.css";
+import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef } from "react";
+import styles from "../../styles/LaunchDetails.module.css";
 import { useMediaQuery } from "react-responsive";
 
 import { Center, VStack, Text } from "@chakra-ui/react";
 
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, Screen } from "./Solana/constants";
-import { LaunchDataUserInput } from "./Solana/state";
 import Image from "next/image";
+import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
+import { LaunchDataUserInput, defaultUserInput } from "../../components/Solana/state";
 
-export function LaunchDetails({
-    newLaunch,
-    setScreen,
-}: {
-    newLaunch: MutableRefObject<LaunchDataUserInput>;
-    setScreen: Dispatch<SetStateAction<Screen>>;
-}) {
-    const [name, setName] = useState<string>(newLaunch.current.pagename);
-    const [icon, setIcon] = useState<string>(newLaunch.current.iconpage2);
-    const [description, setDescription] = useState<string>(newLaunch.current.description);
-    const [web, setWeb] = useState<string>(newLaunch.current.web_url);
-    const [telegram, setTelegram] = useState<string>(newLaunch.current.tele_url);
-    const [twitter, setTwitter] = useState(newLaunch.current.twt_url);
-    const [discord, setDiscord] = useState(newLaunch.current.disc_url);
+interface DetailsPageProps {
+    newLaunchData: MutableRefObject<LaunchDataUserInput>;
+    setScreen: Dispatch<SetStateAction<string>>;
+}
+
+const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
+    const [name, setName] = useState<string>(newLaunchData.current.pagename);
+    const [icon, setIcon] = useState<string>(newLaunchData.current.iconpage2);
+    const [description, setDescription] = useState<string>(newLaunchData.current.description);
+    const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
+    const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
+    const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
+    const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
 
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
@@ -60,35 +59,26 @@ export function LaunchDetails({
     };
 
     function setLaunchData(e) {
-        newLaunch.current.pagename = name;
-        newLaunch.current.iconpage2 = icon;
-        newLaunch.current.description = description;
-        newLaunch.current.web_url = web;
-        newLaunch.current.twt_url = twitter;
-        newLaunch.current.disc_url = discord;
-        newLaunch.current.tele_url = telegram;
-        setScreen(Screen.LAUNCH_BOOK);
+        newLaunchData.current.pagename = name;
+        newLaunchData.current.iconpage2 = icon;
+        newLaunchData.current.description = description;
+        newLaunchData.current.web_url = web;
+        newLaunchData.current.twt_url = twitter;
+        newLaunchData.current.disc_url = discord;
+        newLaunchData.current.tele_url = telegram;
+        setScreen("book");
     }
     function setLaunchDataPrevious(e) {
-        newLaunch.current.pagename = name;
-        newLaunch.current.description = description;
-        newLaunch.current.web_url = web;
-        newLaunch.current.twt_url = twitter;
-        newLaunch.current.disc_url = discord;
-        newLaunch.current.tele_url = telegram;
-        setScreen(Screen.LAUNCH_SCREEN);
+        newLaunchData.current.pagename = name;
+        newLaunchData.current.description = description;
+        newLaunchData.current.web_url = web;
+        newLaunchData.current.twt_url = twitter;
+        newLaunchData.current.disc_url = discord;
+        newLaunchData.current.tele_url = telegram;
+        setScreen("details");
     }
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <Image
-                onClick={() => setScreen(Screen.FAQ_SCREEN)}
-                className={styles.help}
-                width={40}
-                height={40}
-                src="/images/help.png"
-                alt="Help"
-            />
-
             <VStack>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Page
@@ -219,9 +209,9 @@ export function LaunchDetails({
                     </div>
                     <br></br>
 
-                    <div>
+                    {/* <div>
                         <button className={`${styles.nextBtn} font-face-kg `}>PREVIEW</button>
-                    </div>
+                    </div> */}
                     <div
                         style={{
                             display: "flex",
@@ -233,7 +223,7 @@ export function LaunchDetails({
                         <button
                             // type="submit"
                             onClick={() => {
-                                setScreen(Screen.LAUNCH_SCREEN);
+                                setScreen("token");
                             }}
                             className={`${styles.nextBtn} font-face-kg `}
                         >
@@ -247,4 +237,6 @@ export function LaunchDetails({
             </VStack>
         </Center>
     );
-}
+};
+
+export default DetailsPage;
