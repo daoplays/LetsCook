@@ -86,30 +86,50 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
     function setLaunchData(e) {
         e.preventDefault();
-        if (icon) {
-            if (totalPercentage === 100) {
-                newLaunchData.current.name = name;
-                newLaunchData.current.symbol = symbol;
-                newLaunchData.current.icon_data = icon;
-                newLaunchData.current.displayImg = displayImg;
-                newLaunchData.current.total_supply = parseInt(totalSupply);
-                newLaunchData.current.decimals = parseInt(decimal);
-                newLaunchData.current.num_mints = parseInt(mints);
-                newLaunchData.current.ticket_price = parseFloat(ticketPrice);
-                newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
-                newLaunchData.current.distribution[0] = parseFloat(distribution1);
-                newLaunchData.current.distribution[1] = parseFloat(distribution2);
-                newLaunchData.current.distribution[2] = parseFloat(distribution3);
-                newLaunchData.current.distribution[3] = parseFloat(distribution4);
-                newLaunchData.current.distribution[4] = parseFloat(distribution5);
-                newLaunchData.current.distribution[5] = parseFloat(distribution6);
-                setScreen("details");
-            } else {
-                alert("The percentages must add upto 100%");
-            }
-        } else {
-            alert("Please select an icon image.");
+
+        if (totalPercentage !== 100) {
+            alert("The percentages must add up to 100%");
+            return;
         }
+
+        if (!icon) {
+            alert("Please select an icon image.");
+            return;
+        }
+
+        if ( parseFloat(ticketPrice) < 0.00001) {
+            alert("Minimum ticket price is 0.00001");
+            return;
+        }
+
+        if (symbol.length > 10) {
+            alert("Maximum symbol length is 10 characters");
+            return;
+        }
+
+
+
+        newLaunchData.current.name = name;
+        newLaunchData.current.symbol = symbol;
+        newLaunchData.current.icon_data = icon;
+        newLaunchData.current.displayImg = displayImg;
+        newLaunchData.current.total_supply = parseInt(totalSupply);
+
+        newLaunchData.current.decimals = parseInt(decimal);;
+        
+        
+        newLaunchData.current.num_mints = parseInt(mints);
+        newLaunchData.current.ticket_price = parseFloat(ticketPrice);
+        newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
+        newLaunchData.current.distribution[0] = parseFloat(distribution1);
+        newLaunchData.current.distribution[1] = parseFloat(distribution2);
+        newLaunchData.current.distribution[2] = parseFloat(distribution3);
+        newLaunchData.current.distribution[3] = parseFloat(distribution4);
+        newLaunchData.current.distribution[4] = parseFloat(distribution5);
+        newLaunchData.current.distribution[5] = parseFloat(distribution6);
+        setScreen("details");
+        
+        
     }
 
     return (
@@ -176,6 +196,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         required
                                         className={styles.inputBox}
                                         type="number"
+                                        min="1"
                                         value={totalSupply}
                                         onChange={(e) => {
                                             setTotalSupply(e.target.value);
@@ -212,6 +233,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         required
                                         className={styles.inputBox}
                                         type="number"
+                                        min="1"
                                         value={mints}
                                         onChange={(e) => {
                                             setMints(e.target.value);

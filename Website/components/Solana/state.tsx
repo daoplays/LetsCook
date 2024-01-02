@@ -351,6 +351,7 @@ export const enum LaunchInstruction {
     init_amm = 5,
     hype_vote = 6,
     claim_refund = 7,
+    edit_launch = 8
 }
 
 export interface LaunchDataUserInput {
@@ -738,11 +739,13 @@ class CreateLaunch_Instruction {
         readonly decimals: number,
         readonly launch_date: bignum,
         readonly close_date: bignum,
-        readonly description: string,
         readonly distribution: number[],
         readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly page_name: string,
+        readonly website: string, 
+        readonly twitter: string, 
+        readonly telegram: string,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -756,11 +759,14 @@ class CreateLaunch_Instruction {
             ["decimals", u8],
             ["launch_date", u64],
             ["close_date", u64],
-            ["description", utf8String],
             ["distribution", uniformFixedSizeArray(u8, 6)],
             ["num_mints", u32],
             ["ticket_price", u64],
             ["page_name", utf8String],
+            ["website", utf8String],
+            ["twitter", utf8String],
+            ["telegram", utf8String],
+
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -773,11 +779,14 @@ class CreateLaunch_Instruction {
                 args.decimals!,
                 args.launch_date!,
                 args.close_date!,
-                args.description!,
                 args.distribution!,
                 args.num_mints!,
                 args.ticket_price!,
                 args.page_name!,
+                args.website!,
+                args.twitter!,
+                args.telegram!,
+
             ),
         "CreateLaunch_Instruction",
     );
@@ -798,13 +807,48 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.decimals,
         new_launch_data.opendate.getTime(),
         new_launch_data.closedate.getTime(),
-        new_launch_data.description,
         new_launch_data.distribution,
         new_launch_data.num_mints,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
+        new_launch_data.web_url,
+        new_launch_data.twt_url,
+        new_launch_data.tele_url,
+
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+class EditLaunch_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly description: string,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<EditLaunch_Instruction>(
+        [
+            ["instruction", u8],
+            ["description", utf8String],
+        ],
+        (args) =>
+            new EditLaunch_Instruction(
+                args.instruction!,
+                args.description!,
+            ),
+        "EditLaunch_Instruction",
+    );
+}
+
+export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
+  
+
+    const data = new EditLaunch_Instruction(
+        LaunchInstruction.edit_launch,
+        new_launch_data.description,
+    );
+    const [buf] = EditLaunch_Instruction.struct.serialize(data);
 
     return buf;
 }
