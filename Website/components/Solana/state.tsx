@@ -13,6 +13,7 @@ import {
     array,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 import { DEBUG, RPC_NODE, PROGRAM } from "./constants";
 import { Box } from "@chakra-ui/react";
@@ -47,7 +48,7 @@ export function WalletConnected() {
 }
 
 // Example POST method implementation:
-async function postData(url = "", bearer = "", data = {}) {
+export async function postData(url = "", bearer = "", data = {}) {
     // Default options are marked with *
     const response = await fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -349,6 +350,7 @@ export const enum LaunchInstruction {
     init_market = 4,
     init_amm = 5,
     hype_vote = 6,
+    claim_refund = 7,
 }
 
 export interface LaunchDataUserInput {
@@ -528,8 +530,10 @@ export class JoinData {
     constructor(
         readonly account_type: number,
         readonly joiner_key: PublicKey,
+        readonly sol_key: PublicKey,
         readonly game_id: bignum,
         readonly num_tickets: number,
+        readonly num_claimed_tickets: number,
         readonly num_winning_tickets: number,
         readonly ticket_status: number,
     ) {}
@@ -538,8 +542,10 @@ export class JoinData {
         [
             ["account_type", u8],
             ["joiner_key", publicKey],
+            ["sol_key", publicKey],
             ["game_id", u64],
             ["num_tickets", u16],
+            ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
             ["ticket_status", u8],
         ],
@@ -547,8 +553,10 @@ export class JoinData {
             new JoinData(
                 args.account_type!,
                 args.joiner_key!,
+                args.sol_key!,
                 args.game_id!,
                 args.num_tickets!,
+                args.num_claimed_tickets!,
                 args.num_winning_tickets!,
                 args.ticket_status!,
             ),
@@ -610,11 +618,11 @@ export async function run_launch_data_GPA(bearer: string): Promise<LaunchData[]>
         return [];
     }
 
-    console.log(program_accounts_result["result"]);
+    // console.log(program_accounts_result["result"]);
 
     let result: LaunchData[] = [];
     for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        console.log(program_accounts_result["result"][i]);
+        // console.log(program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
         try {
@@ -650,16 +658,67 @@ export async function run_user_data_GPA(bearer: string): Promise<UserData[]> {
         return [];
     }
 
-    console.log(program_accounts_result["result"]);
+    // console.log(program_accounts_result["result"]);
 
     let result: UserData[] = [];
     for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        console.log(program_accounts_result["result"][i]);
+        // console.log(program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
         try {
             const [game] = UserData.struct.deserialize(decoded_data);
             result.push(game);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    return result;
+}
+
+export async function run_join_data_GPA(): Promise<JoinData[]> {
+    const wallet = useWallet();
+    let index_buffer = uInt8ToLEBytes(3);
+    let account_bytes = bs58.encode(index_buffer);
+    let wallet_bytes = PublicKey.default.toBase58();
+
+    console.log("wallet", wallet !== null ? wallet.toString() : "null");
+    if (wallet !== null) {
+        wallet_bytes = wallet.publicKey.toBase58();
+    }
+
+    var body = {
+        id: 1,
+        jsonrpc: "2.0",
+        method: "getProgramAccounts",
+        params: [
+            PROGRAM.toString(),
+            {
+                filters: [{ memcmp: { offset: 0, bytes: account_bytes } }, { memcmp: { offset: 1, bytes: wallet_bytes } }],
+                encoding: "base64",
+                commitment: "confirmed",
+            },
+        ],
+    };
+
+    var program_accounts_result;
+    try {
+        program_accounts_result = await postData(RPC_NODE, "", body);
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+
+    //console.log(program_accounts_result["result"]);
+
+    let result: JoinData[] = [];
+    for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
+        //console.log(program_accounts_result["result"][i]);
+        let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
+        let decoded_data = Buffer.from(encoded_data, "base64");
+        try {
+            const [joiner] = JoinData.struct.deserialize(decoded_data);
+            result.push(joiner);
         } catch (error) {
             console.log(error);
         }

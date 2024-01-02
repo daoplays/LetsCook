@@ -20,9 +20,15 @@ import {
     send_transaction,
     serialise_BuyTickets_instruction,
     myU64,
-    JoinData,
     run_launch_data_GPA,
+    serialise_basic_instruction,
+    LaunchInstruction,
+    run_join_data_GPA,
+    JoinData,
+    uInt8ToLEBytes,
+    postData,
 } from "../../components/Solana/state";
+import { PROGRAM, SYSTEM_KEY, RPC_NODE } from "../../components/Solana/constants";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -43,7 +49,6 @@ import useResponsive from "../../hooks/useResponsive";
 import UseWalletConnection from "../../hooks/useWallet";
 import trimAddress from "../../hooks/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
-import { PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useRouter } from "next/router";
 
 const MintPage = () => {
@@ -51,13 +56,88 @@ const MintPage = () => {
     const wallet = useWallet();
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
-    const [isLoading, setIsLoading] = useState(false);
-    const [launchData, setLaunchData] = useState<LaunchData | null>(null);
+
     const [totalCost, setTotalCost] = useState(0);
     const [ticketPrice, setTicketPrice] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [launchData, setLaunchData] = useState<LaunchData | null>(null);
+    const [join_data, setJoinData] = useState<JoinData | null>(null);
+
     const checkLaunchData = useRef<boolean>(true);
 
     const { mintAddress } = router.query;
+
+    const run_join_data_GPA2 = useCallback(async () => {
+        let index_buffer = uInt8ToLEBytes(3);
+        let account_bytes = bs58.encode(index_buffer);
+        let wallet_bytes = PublicKey.default.toBase58();
+
+        console.log("wallet", wallet.publicKey !== null ? wallet.publicKey.toString() : "null");
+        if (wallet.publicKey !== null) {
+            wallet_bytes = wallet.publicKey.toBase58();
+        }
+
+        var body = {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "getProgramAccounts",
+            params: [
+                PROGRAM.toString(),
+                {
+                    filters: [{ memcmp: { offset: 0, bytes: account_bytes } }, { memcmp: { offset: 1, bytes: wallet_bytes } }],
+                    encoding: "base64",
+                    commitment: "confirmed",
+                },
+            ],
+        };
+
+        var program_accounts_result;
+        try {
+            program_accounts_result = await postData(RPC_NODE, "", body);
+        } catch (error) {
+            console.log(error);
+            return [];
+        }
+
+        console.log("check join accounts");
+        console.log(program_accounts_result["result"]);
+
+        let result: JoinData[] = [];
+        for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
+            //console.log(program_accounts_result["result"][i]);
+            let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
+            let decoded_data = Buffer.from(encoded_data, "base64");
+            try {
+                const [joiner] = JoinData.struct.deserialize(decoded_data);
+                result.push(joiner);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        if (result.length > 0) {
+            let joiner_map = new Map<number, JoinData>();
+            for (let i = 0; i < result.length; i++) {
+                joiner_map.set(bignum_to_num(result[i].game_id), result[i]);
+            }
+
+            if (joiner_map !== null && joiner_map.has(bignum_to_num(launchData.game_id))) {
+                setJoinData(joiner_map.get(bignum_to_num(launchData.game_id)));
+            }
+        }
+    }, [wallet]);
+
+    let win_prob = 0;
+
+    if (join_data === null) {
+        console.log("no joiner info");
+    }
+
+    if (join_data !== null) {
+        console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
+        win_prob = (join_data.num_tickets - join_data.num_claimed_tickets) / (launchData.tickets_sold - launchData.tickets_claimed);
+    }
 
     const fetchLaunchData = useCallback(async () => {
         if (!checkLaunchData.current) return;
@@ -77,8 +157,9 @@ const MintPage = () => {
             setIsLoading(false);
         }
 
+        await run_join_data_GPA2();
         checkLaunchData.current = false;
-    }, [mintAddress]);
+    }, [mintAddress, run_join_data_GPA2]);
 
     useEffect(() => {
         checkLaunchData.current = true;
@@ -100,6 +181,85 @@ const MintPage = () => {
     const input = getInputProps();
 
     const { value } = input;
+
+    const RefundTickets = useCallback(async () => {
+        if (wallet.publicKey === null) {
+            handleConnectWallet();
+        }
+
+        if (wallet.signTransaction === undefined) return;
+
+        if (wallet.publicKey.toString() == launchData.seller.toString()) {
+            alert("Launch creator cannot buy tickets");
+            return;
+        }
+
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+        let temp_wsol_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), launchData.mint_address.toBytes(), Buffer.from("Temp")],
+            PROGRAM,
+        )[0];
+
+        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+
+        const game_id = new myU64(launchData.game_id);
+        const [game_id_buf] = myU64.struct.serialize(game_id);
+        console.log("game id ", launchData.game_id, game_id_buf);
+        console.log("Mint", launchData.mint_address.toString());
+        console.log("sol", launchData.sol_address.toString());
+
+        let user_join_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            PROGRAM,
+        )[0];
+
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_refund);
+
+        var account_vector = [
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_join_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
+            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+        ];
+
+        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+
+        const list_instruction = new TransactionInstruction({
+            keys: account_vector,
+            programId: PROGRAM,
+            data: instruction_data,
+        });
+
+        let txArgs = await get_current_blockhash("");
+
+        let transaction = new Transaction(txArgs);
+        transaction.feePayer = wallet.publicKey;
+
+        transaction.add(list_instruction);
+
+        try {
+            let signed_transaction = await wallet.signTransaction(transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+            let signature = transaction_response.result;
+
+            console.log("join sig: ", signature);
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+    }, [wallet]);
 
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -392,7 +552,16 @@ const MintPage = () => {
                                     {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
                                 </HStack>
 
-                                <Box mt={-3}>
+                                <Box
+                                    mt={-3}
+                                    onClick={
+                                        MINT_FAILED
+                                            ? () => {
+                                                  RefundTickets();
+                                              }
+                                            : () => {}
+                                    }
+                                >
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>
                                             <WoodenButton
@@ -402,7 +571,7 @@ const MintPage = () => {
                                             />
                                             {MINTED_OUT && (
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                    41.5% chance per ticket
+                                                    {win_prob}% chance per ticket
                                                 </Text>
                                             )}
                                         </VStack>

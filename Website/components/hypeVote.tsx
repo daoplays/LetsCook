@@ -22,7 +22,7 @@ import Image from "next/image";
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
     let name = launch_data.name;
-    console.log(launch_data.mint_address.toString());
+    // console.log(launch_data.mint_address.toString());
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
@@ -83,7 +83,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
             }
         }
     }
-    console.log("has_voted: ", has_voted);
+    // console.log("has_voted: ", has_voted);
     let total_votes = launch_data.positive_votes + launch_data.negative_votes;
     let vote_ratio = 0;
     let vote_color = "";
