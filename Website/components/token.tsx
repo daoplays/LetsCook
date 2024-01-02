@@ -29,7 +29,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY, PYTH_BTC, PYTH_ETH, PYTH_SOL } from "./Solana/constants";
 import { Raydium } from "./Solana/raydium";
 import { PieChart } from "react-minimal-pie-chart";
 import { Fee } from "@raydium-io/raydium-sdk";
@@ -94,6 +94,76 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
 
     const { value } = input;
 
+    const ClaimReward = useCallback(async () => {
+        if (wallet.publicKey === null) {
+            handleConnectWallet();
+        }
+
+        if (wallet.signTransaction === undefined) return;
+
+        if (wallet.publicKey.toString() == launch_data.seller.toString()) {
+            alert("Launch creator cannot buy tickets");
+            return;
+        }
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch_data.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+        const game_id = new myU64(launch_data.game_id);
+        const [game_id_buf] = myU64.struct.serialize(game_id);
+        console.log("game id ", launch_data.game_id, game_id_buf);
+        console.log("Mint", launch_data.mint_address.toString());
+        console.log("sol", launch_data.sol_address.toString());
+
+        let user_join_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            PROGRAM,
+        )[0];
+
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_reward);
+
+        var account_vector = [
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: user_join_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: PYTH_BTC, isSigner: false, isWritable: true },
+            { pubkey: PYTH_ETH, isSigner: false, isWritable: true },
+            { pubkey: PYTH_SOL, isSigner: false, isWritable: true },         
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+
+        ];
+
+        const list_instruction = new TransactionInstruction({
+            keys: account_vector,
+            programId: PROGRAM,
+            data: instruction_data,
+        });
+
+        let txArgs = await get_current_blockhash("");
+
+        let transaction = new Transaction(txArgs);
+        transaction.feePayer = wallet.publicKey;
+
+        transaction.add(list_instruction);
+
+        try {
+            let signed_transaction = await wallet.signTransaction(transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+            let signature = transaction_response.result;
+
+            console.log("reward sig: ", signature);
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+    }, [wallet]);
+
+
     const RefundTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
             handleConnectWallet();
@@ -107,8 +177,6 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
         }
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch_data.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), launch_data.mint_address.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
@@ -165,7 +233,7 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("refund sig: ", signature);
         } catch (error) {
             console.log(error);
             return;
@@ -468,7 +536,7 @@ export function TokenScreen({ launch_data, join_data }: { launch_data: LaunchDat
                             <Box mt={-3}
                             onClick={MINT_FAILED ? () => {
                                 RefundTickets()
-                            } : () => {}}
+                            } : () => {ClaimReward()}}
                             >
                                 {(MINTED_OUT || MINT_FAILED) && (
                                     <VStack>
