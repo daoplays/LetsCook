@@ -20,7 +20,7 @@ export function FAQScreen() {
                         <br />
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
-                            1. WTF IS LET'S COOK?
+                            1. WTF IS LET&apos;'S COOK?
                         </h2>
                         <br />
                         <HStack>

@@ -597,7 +597,7 @@ export async function request_launch_data(bearer: string, pubkey: PublicKey): Pr
     return data;
 }
 
-export async function run_launch_data_GPA(bearer: string): Promise<LaunchData[]> {
+export async function RunLaunchDataGPA(bearer: string): Promise<LaunchData[]> {
     let index_buffer = uInt8ToLEBytes(0);
     let account_bytes = bs58.encode(index_buffer);
 
@@ -637,7 +637,7 @@ export async function run_launch_data_GPA(bearer: string): Promise<LaunchData[]>
     return result;
 }
 
-export async function run_user_data_GPA(bearer: string): Promise<UserData[]> {
+export async function RunUserDataGPA(bearer: string): Promise<UserData[]> {
     let index_buffer = uInt8ToLEBytes(2);
     let account_bytes = bs58.encode(index_buffer);
 
@@ -677,7 +677,7 @@ export async function run_user_data_GPA(bearer: string): Promise<UserData[]> {
     return result;
 }
 
-export async function run_join_data_GPA(): Promise<JoinData[]> {
+export async function RunJoinDataGPA(): Promise<JoinData[]> {
     const wallet = useWallet();
     let index_buffer = uInt8ToLEBytes(3);
     let account_bytes = bs58.encode(index_buffer);

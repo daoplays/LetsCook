@@ -1,4 +1,4 @@
-import { run_launch_data_GPA, LaunchData, bignum_to_num, UserData, run_user_data_GPA } from "../components/Solana/state";
+import { RunLaunchDataGPA, LaunchData, bignum_to_num, UserData, RunUserDataGPA } from "../components/Solana/state";
 import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer, Tooltip } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -35,11 +35,11 @@ const Home = () => {
         setIsLoading(true);
         if (!check_launch_data.current) return;
 
-        let list = await run_launch_data_GPA("");
+        let list = await RunLaunchDataGPA("");
         console.log(list);
         setLaunchData(list);
 
-        let user_list = await run_user_data_GPA("");
+        let user_list = await RunUserDataGPA("");
         console.log(user_list);
         setUserData(user_list);
 
@@ -54,7 +54,7 @@ const Home = () => {
         }
         check_launch_data.current = false;
         setIsLoading(false);
-    }, []);
+    }, [wallet]);
 
     // interval for checking state
     useEffect(() => {

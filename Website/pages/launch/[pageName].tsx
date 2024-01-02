@@ -20,10 +20,10 @@ import {
     send_transaction,
     serialise_BuyTickets_instruction,
     myU64,
-    run_launch_data_GPA,
+    RunLaunchDataGPA,
     serialise_basic_instruction,
     LaunchInstruction,
-    run_join_data_GPA,
+    RunJoinDataGPA,
     JoinData,
     uInt8ToLEBytes,
     postData,
@@ -69,7 +69,7 @@ const MintPage = () => {
 
     const { pageName } = router.query;
 
-    const run_join_data_GPA2 = useCallback(async () => {
+    const RunJoinDataGPA2 = useCallback(async () => {
         let index_buffer = uInt8ToLEBytes(3);
         let account_bytes = bs58.encode(index_buffer);
         let wallet_bytes = PublicKey.default.toBase58();
@@ -127,7 +127,7 @@ const MintPage = () => {
                 setJoinData(joiner_map.get(bignum_to_num(launchData.game_id)));
             }
         }
-    }, [wallet]);
+    }, [wallet, launchData.game_id]);
 
     let win_prob = 0;
 
@@ -145,7 +145,7 @@ const MintPage = () => {
 
         try {
             setIsLoading(true);
-            const list = await run_launch_data_GPA("");
+            const list = await RunLaunchDataGPA("");
 
             const launchItem = list.find((item: LaunchData) => (item.page_name.toString() === pageName ? pageName : ""));
 
@@ -158,9 +158,9 @@ const MintPage = () => {
             setIsLoading(false);
         }
 
-        await run_join_data_GPA2();
+        await RunJoinDataGPA2();
         checkLaunchData.current = false;
-    }, [pageName, run_join_data_GPA2]);
+    }, [pageName, RunJoinDataGPA2]);
 
     useEffect(() => {
         checkLaunchData.current = true;
@@ -251,7 +251,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet]);
+    }, [wallet, launchData.game_id, launchData.mint_address, launchData.page_name, launchData.seller, launchData.sol_address, handleConnectWallet]);
 
     const RefundTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -330,7 +330,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet]);
+    }, [wallet, handleConnectWallet, launchData.game_id, launchData.mint_address, launchData.page_name, launchData.seller, launchData.sol_address]);
 
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -398,7 +398,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, value]);
+    }, [wallet, value, handleConnectWallet, launchData.game_id, launchData.page_name, launchData.seller, launchData.sol_address]);
 
     useEffect(() => {
         if (launchData) {

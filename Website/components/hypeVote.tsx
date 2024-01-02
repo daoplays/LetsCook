@@ -71,7 +71,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 return;
             }
         },
-        [wallet],
+        [wallet, launch_data.game_id, launch_data.page_name],
     );
 
     let has_voted: boolean = false;

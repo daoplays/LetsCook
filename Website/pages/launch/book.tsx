@@ -59,6 +59,71 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         setScreen("details");
     }
 
+
+    const EditLaunch = useCallback(async () => {
+        if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
+
+        //setProcessingTransaction(true);
+        setTransactionFailed(false);
+
+        let launch_data_account = PublicKey.findProgramAddressSync(
+            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
+            PROGRAM,
+        )[0];
+
+        const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
+
+        var account_vector = [
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true }
+
+        ];
+
+
+        const list_instruction = new TransactionInstruction({
+            keys: account_vector,
+            programId: PROGRAM,
+            data: instruction_data,
+        });
+
+        let txArgs = await get_current_blockhash("");
+
+        let transaction = new Transaction(txArgs);
+        transaction.feePayer = wallet.publicKey;
+
+        transaction.add(list_instruction);
+        try {
+
+            let signed_transaction = await wallet.signTransaction(transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+            if (transaction_response.result === "INVALID") {
+                console.log(transaction_response);
+                setProcessingTransaction(false);
+                setTransactionFailed(true);
+                return;
+            }
+
+            let signature = transaction_response.result;
+
+            if (DEBUG) {
+                console.log("list signature: ", signature);
+            }
+
+            current_signature.current = signature;
+            signature_check_count.current = 0;
+        } catch (error) {
+            console.log(error);
+            setProcessingTransaction(false);
+            return;
+        }
+
+    }, [wallet, newLaunchData]);
+
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -190,71 +255,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         EditLaunch();
 
-    }, [wallet]);
+    }, [wallet, EditLaunch, newLaunchData]);
 
-    const EditLaunch = useCallback(async () => {
-        if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
-
-        //setProcessingTransaction(true);
-        setTransactionFailed(false);
-
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
-
-        const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true }
-
-        ];
-
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(list_instruction);
-        try {
-
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            if (transaction_response.result === "INVALID") {
-                console.log(transaction_response);
-                setProcessingTransaction(false);
-                setTransactionFailed(true);
-                return;
-            }
-
-            let signature = transaction_response.result;
-
-            if (DEBUG) {
-                console.log("list signature: ", signature);
-            }
-
-            current_signature.current = signature;
-            signature_check_count.current = 0;
-        } catch (error) {
-            console.log(error);
-            setProcessingTransaction(false);
-            return;
-        }
-
-    }, [wallet]);
 
     function confirm(e) {
         e.preventDefault();

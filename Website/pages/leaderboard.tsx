@@ -1,5 +1,5 @@
 import { Center, Box } from "@chakra-ui/react";
-import { UserData, run_user_data_GPA } from "../components/Solana/state";
+import { UserData, RunUserDataGPA } from "../components/Solana/state";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import Table from "react-bootstrap/Table";
@@ -10,7 +10,7 @@ const LeaderboardPage = () => {
     const [user_data, setUserData] = useState<UserData[]>([]);
 
     const CheckCurrentUserData = useCallback(async () => {
-        let user_list = await run_user_data_GPA("");
+        let user_list = await RunUserDataGPA("");
         console.log(user_list);
         setUserData(user_list);
 
@@ -23,7 +23,7 @@ const LeaderboardPage = () => {
                 }
             }
         }
-    }, []);
+    }, [wallet.publicKey]);
 
     useEffect(() => {
         CheckCurrentUserData();
