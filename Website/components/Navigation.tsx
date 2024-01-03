@@ -1,8 +1,6 @@
-import { Dispatch, SetStateAction, useState } from "react";
-import { HStack, Text, Box, Stack, Button, VStack, useDisclosure } from "@chakra-ui/react";
+import { HStack, Text, VStack, useDisclosure } from "@chakra-ui/react";
 import { ConnectWalletButton, DisconnectWalletButton } from "./Solana/wallet";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Screen } from "./Solana/constants";
 import styles from "./header.module.css";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
@@ -10,7 +8,7 @@ import UseWalletConnection from "../hooks/useWallet";
 import MainButton from "./Buttons/mainButton";
 import Link from "next/link";
 
-function Navigation({ setScreen }: { setScreen?: Dispatch<SetStateAction<Screen>> }) {
+function Navigation() {
     const wallet = useWallet();
     const { md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
@@ -18,69 +16,68 @@ function Navigation({ setScreen }: { setScreen?: Dispatch<SetStateAction<Screen>
 
     return (
         <>
-            <div className={styles.headerImage}>
-                <HStack
-                    boxShadow="0px 3px 13px 0px rgba(0, 0, 0, 0.75)"
-                    px={4}
-                    h="100%"
-                    w="100%"
-                    alignItems="center"
-                    justify="space-between"
-                >
-                    <Link href="/">
-                        <Text
-                            fontSize={md ? "large" : "x-large"}
-                            color={"#683309"}
-                            className="font-face-kg"
-                            style={{ cursor: "pointer", margin: "auto 0" }}
-                        >
-                            LET&apos;S COOK
-                        </Text>
-                    </Link>
-                    <HStack gap={4}>
-                        <div className={styles.sauce}>
-                            <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
-                            <div>1,400</div>
-                        </div>
+            <HStack
+                bg="url(/images/header_fill.jpeg)"
+                backgroundSize="cover"
+                height={50}
+                px={4}
+                w="100%"
+                alignItems="center"
+                justify="space-between"
+            >
+                <Link href="/">
+                    <Text
+                        fontSize={md ? "large" : "x-large"}
+                        color={"#683309"}
+                        className="font-face-kg"
+                        style={{ cursor: "pointer", margin: "auto 0" }}
+                    >
+                        LET&apos;S COOK
+                    </Text>
+                </Link>
+                <HStack gap={3}>
+                    <div className={styles.sauce}>
+                        <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
+                        <div>1,400</div>
+                    </div>
 
-                        {!md && (
-                            <Link href="/leaderboard">
-                                <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
+                    {!md && (
+                        <Link href="/leaderboard">
+                            <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
+                        </Link>
+                    )}
+
+                    {!md && (
+                        <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
+                    )}
+
+                    {!md && (
+                        <Link href="/faq">
+                            <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
+                        </Link>
+                    )}
+
+                    {md ? (
+                        <Image
+                            onClick={onToggle}
+                            src="/images/Group (6).png"
+                            width={35}
+                            height={35}
+                            alt={"Burger Icon"}
+                            style={{ marginRight: 5 }}
+                        />
+                    ) : (
+                        <>
+                            {wallet.publicKey && <DisconnectWalletButton />}
+                            {wallet.publicKey === null && <ConnectWalletButton />}
+
+                            <Link href="/launch">
+                                <MainButton label="LAUNCH" />
                             </Link>
-                        )}
-
-                        {!md && (
-                            <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
-                        )}
-
-                        {!md && (
-                            <Link href="/faq">
-                                <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
-                            </Link>
-                        )}
-
-                        {md ? (
-                            <Image
-                                onClick={onToggle}
-                                src="/images/Group (6).png"
-                                width={40}
-                                height={40}
-                                alt={"Burger Icon"}
-                                style={{ marginRight: 5 }}
-                            />
-                        ) : (
-                            <>
-                                {wallet.publicKey && <DisconnectWalletButton />}
-                                {wallet.publicKey === null && <ConnectWalletButton />}
-
-                                <Link href="/launch">
-                                    <MainButton label="LAUNCH" />
-                                </Link>
-                            </>
-                        )}
-                    </HStack>
+                        </>
+                    )}
                 </HStack>
-            </div>
+            </HStack>
 
             {/* Mobile Menu */}
             <VStack

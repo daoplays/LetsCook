@@ -137,23 +137,23 @@ const Home = () => {
     const Featured = () => {
         const Links = () => (
             <HStack gap={3}>
-                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.twitter : "#"}>
+                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.twitter : "#"} target="_blank">
                     <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
-                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.telegram : "#"}>
+                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.telegram : "#"} target="_blank">
                     <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
-                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.twitter : "#"}>
+                <Link href={featured_launch !== null ? "https://twitter.com/" + featured_launch.twitter : "#"} target="_blank">
                     <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
-                <Link href={featured_launch !== null ? featured_launch.website : "#"}>
+                <Link href={featured_launch !== null ? featured_launch.website : "#"} target="_blank">
                     <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
                 </Link>
             </HStack>
         );
 
         return (
-            <Box h={md ? 300 : 320} bg="url(/images/Banner.png)" bgSize="cover">
+            <Box h={md ? 300 : 320} bg="url(/images/Banner.png)" bgSize="cover" boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset ">
                 <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
                     <Flex
                         flexDirection={md ? "column" : "row"}
@@ -165,14 +165,35 @@ const Home = () => {
                     >
                         <HStack w="fit-content" gap={md ? 5 : 8}>
                             {featured_launch !== null && (
-                                <Image src={featured_launch.icon} width={md ? 130 : 200} height={md ? 130 : 200} alt="$LOGO" hidden={md} />
+                                <Image
+                                    src={featured_launch.icon}
+                                    width={md ? 130 : 200}
+                                    height={md ? 130 : 200}
+                                    alt="$LOGO"
+                                    hidden={md}
+                                    style={{ borderRadius: sm ? "12px" : "8px" }}
+                                />
                             )}
                             <VStack gap={md ? 1 : 3} alignItems={md ? "center" : "left"}>
-                                <Flex ml={-5} gap={md ? 2 : 6}>
-                                    {featured_launch !== null && (
-                                        <Image src={featured_launch.icon} width={50} height={50} alt="$LOGO" hidden={!md} />
-                                    )}
-                                    <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
+                                <Flex gap={md ? 2 : 6}>
+                                    {/* {featured_launch !== null && (
+                                        <Image
+                                            src={featured_launch.icon}
+                                            width={50}
+                                            height={50}
+                                            alt="$LOGO"
+                                            hidden={!md}
+                                            style={{ borderRadius: sm ? "12px" : "8px" }}
+                                        />
+                                    )} */}
+                                    <Text
+                                        m={0}
+                                        fontSize={md ? 30 : 60}
+                                        color="white"
+                                        className="font-face-kg"
+                                        style={{ wordBreak: "break-all" }}
+                                        align={"center"}
+                                    >
                                         {featured_launch !== null ? "$" + featured_launch.name : ""}
                                     </Text>
                                     {!md && featured_launch !== null && <Links />}
@@ -191,15 +212,17 @@ const Home = () => {
                             </VStack>
                         </HStack>
                         {md && <Links />}
-                        {featured_launch !== null && new Date().getTime() >= featured_launch.launch_date && (
-                            <WoodenButton label="Mint Live" size={35} />
-                        )}
-                        {featured_launch !== null && new Date().getTime() < featured_launch.launch_date && (
-                            <WoodenButton label="Mint Pending" size={35} />
-                        )}
-                        {featured_launch !== null && new Date().getTime() >= featured_launch.end_date && (
-                            <WoodenButton label="Mint Closed" size={35} />
-                        )}
+                        <Link href={`/launch/${featured_launch?.page_name}`}>
+                            {featured_launch !== null && new Date().getTime() >= featured_launch.launch_date && (
+                                <WoodenButton label="Mint Live" size={35} />
+                            )}
+                            {featured_launch !== null && new Date().getTime() < featured_launch.launch_date && (
+                                <WoodenButton label="Mint Pending" size={35} />
+                            )}
+                            {featured_launch !== null && new Date().getTime() >= featured_launch.end_date && (
+                                <WoodenButton label="Mint Closed" size={35} />
+                            )}
+                        </Link>
                     </Flex>
                 </Box>
             </Box>
@@ -207,7 +230,7 @@ const Home = () => {
     };
 
     return (
-        <main style={{ padding: "50px 0" }}>
+        <main>
             <Featured />
             <GameTable />
         </main>

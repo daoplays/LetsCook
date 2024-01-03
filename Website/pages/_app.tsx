@@ -22,7 +22,9 @@ function MyApp({ Component, pageProps }) {
             <WalletProvider wallets={wallets} autoConnect>
                 <WalletModalProvider>
                     <Navigation />
-                    <Component {...pageProps} />
+                    <div style={{ minHeight: "90vh" }}>
+                        <Component {...pageProps} />
+                    </div>
                     <Footer />
                 </WalletModalProvider>
             </WalletProvider>

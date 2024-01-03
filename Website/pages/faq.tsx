@@ -8,7 +8,7 @@ import Image from "next/image";
 
 const FAQ = () => {
     return (
-        <main style={{ padding: "50px 0" }}>
+        <main>
             <Center mb="5rem">
                 <Box width="80%">
                     <div className="font-face-rk" style={{ color: "white", fontSize: DUNGEON_FONT_SIZE }}>

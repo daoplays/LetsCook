@@ -77,7 +77,7 @@ const LeaderboardPage = () => {
     };
 
     return (
-        <main style={{ padding: "50px 0" }}>
+        <main>
             <GameTable />
         </main>
     );

@@ -466,7 +466,7 @@ const MintPage = () => {
     const MINT_FAILED = current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints;
 
     return (
-        <main style={{ padding: "50px 0" }}>
+        <main>
             <Center>
                 <VStack spacing={3} px={sm ? 3 : 0} my={xs ? "25px" : "50px"} width={sm ? "100%" : "80%"}>
                     <VStack>

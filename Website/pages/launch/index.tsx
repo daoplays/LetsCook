@@ -12,7 +12,7 @@ const Launch = () => {
     const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
 
     return (
-        <main style={{ padding: "50px 0" }}>
+        <main>
             <Link href="/faq">
                 <Image className={styles.help} width={40} height={40} src="/images/help.png" alt="Help" />
             </Link>
