@@ -1,5 +1,5 @@
 import { RunLaunchDataGPA, LaunchData, bignum_to_num, UserData, RunUserDataGPA } from "../components/Solana/state";
-import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer, Tooltip } from "@chakra-ui/react";
+import { Center, VStack, Text, Box, HStack, ModalOverlay, Flex, Skeleton, TableContainer, Tooltip, Show } from "@chakra-ui/react";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Screen } from "../components/Solana/constants";
@@ -152,7 +152,11 @@ const Home = () => {
                                 </Text>
                             </VStack>
                         </HStack>
-                        {md && <Links />}
+
+                        <Show breakpoint="(max-width: 1024px)">
+                            <Links />
+                        </Show>
+
                         <Link href={`/launch/${featured_launch?.page_name}`}>
                             {featured_launch !== null && new Date().getTime() >= featured_launch.launch_date && (
                                 <WoodenButton label="Mint Live" size={35} />

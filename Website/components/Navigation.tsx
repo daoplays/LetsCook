@@ -1,4 +1,4 @@
-import { HStack, Text, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
+import { HStack, Show, Text, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
 import { ConnectWalletButton, DisconnectWalletButton } from "./Solana/wallet";
 import { useWallet } from "@solana/wallet-adapter-react";
 import styles from "./header.module.css";
@@ -43,37 +43,37 @@ function Navigation() {
                         </div>
                     </Tooltip>
 
-                    {!md && (
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Mint Calendar" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href="/calendar">
                                 <Image src="/images/calendar.png" width={35} height={35} alt={"Calendar"} />
                             </Link>
                         </Tooltip>
-                    )}
+                    </Show>
 
-                    {!md && (
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href="/leaderboard">
                                 <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
                             </Link>
                         </Tooltip>
-                    )}
+                    </Show>
 
-                    {!md && (
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
                             <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
                         </Tooltip>
-                    )}
+                    </Show>
 
-                    {!md && (
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="FAQs" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href="/faq">
                                 <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
                             </Link>
                         </Tooltip>
-                    )}
+                    </Show>
 
-                    {md ? (
+                    <Show breakpoint="(max-width: 1024px)">
                         <Image
                             onClick={onToggle}
                             src="/images/Group (6).png"
@@ -82,7 +82,9 @@ function Navigation() {
                             alt={"Burger Icon"}
                             style={{ marginRight: 5 }}
                         />
-                    ) : (
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
                         <>
                             {wallet.publicKey && <DisconnectWalletButton />}
                             {wallet.publicKey === null && <ConnectWalletButton />}
@@ -91,7 +93,7 @@ function Navigation() {
                                 <MainButton label="LAUNCH" />
                             </Link>
                         </>
-                    )}
+                    </Show>
                 </HStack>
             </HStack>
 
