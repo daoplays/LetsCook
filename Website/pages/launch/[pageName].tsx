@@ -309,8 +309,6 @@ const MintPage = () => {
             true, // allow owner off curve
         );
 
-
-
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
 
         var account_vector = [
@@ -326,7 +324,6 @@ const MintPage = () => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: launchData.mint_address, isSigner: false, isWritable: true },
-
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
@@ -576,8 +573,8 @@ const MintPage = () => {
     let current_time = new Date().getTime();
 
     const PRE_LAUNCH = current_time < launchData.launch_date;
-    const ACTIVE = false;//current_time >= launchData.launch_date && current_time < launchData.end_date;
-    const MINTED_OUT = true;//current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints;
+    const ACTIVE = false; //current_time >= launchData.launch_date && current_time < launchData.end_date;
+    const MINTED_OUT = true; //current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints;
     const MINT_FAILED = current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints;
 
     return (
@@ -755,36 +752,45 @@ const MintPage = () => {
                                             ? () => {
                                                   RefundTickets();
                                               }
-                                            : 
-                                        MINTED_OUT && join_data !== null &&  join_data.num_claimed_tickets < join_data.num_tickets
-                                            ? () => {
-                                                CheckTickets();
-                                            }
-                                        : 
-                                        MINTED_OUT && join_data !== null && join_data.num_claimed_tickets >= join_data.num_tickets && join_data.ticket_status === 0
-                                        ?
-                                        () => {
-                                            ClaimTokens();
-                                        }
-                                        :
-                                        () => {
-                                        }
-                                    
+                                            : MINTED_OUT && join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
+                                              ? () => {
+                                                    CheckTickets();
+                                                }
+                                              : MINTED_OUT &&
+                                                  join_data !== null &&
+                                                  join_data.num_claimed_tickets >= join_data.num_tickets &&
+                                                  join_data.ticket_status === 0
+                                                ? () => {
+                                                      ClaimTokens();
+                                                  }
+                                                : () => {}
                                     }
                                 >
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>
-
                                             <Box mt={4}>
-                                            <WoodenButton
-                                                // pass action here (check tickets / refund tickets)
-                                                label={join_data === null ? "" : MINTED_OUT ? join_data.num_claimed_tickets < join_data.num_tickets ? "Check Tickets" : join_data.num_claimed_tickets >= join_data.num_tickets && join_data.ticket_status === 0 ? "Claim Tokens" : "Tokens Claimed" : MINT_FAILED ? "Refund Tickets" : ""}
-                                                size={28}
-                                            />
-					</Box>
+                                                <WoodenButton
+                                                    // pass action here (check tickets / refund tickets)
+                                                    label={
+                                                        join_data === null
+                                                            ? ""
+                                                            : MINTED_OUT
+                                                              ? join_data.num_claimed_tickets < join_data.num_tickets
+                                                                  ? "Check Tickets"
+                                                                  : join_data.num_claimed_tickets >= join_data.num_tickets &&
+                                                                      join_data.ticket_status === 0
+                                                                    ? "Claim Tokens"
+                                                                    : "Tokens Claimed"
+                                                              : MINT_FAILED
+                                                                ? "Refund Tickets"
+                                                                : ""
+                                                    }
+                                                    size={28}
+                                                />
+                                            </Box>
                                             {MINTED_OUT && (
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                    {(100*win_prob).toFixed(3)}% chance per ticket
+                                                    {(100 * win_prob).toFixed(3)}% chance per ticket
                                                 </Text>
                                             )}
                                         </VStack>
@@ -856,7 +862,7 @@ const MintPage = () => {
                                     PRE_LAUNCH ? "none" : ACTIVE ? "whatsapp" : MINTED_OUT ? "linkedin" : MINT_FAILED ? "red" : "none"
                                 }
                                 size="sm"
-                                value={100 * Math.min(launchData.tickets_sold, launchData.num_mints) / launchData.num_mints}
+                                value={(100 * Math.min(launchData.tickets_sold, launchData.num_mints)) / launchData.num_mints}
                             />
 
                             {/* Total tickets sold  */}
