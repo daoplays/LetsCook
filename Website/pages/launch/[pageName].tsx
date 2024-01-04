@@ -29,7 +29,7 @@ import {
     postData,
 } from "../../components/Solana/state";
 
-import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL } from "../../components/Solana/constants";
+import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL, WSS_NODE } from "../../components/Solana/constants";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -70,6 +70,115 @@ const MintPage = () => {
 
     const { pageName } = router.query;
 
+    // updates to token page are checked using a websocket to get real time updates
+    const use_websocket = useRef<boolean>(true);
+    const join_account_websocket = useRef<WebSocket | null>(null);
+    const join_account_id = useRef<number | null>(null);
+    const launch_account_websocket = useRef<WebSocket | null>(null);
+    const launch_account_ws_id = useRef<number | null>(null);
+
+    const check_launch_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            let key = new PublicKey(result["params"]["result"]["value"]["pubkey"]);
+
+            let event_data = result["params"]["result"]["value"]["account"]["data"][0];
+
+            console.log("have event data", event_data);
+            let account_data = Buffer.from(event_data, "base64");
+
+            const [updated_data] = LaunchData.struct.deserialize(account_data);
+
+            console.log(updated_data);
+
+           
+        },
+        [],
+    );
+
+    // launch account subscription handler
+    useEffect(() => {
+        console.log("in sub UE")
+
+        if (use_websocket.current === false || WSS_NODE === undefined || wallet === null) return;
+
+        if (launch_account_ws_id.current !== null && !(launch_account_websocket.current?.CLOSING || launch_account_websocket.current?.CLOSED)) {
+            console.log("unsubscribe launch account from existing method");
+            let message = `{"id":1,"jsonrpc":"2.0","method": "programUnsubscribe", "params": [` + launch_account_ws_id.current + `]}`;
+            launch_account_websocket.current?.send(message);
+        }
+
+        let index_buffer = uInt8ToLEBytes(3);
+        let account_bytes = bs58.encode(index_buffer);
+        let wallet_bytes = wallet.publicKey?.toBase58();
+        //const game_id = new myU64(bignum_to_num(launchData.game_id));
+        //const [game_id_buf] = myU64.struct.serialize(game_id);
+        //let game_id_bytes = bs58.encode(game_id_buf);
+
+        //console.log("wallet",  wallet_bytes, game_id_bytes, bs58.decode(game_id_bytes));
+   
+
+        let message =
+            `{"id":1,"jsonrpc":"2.0","method": "programSubscribe","params":["` +
+            PROGRAM +
+            `",{"encoding": "jsonParsed", "commitment": "confirmed"}]}`;
+
+        console.log(message)
+
+        if (launch_account_websocket.current === null || launch_account_websocket.current.CLOSED) {
+            launch_account_websocket.current = new WebSocket(WSS_NODE);
+        }
+
+        // when the websocket connects, send our request, and then in one second (hopefully long enough )
+        launch_account_websocket.current.onopen = () => {
+            launch_account_websocket.current?.send(message);
+            console.log("launch account ws opened");
+        };
+        launch_account_websocket.current.onclose = () => {
+            launch_account_ws_id.current = null;
+            console.log("ws  closed");
+        };
+
+        return () => {
+            launch_account_websocket.current?.close();
+        };
+    }, [wallet]);
+
+    
+
+    useEffect(() => {
+        console.log("in event UE", launch_account_websocket.current === null)
+        if (launch_account_websocket.current === null) return;
+
+        launch_account_websocket.current.onmessage = (event) => {
+            let result = JSON.parse(event.data);
+
+            console.log(result);
+            // the first message will be the subscription id, once we have that get the current state of the game as we will be tracking and updates from then on via the subscription
+            if (result["id"] !== undefined && result["id"] === 1) {
+                console.log("have new subscription id for p1", result["result"]);
+                launch_account_ws_id.current = result["result"];
+
+                return;
+            }
+
+            //console.log("got message", result);
+
+            if (result["params"] === undefined) return;
+
+            let event_sub = result["params"]["subscription"];
+            if (event_sub !== launch_account_ws_id.current) {
+                console.log("id of message doesn't equal current ws_id, skipping");
+                return;
+            }
+
+            check_launch_update(result);
+        };
+    }, [check_launch_update]);
+
+    
+
     const RunJoinDataGPA2 = useCallback(async () => {
         let index_buffer = uInt8ToLEBytes(3);
         let account_bytes = bs58.encode(index_buffer);
@@ -102,8 +211,8 @@ const MintPage = () => {
             return [];
         }
 
-        console.log("check join accounts");
-        console.log(program_accounts_result["result"]);
+        //console.log("check join accounts");
+        //console.log(program_accounts_result["result"]);
 
         let result: JoinData[] = [];
         for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
@@ -132,9 +241,9 @@ const MintPage = () => {
 
     let win_prob = 0;
 
-    if (join_data === null) {
-        console.log("no joiner info");
-    }
+    //if (join_data === null) {
+    //    console.log("no joiner info");
+   // }
 
     if (launchData !== null && launchData.tickets_sold > launchData.tickets_claimed) {
         //console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
@@ -572,10 +681,56 @@ const MintPage = () => {
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
     let current_time = new Date().getTime();
 
-    const PRE_LAUNCH = current_time < launchData.launch_date;
-    const ACTIVE = false; //current_time >= launchData.launch_date && current_time < launchData.end_date;
-    const MINTED_OUT = true; //current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints;
-    const MINT_FAILED = current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints;
+    const enum CookState {
+        PRE_LAUNCH,
+        ACTIVE_NO_TICKETS,
+        ACTIVE_TICKETS,
+        MINT_FAILED_NOT_REFUNDED,
+        MINT_FAILED_REFUNDED,
+        MINT_SUCCEEDED_NO_TICKETS,
+        MINT_SUCCEDED_TICKETS_LEFT,
+        MINT_SUCCEEDED_TICKETS_CHECKED,
+    }
+
+    let cook_state = CookState.PRE_LAUNCH;
+    if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data === null) {
+        cook_state = CookState.ACTIVE_NO_TICKETS;
+    }
+    if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data !== null) {
+        cook_state = CookState.ACTIVE_TICKETS;
+    }
+    if (current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints && join_data === null) {
+        cook_state = CookState.MINT_FAILED_REFUNDED;
+    }
+    if (current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints && join_data !== null) {
+        cook_state = CookState.MINT_FAILED_NOT_REFUNDED;
+    }
+    if (current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints && join_data === null) {
+        cook_state = CookState.MINT_SUCCEEDED_NO_TICKETS;
+    }
+    if (
+        current_time >= launchData.end_date &&
+        launchData.tickets_sold >= launchData.num_mints &&
+        join_data !== null &&
+        join_data.num_claimed_tickets < join_data.num_tickets
+    ) {
+        cook_state = CookState.MINT_SUCCEDED_TICKETS_LEFT;
+    }
+    if (
+        current_time >= launchData.end_date &&
+        launchData.tickets_sold >= launchData.num_mints &&
+        join_data !== null &&
+        join_data.num_claimed_tickets == join_data.num_tickets
+    ) {
+        cook_state = CookState.MINT_SUCCEEDED_TICKETS_CHECKED;
+    }
+
+    const ACTIVE: boolean = cook_state === CookState.ACTIVE_NO_TICKETS || cook_state === CookState.ACTIVE_TICKETS;
+    const MINTED_OUT: boolean =
+        cook_state === CookState.MINT_SUCCEEDED_NO_TICKETS ||
+        cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT ||
+        cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED;
+    const MINT_FAILED: boolean = cook_state === CookState.MINT_FAILED_NOT_REFUNDED || cook_state === CookState.MINT_FAILED_REFUNDED;
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
@@ -732,7 +887,7 @@ const MintPage = () => {
                                         textAlign={"center"}
                                         fontSize={lg ? "x-large" : "xxx-large"}
                                     >
-                                        {PRE_LAUNCH
+                                        {cook_state === CookState.PRE_LAUNCH
                                             ? "Warming Up"
                                             : ACTIVE
                                               ? `Total: ${totalCost}`
@@ -748,18 +903,15 @@ const MintPage = () => {
                                 <Box
                                     mt={-3}
                                     onClick={
-                                        MINT_FAILED
+                                        cook_state === CookState.MINT_FAILED_NOT_REFUNDED
                                             ? () => {
                                                   RefundTickets();
                                               }
-                                            : MINTED_OUT && join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
+                                            : cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
                                               ? () => {
                                                     CheckTickets();
                                                 }
-                                              : MINTED_OUT &&
-                                                  join_data !== null &&
-                                                  join_data.num_claimed_tickets >= join_data.num_tickets &&
-                                                  join_data.ticket_status === 0
+                                              : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
                                                 ? () => {
                                                       ClaimTokens();
                                                   }
@@ -772,16 +924,11 @@ const MintPage = () => {
                                                 <WoodenButton
                                                     // pass action here (check tickets / refund tickets)
                                                     label={
-                                                        join_data === null
-                                                            ? ""
-                                                            : MINTED_OUT
-                                                              ? join_data.num_claimed_tickets < join_data.num_tickets
-                                                                  ? "Check Tickets"
-                                                                  : join_data.num_claimed_tickets >= join_data.num_tickets &&
-                                                                      join_data.ticket_status === 0
-                                                                    ? "Claim Tokens"
-                                                                    : "Tokens Claimed"
-                                                              : MINT_FAILED
+                                                        cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
+                                                            ? "Check Tickets"
+                                                            : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
+                                                              ? "Claim Tokens"
+                                                              : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
                                                                 ? "Refund Tickets"
                                                                 : ""
                                                     }
@@ -799,7 +946,7 @@ const MintPage = () => {
 
                                 {/* Mint Quantity  */}
                                 <HStack maxW="320px" hidden={MINTED_OUT || MINT_FAILED}>
-                                    <Button {...dec} size="lg" isDisabled={PRE_LAUNCH}>
+                                    <Button {...dec} size="lg" isDisabled={cook_state === CookState.PRE_LAUNCH}>
                                         -
                                     </Button>
 
@@ -810,9 +957,9 @@ const MintPage = () => {
                                         color="white"
                                         alignItems="center"
                                         justifyContent="center"
-                                        isDisabled={PRE_LAUNCH}
+                                        isDisabled={cook_state === CookState.PRE_LAUNCH}
                                     />
-                                    <Button {...inc} size="lg" isDisabled={PRE_LAUNCH}>
+                                    <Button {...inc} size="lg" isDisabled={cook_state === CookState.PRE_LAUNCH}>
                                         +
                                     </Button>
                                 </HStack>
@@ -820,7 +967,7 @@ const MintPage = () => {
                                 {/* Mint Button  */}
                                 <Button
                                     size="lg"
-                                    isDisabled={PRE_LAUNCH}
+                                    isDisabled={cook_state === CookState.PRE_LAUNCH}
                                     hidden={MINTED_OUT || MINT_FAILED}
                                     onClick={() => {
                                         BuyTickets();
@@ -830,7 +977,7 @@ const MintPage = () => {
                                 </Button>
 
                                 {/* Platform fee  */}
-                                {!PRE_LAUNCH ? (
+                                {!(cook_state === CookState.PRE_LAUNCH) ? (
                                     <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                         <HStack>
                                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -859,7 +1006,15 @@ const MintPage = () => {
                                 h={25}
                                 borderRadius={12}
                                 colorScheme={
-                                    PRE_LAUNCH ? "none" : ACTIVE ? "whatsapp" : MINTED_OUT ? "linkedin" : MINT_FAILED ? "red" : "none"
+                                    cook_state === CookState.PRE_LAUNCH
+                                        ? "none"
+                                        : ACTIVE
+                                          ? "whatsapp"
+                                          : MINTED_OUT
+                                            ? "linkedin"
+                                            : MINT_FAILED
+                                              ? "red"
+                                              : "none"
                                 }
                                 size="sm"
                                 value={(100 * Math.min(launchData.tickets_sold, launchData.num_mints)) / launchData.num_mints}
