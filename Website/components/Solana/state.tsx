@@ -352,6 +352,7 @@ export const enum LaunchInstruction {
     hype_vote = 6,
     claim_refund = 7,
     edit_launch = 8,
+    claim_tokens = 9
 }
 
 export interface LaunchDataUserInput {
