@@ -27,12 +27,13 @@ import {
     JoinData,
     uInt8ToLEBytes,
     postData,
+    request_raw_account_data
 } from "../../components/Solana/state";
 
 import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL, WSS_NODE } from "../../components/Solana/constants";
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { PieChart } from "react-minimal-pie-chart";
@@ -70,20 +71,18 @@ const MintPage = () => {
 
     const { pageName } = router.query;
 
+    const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
     // updates to token page are checked using a websocket to get real time updates
-    const use_websocket = useRef<boolean>(true);
-    const join_account_websocket = useRef<WebSocket | null>(null);
-    const join_account_id = useRef<number | null>(null);
-    const launch_account_websocket = useRef<WebSocket | null>(null);
+    const join_account_ws_id = useRef<number | null>(null);
     const launch_account_ws_id = useRef<number | null>(null);
 
     const check_launch_update = useCallback(
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
-            let key = new PublicKey(result["params"]["result"]["value"]["pubkey"]);
-
-            let event_data = result["params"]["result"]["value"]["account"]["data"][0];
+           
+            let event_data = result.data;
 
             console.log("have event data", event_data);
             let account_data = Buffer.from(event_data, "base64");
@@ -92,91 +91,79 @@ const MintPage = () => {
 
             console.log(updated_data);
 
+            if (updated_data.num_interactions > launchData.num_interactions) {
+                setLaunchData(updated_data);
+            }
+
            
         },
-        [],
+        [launchData],
+    );
+
+    const check_join_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+           
+            let event_data = result.data;
+
+            console.log("have event data", event_data);
+            let account_data = Buffer.from(event_data, "base64");
+
+            const [updated_data] = JoinData.struct.deserialize(account_data);
+
+            console.log(updated_data);
+
+            if (join_data === null) {
+                setJoinData(updated_data);
+                return;
+            }
+
+            if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
+                setJoinData(updated_data);
+            }
+
+           
+        },
+        [join_data],
     );
 
     // launch account subscription handler
     useEffect(() => {
-        console.log("in sub UE")
 
-        if (use_websocket.current === false || WSS_NODE === undefined || wallet === null) return;
+        if (launchData === null)
+            return;
 
-        if (launch_account_ws_id.current !== null && !(launch_account_websocket.current?.CLOSING || launch_account_websocket.current?.CLOSED)) {
-            console.log("unsubscribe launch account from existing method");
-            let message = `{"id":1,"jsonrpc":"2.0","method": "programUnsubscribe", "params": [` + launch_account_ws_id.current + `]}`;
-            launch_account_websocket.current?.send(message);
+        if (launch_account_ws_id.current === null) {
+        
+            console.log("subscribe 1")
+            let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
+            
+            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed")
         }
 
-        let index_buffer = uInt8ToLEBytes(3);
-        let account_bytes = bs58.encode(index_buffer);
-        let wallet_bytes = wallet.publicKey?.toBase58();
-        //const game_id = new myU64(bignum_to_num(launchData.game_id));
-        //const [game_id_buf] = myU64.struct.serialize(game_id);
-        //let game_id_bytes = bs58.encode(game_id_buf);
-
-        //console.log("wallet",  wallet_bytes, game_id_bytes, bs58.decode(game_id_bytes));
-   
-
-        let message =
-            `{"id":1,"jsonrpc":"2.0","method": "programSubscribe","params":["` +
-            PROGRAM +
-            `",{"encoding": "jsonParsed", "commitment": "confirmed"}]}`;
-
-        console.log(message)
-
-        if (launch_account_websocket.current === null || launch_account_websocket.current.CLOSED) {
-            launch_account_websocket.current = new WebSocket(WSS_NODE);
+        if (join_account_ws_id.current === null) {
+        
+            console.log("subscribe 2")
+            const game_id = new myU64(launchData.game_id);
+            const [game_id_buf] = myU64.struct.serialize(game_id);
+            
+            let user_join_account = PublicKey.findProgramAddressSync(
+                [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+                PROGRAM,
+            )[0];
+            
+            join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed")
         }
 
-        // when the websocket connects, send our request, and then in one second (hopefully long enough )
-        launch_account_websocket.current.onopen = () => {
-            launch_account_websocket.current?.send(message);
-            console.log("launch account ws opened");
-        };
-        launch_account_websocket.current.onclose = () => {
-            launch_account_ws_id.current = null;
-            console.log("ws  closed");
-        };
+        // TODO handle closing
+        //    await connection.removeAccountChangeListener(join_account_ws_id.current);
+        //    await connection.removeAccountChangeListener(launch_account_ws_id.current);
 
-        return () => {
-            launch_account_websocket.current?.close();
-        };
-    }, [wallet]);
+
+    }, [wallet, launchData, check_join_update]);
 
     
-
-    useEffect(() => {
-        console.log("in event UE", launch_account_websocket.current === null)
-        if (launch_account_websocket.current === null) return;
-
-        launch_account_websocket.current.onmessage = (event) => {
-            let result = JSON.parse(event.data);
-
-            console.log(result);
-            // the first message will be the subscription id, once we have that get the current state of the game as we will be tracking and updates from then on via the subscription
-            if (result["id"] !== undefined && result["id"] === 1) {
-                console.log("have new subscription id for p1", result["result"]);
-                launch_account_ws_id.current = result["result"];
-
-                return;
-            }
-
-            //console.log("got message", result);
-
-            if (result["params"] === undefined) return;
-
-            let event_sub = result["params"]["subscription"];
-            if (event_sub !== launch_account_ws_id.current) {
-                console.log("id of message doesn't equal current ws_id, skipping");
-                return;
-            }
-
-            check_launch_update(result);
-        };
-    }, [check_launch_update]);
-
     
 
     const RunJoinDataGPA2 = useCallback(async () => {
@@ -252,26 +239,59 @@ const MintPage = () => {
 
     const fetchLaunchData = useCallback(async () => {
         if (!checkLaunchData.current) return;
+        if (pageName === undefined || pageName === null) return;
 
         setIsLoading(true);
+        
+        let new_launch_data : [LaunchData | null, number] = [launchData, 0];
 
-        try {
-            const list = await RunLaunchDataGPA("");
+        if (launchData === null) {
+            try {
+                let page_name = pageName ? pageName : ""
+                let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name.toString()), Buffer.from("Launch")], PROGRAM)[0];
 
-            const launchItem = list.find((item: LaunchData) => (item.page_name.toString() === pageName ? pageName : ""));
+                const launch_account_data = await request_raw_account_data("", launch_data_account);
 
-            if (launchItem) {
-                setLaunchData(launchItem);
+                new_launch_data = LaunchData.struct.deserialize(launch_account_data);
+
+                //console.log(new_launch_data);
+
+                setLaunchData(new_launch_data[0]);
+
+                
+            } catch (error) {
+                console.error("Error fetching launch data:", error);
             }
-        } catch (error) {
-            console.error("Error fetching launch data:", error);
         }
 
-        await RunJoinDataGPA2();
+        const game_id = new myU64(new_launch_data[0].game_id);
+        const [game_id_buf] = myU64.struct.serialize(game_id);
+        
+        let user_join_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            PROGRAM,
+        )[0];
+
+        if (join_data === null) {
+            //console.log("check join data")
+            try {
+                const join_account_data = await request_raw_account_data("", user_join_account);
+
+                const [new_join_data] = JoinData.struct.deserialize(join_account_data);
+
+                //console.log(new_join_data);
+
+                setJoinData(new_join_data);
+
+
+            } catch (error) {
+                console.error("Error fetching join data:", error);
+            }
+        }
         checkLaunchData.current = false;
 
         setIsLoading(false);
-    }, [pageName, RunJoinDataGPA2]);
+    }, [wallet, pageName, launchData, join_data]);
 
     useEffect(() => {
         checkLaunchData.current = true;
