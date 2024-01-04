@@ -3,6 +3,7 @@ import pageNotFoundGraphics from "../public/images/pageNotFoundGraphics.svg";
 import Image from "next/image";
 import useResponsive from "../hooks/useResponsive";
 import WoodenButton from "../components/Buttons/woodenButton";
+import Link from "next/link";
 
 const PageNotFound = () => {
     const { sm, md, lg } = useResponsive();
@@ -42,7 +43,9 @@ const PageNotFound = () => {
                     Page you are trying to open does not exist. You may have mistyped the url address, or you don&apos;t have permission to
                     access this page.
                 </Text>
-                <WoodenButton label="Return to Homepage" size={22} width={320} />
+                <Link href="/">
+                    <WoodenButton label="Return to Homepage" size={22} width={320} />
+                </Link>
             </VStack>
         </Flex>
     );
