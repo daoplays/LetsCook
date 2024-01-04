@@ -6,13 +6,13 @@ interface WoodenButtonProps {
     action?: () => void;
     label: string;
     size: number;
+    width?: number;
 }
 
-const WoodenButton = ({ action, label, size }: WoodenButtonProps) => {
+const WoodenButton = ({ action, label, size, width }: WoodenButtonProps) => {
     const { md } = useResponsive();
     return (
         <Box
-            mt={4}
             bg="url(/images/Wood\ Panel.png)"
             backgroundSize="cover"
             borderRadius={md ? 10 : 20}
@@ -22,7 +22,7 @@ const WoodenButton = ({ action, label, size }: WoodenButtonProps) => {
         >
             <VStack h="100%" align="center" justify="center">
                 <Text
-                    w={md ? "fit-content" : "310px"}
+                    w={md ? "fit-content" : !width ? "310px" : width}
                     align={"center"}
                     my={md ? 3 : 5}
                     fontSize={md ? "medium" : size}

@@ -51,6 +51,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import trimAddress from "../../hooks/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import { useRouter } from "next/router";
+import PageNotFound from "../../components/pageNotFound";
 
 const MintPage = () => {
     const router = useRouter();
@@ -143,8 +144,9 @@ const MintPage = () => {
     const fetchLaunchData = useCallback(async () => {
         if (!checkLaunchData.current) return;
 
+        setIsLoading(true);
+
         try {
-            setIsLoading(true);
             const list = await RunLaunchDataGPA("");
 
             const launchItem = list.find((item: LaunchData) => (item.page_name.toString() === pageName ? pageName : ""));
@@ -154,12 +156,12 @@ const MintPage = () => {
             }
         } catch (error) {
             console.error("Error fetching launch data:", error);
-        } finally {
-            setIsLoading(false);
         }
 
         await RunJoinDataGPA2();
         checkLaunchData.current = false;
+
+        setIsLoading(false);
     }, [pageName, RunJoinDataGPA2]);
 
     useEffect(() => {
@@ -436,9 +438,16 @@ const MintPage = () => {
         </HStack>
     );
 
-    if (!launchData) {
-        return <div>Loading...</div>;
-    }
+    if (isLoading)
+        return (
+            <HStack justify="center" style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)", height: "90vh" }}>
+                <Text color="white" fontSize="xx-large">
+                    Loading...
+                </Text>
+            </HStack>
+        );
+
+    if (!launchData) return <PageNotFound />;
 
     const distribution = launchData.distribution
         ? launchData.distribution
@@ -466,7 +475,7 @@ const MintPage = () => {
     const MINT_FAILED = current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints;
 
     return (
-        <main>
+        <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
             <Center>
                 <VStack spacing={3} px={sm ? 3 : 0} my={xs ? "25px" : "50px"} width={sm ? "100%" : "80%"}>
                     <VStack>
@@ -645,11 +654,13 @@ const MintPage = () => {
                                 >
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>
-                                            <WoodenButton
-                                                // pass action here (check tickets / refund tickets)
-                                                label={MINTED_OUT ? "Check Tickets" : MINT_FAILED ? "Refund Tickets" : ""}
-                                                size={28}
-                                            />
+                                            <Box mt={4}>
+                                                <WoodenButton
+                                                    // pass action here (check tickets / refund tickets)
+                                                    label={MINTED_OUT ? "Check Tickets" : MINT_FAILED ? "Refund Tickets" : ""}
+                                                    size={28}
+                                                />
+                                            </Box>
                                             {MINTED_OUT && (
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                                     {win_prob}% chance per ticket

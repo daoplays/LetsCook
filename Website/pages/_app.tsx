@@ -1,4 +1,4 @@
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, HStack } from "@chakra-ui/react";
 import { theme } from "../chakra";
 
 import { useMemo } from "react";
