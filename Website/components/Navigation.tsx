@@ -1,4 +1,4 @@
-import { HStack, Text, VStack, useDisclosure } from "@chakra-ui/react";
+import { HStack, Text, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
 import { ConnectWalletButton, DisconnectWalletButton } from "./Solana/wallet";
 import { useWallet } from "@solana/wallet-adapter-react";
 import styles from "./header.module.css";
@@ -36,25 +36,41 @@ function Navigation() {
                     </Text>
                 </Link>
                 <HStack gap={3}>
-                    <div className={styles.sauce}>
-                        <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
-                        <div>1,400</div>
-                    </div>
+                    <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
+                        <div className={styles.sauce}>
+                            <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
+                            <div>1,400</div>
+                        </div>
+                    </Tooltip>
 
                     {!md && (
-                        <Link href="/leaderboard">
-                            <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
-                        </Link>
+                        <Tooltip label="Mint Calendar" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href="/calendar">
+                                <Image src="/images/calendar.png" width={35} height={35} alt={"Calendar"} />
+                            </Link>
+                        </Tooltip>
                     )}
 
                     {!md && (
-                        <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
+                        <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href="/leaderboard">
+                                <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
+                            </Link>
+                        </Tooltip>
                     )}
 
                     {!md && (
-                        <Link href="/faq">
-                            <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
-                        </Link>
+                        <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
+                        </Tooltip>
+                    )}
+
+                    {!md && (
+                        <Tooltip label="FAQs" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href="/faq">
+                                <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
+                            </Link>
+                        </Tooltip>
                     )}
 
                     {md ? (
@@ -111,6 +127,10 @@ function Navigation() {
 
                 <Link href="/launch" onClick={onToggle}>
                     <Text className={styles.connect}>LAUNCH</Text>
+                </Link>
+
+                <Link href="/calendar" onClick={onToggle}>
+                    <Text className={styles.connect}>CALENDAR</Text>
                 </Link>
 
                 <Link href="/leaderboard" onClick={onToggle}>
