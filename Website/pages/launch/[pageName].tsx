@@ -136,9 +136,9 @@ const MintPage = () => {
         console.log("no joiner info");
     }
 
-    if (join_data !== null && launchData !== null) {
-        console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
-        win_prob = (join_data.num_tickets - join_data.num_claimed_tickets) / (launchData.tickets_sold - launchData.tickets_claimed);
+    if (launchData !== null && launchData.tickets_sold > launchData.tickets_claimed) {
+        //console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
+        win_prob = (launchData.num_mints - launchData.mints_won) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
 
     const fetchLaunchData = useCallback(async () => {
@@ -185,7 +185,7 @@ const MintPage = () => {
 
     const { value } = input;
 
-    const ClaimReward = useCallback(async () => {
+    const CheckTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
             handleConnectWallet();
         }
@@ -226,6 +226,112 @@ const MintPage = () => {
             { pubkey: PYTH_BTC, isSigner: false, isWritable: true },
             { pubkey: PYTH_ETH, isSigner: false, isWritable: true },
             { pubkey: PYTH_SOL, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+        ];
+
+        const list_instruction = new TransactionInstruction({
+            keys: account_vector,
+            programId: PROGRAM,
+            data: instruction_data,
+        });
+
+        let txArgs = await get_current_blockhash("");
+
+        let transaction = new Transaction(txArgs);
+        transaction.feePayer = wallet.publicKey;
+
+        transaction.add(list_instruction);
+
+        try {
+            let signed_transaction = await wallet.signTransaction(transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+            let signature = transaction_response.result;
+
+            console.log("reward sig: ", signature);
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+    }, [wallet, launchData, handleConnectWallet]);
+
+    const ClaimTokens = useCallback(async () => {
+        if (wallet.publicKey === null) {
+            handleConnectWallet();
+        }
+
+        if (wallet.signTransaction === undefined) return;
+
+        if (launchData === null) {
+            return;
+        }
+
+        if (wallet.publicKey.toString() == launchData.seller.toString()) {
+            alert("Launch creator cannot buy tickets");
+            return;
+        }
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+        const game_id = new myU64(launchData.game_id);
+        const [game_id_buf] = myU64.struct.serialize(game_id);
+        console.log("game id ", launchData.game_id, game_id_buf);
+        console.log("Mint", launchData.mint_address.toString());
+        console.log("sol", launchData.sol_address.toString());
+
+        let user_join_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            PROGRAM,
+        )[0];
+
+        let temp_wsol_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), launchData.mint_address.toBytes(), Buffer.from("Temp")],
+            PROGRAM,
+        )[0];
+
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
+        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+
+        let token_raffle_account_key = await getAssociatedTokenAddress(
+            launchData.mint_address, // mint
+            program_sol_account, // owner
+            true, // allow owner off curve
+        );
+
+        let user_token_account_key = await getAssociatedTokenAddress(
+            launchData.mint_address, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+        );
+
+
+
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
+
+        var account_vector = [
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: user_join_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+
+            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
+            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+
+            { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
+            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: launchData.mint_address, isSigner: false, isWritable: true },
+
+
+            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 
@@ -470,8 +576,8 @@ const MintPage = () => {
     let current_time = new Date().getTime();
 
     const PRE_LAUNCH = current_time < launchData.launch_date;
-    const ACTIVE = current_time >= launchData.launch_date && current_time < launchData.end_date;
-    const MINTED_OUT = current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints;
+    const ACTIVE = false;//current_time >= launchData.launch_date && current_time < launchData.end_date;
+    const MINTED_OUT = true;//current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints;
     const MINT_FAILED = current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints;
 
     return (
@@ -649,21 +755,36 @@ const MintPage = () => {
                                             ? () => {
                                                   RefundTickets();
                                               }
-                                            : () => {}
+                                            : 
+                                        MINTED_OUT && join_data !== null &&  join_data.num_claimed_tickets < join_data.num_tickets
+                                            ? () => {
+                                                CheckTickets();
+                                            }
+                                        : 
+                                        MINTED_OUT && join_data !== null && join_data.num_claimed_tickets >= join_data.num_tickets && join_data.ticket_status === 0
+                                        ?
+                                        () => {
+                                            ClaimTokens();
+                                        }
+                                        :
+                                        () => {
+                                        }
+                                    
                                     }
                                 >
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>
+
                                             <Box mt={4}>
-                                                <WoodenButton
-                                                    // pass action here (check tickets / refund tickets)
-                                                    label={MINTED_OUT ? "Check Tickets" : MINT_FAILED ? "Refund Tickets" : ""}
-                                                    size={28}
-                                                />
-                                            </Box>
+                                            <WoodenButton
+                                                // pass action here (check tickets / refund tickets)
+                                                label={join_data === null ? "" : MINTED_OUT ? join_data.num_claimed_tickets < join_data.num_tickets ? "Check Tickets" : join_data.num_claimed_tickets >= join_data.num_tickets && join_data.ticket_status === 0 ? "Claim Tokens" : "Tokens Claimed" : MINT_FAILED ? "Refund Tickets" : ""}
+                                                size={28}
+                                            />
+					</Box>
                                             {MINTED_OUT && (
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                    {win_prob}% chance per ticket
+                                                    {(100*win_prob).toFixed(3)}% chance per ticket
                                                 </Text>
                                             )}
                                         </VStack>
@@ -726,6 +847,7 @@ const MintPage = () => {
                         <VStack w={xs ? "100%" : "85%"}>
                             {/* Mint Progress  */}
                             <Progress
+                                hasStripe={MINTED_OUT}
                                 mb={2}
                                 w="100%"
                                 h={25}
@@ -734,7 +856,7 @@ const MintPage = () => {
                                     PRE_LAUNCH ? "none" : ACTIVE ? "whatsapp" : MINTED_OUT ? "linkedin" : MINT_FAILED ? "red" : "none"
                                 }
                                 size="sm"
-                                value={Math.min(launchData.tickets_sold, launchData.num_mints)}
+                                value={100 * Math.min(launchData.tickets_sold, launchData.num_mints) / launchData.num_mints}
                             />
 
                             {/* Total tickets sold  */}
