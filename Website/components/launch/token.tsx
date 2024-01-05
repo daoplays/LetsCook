@@ -151,7 +151,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input maxlength="30"  required className={styles.inputBox} type="text" value={name} onChange={handleNameChange} />
+                                    <input
+                                        maxLength={25}
+                                        required
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={name}
+                                        onChange={handleNameChange}
+                                    />
                                 </div>
                             </div>
 
@@ -159,7 +166,14 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>Symbol:</div>
 
                                 <div style={{ width: "50%" }} className={styles.textLabelInput}>
-                                    <input maxlength="8" required className={styles.inputBox} type="text" value={symbol} onChange={handleSymbolChange} />
+                                    <input
+                                        maxLength={8}
+                                        required
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={symbol}
+                                        onChange={handleSymbolChange}
+                                    />
                                 </div>
                             </div>
 

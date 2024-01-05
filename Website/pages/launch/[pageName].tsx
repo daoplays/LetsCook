@@ -27,7 +27,7 @@ import {
     JoinData,
     uInt8ToLEBytes,
     postData,
-    request_raw_account_data
+    request_raw_account_data,
 } from "../../components/Solana/state";
 
 import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL, WSS_NODE } from "../../components/Solana/constants";
@@ -71,8 +71,6 @@ const MintPage = () => {
 
     const { pageName } = router.query;
 
-    const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
     // updates to token page are checked using a websocket to get real time updates
     const join_account_ws_id = useRef<number | null>(null);
     const launch_account_ws_id = useRef<number | null>(null);
@@ -81,7 +79,7 @@ const MintPage = () => {
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
-           
+
             let event_data = result.data;
 
             console.log("have event data", event_data);
@@ -94,8 +92,6 @@ const MintPage = () => {
             if (updated_data.num_interactions > launchData.num_interactions) {
                 setLaunchData(updated_data);
             }
-
-           
         },
         [launchData],
     );
@@ -104,7 +100,7 @@ const MintPage = () => {
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
-           
+
             let event_data = result.data;
 
             console.log("have event data", event_data);
@@ -122,115 +118,49 @@ const MintPage = () => {
             if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
                 setJoinData(updated_data);
             }
-
-           
         },
         [join_data],
     );
 
     // launch account subscription handler
     useEffect(() => {
+        if (launchData === null) return;
 
-        if (launchData === null)
-            return;
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (launch_account_ws_id.current === null) {
-        
-            console.log("subscribe 1")
-            let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-            
-            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed")
+            console.log("subscribe 1");
+            let launch_data_account = PublicKey.findProgramAddressSync(
+                [Buffer.from(launchData.page_name), Buffer.from("Launch")],
+                PROGRAM,
+            )[0];
+
+            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
         }
 
         if (join_account_ws_id.current === null) {
-        
-            console.log("subscribe 2")
+            console.log("subscribe 2");
             const game_id = new myU64(launchData.game_id);
             const [game_id_buf] = myU64.struct.serialize(game_id);
-            
+
             let user_join_account = PublicKey.findProgramAddressSync(
                 [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
                 PROGRAM,
             )[0];
-            
-            join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed")
+
+            join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
         }
 
         // TODO handle closing
         //    await connection.removeAccountChangeListener(join_account_ws_id.current);
         //    await connection.removeAccountChangeListener(launch_account_ws_id.current);
-
-
-    }, [wallet, launchData, check_join_update]);
-
-    
-    
-
-    const RunJoinDataGPA2 = useCallback(async () => {
-        let index_buffer = uInt8ToLEBytes(3);
-        let account_bytes = bs58.encode(index_buffer);
-        let wallet_bytes = PublicKey.default.toBase58();
-
-        console.log("wallet", wallet.publicKey !== null ? wallet.publicKey.toString() : "null");
-        if (wallet.publicKey !== null) {
-            wallet_bytes = wallet.publicKey.toBase58();
-        }
-
-        var body = {
-            id: 1,
-            jsonrpc: "2.0",
-            method: "getProgramAccounts",
-            params: [
-                PROGRAM.toString(),
-                {
-                    filters: [{ memcmp: { offset: 0, bytes: account_bytes } }, { memcmp: { offset: 1, bytes: wallet_bytes } }],
-                    encoding: "base64",
-                    commitment: "confirmed",
-                },
-            ],
-        };
-
-        var program_accounts_result;
-        try {
-            program_accounts_result = await postData(RPC_NODE, "", body);
-        } catch (error) {
-            console.log(error);
-            return [];
-        }
-
-        //console.log("check join accounts");
-        //console.log(program_accounts_result["result"]);
-
-        let result: JoinData[] = [];
-        for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-            //console.log(program_accounts_result["result"][i]);
-            let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
-            let decoded_data = Buffer.from(encoded_data, "base64");
-            try {
-                const [joiner] = JoinData.struct.deserialize(decoded_data);
-                result.push(joiner);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        if (result.length > 0) {
-            let joiner_map = new Map<number, JoinData>();
-            for (let i = 0; i < result.length; i++) {
-                joiner_map.set(bignum_to_num(result[i].game_id), result[i]);
-            }
-
-            if (joiner_map !== null && launchData !== null && joiner_map.has(bignum_to_num(launchData.game_id))) {
-                setJoinData(joiner_map.get(bignum_to_num(launchData.game_id)));
-            }
-        }
-    }, [wallet, launchData]);
+    }, [wallet, launchData, check_join_update, check_launch_update]);
 
     let win_prob = 0;
 
     //if (join_data === null) {
     //    console.log("no joiner info");
-   // }
+    // }
 
     if (launchData !== null && launchData.tickets_sold > launchData.tickets_claimed) {
         //console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
@@ -242,13 +172,16 @@ const MintPage = () => {
         if (pageName === undefined || pageName === null) return;
 
         setIsLoading(true);
-        
-        let new_launch_data : [LaunchData | null, number] = [launchData, 0];
+
+        let new_launch_data: [LaunchData | null, number] = [launchData, 0];
 
         if (launchData === null) {
             try {
-                let page_name = pageName ? pageName : ""
-                let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name.toString()), Buffer.from("Launch")], PROGRAM)[0];
+                let page_name = pageName ? pageName : "";
+                let launch_data_account = PublicKey.findProgramAddressSync(
+                    [Buffer.from(page_name.toString()), Buffer.from("Launch")],
+                    PROGRAM,
+                )[0];
 
                 const launch_account_data = await request_raw_account_data("", launch_data_account);
 
@@ -257,8 +190,6 @@ const MintPage = () => {
                 //console.log(new_launch_data);
 
                 setLaunchData(new_launch_data[0]);
-
-                
             } catch (error) {
                 console.error("Error fetching launch data:", error);
             }
@@ -266,7 +197,7 @@ const MintPage = () => {
 
         const game_id = new myU64(new_launch_data[0].game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
-        
+
         let user_join_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
             PROGRAM,
@@ -282,8 +213,6 @@ const MintPage = () => {
                 //console.log(new_join_data);
 
                 setJoinData(new_join_data);
-
-
             } catch (error) {
                 console.error("Error fetching join data:", error);
             }
@@ -692,10 +621,15 @@ const MintPage = () => {
         : [];
 
     let splitLaunchDate = new Date(bignum_to_num(launchData.launch_date)).toUTCString().split(" ");
+    console.log(splitLaunchDate);
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+    let splitLaunchTime = splitLaunchDate[4].split(":");
+    let launchTime = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + splitLaunchDate[5];
 
     let splitEndDate = new Date(bignum_to_num(launchData.end_date)).toUTCString().split(" ");
     let endDate = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
+    let splitEndTime = splitEndDate[4].split(":");
+    let endTime = splitEndTime[0] + ":" + splitEndTime[1] + " " + splitEndDate[5];
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
@@ -843,10 +777,14 @@ const MintPage = () => {
                     <HStack mt={xs ? 5 : 0} spacing={5}>
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
                             Opens: {launchDate}
+                            <br />
+                            {launchTime}
                         </Text>
                         <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="white" />
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
                             Closes: {endDate}
+                            <br />
+                            {endTime}
                         </Text>
                     </HStack>
 
