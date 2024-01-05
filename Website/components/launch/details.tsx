@@ -23,10 +23,6 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
 
-    const isDesktopOrLaptop = useMediaQuery({
-        query: "(max-width: 1000px)",
-    });
-
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
@@ -48,14 +44,6 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                 alert("File size exceeds 4MB limit.");
             }
         }
-    };
-
-    const [images, setImages] = useState([]);
-
-    const onChange = (imageList, addUpdateIndex) => {
-        // data for submit
-        console.log(imageList, addUpdateIndex);
-        setImages(imageList);
     };
 
     function setData(): boolean {
@@ -93,9 +81,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     function setLaunchData(e) {
         if (setData()) setScreen("book");
     }
-    function setLaunchDataPrevious(e) {
-        if (setData()) setScreen("details");
-    }
+
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
             <VStack>

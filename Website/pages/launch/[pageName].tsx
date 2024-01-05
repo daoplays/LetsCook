@@ -75,6 +75,20 @@ const MintPage = () => {
     const join_account_ws_id = useRef<number | null>(null);
     const launch_account_ws_id = useRef<number | null>(null);
 
+    const signature_ws_id = useRef<number | null>(null);
+
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Transaction failed, please try again")
+            }
+            signature_ws_id.current = null;
+        },
+        [],
+    );
+
     const check_launch_update = useCallback(
         async (result: any) => {
             console.log(result);
@@ -138,7 +152,7 @@ const MintPage = () => {
             launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
         }
 
-        if (join_account_ws_id.current === null) {
+        if (join_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
             console.log("subscribe 2");
             const game_id = new myU64(launchData.game_id);
             const [game_id_buf] = myU64.struct.serialize(game_id);
@@ -195,6 +209,11 @@ const MintPage = () => {
             }
         }
 
+        if (wallet === null || wallet.publicKey === null) {
+            setIsLoading(false);
+            return;
+        }
+
         const game_id = new myU64(new_launch_data[0].game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
 
@@ -215,11 +234,13 @@ const MintPage = () => {
                 setJoinData(new_join_data);
             } catch (error) {
                 console.error("Error fetching join data:", error);
+                setIsLoading(false);
             }
+            
         }
         checkLaunchData.current = false;
-
         setIsLoading(false);
+        
     }, [wallet, pageName, launchData, join_data]);
 
     useEffect(() => {
@@ -253,6 +274,13 @@ const MintPage = () => {
         if (launchData === null) {
             return;
         }
+
+        if (signature_ws_id.current !== null) {
+            alert("Transaction pending, please wait");
+            return;
+        }
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.seller.toString()) {
             alert("Launch creator cannot buy tickets");
@@ -309,6 +337,8 @@ const MintPage = () => {
             let signature = transaction_response.result;
 
             console.log("reward sig: ", signature);
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
             return;
@@ -325,6 +355,13 @@ const MintPage = () => {
         if (launchData === null) {
             return;
         }
+
+        if (signature_ws_id.current !== null) {
+            alert("Transaction pending, please wait");
+            return;
+        }
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.seller.toString()) {
             alert("Launch creator cannot buy tickets");
@@ -412,6 +449,8 @@ const MintPage = () => {
             let signature = transaction_response.result;
 
             console.log("reward sig: ", signature);
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
             return;
@@ -429,6 +468,13 @@ const MintPage = () => {
             alert("Launch creator cannot buy tickets");
             return;
         }
+
+        if (signature_ws_id.current !== null) {
+            alert("Transaction pending, please wait");
+            return;
+        }
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (launchData === null) {
             return;
@@ -495,6 +541,8 @@ const MintPage = () => {
             let signature = transaction_response.result;
 
             console.log("join sig: ", signature);
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
             return;
@@ -511,6 +559,13 @@ const MintPage = () => {
         if (launchData === null) {
             return;
         }
+
+        if (signature_ws_id.current !== null) {
+            alert("Transaction pending, please wait");
+            return;
+        }
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.seller.toString()) {
             alert("Launch creator cannot buy tickets");
@@ -565,6 +620,8 @@ const MintPage = () => {
             var transaction_response = await send_transaction("", encoded_transaction);
 
             let signature = transaction_response.result;
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
 
             // console.log("join sig: ", signature);
         } catch (error) {
@@ -621,7 +678,6 @@ const MintPage = () => {
         : [];
 
     let splitLaunchDate = new Date(bignum_to_num(launchData.launch_date)).toUTCString().split(" ");
-    console.log(splitLaunchDate);
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
     let splitLaunchTime = splitLaunchDate[4].split(":");
     let launchTime = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + splitLaunchDate[5];

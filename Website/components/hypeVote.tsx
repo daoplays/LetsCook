@@ -1,10 +1,10 @@
 import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Center, VStack, Text, Box, HStack, Tooltip } from "@chakra-ui/react";
 
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY } from "./Solana/constants";
+import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE } from "./Solana/constants";
 import {
     LaunchData,
     bignum_to_num,
@@ -21,12 +21,31 @@ import Image from "next/image";
 
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
-    let name = launch_data.name;
-    // console.log(launch_data.mint_address.toString());
+    const hype_vote_ws_id = useRef<number | null>(null);
+
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Hype vote transaction failed, please try again")
+            }
+            hype_vote_ws_id.current = null;
+        },
+        [],
+    );
+
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
+
+            if (hype_vote_ws_id.current !== null) {
+                alert("Hype vote pending, please wait")
+                return;
+            }
+
+            const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
             let launch_data_account = PublicKey.findProgramAddressSync(
                 [Buffer.from(launch_data.page_name), Buffer.from("Launch")],
@@ -66,12 +85,13 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 let signature = transaction_response.result;
 
                 console.log("hype sig: ", signature);
+                hype_vote_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             } catch (error) {
                 console.log(error);
                 return;
             }
         },
-        [wallet, launch_data.game_id, launch_data.page_name],
+        [wallet, launch_data.game_id, launch_data.page_name, check_signature_update],
     );
 
     let has_voted: boolean = false;

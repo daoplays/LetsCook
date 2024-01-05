@@ -8,10 +8,10 @@ import {
     serialise_CreateLaunch_instruction,
     serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
+import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { arweave_json_upload, arweave_upload } from "../../components/Solana/arweave";
-import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
@@ -34,13 +34,20 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
 
-    // refs for checking signatures
-    const signature_interval = useRef<number | null>(null);
-    const current_signature = useRef<string | null>(null);
-    const signature_check_count = useRef<number>(0);
-    const [transaction_failed, setTransactionFailed] = useState<boolean>(false);
+    const signature_ws_id = useRef<number | null>(null);
 
-    const [processing_transaction, setProcessingTransaction] = useState<boolean>(false);
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Transaction failed, please try again")
+            }
+            signature_ws_id.current = null;
+        },
+        [],
+    );
+    
 
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
@@ -89,8 +96,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const EditLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        //setProcessingTransaction(true);
-        setTransactionFailed(false);
+        if (signature_ws_id.current !== null) {
+            alert("Transaction pending, please wait");
+            return;
+        }
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
@@ -125,8 +136,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                setProcessingTransaction(false);
-                setTransactionFailed(true);
+                alert("Transaction error, please try again");
                 return;
             }
 
@@ -136,11 +146,10 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                 console.log("list signature: ", signature);
             }
 
-            current_signature.current = signature;
-            signature_check_count.current = 0;
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");  
+
         } catch (error) {
             console.log(error);
-            setProcessingTransaction(false);
             return;
         }
     }, [wallet, newLaunchData]);
@@ -148,8 +157,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        //setProcessingTransaction(true);
-        setTransactionFailed(false);
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+        if (signature_ws_id.current !== null) {
+            alert("Transaction pending, please wait");
+            return;
+        }
 
         console.log(newLaunchData.current);
 
@@ -257,8 +270,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                setProcessingTransaction(false);
-                setTransactionFailed(true);
+                alert("Transaction error, please try again")
                 return;
             }
 
@@ -267,13 +279,10 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             if (DEBUG) {
                 console.log("list signature: ", signature);
             }
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");    
 
-            current_signature.current = signature;
-            signature_check_count.current = 0;
         } catch (error) {
             console.log(error);
-            setProcessingTransaction(false);
-
             return;
         }
 

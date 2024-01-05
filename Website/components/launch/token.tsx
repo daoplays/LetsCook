@@ -59,15 +59,6 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         }
     };
 
-    const [images, setImages] = useState([]);
-    const maxNumber = 1000;
-
-    const onChange = (imageList, addUpdateIndex) => {
-        // data for submit
-        console.log(imageList, addUpdateIndex);
-        setImages(imageList);
-    };
-
     const percentage1 = parseInt(distribution1);
     const percentage2 = parseInt(distribution2);
     const percentage3 = parseInt(distribution3);
@@ -282,11 +273,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         required
                                         className={styles.inputBox}
                                         type="number"
-                                        value={parseFloat(mints) * parseFloat(ticketPrice)}
+                                        value={!isNaN(parseFloat(mints) * parseFloat(ticketPrice)) ? parseFloat(mints) * parseFloat(ticketPrice) : 0}
                                         disabled
-                                        // onChange={(e) => {
-                                        //     setLiquidity(e.target.value);
-                                        // }}
                                     />
                                     <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
                                 </div>
