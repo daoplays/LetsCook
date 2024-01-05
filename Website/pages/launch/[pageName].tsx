@@ -93,7 +93,7 @@ const MintPage = () => {
 
             let event_data = result.data;
 
-            console.log("have event data", event_data);
+            console.log("have event data", event_data, launch_account_ws_id.current);
             let account_data = Buffer.from(event_data, "base64");
 
             const [updated_data] = LaunchData.struct.deserialize(account_data);
@@ -114,20 +114,25 @@ const MintPage = () => {
 
             let event_data = result.data;
 
-            console.log("have event data", event_data);
+            console.log("have event data", event_data, join_account_ws_id.current);
             let account_data = Buffer.from(event_data, "base64");
+            try {
+                const [updated_data] = JoinData.struct.deserialize(account_data);
 
-            const [updated_data] = JoinData.struct.deserialize(account_data);
+                console.log(updated_data);
 
-            console.log(updated_data);
+                if (join_data === null) {
+                    setJoinData(updated_data);
+                    return;
+                }
 
-            if (join_data === null) {
-                setJoinData(updated_data);
-                return;
+                if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
+                    setJoinData(updated_data);
+                }
             }
-
-            if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
-                setJoinData(updated_data);
+            catch(error) {
+                console.log("error reading join data")
+                setJoinData(null);
             }
         },
         [join_data],
@@ -138,7 +143,7 @@ const MintPage = () => {
         if (launchData === null) return;
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
+        
         if (launch_account_ws_id.current === null) {
             console.log("subscribe 1");
             let launch_data_account = PublicKey.findProgramAddressSync(
@@ -229,7 +234,7 @@ const MintPage = () => {
 
                 const [new_join_data] = JoinData.struct.deserialize(join_account_data);
 
-                //console.log(new_join_data);
+                console.log(new_join_data);
 
                 setJoinData(new_join_data);
             } catch (error) {
