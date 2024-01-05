@@ -144,6 +144,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                             <div className={`${styles.textLabel} font-face-kg`}>DESCRIPTION:</div>
                             <div>
                                 <textarea
+                                    maxlength="230"
                                     required
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles.inputTxtarea}`}
