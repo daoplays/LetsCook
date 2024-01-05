@@ -77,17 +77,14 @@ const MintPage = () => {
 
     const signature_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                alert("Transaction failed, please try again")
-            }
-            signature_ws_id.current = null;
-        },
-        [],
-    );
+    const check_signature_update = useCallback(async (result: any) => {
+        console.log(result);
+        // if we have a subscription field check against ws_id
+        if (result.err !== null) {
+            alert("Transaction failed, please try again");
+        }
+        signature_ws_id.current = null;
+    }, []);
 
     const check_launch_update = useCallback(
         async (result: any) => {
@@ -183,7 +180,10 @@ const MintPage = () => {
 
     const fetchLaunchData = useCallback(async () => {
         if (!checkLaunchData.current) return;
-        if (pageName === undefined || pageName === null) return;
+        if (pageName === undefined || pageName === null) {
+            setIsLoading(false); // Set isLoading to false when pageName is undefined or null
+            return;
+        }
 
         setIsLoading(true);
 
@@ -214,7 +214,7 @@ const MintPage = () => {
             return;
         }
 
-        const game_id = new myU64(new_launch_data[0].game_id);
+        const game_id = new myU64(new_launch_data[0]?.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
 
         let user_join_account = PublicKey.findProgramAddressSync(
@@ -236,11 +236,9 @@ const MintPage = () => {
                 console.error("Error fetching join data:", error);
                 setIsLoading(false);
             }
-            
         }
         checkLaunchData.current = false;
         setIsLoading(false);
-        
     }, [wallet, pageName, launchData, join_data]);
 
     useEffect(() => {
@@ -249,7 +247,7 @@ const MintPage = () => {
 
     useEffect(() => {
         fetchLaunchData();
-    }, [fetchLaunchData]);
+    }, [fetchLaunchData, pageName]);
 
     const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
         step: 1,
@@ -655,6 +653,8 @@ const MintPage = () => {
             </Link>
         </HStack>
     );
+
+    if (!pageName) return;
 
     if (isLoading)
         return (

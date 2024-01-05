@@ -12,23 +12,26 @@ import "../styles/fonts.css";
 import "../styles/table.css";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
+import NoSSR from "../utils/NoSSR";
 
 function MyApp({ Component, pageProps }) {
     //console.log({ theme });
     const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
 
     return (
-        <ChakraProvider theme={theme}>
-            <WalletProvider wallets={wallets} autoConnect>
-                <WalletModalProvider>
-                    <Navigation />
-                    <div style={{ minHeight: "90vh" }}>
-                        <Component {...pageProps} />
-                    </div>
-                    <Footer />
-                </WalletModalProvider>
-            </WalletProvider>
-        </ChakraProvider>
+        <NoSSR>
+            <ChakraProvider theme={theme}>
+                <WalletProvider wallets={wallets} autoConnect>
+                    <WalletModalProvider>
+                        <Navigation />
+                        <div style={{ minHeight: "90vh" }}>
+                            <Component {...pageProps} />
+                        </div>
+                        <Footer />
+                    </WalletModalProvider>
+                </WalletProvider>
+            </ChakraProvider>
+        </NoSSR>
     );
 }
 

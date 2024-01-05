@@ -153,11 +153,9 @@ const Home = () => {
                             </VStack>
                         </HStack>
 
-                        <Show breakpoint="(max-width: 1024px)">
-                            <Links />
-                        </Show>
+                        <Show breakpoint="(max-width: 1024px)">{featured_launch !== null && <Links />}</Show>
 
-                        <Link href={`/launch/${featured_launch?.page_name}`}>
+                        <Link href={`/launch/${featured_launch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
                             {featured_launch !== null && new Date().getTime() >= featured_launch.launch_date && (
                                 <WoodenButton label="Mint Live" size={35} />
                             )}
