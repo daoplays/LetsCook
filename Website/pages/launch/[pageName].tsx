@@ -692,10 +692,15 @@ const MintPage = () => {
         : [];
 
     let splitLaunchDate = new Date(bignum_to_num(launchData.launch_date)).toUTCString().split(" ");
+    console.log(splitLaunchDate);
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+    let splitLaunchTime = splitLaunchDate[4].split(":")
+    let launchTime = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + splitLaunchDate[5]
 
     let splitEndDate = new Date(bignum_to_num(launchData.end_date)).toUTCString().split(" ");
     let endDate = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
+    let splitEndTime = splitEndDate[4].split(":")
+    let endTime = splitEndTime[0] + ":" + splitEndTime[1] + " " + splitEndDate[5]
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
@@ -842,11 +847,11 @@ const MintPage = () => {
                     {/* Open & Close Date  */}
                     <HStack mt={xs ? 5 : 0} spacing={5}>
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
-                            Opens: {launchDate}
+                            Opens: {launchDate}<br />{launchTime}
                         </Text>
                         <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="white" />
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
-                            Closes: {endDate}
+                            Closes: {endDate}<br />{endTime}
                         </Text>
                     </HStack>
 
