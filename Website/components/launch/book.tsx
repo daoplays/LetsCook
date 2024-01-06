@@ -8,7 +8,16 @@ import {
     serialise_CreateLaunch_instruction,
     serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import {
+    METAPLEX_META,
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    Screen,
+    DEFAULT_FONT_SIZE,
+    RPC_NODE,
+    WSS_NODE,
+} from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { arweave_json_upload, arweave_upload } from "../../components/Solana/arweave";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
@@ -36,18 +45,14 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const signature_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                alert("Transaction failed, please try again")
-            }
-            signature_ws_id.current = null;
-        },
-        [],
-    );
-    
+    const check_signature_update = useCallback(async (result: any) => {
+        console.log(result);
+        // if we have a subscription field check against ws_id
+        if (result.err !== null) {
+            alert("Transaction failed, please try again");
+        }
+        signature_ws_id.current = null;
+    }, []);
 
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
@@ -146,13 +151,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                 console.log("list signature: ", signature);
             }
 
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");  
-
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
             return;
         }
-    }, [wallet, newLaunchData]);
+    }, [wallet, newLaunchData, check_signature_update]);
 
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
@@ -270,7 +274,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                alert("Transaction error, please try again")
+                alert("Transaction error, please try again");
                 return;
             }
 
@@ -279,15 +283,14 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             if (DEBUG) {
                 console.log("list signature: ", signature);
             }
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");    
-
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
             return;
         }
 
         await EditLaunch();
-    }, [wallet, EditLaunch, newLaunchData]);
+    }, [wallet, EditLaunch, newLaunchData, check_signature_update]);
 
     function confirm(e) {
         e.preventDefault();

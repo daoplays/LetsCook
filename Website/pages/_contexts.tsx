@@ -30,7 +30,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         check_launch_data.current = false;
         setIsLaunchDataLoading(false);
-    }, [wallet]);
+    }, []);
 
     const CheckUserData = useCallback(async () => {
         if (!check_user_data.current) return;
@@ -51,11 +51,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
 
         setIsUserDataLoading(false);
-    }, [wallet]);
+    }, [wallet.publicKey]);
 
     useEffect(() => {
         CheckLaunchData();
-    }, [CheckLaunchData]);
+    }, [CheckLaunchData, wallet]);
 
     useEffect(() => {
         CheckUserData();

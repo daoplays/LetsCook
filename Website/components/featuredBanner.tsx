@@ -8,32 +8,29 @@ import telegram from "../public/socialIcons/telegram.svg";
 import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
 import "react-datepicker/dist/react-datepicker.css";
-import useAppRoot from "../context/useAppRoot";
-import { useEffect, useState } from "react";
 import { LaunchData } from "./Solana/state";
 
-const FeaturedBanner = () => {
+interface FeaturedBannerProps {
+    featuredLaunch: LaunchData;
+}
+
+const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
     const { sm, md } = useResponsive();
-    const { launchList } = useAppRoot();
 
-    const [featureLaunch, setFeaturedLaunch] = useState<LaunchData | null>(null);
-
-    useEffect(() => setFeaturedLaunch(launchList[0]), launchList);
-
-    if (!featureLaunch) return;
+    if (!featuredLaunch) return;
 
     const Links = () => (
         <HStack gap={3}>
-            <Link href={featureLaunch !== null ? "https://twitter.com/" + featureLaunch.twitter : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.twitter : "#"} target="_blank">
                 <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={featureLaunch !== null ? "https://twitter.com/" + featureLaunch.telegram : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.telegram : "#"} target="_blank">
                 <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={featureLaunch !== null ? "https://twitter.com/" + featureLaunch.twitter : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.twitter : "#"} target="_blank">
                 <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={featureLaunch !== null ? featureLaunch.website : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? featuredLaunch.website : "#"} target="_blank">
                 <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
         </HStack>
@@ -51,9 +48,9 @@ const FeaturedBanner = () => {
                     h="100%"
                 >
                     <HStack w="fit-content" gap={md ? 5 : 8}>
-                        {featureLaunch !== null && (
+                        {featuredLaunch !== null && (
                             <Image
-                                src={featureLaunch.icon}
+                                src={featuredLaunch.icon}
                                 width={md ? 130 : 200}
                                 height={md ? 130 : 200}
                                 alt="$LOGO"
@@ -71,9 +68,9 @@ const FeaturedBanner = () => {
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featureLaunch !== null ? "$" + featureLaunch.name : ""}
+                                    {featuredLaunch !== null ? "$" + featuredLaunch.name : ""}
                                 </Text>
-                                {!md && featureLaunch !== null && <Links />}
+                                {!md && featuredLaunch !== null && <Links />}
                             </Flex>
                             <Text
                                 fontFamily="ReemKufiRegular"
@@ -84,23 +81,23 @@ const FeaturedBanner = () => {
                                 lineHeight={1.15}
                                 align={md ? "center" : "start"}
                             >
-                                {featureLaunch !== null ? featureLaunch.description : ""}
+                                {featuredLaunch !== null ? featuredLaunch.description : ""}
                             </Text>
                         </VStack>
                     </HStack>
 
-                    <Show breakpoint="(max-width: 1024px)">{featureLaunch !== null && <Links />}</Show>
+                    <Show breakpoint="(max-width: 1024px)">{featuredLaunch !== null && <Links />}</Show>
 
-                    <Link href={`/launch/${featureLaunch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
-                        {featureLaunch !== null &&
-                            new Date().getTime() > featureLaunch.launch_date &&
-                            new Date().getTime() < featureLaunch.end_date && <WoodenButton label="Mint Live" size={35} />}
+                    <Link href={`/launch/${featuredLaunch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
+                        {featuredLaunch !== null &&
+                            new Date().getTime() > featuredLaunch.launch_date &&
+                            new Date().getTime() < featuredLaunch.end_date && <WoodenButton label="Mint Live" size={35} />}
 
-                        {featureLaunch !== null && new Date().getTime() < featureLaunch.launch_date && (
+                        {featuredLaunch !== null && new Date().getTime() < featuredLaunch.launch_date && (
                             <WoodenButton label="Mint Pending" size={35} />
                         )}
 
-                        {featureLaunch !== null && new Date().getTime() > featureLaunch.end_date && (
+                        {featuredLaunch !== null && new Date().getTime() > featuredLaunch.end_date && (
                             <WoodenButton label="Mint Closed" size={35} />
                         )}
                     </Link>
