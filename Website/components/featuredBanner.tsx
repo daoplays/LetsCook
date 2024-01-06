@@ -21,16 +21,16 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
 
     const Links = () => (
         <HStack gap={3}>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.twitter : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[2] : "#"} target="_blank">
                 <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.telegram : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[1] : "#"} target="_blank">
                 <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.twitter : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[3] : "#"} target="_blank">
                 <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={featuredLaunch !== null ? featuredLaunch.website : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? featuredLaunch.socials[0] : "#"} target="_blank">
                 <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
         </HStack>

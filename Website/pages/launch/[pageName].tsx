@@ -282,13 +282,13 @@ const MintPage = () => {
 
     const Links = () => (
         <HStack gap={3}>
-            <Link href={launchData.twitter} target="_blank">
+            <Link href={launchData.socials[1]} target="_blank">
                 <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={launchData.telegram} target="_blank">
+            <Link href={launchData.socials[2]} target="_blank">
                 <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
-            <Link href={launchData.website} target="_blank">
+            <Link href={launchData.socials[0]} target="_blank">
                 <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
             </Link>
         </HStack>
