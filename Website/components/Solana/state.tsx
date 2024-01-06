@@ -362,8 +362,9 @@ export interface LaunchDataUserInput {
     symbol: string;
     icon_file: File | null;
     uri_file: File | null;
-    icon_data: string;
+    banner_file: File | null;
     icon_url: string;
+    banner_url: string;
     total_supply: number;
     decimals: number;
     num_mints: number;
@@ -373,7 +374,6 @@ export interface LaunchDataUserInput {
     launch_date: Date;
     uri: string;
     pagename: string;
-    iconpage2: string;
     description: string;
     web_url: string;
     tele_url: string;
@@ -394,8 +394,9 @@ export const defaultUserInput: LaunchDataUserInput = {
     symbol: "",
     icon_file: null,
     uri_file: null,
-    icon_data: "",
+    banner_file: null,
     icon_url: "",
+    banner_url: "",
     displayImg: null,
     total_supply: 0,
     decimals: 0,
@@ -406,7 +407,6 @@ export const defaultUserInput: LaunchDataUserInput = {
     launch_date: new Date(new Date().setHours(0, 0, 0, 0)),
     uri: "",
     pagename: "",
-    iconpage2: "",
     description: "",
     web_url: "",
     tele_url: "",
