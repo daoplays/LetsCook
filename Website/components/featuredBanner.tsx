@@ -92,13 +92,15 @@ const FeaturedBanner = () => {
                     <Show breakpoint="(max-width: 1024px)">{featureLaunch !== null && <Links />}</Show>
 
                     <Link href={`/launch/${featureLaunch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
-                        {featureLaunch !== null && new Date().getTime() >= featureLaunch.launch_date && (
-                            <WoodenButton label="Mint Live" size={35} />
-                        )}
+                        {featureLaunch !== null &&
+                            new Date().getTime() > featureLaunch.launch_date &&
+                            new Date().getTime() < featureLaunch.end_date && <WoodenButton label="Mint Live" size={35} />}
+
                         {featureLaunch !== null && new Date().getTime() < featureLaunch.launch_date && (
                             <WoodenButton label="Mint Pending" size={35} />
                         )}
-                        {featureLaunch !== null && new Date().getTime() >= featureLaunch.end_date && (
+
+                        {featureLaunch !== null && new Date().getTime() > featureLaunch.end_date && (
                             <WoodenButton label="Mint Closed" size={35} />
                         )}
                     </Link>

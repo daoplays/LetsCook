@@ -38,7 +38,7 @@ function Navigation() {
                 <HStack gap={3}>
                     <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
-                            <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
+                            <Image height={20} width={20} src="/images/sauce.png" alt="Sauce" />
                             <div>1,400</div>
                         </div>
                     </Tooltip>
@@ -51,17 +51,25 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    <Show breakpoint="(min-width: 1024px)">
+                    {/* <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href="/leaderboard">
                                 <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
                             </Link>
                         </Tooltip>
-                    </Show>
+                    </Show> */}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
                             <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
+                        </Tooltip>
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Launch" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href="/launch">
+                                <Image src="/images/chef-hat.png" width={35} height={35} alt={"Question Mark"} />
+                            </Link>
                         </Tooltip>
                     </Show>
 
@@ -89,9 +97,9 @@ function Navigation() {
                             {wallet.publicKey && <DisconnectWalletButton />}
                             {wallet.publicKey === null && <ConnectWalletButton />}
 
-                            <Link href="/launch">
+                            {/* <Link href="/launch">
                                 <MainButton label="LAUNCH" />
-                            </Link>
+                            </Link> */}
                         </>
                     </Show>
                 </HStack>

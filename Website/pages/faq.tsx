@@ -8,11 +8,11 @@ import Image from "next/image";
 
 const FAQ = () => {
     return (
-        <main>
-            <Center mb="5rem">
+        <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", padding: "50px 0" }}>
+            <Center>
                 <Box width="80%">
                     <div className="font-face-rk" style={{ color: "white", fontSize: DUNGEON_FONT_SIZE }}>
-                        <h2 className="mt-5 font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
+                        <h2 className="font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
                             <Center>FREQUENTLY ASKED QUESTIONS</Center>
                         </h2>
                         <br />
