@@ -285,7 +285,7 @@ const MintPage = () => {
         return (
             <HStack justify="center" style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)", height: "90vh" }}>
                 <Text color="white" fontSize="xx-large">
-                    Loading...
+                    Prepping on-chain ingredients...
                 </Text>
             </HStack>
         );

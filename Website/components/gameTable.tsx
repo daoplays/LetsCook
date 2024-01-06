@@ -20,7 +20,7 @@ const GameTable = () => {
         return (
             <HStack justify="center">
                 <Text color="white" fontSize="xx-large">
-                    Loading...
+                    Prepping on-chain ingredients...
                 </Text>
             </HStack>
         );
