@@ -75,17 +75,27 @@ const MintPage = () => {
     const join_account_ws_id = useRef<number | null>(null);
     const launch_account_ws_id = useRef<number | null>(null);
 
-    const signature_ws_id = useRef<number | null>(null);
+    // when page unloads unsub from any active websocket listeners
+    useEffect(() => {
+        return () => {
+            console.log("in use effect return");
+            const unsub = async () => {
+                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                if (join_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(join_account_ws_id.current);
+                    join_account_ws_id.current = null;
+                }
+                if (launch_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
+                    launch_account_ws_id.current = null;
+                }
+                await connection.removeAccountChangeListener(launch_account_ws_id.current);
+              }
+              unsub();
+        };
+      }, []); 
 
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-        }
-        signature_ws_id.current = null;
-    }, []);
-
+      
     const check_launch_update = useCallback(
         async (result: any) => {
             console.log(result);
@@ -166,9 +176,7 @@ const MintPage = () => {
             join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
         }
 
-        // TODO handle closing
-        //    await connection.removeAccountChangeListener(join_account_ws_id.current);
-        //    await connection.removeAccountChangeListener(launch_account_ws_id.current);
+        
     }, [wallet, launchData, check_join_update, check_launch_update]);
 
     let win_prob = 0;

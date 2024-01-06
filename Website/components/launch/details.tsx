@@ -1,13 +1,11 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useState } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
-import { useMediaQuery } from "react-responsive";
 
 import { Center, VStack, Text } from "@chakra-ui/react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { PublicKey} from "@solana/web3.js";
 
-import Image from "next/image";
 import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
-import { LaunchDataUserInput, defaultUserInput, request_current_balance } from "../../components/Solana/state";
+import { LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
 
 interface DetailsPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
