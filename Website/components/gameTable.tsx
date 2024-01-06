@@ -9,7 +9,7 @@ import telegram from "../public/socialIcons/telegram.svg";
 import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
 import useAppRoot from "../context/useAppRoot";
-
+import Links from "./Buttons/links";
 const GameTable = () => {
     const { sm } = useResponsive();
     const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
@@ -104,20 +104,8 @@ const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: U
                 </Text>
             </td>
             <td style={{ minWidth: "200px" }}>
-                <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
-                    <Link href="#">
-                        <Image alt="Twitter Icon" src={twitter.src} width={md ? 30 : 40} height={md ? 30 : 40} />
-                    </Link>
-                    <Link href="#">
-                        <Image alt="Telegram Icon" src={telegram.src} width={md ? 30 : 40} height={md ? 30 : 40} />
-                    </Link>
-                    <Link href="#">
-                        <Image alt="Discord Icon" src={discord.src} width={md ? 30 : 40} height={md ? 30 : 40} />
-                    </Link>
-                    <Link href="#">
-                        <Image alt="Website Icon" src={website.src} width={md ? 30 : 40} height={md ? 30 : 40} />
-                    </Link>
-                </HStack>
+                <Links featuredLaunch={launch}/>
+                
             </td>
             <td style={{ minWidth: "120px" }}>
                 <HypeVote launch_data={launch} user_data={user_data} />

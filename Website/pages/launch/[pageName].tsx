@@ -35,6 +35,7 @@ import useCheckTickets from "../../hooks/useCheckTickets";
 import useBuyTickets from "../../hooks/useBuyTickets";
 import useClaimTickets from "../../hooks/useClaimTokens";
 import useRefundTickets from "../../hooks/useRefundTickets";
+import Links from "../../components/Buttons/links";
 
 const MintPage = () => {
     const router = useRouter();
@@ -280,20 +281,6 @@ const MintPage = () => {
         }
     }, [value, ticketPrice, launchData]);
 
-    const Links = () => (
-        <HStack gap={3}>
-            <Link href={launchData.socials[1]} target="_blank">
-                <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={launchData.socials[2]} target="_blank">
-                <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={launchData.socials[0]} target="_blank">
-                <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-        </HStack>
-    );
-
     if (!pageName) return;
 
     if (isLoading)
@@ -463,7 +450,7 @@ const MintPage = () => {
                                     {launchData.description}
                                 </Text>
                                 <HStack mt={3} hidden={sm}>
-                                    {!md && <Links />}
+                                    {!md && <Links featuredLaunch={launchData}/>}
                                 </HStack>
                             </VStack>
                         </HStack>

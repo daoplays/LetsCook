@@ -8,7 +8,10 @@ import telegram from "../public/socialIcons/telegram.svg";
 import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
 import "react-datepicker/dist/react-datepicker.css";
+import {Socials} from "./Solana/constants"
 import { LaunchData } from "./Solana/state";
+import Links from "./Buttons/links";
+
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -18,23 +21,6 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
     const { sm, md } = useResponsive();
 
     if (!featuredLaunch) return;
-
-    const Links = () => (
-        <HStack gap={3}>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[2] : "#"} target="_blank">
-                <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[1] : "#"} target="_blank">
-                <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[3] : "#"} target="_blank">
-                <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={featuredLaunch !== null ? featuredLaunch.socials[0] : "#"} target="_blank">
-                <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-        </HStack>
-    );
 
     return (
         <Box h={md ? 300 : 320} bg={"url("+featuredLaunch.banner+")"} bgSize="cover" boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset ">
@@ -70,7 +56,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                 >
                                     {featuredLaunch !== null ? "$" + featuredLaunch.name : ""}
                                 </Text>
-                                {!md && featuredLaunch !== null && <Links />}
+                                {!md && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch}/>}
                             </Flex>
                             <Text
                                 fontFamily="ReemKufiRegular"
@@ -86,7 +72,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                         </VStack>
                     </HStack>
 
-                    <Show breakpoint="(max-width: 1024px)">{featuredLaunch !== null && <Links />}</Show>
+                    <Show breakpoint="(max-width: 1024px)">{featuredLaunch !== null && <Links featuredLaunch={featuredLaunch}/>}</Show>
 
                     <Link href={`/launch/${featuredLaunch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
                         {featuredLaunch !== null &&

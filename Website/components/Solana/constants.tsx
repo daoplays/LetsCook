@@ -60,3 +60,10 @@ export const enum Screen {
     LAUNCH_BOOK = 5,
     LEADERBOARD = 6,
 }
+
+export const enum Socials {
+    Website = 0,
+    Twitter = 1,
+    Telegram = 2,
+    Discord = 3,
+}
