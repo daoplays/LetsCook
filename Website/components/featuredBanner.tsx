@@ -8,9 +8,11 @@ import telegram from "../public/socialIcons/telegram.svg";
 import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
 import "react-datepicker/dist/react-datepicker.css";
+import { Socials } from "./Solana/constants";
 import trimAddress from "../hooks/trimAddress";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { LaunchData } from "./Solana/state";
+import Links from "./Buttons/links";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -21,25 +23,13 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
 
     if (!featuredLaunch) return;
 
-    const Links = () => (
-        <HStack gap={3}>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.twitter : "#"} target="_blank">
-                <Image src={twitter.src} alt="Twitter Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.telegram : "#"} target="_blank">
-                <Image src={telegram.src} alt="Telegram Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.twitter : "#"} target="_blank">
-                <Image src={discord.src} alt="Discord Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-            <Link href={featuredLaunch !== null ? featuredLaunch.website : "#"} target="_blank">
-                <Image src={website.src} alt="Website Icon" width={md ? 30 : 40} height={md ? 30 : 40} />
-            </Link>
-        </HStack>
-    );
-
     return (
-        <Box h={320} bg="url(/images/Banner.png)" bgSize="cover" boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset ">
+        <Box
+            h={md ? 300 : 320}
+            bg={"url(" + featuredLaunch.banner + ")"}
+            bgSize="cover"
+            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset "
+        >
             <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
                 <Flex
                     flexDirection={md ? "column" : "row"}
@@ -70,9 +60,9 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? "$" + featuredLaunch.name.substring(0, 12) : ""}
+                                    {featuredLaunch !== null ? "$" + featuredLaunch.symbol : ""}
                                 </Text>
-                                {!md && featuredLaunch !== null && <Links />}
+                                {!md && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
                             </Flex>
                             <HStack spacing={3} align="start" justify="start">
                                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
@@ -112,7 +102,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                         </VStack>
                     </HStack>
 
-                    <Show breakpoint="(max-width: 1024px)">{featuredLaunch !== null && <Links />}</Show>
+                    <Show breakpoint="(max-width: 1024px)">{featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}</Show>
 
                     <Link href={`/launch/${featuredLaunch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
                         {featuredLaunch !== null &&

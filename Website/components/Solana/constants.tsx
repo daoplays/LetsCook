@@ -17,7 +17,7 @@ const PYTH_ETH_PROD = new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWd
 const PYTH_SOL_PROD = new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG");
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-export const PROGRAM = new PublicKey("9RMAeCgFVSDGbj8TCsQ2pqwhwtrjMbKr9DeonLgQe35p");
+export const PROGRAM = new PublicKey("77dE9wpUeohmz7QzXNqkfFAp3ZXSAWQod3ioHPBE4N1v");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
 
 // account seeds
@@ -59,4 +59,11 @@ export const enum Screen {
     LAUNCH_DETAILS = 4,
     LAUNCH_BOOK = 5,
     LEADERBOARD = 6,
+}
+
+export const enum Socials {
+    Website = 0,
+    Twitter = 1,
+    Telegram = 2,
+    Discord = 3,
 }

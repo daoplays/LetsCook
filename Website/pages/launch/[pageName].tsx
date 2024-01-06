@@ -35,6 +35,7 @@ import useCheckTickets from "../../hooks/useCheckTickets";
 import useBuyTickets from "../../hooks/useBuyTickets";
 import useClaimTickets from "../../hooks/useClaimTokens";
 import useRefundTickets from "../../hooks/useRefundTickets";
+import Links from "../../components/Buttons/links";
 import FeaturedBanner from "../../components/featuredBanner";
 
 const MintPage = () => {
@@ -79,6 +80,26 @@ const MintPage = () => {
     // updates to token page are checked using a websocket to get real time updates
     const join_account_ws_id = useRef<number | null>(null);
     const launch_account_ws_id = useRef<number | null>(null);
+
+    // when page unloads unsub from any active websocket listeners
+    useEffect(() => {
+        return () => {
+            console.log("in use effect return");
+            const unsub = async () => {
+                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                if (join_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(join_account_ws_id.current);
+                    join_account_ws_id.current = null;
+                }
+                if (launch_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
+                    launch_account_ws_id.current = null;
+                }
+                await connection.removeAccountChangeListener(launch_account_ws_id.current);
+            };
+            unsub();
+        };
+    }, []);
 
     const check_launch_update = useCallback(
         async (result: any) => {
@@ -159,10 +180,6 @@ const MintPage = () => {
 
             join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
         }
-
-        // TODO handle closing
-        //    await connection.removeAccountChangeListener(join_account_ws_id.current);
-        //    await connection.removeAccountChangeListener(launch_account_ws_id.current);
     }, [wallet, launchData, check_join_update, check_launch_update]);
 
     let win_prob = 0;

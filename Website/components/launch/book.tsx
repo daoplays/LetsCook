@@ -18,7 +18,7 @@ import {
     WSS_NODE,
 } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
@@ -256,6 +256,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }));
 
         transaction.partialSign(token_mint_keypair);
         setSubmitStatus("Create Launch Accounts");

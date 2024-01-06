@@ -449,9 +449,7 @@ export class LaunchData {
         readonly launch_date: bignum,
         readonly end_date: bignum,
         readonly banner: string,
-        readonly website: string,
-        readonly twitter: string,
-        readonly telegram: string,
+        readonly socials: string[],
         readonly team_wallet: PublicKey,
         readonly mint_address: PublicKey,
         readonly sol_address: PublicKey,
@@ -484,9 +482,7 @@ export class LaunchData {
             ["launch_date", u64],
             ["end_date", u64],
             ["banner", utf8String],
-            ["website", utf8String],
-            ["twitter", utf8String],
-            ["telegram", utf8String],
+            ["socials", array(utf8String)],
             ["team_wallet", publicKey],
             ["mint_address", publicKey],
             ["sol_address", publicKey],
@@ -518,9 +514,7 @@ export class LaunchData {
                 args.launch_date!,
                 args.end_date!,
                 args.banner!,
-                args.website!,
-                args.twitter!,
-                args.telegram!,
+                args.socials!,
                 args.team_wallet!,
                 args.mint_address!,
                 args.sol_address!,
@@ -742,6 +736,7 @@ class CreateLaunch_Instruction {
         readonly symbol: string,
         readonly uri: string,
         readonly icon: string,
+        readonly banner:string,
         readonly total_supply: bignum,
         readonly decimals: number,
         readonly launch_date: bignum,
@@ -753,6 +748,8 @@ class CreateLaunch_Instruction {
         readonly website: string,
         readonly twitter: string,
         readonly telegram: string,
+        readonly discord: string,
+
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -762,6 +759,7 @@ class CreateLaunch_Instruction {
             ["symbol", utf8String],
             ["uri", utf8String],
             ["icon", utf8String],
+            ["banner", utf8String],
             ["total_supply", u64],
             ["decimals", u8],
             ["launch_date", u64],
@@ -773,6 +771,8 @@ class CreateLaunch_Instruction {
             ["website", utf8String],
             ["twitter", utf8String],
             ["telegram", utf8String],
+            ["discord", utf8String],
+
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -781,6 +781,7 @@ class CreateLaunch_Instruction {
                 args.symbol!,
                 args.uri!,
                 args.icon!,
+                args.banner!,
                 args.total_supply!,
                 args.decimals!,
                 args.launch_date!,
@@ -792,6 +793,8 @@ class CreateLaunch_Instruction {
                 args.website!,
                 args.twitter!,
                 args.telegram!,
+                args.discord!,
+
             ),
         "CreateLaunch_Instruction",
     );
@@ -808,6 +811,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.symbol,
         new_launch_data.uri,
         new_launch_data.icon_url,
+        new_launch_data.banner_url,
         new_launch_data.total_supply,
         new_launch_data.decimals,
         new_launch_data.opendate.getTime(),
@@ -819,6 +823,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.web_url,
         new_launch_data.twt_url,
         new_launch_data.tele_url,
+        new_launch_data.disc_url
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

@@ -1,13 +1,11 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useState } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
-import { useMediaQuery } from "react-responsive";
 
 import { Center, VStack, Text } from "@chakra-ui/react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { PublicKey} from "@solana/web3.js";
 
-import Image from "next/image";
 import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
-import { LaunchDataUserInput, defaultUserInput, request_current_balance } from "../../components/Solana/state";
+import { LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
 
 interface DetailsPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -39,7 +37,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     };
 
     function setData(): boolean {
-        if (description.length > 500) {
+        if (description.length > 250) {
             alert("Description can be at most 500 characters long");
             return false;
         }
@@ -126,7 +124,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                             <div className={`${styles.textLabel} font-face-kg`}>DESCRIPTION:</div>
                             <div>
                                 <textarea
-                                    maxLength={500}
+                                    maxLength={250}
                                     required
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles.inputTxtarea}`}
