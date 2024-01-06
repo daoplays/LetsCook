@@ -36,6 +36,7 @@ import useBuyTickets from "../../hooks/useBuyTickets";
 import useClaimTickets from "../../hooks/useClaimTokens";
 import useRefundTickets from "../../hooks/useRefundTickets";
 import Links from "../../components/Buttons/links";
+import FeaturedBanner from "../../components/featuredBanner";
 
 const MintPage = () => {
     const router = useRouter();
@@ -49,6 +50,10 @@ const MintPage = () => {
 
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
+
+    useEffect(() => {
+        console.log(router.basePath);
+    }, [router]);
 
     const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
         step: 1,
@@ -91,12 +96,11 @@ const MintPage = () => {
                     launch_account_ws_id.current = null;
                 }
                 await connection.removeAccountChangeListener(launch_account_ws_id.current);
-              }
-              unsub();
+            };
+            unsub();
         };
-      }, []); 
+    }, []);
 
-      
     const check_launch_update = useCallback(
         async (result: any) => {
             console.log(result);
@@ -176,8 +180,6 @@ const MintPage = () => {
 
             join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
         }
-
-        
     }, [wallet, launchData, check_join_update, check_launch_update]);
 
     let win_prob = 0;
@@ -371,100 +373,17 @@ const MintPage = () => {
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
+            <FeaturedBanner featuredLaunch={launchData} />
             <Center>
-                <VStack spacing={3} px={sm ? 3 : 0} my={xs ? "25px" : "50px"} width={sm ? "100%" : "80%"}>
-                    <VStack>
-                        {/* Token Logo - Mobile View  */}
-                        <Image
-                            src={launchData.icon}
-                            width={200}
-                            height={200}
-                            alt={`${launchData.name} LOGO`}
-                            hidden={!md}
-                            style={{ borderRadius: "50%" }}
-                        />
-
-                        {/* Token Name  */}
-                        <Text m={0} fontSize={md ? 35 : 60} color="white" className="font-face-kg">
-                            ${launchData.name}
-                        </Text>
-
-                        <HStack spacing={3} align="center" justify="center">
-                            {/* Contract Address  */}
-                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
-                                {md ? trimAddress(launchData.mint_address.toString()) : launchData.mint_address.toString()}
-                            </Text>
-
-                            {/* Copy Button for Contract Address  */}
-                            <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
-                                <div
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() => navigator.clipboard.writeText(launchData.mint_address.toString())}
-                                >
-                                    <MdOutlineContentCopy color="white" size={sm ? 25 : 40} />
-                                </div>
-                            </Tooltip>
-
-                            {/* Solscan Link */}
-                            <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                <Link
-                                    href={`https://solscan.io/account/${launchData.mint_address.toString()}?cluster=devnet`}
-                                    target="_blank"
-                                >
-                                    <Image src="/images/solscan.png" width={sm ? 25 : 40} height={sm ? 30 : 40} alt="Solscan icon" />
-                                </Link>
-                            </Tooltip>
-                        </HStack>
-                    </VStack>
-
-                    <Flex
-                        w={md ? "fit-content" : 1024}
-                        flexDirection={md ? "column" : "row"}
-                        align="center"
-                        justify={md ? "center" : "space-between"}
-                        h="100%"
-                    >
-                        <HStack w="fit-content" gap={5}>
-                            {/* Token Logo - Desktop View  */}
-                            <Image
-                                src={launchData.icon}
-                                width={md ? 130 : 200}
-                                height={md ? 130 : 200}
-                                alt="$SAUCE LOGO"
-                                hidden={md}
-                                style={{ borderRadius: "50%" }}
-                            />
-
-                            {/* Token Description and Social Links  */}
-                            <VStack gap={md ? 1 : 2} alignItems={md ? "center" : "left"}>
-                                <Text
-                                    fontFamily="ReemKufiRegular"
-                                    fontSize={sm ? "large" : "x-large"}
-                                    color="white"
-                                    maxW={sm ? "100%" : md ? "600px" : "850px"}
-                                    mr={md ? 0 : 25}
-                                    lineHeight={1.15}
-                                    align={md ? "center" : "start"}
-                                    m={0}
-                                >
-                                    {launchData.description}
-                                </Text>
-                                <HStack mt={3} hidden={sm}>
-                                    {!md && <Links featuredLaunch={launchData}/>}
-                                </HStack>
-                            </VStack>
-                        </HStack>
-                    </Flex>
-
-                    {/* Open & Close Date  */}
-                    <HStack mt={xs ? 5 : 0} spacing={5}>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
+                <VStack spacing={5} my={3} px={5} width={sm ? "100%" : "80%"}>
+                    <HStack spacing={sm ? 5 : 20} my={3}>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "x-large"}>
                             Opens: {launchDate}
                             <br />
                             {launchTime}
                         </Text>
                         <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="white" />
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "xx-large"}>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "x-large"}>
                             Closes: {endDate}
                             <br />
                             {endTime}
@@ -478,7 +397,7 @@ const MintPage = () => {
                         borderRadius={12}
                         border="1px solid white"
                         h="fit-content"
-                        mx={3}
+                        style={{ maxWidth: "980px" }}
                     >
                         <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
                             <VStack align="start" gap={xs ? 3 : 5}>
@@ -526,7 +445,7 @@ const MintPage = () => {
                                         {cook_state === CookState.PRE_LAUNCH
                                             ? "Warming Up"
                                             : ACTIVE
-                                              ? `Total: ${totalCost}`
+                                              ? `Total: ${totalCost.toFixed(3)}`
                                               : MINTED_OUT
                                                 ? "Cooked Out!"
                                                 : MINT_FAILED
@@ -677,7 +596,7 @@ const MintPage = () => {
                     </VStack>
 
                     {/* Token Distribution  */}
-                    <VStack w="100%" mt={12}>
+                    <VStack w="100%" my={10}>
                         <Text m={0} fontSize={md ? "xl" : 30} color="white" className="font-face-kg">
                             Distribution
                         </Text>
