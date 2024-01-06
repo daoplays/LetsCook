@@ -44,6 +44,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
         if (file) {
             if (file.size <= 1048576) {
+                newLaunchData.current.icon_file = file;
                 const reader = new FileReader();
                 setDisplayImg(URL.createObjectURL(e.target.files[0]));
 

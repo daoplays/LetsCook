@@ -346,7 +346,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, launchData, handleConnectWallet]);
+    }, [wallet, launchData, handleConnectWallet, check_signature_update]);
 
     const ClaimTokens = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -458,7 +458,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, launchData, handleConnectWallet]);
+    }, [wallet, launchData, handleConnectWallet, check_signature_update]);
 
     const RefundTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -550,7 +550,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, handleConnectWallet, launchData]);
+    }, [wallet, handleConnectWallet, launchData, check_signature_update]);
 
     const BuyTickets = useCallback(async () => {
         if (wallet.publicKey === null) {
@@ -631,7 +631,7 @@ const MintPage = () => {
             console.log(error);
             return;
         }
-    }, [wallet, value, handleConnectWallet, launchData]);
+    }, [wallet, value, handleConnectWallet, launchData, check_signature_update]);
 
     useEffect(() => {
         if (launchData) {

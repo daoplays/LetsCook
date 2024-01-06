@@ -358,6 +358,8 @@ export const enum LaunchInstruction {
 export interface LaunchDataUserInput {
     name: string;
     symbol: string;
+    icon_file: File | null;
+    uri_file: File | null;
     icon_data: string;
     icon_url: string;
     total_supply: number;
@@ -388,6 +390,8 @@ export interface LaunchDataUserInput {
 export const defaultUserInput: LaunchDataUserInput = {
     name: "",
     symbol: "",
+    icon_file: null,
+    uri_file: null,
     icon_data: "",
     icon_url: "",
     displayImg: null,

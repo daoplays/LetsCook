@@ -7,11 +7,11 @@ import {
     send_transaction,
     serialise_CreateLaunch_instruction,
     serialise_EditLaunch_instruction,
+    bignum_to_num
 } from "../../components/Solana/state";
 import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { arweave_json_upload, arweave_upload } from "../../components/Solana/arweave";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection, SystemProgram, sendAndConfirmTransaction } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import Image from "next/image";
 import DatePicker from "react-datepicker";
@@ -21,6 +21,14 @@ import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
+import {WebIrys} from "@irys/sdk";
+import Irys from "@irys/sdk";
+
+// Define the Tag type
+type Tag = {
+	name: string;
+	value: string;
+};
 
 interface BookPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -33,21 +41,9 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
-
+    const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                alert("Transaction failed, please try again")
-            }
-            signature_ws_id.current = null;
-        },
-        [],
-    );
-    
 
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
@@ -93,6 +89,21 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         if (setData()) CreateLaunch();
     }
 
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Transaction failed, please try again")
+            }
+            if (signature_ws_id.current === 1) {
+                await EditLaunch();
+            }
+            signature_ws_id.current = null;
+        },
+        [],
+    );
+
     const EditLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -128,6 +139,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        setSubmitStatus("Set Launch Metadata")
+
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -145,39 +158,77 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             if (DEBUG) {
                 console.log("list signature: ", signature);
             }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");  
-
+            signature_ws_id.current = 2;
+            connection.onSignature(signature, check_signature_update, "confirmed");  
+            setSubmitStatus(null)
         } catch (error) {
             console.log(error);
+            setSubmitStatus(null)
             return;
         }
-    }, [wallet, newLaunchData]);
+    }, [wallet, newLaunchData, check_signature_update]);
+
+
+
+    
 
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+    
+        const irys_wallet = { name: "phantom", provider: wallet };
+        const irys = new WebIrys({
+            url: "https://devnet.irys.xyz",
+            token: "solana",
+            wallet : irys_wallet,
+            config: {
+              providerUrl: RPC_NODE,
+            },
+          });
 
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
+        
+
+        const price = await irys.getPrice(newLaunchData.current.icon_file.size);
+        const balance_before = await irys.getLoadedBalance();
+        console.log("balance_before", balance_before.toString());
+        setSubmitStatus("Transfer balance for images on Arweave");
+        if (balance_before.lt(price)) {
+            await irys.fund(price);
         }
+        const balance_after = await irys.getLoadedBalance();
+        console.log("balance_after", balance_after.toString());
+        const tags: Tag[] = [{ name: "Content-Type", value: newLaunchData.current.icon_file.type }];
+        setSubmitStatus("Sign for image upload to Arweave");
+        const receipt = await irys.uploadFile(newLaunchData.current.icon_file, {
+			tags,
+		});
+		console.log("Uploaded successfully.", "https://gateway.irys.xyz/" +receipt.id);
 
-        console.log(newLaunchData.current);
+        var metadata = {
+            name: newLaunchData.current.name,
+            symbol: newLaunchData.current.symbol,
+            description: newLaunchData.current.description,
+            image: "https://gateway.irys.xyz/" + receipt.id,
+        };
 
-        // first upload the png file to arweave and get the url
-        let image_url = await arweave_upload(newLaunchData.current.icon_data);
-        let meta_data_url = await arweave_json_upload(
-            newLaunchData.current.name,
-            newLaunchData.current.symbol,
-            newLaunchData.current.description,
-            image_url,
-        );
-        console.log("list game with url", image_url, meta_data_url);
+        const jsn = JSON.stringify(metadata);
+        const blob = new Blob([jsn], { type: 'application/json' });
+        const json_file = new File([ blob ], 'metadata.json');
 
-        newLaunchData.current.uri = meta_data_url;
-        newLaunchData.current.icon_url = image_url;
+        const json_price = await irys.getPrice(json_file.size);
+        setSubmitStatus("Transfer balance for nft metadata on Arweave");
+        await irys.fund(json_price);
+        const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
+
+        setSubmitStatus("Sign for metadata upload to Arweave");
+        const json_receipt = await irys.uploadFile(json_file, {
+			tags:json_tags,
+		});
+		console.log("Uploaded successfully.", "https://gateway.irys.xyz/" +json_receipt.id);
+       
+        newLaunchData.current.uri = "https://gateway.irys.xyz/" +json_receipt.id;
+        newLaunchData.current.icon_url = "https://gateway.irys.xyz/" + receipt.id;
 
         let program_data_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
@@ -261,7 +312,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         transaction.add(list_instruction);
 
         transaction.partialSign(token_mint_keypair);
-
+        setSubmitStatus("Create Launch Accounts")
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -279,15 +330,16 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             if (DEBUG) {
                 console.log("list signature: ", signature);
             }
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");    
+            signature_ws_id.current = 1;
+            connection.onSignature(signature, check_signature_update, "confirmed");    
 
         } catch (error) {
             console.log(error);
             return;
         }
 
-        await EditLaunch();
-    }, [wallet, EditLaunch, newLaunchData]);
+        
+    }, [wallet, newLaunchData, check_signature_update]);
 
     function confirm(e) {
         e.preventDefault();
@@ -385,6 +437,9 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                         </button>
                     </div>
                 </form>
+                {submitStatus !== null &&
+                <Text  className={`${styles.nextBtn} font-face-kg `}>{submitStatus}</Text>
+                }
             </VStack>
         </Center>
     );
