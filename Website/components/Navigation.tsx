@@ -36,12 +36,12 @@ function Navigation() {
                     </Text>
                 </Link>
                 <HStack gap={3}>
-                    <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
+                    {/* <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
-                            <Image height={20} width={20} src="/images/sauce 2.png" alt="Sauce" />
+                            <Image height={20} width={20} src="/images/sauce.png" alt="Sauce" />
                             <div>1,400</div>
                         </div>
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Mint Calendar" hasArrow fontSize="large" offset={[0, 15]}>
@@ -51,17 +51,25 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    <Show breakpoint="(min-width: 1024px)">
+                    {/* <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href="/leaderboard">
                                 <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
                             </Link>
                         </Tooltip>
-                    </Show>
+                    </Show> */}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
                             <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
+                        </Tooltip>
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Launch" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href="/launch">
+                                <Image src="/images/chef-hat.png" width={35} height={35} alt={"Question Mark"} />
+                            </Link>
                         </Tooltip>
                     </Show>
 
@@ -89,9 +97,9 @@ function Navigation() {
                             {wallet.publicKey && <DisconnectWalletButton />}
                             {wallet.publicKey === null && <ConnectWalletButton />}
 
-                            <Link href="/launch">
+                            {/* <Link href="/launch">
                                 <MainButton label="LAUNCH" />
-                            </Link>
+                            </Link> */}
                         </>
                     </Show>
                 </HStack>
@@ -135,17 +143,17 @@ function Navigation() {
                     <Text className={styles.connect}>CALENDAR</Text>
                 </Link>
 
-                <Link href="/leaderboard" onClick={onToggle}>
+                {/* <Link href="/leaderboard" onClick={onToggle}>
                     <Text className={styles.connect}>LEADERBOARD</Text>
-                </Link>
+                </Link> */}
 
                 <Text className={styles.connect} style={{ opacity: 0.5 }}>
                     MY BAGS
                 </Text>
 
-                <Text className={styles.connect} style={{ opacity: 0.5 }}>
+                {/* <Text className={styles.connect} style={{ opacity: 0.5 }}>
                     HISTORY
-                </Text>
+                </Text> */}
 
                 <Link href="/faq" onClick={onToggle}>
                     <Text className={styles.connect}>FAQS</Text>

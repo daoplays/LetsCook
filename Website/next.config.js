@@ -8,7 +8,7 @@ const nextConfig = withBundleAnalyzer({
     reactStrictMode: true,
     swcMinify: true,
     images: {
-        domains: [`www.arweave.net`],
+        domains: [`www.arweave.net`, "gateway.irys.xyz"],
     },
 });
 

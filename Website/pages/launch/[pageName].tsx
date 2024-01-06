@@ -13,46 +13,28 @@ import {
     Progress,
     Divider,
 } from "@chakra-ui/react";
-import {
-    LaunchData,
-    bignum_to_num,
-    get_current_blockhash,
-    send_transaction,
-    serialise_BuyTickets_instruction,
-    myU64,
-    RunLaunchDataGPA,
-    serialise_basic_instruction,
-    LaunchInstruction,
-    RunJoinDataGPA,
-    JoinData,
-    uInt8ToLEBytes,
-    postData,
-    request_raw_account_data,
-} from "../../components/Solana/state";
-
-import { PROGRAM, SYSTEM_KEY, RPC_NODE, PYTH_BTC, PYTH_ETH, PYTH_SOL, WSS_NODE } from "../../components/Solana/constants";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
+import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../../components/Solana/state";
+import { PROGRAM, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { PieChart } from "react-minimal-pie-chart";
-import { Fee } from "@raydium-io/raydium-sdk";
-import bs58 from "bs58";
-import BN from "bn.js";
+import { useRouter } from "next/router";
 import Image from "next/image";
 import twitter from "../../public/socialIcons/twitter.svg";
 import telegram from "../../public/socialIcons/telegram.svg";
 import website from "../../public/socialIcons/website.svg";
 import Link from "next/link";
-
-import styles from "../styles/Launch.module.css";
 import useResponsive from "../../hooks/useResponsive";
 import UseWalletConnection from "../../hooks/useWallet";
 import trimAddress from "../../hooks/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
-import { useRouter } from "next/router";
 import PageNotFound from "../../components/pageNotFound";
+import useCheckTickets from "../../hooks/useCheckTickets";
+import useBuyTickets from "../../hooks/useBuyTickets";
+import useClaimTickets from "../../hooks/useClaimTokens";
+import useRefundTickets from "../../hooks/useRefundTickets";
 
 const MintPage = () => {
     const router = useRouter();
@@ -66,6 +48,24 @@ const MintPage = () => {
 
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
+
+    const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
+        step: 1,
+        defaultValue: 1,
+        min: 1,
+        max: 100,
+    });
+
+    const inc = getIncrementButtonProps();
+    const dec = getDecrementButtonProps();
+    const input = getInputProps();
+
+    const { value } = input;
+
+    const { BuyTickets } = useBuyTickets({ launchData, value });
+    const { CheckTickets } = useCheckTickets(launchData);
+    const { ClaimTokens } = useClaimTickets(launchData);
+    const { RefundTickets } = useRefundTickets(launchData);
 
     const checkLaunchData = useRef<boolean>(true);
 
@@ -129,9 +129,8 @@ const MintPage = () => {
                 if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
                     setJoinData(updated_data);
                 }
-            }
-            catch(error) {
-                console.log("error reading join data")
+            } catch (error) {
+                console.log("error reading join data");
                 setJoinData(null);
             }
         },
@@ -143,7 +142,7 @@ const MintPage = () => {
         if (launchData === null) return;
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-        
+
         if (launch_account_ws_id.current === null) {
             console.log("subscribe 1");
             let launch_data_account = PublicKey.findProgramAddressSync(
@@ -231,6 +230,12 @@ const MintPage = () => {
             //console.log("check join data")
             try {
                 const join_account_data = await request_raw_account_data("", user_join_account);
+                
+                if (join_account_data === null) {
+                    setIsLoading(false);
+                    checkLaunchData.current = false;
+                    return;
+                }
 
                 const [new_join_data] = JoinData.struct.deserialize(join_account_data);
 
@@ -240,6 +245,7 @@ const MintPage = () => {
             } catch (error) {
                 console.error("Error fetching join data:", error);
                 setIsLoading(false);
+                checkLaunchData.current = false;
             }
         }
         checkLaunchData.current = false;
@@ -253,385 +259,6 @@ const MintPage = () => {
     useEffect(() => {
         fetchLaunchData();
     }, [fetchLaunchData, pageName]);
-
-    const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
-        step: 1,
-        defaultValue: 1,
-        min: 1,
-        max: 100,
-    });
-
-    const inc = getIncrementButtonProps();
-    const dec = getDecrementButtonProps();
-    const input = getInputProps();
-
-    const { value } = input;
-
-    const CheckTickets = useCallback(async () => {
-        if (wallet.publicKey === null) {
-            handleConnectWallet();
-        }
-
-        if (wallet.signTransaction === undefined) return;
-
-        if (launchData === null) {
-            return;
-        }
-
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
-            alert("Launch creator cannot buy tickets");
-            return;
-        }
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.mint_address.toString());
-        console.log("sol", launchData.sol_address.toString());
-
-        let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
-            PROGRAM,
-        )[0];
-
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_reward);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: user_join_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: PYTH_SOL, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-        ];
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
-
-            console.log("reward sig: ", signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-        } catch (error) {
-            console.log(error);
-            return;
-        }
-    }, [wallet, launchData, handleConnectWallet, check_signature_update]);
-
-    const ClaimTokens = useCallback(async () => {
-        if (wallet.publicKey === null) {
-            handleConnectWallet();
-        }
-
-        if (wallet.signTransaction === undefined) return;
-
-        if (launchData === null) {
-            return;
-        }
-
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
-            alert("Launch creator cannot buy tickets");
-            return;
-        }
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.mint_address.toString());
-        console.log("sol", launchData.sol_address.toString());
-
-        let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
-            PROGRAM,
-        )[0];
-
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.mint_address.toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
-
-        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-
-        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
-
-        let token_raffle_account_key = await getAssociatedTokenAddress(
-            launchData.mint_address, // mint
-            program_sol_account, // owner
-            true, // allow owner off curve
-        );
-
-        let user_token_account_key = await getAssociatedTokenAddress(
-            launchData.mint_address, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: user_join_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-
-            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
-            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
-            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
-
-            { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
-            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: launchData.mint_address, isSigner: false, isWritable: true },
-
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
-
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-        ];
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
-
-            console.log("reward sig: ", signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-        } catch (error) {
-            console.log(error);
-            return;
-        }
-    }, [wallet, launchData, handleConnectWallet, check_signature_update]);
-
-    const RefundTickets = useCallback(async () => {
-        if (wallet.publicKey === null) {
-            handleConnectWallet();
-        }
-
-        if (wallet.signTransaction === undefined) return;
-
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
-            alert("Launch creator cannot buy tickets");
-            return;
-        }
-
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
-        if (launchData === null) {
-            return;
-        }
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.mint_address.toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
-
-        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
-
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.mint_address.toString());
-        console.log("sol", launchData.sol_address.toString());
-
-        let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
-            PROGRAM,
-        )[0];
-
-        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_refund);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_join_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
-            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
-            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
-        ];
-
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
-
-            console.log("join sig: ", signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-        } catch (error) {
-            console.log(error);
-            return;
-        }
-    }, [wallet, handleConnectWallet, launchData, check_signature_update]);
-
-    const BuyTickets = useCallback(async () => {
-        if (wallet.publicKey === null) {
-            handleConnectWallet();
-        }
-
-        if (wallet.signTransaction === undefined) return;
-
-        if (launchData === null) {
-            return;
-        }
-
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
-            alert("Launch creator cannot buy tickets");
-            return;
-        }
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        // console.log("game id ", launchData.game_id, game_id_buf);
-        // console.log("Mint", launchData.mint_address.toString());
-        // console.log("sol", launchData.sol_address.toString());
-
-        let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
-            PROGRAM,
-        )[0];
-
-        const instruction_data = serialise_BuyTickets_instruction(value);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: user_join_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
-        ];
-
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-
-            // console.log("join sig: ", signature);
-        } catch (error) {
-            console.log(error);
-            return;
-        }
-    }, [wallet, value, handleConnectWallet, launchData, check_signature_update]);
 
     useEffect(() => {
         if (launchData) {
@@ -665,7 +292,7 @@ const MintPage = () => {
         return (
             <HStack justify="center" style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)", height: "90vh" }}>
                 <Text color="white" fontSize="xx-large">
-                    Loading...
+                    Prepping on-chain ingredients...
                 </Text>
             </HStack>
         );
@@ -860,7 +487,6 @@ const MintPage = () => {
                     >
                         <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
                             <VStack align="start" gap={xs ? 3 : 5}>
-                                {/* Ticket Price  */}
                                 <HStack>
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                         Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
@@ -868,17 +494,14 @@ const MintPage = () => {
                                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                                 </HStack>
 
-                                {/* Winning Tickets  */}
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Total Winning Tickets: {launchData.mints_won}
                                 </Text>
 
-                                {/* Tokens per winning ticket */}
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
                                 </Text>
 
-                                {/* Auto refund function */}
                                 <HStack align="center" gap={3}>
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                         Auto Refund:
@@ -898,7 +521,6 @@ const MintPage = () => {
 
                             <VStack align="center" justify="center" gap={3}>
                                 <HStack>
-                                    {/* Total Cost & States */}
                                     <Text
                                         m="0"
                                         color="white"
@@ -921,21 +543,19 @@ const MintPage = () => {
 
                                 <Box
                                     mt={-3}
-                                    onClick={
-                                        cook_state === CookState.MINT_FAILED_NOT_REFUNDED
-                                            ? () => {
-                                                  RefundTickets();
-                                              }
-                                            : cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
-                                              ? () => {
-                                                    CheckTickets();
-                                                }
-                                              : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
-                                                ? () => {
-                                                      ClaimTokens();
-                                                  }
-                                                : () => {}
-                                    }
+                                    onClick={() => {
+                                        if (wallet.publicKey === null) {
+                                            handleConnectWallet();
+                                        } else {
+                                            cook_state === CookState.MINT_FAILED_NOT_REFUNDED
+                                                ? () => RefundTickets()
+                                                : cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
+                                                  ? () => CheckTickets()
+                                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
+                                                    ? () => ClaimTokens()
+                                                    : () => {};
+                                        }
+                                    }}
                                 >
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>

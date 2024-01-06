@@ -319,7 +319,9 @@ export async function request_raw_account_data(bearer: string, pubkey: PublicKey
     try {
         let parsed_account_data: AccountData = response;
 
-        //console.log("parsed", parsed_account_data);
+        if (parsed_account_data.result.value === null) {
+            return null;
+        }
 
         let account_encoded_data = parsed_account_data.result.value.data;
         account_data = Buffer.from(account_encoded_data[0], "base64");

@@ -1,6 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
-import { LaunchData, RunLaunchDataGPA, RunUserDataGPA, UserData, bignum_to_num } from "./Solana/state";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
 import { Box, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "./hypeVote";
@@ -10,74 +8,19 @@ import twitter from "../public/socialIcons/twitter.svg";
 import telegram from "../public/socialIcons/telegram.svg";
 import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
+import useAppRoot from "../context/useAppRoot";
 
 const GameTable = () => {
-    const wallet = useWallet();
-    const { sm, md } = useResponsive();
-    const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
-    const [user_data, setUserData] = useState<UserData[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-
-    const game_interval = useRef<number | null>(null);
-    const check_launch_data = useRef<boolean>(true);
-    const [current_launch_data, setCurrentLaunchData] = useState<LaunchData | null>(null);
-    const [featured_launch, setFeaturedLaunch] = useState<LaunchData | null>(null);
-    const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
-
-    const CheckLaunchData = useCallback(async () => {
-        setIsLoading(true);
-        if (!check_launch_data.current) return;
-
-        let list = await RunLaunchDataGPA("");
-        console.log(list);
-        setLaunchData(list);
-        setFeaturedLaunch(list[0]);
-
-        let user_list = await RunUserDataGPA("");
-        console.log(user_list);
-        setUserData(user_list);
-
-        if (wallet.publicKey !== null) {
-            for (let i = 0; i < user_list.length; i++) {
-                if (user_list[i].user_key.toString() == wallet.publicKey.toString()) {
-                    console.log("have current user", user_list[i]);
-                    setCurrentUserData(user_list[i]);
-                    break;
-                }
-            }
-        }
-        check_launch_data.current = false;
-        setIsLoading(false);
-    }, [wallet]);
-
-    // interval for checking state
-    useEffect(() => {
-        if (game_interval.current === null) {
-            game_interval.current = window.setInterval(CheckLaunchData, 5000);
-        } else {
-            window.clearInterval(game_interval.current);
-            game_interval.current = null;
-        }
-        // here's the cleanup function
-        return () => {
-            if (game_interval.current !== null) {
-                window.clearInterval(game_interval.current);
-                game_interval.current = null;
-            }
-        };
-    }, [CheckLaunchData]);
-
-    useEffect(() => {
-        check_launch_data.current = true;
-    }, [wallet]);
-
+    const { sm } = useResponsive();
     const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
 
-    if (launch_data.length === 0) {
+    const { launchList, currentUserData } = useAppRoot();
+
+    if (launchList.length === 0) {
         return (
             <HStack justify="center">
                 <Text color="white" fontSize="xx-large">
-                    Loading...
+                    Prepping on-chain ingredients...
                 </Text>
             </HStack>
         );
@@ -97,49 +40,36 @@ const GameTable = () => {
                         ))}
 
                         <th>
-                            <Box
+                            {/* <Box
                                 mr={sm ? 4 : 8}
                                 as="button"
-                                onClick={() => {
-                                    check_launch_data.current = true;
-                                    CheckLaunchData();
-                                }}
+                                // onClick={() => {
+                                //     check_launch_data.current = true;
+                                //     CheckLaunchData();
+                                // }}
                             >
                                 <TfiReload size={20} />
-                            </Box>
+                            </Box> */}
                         </th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    <Listings launch_list={launch_data} user_data={current_user_data} setLaunchData={setCurrentLaunchData} />
+                    {launchList.map((item: LaunchData, index) => (
+                        <ArenaGameCard key={index} launch={item} user_data={currentUserData} />
+                    ))}
                 </tbody>
             </table>
         </TableContainer>
     );
 };
 
-const ArenaGameCard = ({
-    launch,
-    user_data,
-    setLaunchData,
-    index,
-}: {
-    launch: LaunchData;
-    user_data: UserData | null;
-    setLaunchData: Dispatch<SetStateAction<LaunchData>>;
-    index: number;
-}) => {
-    // console.log(launch);
-    /// console.log(launch.seller.toString());
-    //console.log(launch.sol_address.toString());
-    //console.log(launch.team_wallet.toString());
-    //console.log(launch.mint_address.toString());
-
+const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
     const { sm, md, lg } = useResponsive();
     let name = launch.name;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
+
     return (
         <tr
             style={{
@@ -204,24 +134,6 @@ const ArenaGameCard = ({
             </td>
             <td />
         </tr>
-    );
-};
-
-const Listings = ({
-    launch_list,
-    user_data,
-    setLaunchData,
-}: {
-    launch_list: LaunchData[];
-    user_data: UserData | null;
-    setLaunchData: Dispatch<SetStateAction<LaunchData>>;
-}) => {
-    return (
-        <>
-            {launch_list.map((item: LaunchData, index) => (
-                <ArenaGameCard key={index} launch={item} user_data={user_data} setLaunchData={setLaunchData} index={index} />
-            ))}
-        </>
     );
 };
 

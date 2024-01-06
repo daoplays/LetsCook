@@ -9,7 +9,16 @@ import {
     serialise_EditLaunch_instruction,
     bignum_to_num
 } from "../../components/Solana/state";
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import {
+    METAPLEX_META,
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    Screen,
+    DEFAULT_FONT_SIZE,
+    RPC_NODE,
+    WSS_NODE,
+} from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection, SystemProgram, sendAndConfirmTransaction } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -44,7 +53,20 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
-
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Transaction failed, please try again")
+            }
+            if (signature_ws_id.current === 1) {
+                await EditLaunch();
+            }
+            signature_ws_id.current = null;
+        },
+        [],
+    );
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
@@ -89,27 +111,13 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         if (setData()) CreateLaunch();
     }
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                alert("Transaction failed, please try again")
-            }
-            if (signature_ws_id.current === 1) {
-                await EditLaunch();
-            }
-            signature_ws_id.current = null;
-        },
-        [],
-    );
 
     const EditLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
+            //alert("Transaction pending, please wait");
+            //return;
         }
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
@@ -167,10 +175,6 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             return;
         }
     }, [wallet, newLaunchData, check_signature_update]);
-
-
-
-    
 
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
@@ -321,7 +325,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                alert("Transaction error, please try again")
+                alert("Transaction error, please try again");
                 return;
             }
 
