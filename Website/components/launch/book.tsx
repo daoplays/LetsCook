@@ -102,8 +102,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
+            //alert("Transaction pending, please wait");
+            //return;
         }
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });

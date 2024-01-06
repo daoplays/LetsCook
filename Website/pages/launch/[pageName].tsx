@@ -230,6 +230,12 @@ const MintPage = () => {
             //console.log("check join data")
             try {
                 const join_account_data = await request_raw_account_data("", user_join_account);
+                
+                if (join_account_data === null) {
+                    setIsLoading(false);
+                    checkLaunchData.current = false;
+                    return;
+                }
 
                 const [new_join_data] = JoinData.struct.deserialize(join_account_data);
 
@@ -239,6 +245,7 @@ const MintPage = () => {
             } catch (error) {
                 console.error("Error fetching join data:", error);
                 setIsLoading(false);
+                checkLaunchData.current = false;
             }
         }
         checkLaunchData.current = false;
