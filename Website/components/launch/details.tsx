@@ -37,7 +37,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     };
 
     function setData(): boolean {
-        if (description.length > 500) {
+        if (description.length > 250) {
             alert("Description can be at most 500 characters long");
             return false;
         }
@@ -124,7 +124,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                             <div className={`${styles.textLabel} font-face-kg`}>DESCRIPTION:</div>
                             <div>
                                 <textarea
-                                    maxLength={500}
+                                    maxLength={250}
                                     required
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles.inputTxtarea}`}
