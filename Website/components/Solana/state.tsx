@@ -360,8 +360,11 @@ export const enum LaunchInstruction {
 export interface LaunchDataUserInput {
     name: string;
     symbol: string;
-    icon_data: string;
+    icon_file: File | null;
+    uri_file: File | null;
+    banner_file: File | null;
     icon_url: string;
+    banner_url: string;
     total_supply: number;
     decimals: number;
     num_mints: number;
@@ -371,7 +374,6 @@ export interface LaunchDataUserInput {
     launch_date: Date;
     uri: string;
     pagename: string;
-    iconpage2: string;
     description: string;
     web_url: string;
     tele_url: string;
@@ -390,8 +392,11 @@ export interface LaunchDataUserInput {
 export const defaultUserInput: LaunchDataUserInput = {
     name: "",
     symbol: "",
-    icon_data: "",
+    icon_file: null,
+    uri_file: null,
+    banner_file: null,
     icon_url: "",
+    banner_url: "",
     displayImg: null,
     total_supply: 0,
     decimals: 0,
@@ -402,7 +407,6 @@ export const defaultUserInput: LaunchDataUserInput = {
     launch_date: new Date(new Date().setHours(0, 0, 0, 0)),
     uri: "",
     pagename: "",
-    iconpage2: "",
     description: "",
     web_url: "",
     tele_url: "",

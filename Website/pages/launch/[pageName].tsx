@@ -224,7 +224,7 @@ const MintPage = () => {
             //console.log("check join data")
             try {
                 const join_account_data = await request_raw_account_data("", user_join_account);
-                
+
                 if (join_account_data === null) {
                     setIsLoading(false);
                     checkLaunchData.current = false;

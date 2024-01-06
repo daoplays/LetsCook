@@ -19,7 +19,6 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
-    const [icon, setIcon] = useState<string>(newLaunchData.current.icon_data);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
     const [totalSupply, setTotalSupply] = useState<string>(newLaunchData.current.total_supply.toString());
     const [decimal, setDecimal] = useState<string>(newLaunchData.current.decimals.toString());
@@ -44,15 +43,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
         if (file) {
             if (file.size <= 1048576) {
-                const reader = new FileReader();
+                newLaunchData.current.icon_file = file;
                 setDisplayImg(URL.createObjectURL(e.target.files[0]));
-
-                reader.readAsDataURL(file);
-
-                reader.onload = () => {
-                    console.log("called: ", reader);
-                    setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
-                };
             } else {
                 alert("File size exceeds 1MB limit.");
             }
@@ -83,7 +75,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
             return;
         }
 
-        if (!icon) {
+        if (newLaunchData.current.icon_file === null) {
             alert("Please select an icon image.");
             return;
         }
@@ -105,7 +97,6 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;
-        newLaunchData.current.icon_data = icon;
         newLaunchData.current.displayImg = displayImg;
         newLaunchData.current.total_supply = parseInt(totalSupply);
 
@@ -181,7 +172,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                     <input
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={icon ? "File Selected" : "No File Selected"}
+                                        value={newLaunchData.current.icon_file !== null ? "File Selected" : "No File Selected"}
                                         disabled
                                     />
                                 </div>
@@ -273,7 +264,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         required
                                         className={styles.inputBox}
                                         type="number"
-                                        value={!isNaN(parseFloat(mints) * parseFloat(ticketPrice)) ? parseFloat(mints) * parseFloat(ticketPrice) : 0}
+                                        value={
+                                            !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
+                                                ? parseFloat(mints) * parseFloat(ticketPrice)
+                                                : 0
+                                        }
                                         disabled
                                     />
                                     <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />

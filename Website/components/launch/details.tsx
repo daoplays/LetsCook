@@ -16,7 +16,6 @@ interface DetailsPageProps {
 
 const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
-    const [icon, setIcon] = useState<string>(newLaunchData.current.iconpage2);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
     const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
@@ -32,14 +31,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
 
         if (file) {
             if (file.size <= 4194304) {
-                const reader = new FileReader();
-
-                reader.readAsDataURL(file);
-
-                reader.onload = () => {
-                    console.log("called: ", reader);
-                    setIcon(reader.result.toString().replace("data:", "").replace(/^.+,/, ""));
-                };
+                newLaunchData.current.banner_file = file;
             } else {
                 alert("File size exceeds 4MB limit.");
             }
@@ -50,6 +42,11 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         if (description.length > 500) {
             alert("Description can be at most 500 characters long");
             return false;
+        }
+
+        if (newLaunchData.current.banner_file === null) {
+            alert("Please select a banner image.");
+            return;
         }
 
         let launch_data_account = PublicKey.findProgramAddressSync(
@@ -68,7 +65,6 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         }
 
         newLaunchData.current.pagename = name;
-        newLaunchData.current.iconpage2 = icon;
         newLaunchData.current.description = description;
         newLaunchData.current.web_url = web;
         newLaunchData.current.twt_url = twitter;
@@ -117,7 +113,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                     <input
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={icon ? "File Selected" : "No File Selected"}
+                                        value={newLaunchData.current.banner_file !== null ? "File Selected" : "No File Selected"}
                                         disabled
                                     />
                                 </div>
