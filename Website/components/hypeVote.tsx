@@ -1,47 +1,33 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Center, VStack, Text, Box, HStack, Tooltip } from "@chakra-ui/react";
-
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE } from "./Solana/constants";
-import {
-    LaunchData,
-    bignum_to_num,
-    get_current_blockhash,
-    send_transaction,
-    serialise_HypeVote_instruction,
-    myU64,
-    UserData,
-} from "./Solana/state";
-import { Raydium } from "./Solana/raydium";
+import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { Text, HStack, Tooltip } from "@chakra-ui/react";
+import { PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE } from "./Solana/constants";
+import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
 import bs58 from "bs58";
-import BN from "bn.js";
 import Image from "next/image";
+import UseWalletConnection from "../hooks/useWallet";
 
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
+    const { handleConnectWallet } = UseWalletConnection();
     const hype_vote_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                alert("Hype vote transaction failed, please try again")
-            }
-            hype_vote_ws_id.current = null;
-        },
-        [],
-    );
-
+    const check_signature_update = useCallback(async (result: any) => {
+        console.log(result);
+        // if we have a subscription field check against ws_id
+        if (result.err !== null) {
+            alert("Hype vote transaction failed, please try again");
+        }
+        hype_vote_ws_id.current = null;
+    }, []);
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             if (hype_vote_ws_id.current !== null) {
-                alert("Hype vote pending, please wait")
+                alert("Hype vote pending, please wait");
                 return;
             }
 
@@ -150,7 +136,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            Vote({ vote: 1 });
+                            if (user_data !== null) {
+                                Vote({ vote: 1 });
+                            } else {
+                                handleConnectWallet();
+                            }
                         }}
                         src="/images/thumbs-up.svg"
                         width={40}
@@ -161,7 +151,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            Vote({ vote: 2 });
+                            if (user_data !== null) {
+                                Vote({ vote: 2 });
+                            } else {
+                                handleConnectWallet();
+                            }
                         }}
                         src="/images/thumbs-down.svg"
                         width={40}

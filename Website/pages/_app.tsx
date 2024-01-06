@@ -1,21 +1,18 @@
-import { ChakraProvider, HStack } from "@chakra-ui/react";
-import { theme } from "../chakra";
-
-import { useMemo } from "react";
-import { clusterApiUrl } from "@solana/web3.js";
+import { ChakraProvider } from "@chakra-ui/react";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-
-import "bootstrap/dist/css/bootstrap.css";
-import "../styles/fonts.css";
-import "../styles/table.css";
+import { theme } from "../chakra";
+import { useMemo } from "react";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
 import NoSSR from "../utils/NoSSR";
+import ContextProviders from "./_contexts";
+import "bootstrap/dist/css/bootstrap.css";
+import "../styles/fonts.css";
+import "../styles/table.css";
 
 function MyApp({ Component, pageProps }) {
-    //console.log({ theme });
     const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
 
     return (
@@ -23,11 +20,13 @@ function MyApp({ Component, pageProps }) {
             <ChakraProvider theme={theme}>
                 <WalletProvider wallets={wallets} autoConnect>
                     <WalletModalProvider>
-                        <Navigation />
-                        <div style={{ minHeight: "90vh" }}>
-                            <Component {...pageProps} />
-                        </div>
-                        <Footer />
+                        <ContextProviders>
+                            <Navigation />
+                            <div style={{ minHeight: "90vh" }}>
+                                <Component {...pageProps} />
+                            </div>
+                            <Footer />
+                        </ContextProviders>
                     </WalletModalProvider>
                 </WalletProvider>
             </ChakraProvider>
