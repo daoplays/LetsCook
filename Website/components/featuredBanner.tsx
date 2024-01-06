@@ -37,7 +37,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
     );
 
     return (
-        <Box h={md ? 300 : 320} bg="url(/images/Banner.png)" bgSize="cover" boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset ">
+        <Box h={md ? 300 : 320} bg={"url("+featuredLaunch.banner+")"} bgSize="cover" boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset ">
             <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
                 <Flex
                     flexDirection={md ? "column" : "row"}
