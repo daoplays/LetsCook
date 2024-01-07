@@ -10,22 +10,22 @@ interface WoodenButtonProps {
 }
 
 const WoodenButton = ({ action, label, size, width }: WoodenButtonProps) => {
-    const { md } = useResponsive();
+    const { lg } = useResponsive();
     return (
         <Box
             bg="url(/images/Wood\ Panel.png)"
             backgroundSize="cover"
-            borderRadius={md ? 10 : 20}
+            borderRadius={lg ? 10 : 20}
             px={5}
             onClick={action}
             style={{ cursor: "pointer" }}
         >
             <VStack h="100%" align="center" justify="center">
                 <Text
-                    w={md ? "fit-content" : !width ? "310px" : width}
+                    w={lg ? "fit-content" : !width ? "310px" : width}
                     align={"center"}
-                    my={md ? 3 : 5}
-                    fontSize={md ? "medium" : size}
+                    my={lg ? 3 : 5}
+                    fontSize={lg ? "medium" : size}
                     color="#683309"
                     className="font-face-kg"
                 >

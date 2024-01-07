@@ -19,42 +19,43 @@ interface FeaturedBannerProps {
 }
 
 const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
-    const { sm, md } = useResponsive();
+    const { sm, lg } = useResponsive();
 
     if (!featuredLaunch) return;
 
     return (
         <Box
-            h={md ? 300 : 320}
+            h={lg ? 300 : 320}
             bg={"url(" + featuredLaunch.banner + ")"}
             bgSize="cover"
-            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset "
+            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
+            style={{ borderBottom: "1px solid #868E96" }}
         >
             <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
                 <Flex
-                    flexDirection={md ? "column" : "row"}
+                    flexDirection={lg ? "column" : "row"}
                     align="center"
-                    justify={md ? "center" : "space-between"}
+                    justify={lg ? "center" : "space-between"}
                     px={sm ? 3 : 12}
                     pb={5}
                     h="100%"
                 >
-                    <HStack w="fit-content" gap={md ? 5 : 8}>
+                    <HStack w="fit-content" gap={lg ? 5 : 8}>
                         {featuredLaunch !== null && (
                             <Image
                                 src={featuredLaunch.icon}
-                                width={md ? 130 : 200}
-                                height={md ? 130 : 200}
+                                width={lg ? 130 : 200}
+                                height={lg ? 130 : 200}
                                 alt="$LOGO"
-                                hidden={md}
+                                hidden={lg}
                                 style={{ borderRadius: sm ? "12px" : "8px" }}
                             />
                         )}
-                        <VStack gap={md ? 1 : 3} alignItems={md ? "center" : "left"}>
-                            <Flex gap={md ? 2 : 6}>
+                        <VStack gap={lg ? 2 : 3} alignItems={lg ? "center" : "left"}>
+                            <Flex gap={lg ? 2 : 6}>
                                 <Text
                                     m={0}
-                                    fontSize={md ? 30 : 60}
+                                    fontSize={lg ? 30 : 60}
                                     color="white"
                                     className="font-face-kg"
                                     style={{ wordBreak: "break-all" }}
@@ -62,7 +63,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                 >
                                     {featuredLaunch !== null ? "$" + featuredLaunch.symbol : ""}
                                 </Text>
-                                {!md && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+                                {!lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
                             </Flex>
                             <HStack spacing={3} align="start" justify="start">
                                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
@@ -74,7 +75,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                         style={{ cursor: "pointer" }}
                                         onClick={() => navigator.clipboard.writeText(featuredLaunch.mint_address.toString())}
                                     >
-                                        <MdOutlineContentCopy color="white" size={md ? 25 : 35} />
+                                        <MdOutlineContentCopy color="white" size={lg ? 25 : 35} />
                                     </div>
                                 </Tooltip>
 
@@ -83,34 +84,34 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                         href={`https://solscan.io/account/${featuredLaunch.mint_address.toString()}?cluster=devnet`}
                                         target="_blank"
                                     >
-                                        <Image src="/images/solscan.png" width={sm ? 25 : 35} height={sm ? 25 : 35} alt="Solscan icon" />
+                                        <Image src="/images/solscan.png" width={lg ? 25 : 35} height={lg ? 25 : 35} alt="Solscan icon" />
                                     </Link>
                                 </Tooltip>
                             </HStack>
                             <Text
                                 fontFamily="ReemKufiRegular"
-                                fontSize={md ? "large" : "x-large"}
+                                fontSize={lg ? "large" : "x-large"}
                                 color="white"
-                                maxW={sm ? "100%" : md ? "600px" : "850px"}
-                                mr={md ? 0 : 25}
-                                mt={2}
+                                maxW={sm ? "100%" : lg ? "600px" : "1024px"}
+                                mr={lg ? 0 : 25}
+                                mt={lg ? 0 : 2}
                                 lineHeight={1.15}
-                                align={md ? "center" : "start"}
+                                align={lg ? "center" : "start"}
                             >
                                 {featuredLaunch !== null ? featuredLaunch.description.substring(0, 200) : ""}
                             </Text>
                         </VStack>
                     </HStack>
 
-                    <Show breakpoint="(max-width: 1024px)">{featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}</Show>
+                    {lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
 
-                    <Link href={`/launch/${featuredLaunch?.page_name}`} style={{ marginTop: sm ? 12 : 0 }}>
+                    <Link href={`/launch/${featuredLaunch?.page_name}`} style={{ marginTop: lg ? 16 : 0 }}>
                         {featuredLaunch !== null &&
                             new Date().getTime() > featuredLaunch.launch_date &&
                             new Date().getTime() < featuredLaunch.end_date && <WoodenButton label="Mint Live" size={35} />}
 
                         {featuredLaunch !== null && new Date().getTime() < featuredLaunch.launch_date && (
-                            <WoodenButton label="Mint Pending" size={35} />
+                            <WoodenButton label="Mint Pending" size={35} width={340} />
                         )}
 
                         {featuredLaunch !== null && new Date().getTime() > featuredLaunch.end_date && (

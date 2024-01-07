@@ -18,7 +18,7 @@ const GameTable = () => {
 
     if (launchList.length === 0) {
         return (
-            <HStack justify="center">
+            <HStack justify="center" align="center" h="15vh">
                 <Text color="white" fontSize="xx-large">
                     Prepping on-chain ingredients...
                 </Text>
@@ -40,16 +40,9 @@ const GameTable = () => {
                         ))}
 
                         <th>
-                            {/* <Box
-                                mr={sm ? 4 : 8}
-                                as="button"
-                                // onClick={() => {
-                                //     check_launch_data.current = true;
-                                //     CheckLaunchData();
-                                // }}
-                            >
+                            <Box mr={sm ? 4 : 8} as="button">
                                 <TfiReload size={20} />
-                            </Box> */}
+                            </Box>
                         </th>
                     </tr>
                 </thead>
@@ -104,8 +97,7 @@ const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: U
                 </Text>
             </td>
             <td style={{ minWidth: "200px" }}>
-                <Links featuredLaunch={launch}/>
-                
+                <Links featuredLaunch={launch} />
             </td>
             <td style={{ minWidth: "120px" }}>
                 <HypeVote launch_data={launch} user_data={user_data} />

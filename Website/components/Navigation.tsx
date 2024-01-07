@@ -84,7 +84,7 @@ function Navigation() {
                     <Show breakpoint="(max-width: 1024px)">
                         <Image
                             onClick={onToggle}
-                            src="/images/Group (6).png"
+                            src="/images/burger.png"
                             width={35}
                             height={35}
                             alt={"Burger Icon"}
@@ -121,7 +121,7 @@ function Navigation() {
                 hidden={!md || !isOpen}
                 boxShadow="0px 3px 13px 0px rgba(0,0,0,0.75) inset"
             >
-                <VStack spacing={3} mb={6} className="font-face-kg">
+                <VStack spacing={3} mb={4} className="font-face-kg">
                     {wallet.publicKey && (
                         <Text fontSize="x-large" color="#683309" className="font-face-kg" onClick={() => handleDisconnectWallet()}>
                             Disconnect Wallet
@@ -136,18 +136,22 @@ function Navigation() {
                 </VStack>
 
                 <Link href="/launch" onClick={onToggle}>
-                    <Text className={styles.connect}>LAUNCH</Text>
+                    <Text fontFamily="Dealers" color="#683309" fontSize={35}>
+                        LAUNCH
+                    </Text>
                 </Link>
 
                 <Link href="/calendar" onClick={onToggle}>
-                    <Text className={styles.connect}>CALENDAR</Text>
+                    <Text fontFamily="Dealers" color="#683309" fontSize={35}>
+                        CALENDAR
+                    </Text>
                 </Link>
 
                 {/* <Link href="/leaderboard" onClick={onToggle}>
                     <Text className={styles.connect}>LEADERBOARD</Text>
                 </Link> */}
 
-                <Text className={styles.connect} style={{ opacity: 0.5 }}>
+                <Text fontFamily="Dealers" color="#683309" fontSize={35} style={{ opacity: 0.5 }}>
                     MY BAGS
                 </Text>
 
@@ -156,7 +160,9 @@ function Navigation() {
                 </Text> */}
 
                 <Link href="/faq" onClick={onToggle}>
-                    <Text className={styles.connect}>FAQS</Text>
+                    <Text fontFamily="Dealers" color="#683309" fontSize={35}>
+                        FAQS
+                    </Text>
                 </Link>
             </VStack>
         </>
