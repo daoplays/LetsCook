@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
@@ -19,11 +20,34 @@ export const defaultLaunchTableFilters: LaunchTableFilters = {
     end_date: null,
 };
 
+interface Header {
+    text: string;
+    field: string | null;
+}
+
 const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
     const { sm } = useResponsive();
-    const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
+    const tableHeaders: Header[] = [
+        { text: "LOGO", field: null },
+        { text: "TICKER", field: "symbol" },
+        { text: "SOCIALS", field: null },
+        { text: "HYPE", field: "hype" },
+        { text: "MIN. LIQUIDITY", field: "minimum_liquidity" },
+        { text: "LAUNCH", field: "launch_date" },
+    ];
 
     const { launchList, currentUserData, checkLaunchData } = useAppRoot();
+    const [sortedField, setSortedField] = useState<string>("launch_date");
+    const [reverseSort, setReverseSort] = useState<boolean>(false);
+
+    const handleHeaderClick = (e) => {
+        if (e == sortedField) {
+            setReverseSort(!reverseSort);
+        } else {
+            setSortedField(e);
+            setReverseSort(false);
+        }
+    };
 
     if (launchList.length === 0) {
         return (
@@ -34,6 +58,42 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
             </HStack>
         );
     }
+
+    launchList.sort((a, b) => {
+        if (sortedField !== "hype" && sortedField !== "minimum_liquidity") {
+            if (a[sortedField] < b[sortedField]) {
+                return reverseSort ? 1 : -1;
+            }
+            if (a[sortedField] > b[sortedField]) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        if (sortedField === "minimum_liquidity") {
+            if (a[sortedField].lt(b[sortedField])) {
+                return reverseSort ? 1 : -1;
+            }
+            if (a[sortedField].gt(b[sortedField])) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        if (sortedField === "hype") {
+            let hype_a = a.positive_votes - a.negative_votes;
+            let hype_b = b.positive_votes - b.negative_votes;
+            if (hype_a < hype_b) {
+                return reverseSort ? 1 : -1;
+            }
+            if (hype_a > hype_b) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        return 0;
+    });
 
     function filterTable() {
         return launchList.filter(function (item) {
@@ -50,25 +110,31 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
                 <thead>
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (
-                            <th key={i}>
-                                <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                    {i}
+                            <th key={i.text}>
+                                <Text
+                                    fontSize={sm ? "medium" : "large"}
+                                    m={0}
+                                    onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                >
+                                    {i.text}
                                 </Text>
                             </th>
                         ))}
 
                         <th>
                             <Box mr={sm ? 4 : 8} as="button">
-                                <TfiReload size={20} onClick={checkLaunchData}/>
+                                <TfiReload size={20} onClick={checkLaunchData} />
                             </Box>
                         </th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {filterTable().map((item: LaunchData, index) => (
-                        <ArenaGameCard key={index} launch={item} user_data={currentUserData} />
-                    ))}
+                    {filterTable()
+                        .sort()
+                        .map((item: LaunchData, index) => (
+                            <ArenaGameCard key={index} launch={item} user_data={currentUserData} />
+                        ))}
                 </tbody>
             </table>
         </TableContainer>

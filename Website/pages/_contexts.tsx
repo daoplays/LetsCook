@@ -20,8 +20,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const check_launch_data = useRef<boolean>(true);
     const check_user_data = useRef<boolean>(true);
 
-
-
     const CheckLaunchData = useCallback(async () => {
         if (!check_launch_data.current) return;
 
@@ -58,8 +56,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const RecheckLaunchData = useCallback(async () => {
         check_launch_data.current = true;
-        CheckLaunchData()
-      
+        CheckLaunchData();
     }, [CheckLaunchData]);
 
     useEffect(() => {

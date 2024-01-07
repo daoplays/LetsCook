@@ -9,6 +9,7 @@ interface AppRootTypes {
     currentUserData: UserData;
     isLaunchDataLoading: boolean;
     isUserDataLoading: boolean;
+    checkLaunchData: () => Promise<void>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -20,6 +21,7 @@ export const AppRootContextProvider = ({
     currentUserData,
     isLaunchDataLoading,
     isUserDataLoading,
+    checkLaunchData
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -29,6 +31,7 @@ export const AppRootContextProvider = ({
                 currentUserData,
                 isLaunchDataLoading,
                 isUserDataLoading,
+                checkLaunchData
             }}
         >
             {children}
