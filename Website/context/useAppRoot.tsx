@@ -21,7 +21,7 @@ export const AppRootContextProvider = ({
     currentUserData,
     isLaunchDataLoading,
     isUserDataLoading,
-    checkLaunchData
+    checkLaunchData,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -31,7 +31,7 @@ export const AppRootContextProvider = ({
                 currentUserData,
                 isLaunchDataLoading,
                 isUserDataLoading,
-                checkLaunchData
+                checkLaunchData,
             }}
         >
             {children}

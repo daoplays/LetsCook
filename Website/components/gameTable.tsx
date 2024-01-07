@@ -133,7 +133,7 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
                     {filterTable()
                         .sort()
                         .map((item: LaunchData, index) => (
-                            <ArenaGameCard key={index} launch={item} user_data={currentUserData} />
+                            <LaunchCard key={index} launch={item} user_data={currentUserData} />
                         ))}
                 </tbody>
             </table>
@@ -141,9 +141,9 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
     );
 };
 
-const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
+const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
     const { sm, md, lg } = useResponsive();
-    let name = launch.name;
+    let name = launch.symbol;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
     return (
