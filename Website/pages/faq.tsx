@@ -106,7 +106,7 @@ const FAQ = () => {
                         <HStack>
                             <Image src={tomato.src} width={150} height={150} alt={"Salad"} />
                             <Text>
-                            Users can vote up or down on an upcoming token launch to express their sentiment on it. The Hype rating is calculated based on the total number of votes and their Like:Dislike ratio.
+                            Users can vote up or down on an upcoming token launch to express their sentiment on it. The Hype rating is calculated based on the net number of positive votes from all users.
                             </Text>
                         </HStack>
 
