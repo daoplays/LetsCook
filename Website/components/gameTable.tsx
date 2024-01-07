@@ -1,28 +1,25 @@
 import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+
 import { Box, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "./hypeVote";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
-import twitter from "../public/socialIcons/twitter.svg";
-import telegram from "../public/socialIcons/telegram.svg";
-import discord from "../public/socialIcons/discord.svg";
-import website from "../public/socialIcons/website.svg";
 import useAppRoot from "../context/useAppRoot";
 import Links from "./Buttons/links";
 
-
 export interface LaunchTableFilters {
-    start_date : Date | null,
-    end_date : Date | null
+    start_date: Date | null;
+    end_date: Date | null;
 }
 
 export const defaultLaunchTableFilters: LaunchTableFilters = {
-    start_date : null,
-    end_date : null
+    start_date: null,
+    end_date: null,
 };
 
-const GameTable = ({filters} : { filters : LaunchTableFilters}) => {
+const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
     const { sm } = useResponsive();
     const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
 
@@ -40,9 +37,11 @@ const GameTable = ({filters} : { filters : LaunchTableFilters}) => {
 
     function filterTable() {
         return launchList.filter(function (item) {
-            return (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date))
-            && (filters.end_date === null ||  (filters.end_date !== null && item.launch_date < filters.end_date));
-          });  
+            return (
+                (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
+                (filters.end_date === null || (filters.end_date !== null && item.launch_date < filters.end_date))
+            );
+        });
     }
 
     return (
@@ -68,7 +67,6 @@ const GameTable = ({filters} : { filters : LaunchTableFilters}) => {
 
                 <tbody>
                     {filterTable().map((item: LaunchData, index) => (
-                        
                         <ArenaGameCard key={index} launch={item} user_data={currentUserData} />
                     ))}
                 </tbody>
@@ -82,7 +80,6 @@ const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: U
     let name = launch.name;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
-
     return (
         <tr
             style={{
@@ -124,7 +121,7 @@ const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: U
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    100 SOL
+                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)} SOL
                 </Text>
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>

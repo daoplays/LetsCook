@@ -25,16 +25,15 @@ const CalenderPage = () => {
     const initialFocusRef = React.useRef();
     const [startDate, setStartDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
     const [endDate, setEndDate] = useState(addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1));
-    const [filters, setFilters] =  useState<LaunchTableFilters>(defaultLaunchTableFilters);
+    const [filters, setFilters] = useState<LaunchTableFilters>(defaultLaunchTableFilters);
 
     const onChange = (dates) => {
         const [start, end] = dates;
         setStartDate(start);
-        setEndDate(end)
+        setEndDate(end);
 
-        setFilters((previous) => ({...previous, start_date: start}));
-        setFilters((previous) => ({...previous, end_date: end !== null ? addDays(end, 1) : null}));
-
+        setFilters((previous) => ({ ...previous, start_date: start }));
+        setFilters((previous) => ({ ...previous, end_date: end !== null ? addDays(end, 1) : null }));
     };
 
     console.log("filters", filters);
@@ -80,7 +79,7 @@ const CalenderPage = () => {
                     </PopoverContent>
                 </Popover>
             </Flex>
-            <GameTable filters={filters}/>
+            <GameTable filters={filters} />
         </main>
     );
 };

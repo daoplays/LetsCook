@@ -9,7 +9,7 @@ const Home = () => {
     return (
         <main>
             <FeaturedBanner featuredLaunch={launchList[0]} />
-            <GameTable filters={defaultLaunchTableFilters}/>
+            <GameTable filters={defaultLaunchTableFilters} />
         </main>
     );
 };

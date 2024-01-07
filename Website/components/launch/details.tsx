@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, MutableRefObject, useState } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
 import { Center, VStack, Text } from "@chakra-ui/react";
-import { PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
 import { LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";

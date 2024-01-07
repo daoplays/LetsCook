@@ -94,10 +94,10 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     let vote_ratio = 0;
     let vote_color = "";
     if (total_votes > 0) {
-        vote_ratio = (100 * launch_data.positive_votes) / total_votes;
-        if (vote_ratio >= 70) {
+        vote_ratio = launch_data.positive_votes - launch_data.negative_votes;
+        if (vote_ratio > 0) {
             vote_color = "green";
-        } else if (vote_ratio > 50 && vote_ratio < 70) {
+        } else if (vote_ratio == 0) {
             vote_color = "yellow";
         } else {
             vote_color = "red";
@@ -109,7 +109,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
             <>
                 {total_votes > 0 && (
                     <Text m="0" fontSize="large" color={vote_color}>
-                        {vote_ratio.toFixed(0) + "%"}
+                        {vote_ratio}
                     </Text>
                 )}
                 {total_votes === 0 && (
@@ -125,7 +125,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
         return (
             <>
                 <Text m="0" fontSize="large" color={vote_color}>
-                    {vote_ratio.toFixed(0) + "%"}
+                    {vote_ratio}
                 </Text>
             </>
         );

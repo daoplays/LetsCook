@@ -736,7 +736,7 @@ class CreateLaunch_Instruction {
         readonly symbol: string,
         readonly uri: string,
         readonly icon: string,
-        readonly banner:string,
+        readonly banner: string,
         readonly total_supply: bignum,
         readonly decimals: number,
         readonly launch_date: bignum,
@@ -749,7 +749,6 @@ class CreateLaunch_Instruction {
         readonly twitter: string,
         readonly telegram: string,
         readonly discord: string,
-
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -772,7 +771,6 @@ class CreateLaunch_Instruction {
             ["twitter", utf8String],
             ["telegram", utf8String],
             ["discord", utf8String],
-
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -794,7 +792,6 @@ class CreateLaunch_Instruction {
                 args.twitter!,
                 args.telegram!,
                 args.discord!,
-
             ),
         "CreateLaunch_Instruction",
     );
@@ -823,7 +820,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.web_url,
         new_launch_data.twt_url,
         new_launch_data.tele_url,
-        new_launch_data.disc_url
+        new_launch_data.disc_url,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
