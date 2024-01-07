@@ -16,19 +16,28 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import useResponsive from "../hooks/useResponsive";
 import GameTable from "../components/gameTable";
+import { defaultLaunchTableFilters, LaunchTableFilters } from "../components/gameTable";
+
 import "react-datepicker/dist/react-datepicker.css";
 
 const CalenderPage = () => {
     const { sm } = useResponsive();
     const initialFocusRef = React.useRef();
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(null);
+    const [startDate, setStartDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
+    const [endDate, setEndDate] = useState(addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1));
+    const [filters, setFilters] =  useState<LaunchTableFilters>(defaultLaunchTableFilters);
 
     const onChange = (dates) => {
         const [start, end] = dates;
         setStartDate(start);
-        setEndDate(end);
+        setEndDate(end)
+
+        setFilters((previous) => ({...previous, start_date: start}));
+        setFilters((previous) => ({...previous, end_date: end !== null ? addDays(end, 1) : null}));
+
     };
+
+    console.log("filters", filters);
 
     return (
         <main>
@@ -63,7 +72,6 @@ const CalenderPage = () => {
                                 onChange={onChange}
                                 startDate={startDate}
                                 endDate={endDate}
-                                excludeDates={[addDays(new Date(), 1), addDays(new Date(), 5)]}
                                 selectsRange
                                 selectsDisabledDaysInRange
                                 inline
@@ -72,7 +80,7 @@ const CalenderPage = () => {
                     </PopoverContent>
                 </Popover>
             </Flex>
-            <GameTable />
+            <GameTable filters={filters}/>
         </main>
     );
 };

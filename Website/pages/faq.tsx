@@ -29,7 +29,7 @@ const FAQ = () => {
                         <br />
                         <HStack>
                             <Text>
-                            LET'S COOK is the best place to launch Solana memecoins. Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.
+                            LET&apos;S COOK is the best place to launch Solana memecoins. Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.
                             </Text>
 
                             <Image src={hotdog.src} width={150} height={150} alt={"Hotdog"} />
@@ -49,27 +49,27 @@ const FAQ = () => {
                         </HStack>
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
-                            3. How do LET'S COOK fair-launches work?
+                            3. How do LET&apos;S COOK fair-launches work?
                         </h2>
                         <br />
 
                         <HStack>
                             <Text>
-                            Each launch, or "Cook", bootstraps memecoin liquidity fairly by raffling a portion of the total token supply. Users may buy Tickets to a Cook while it is open and claim their winning Tickets once it closes. Non-winning Tickets are refunded their Ticket Price.
+                            Each launch, or &quot;Cook&quot;, bootstraps memecoin liquidity fairly by raffling a portion of the total token supply. Users may buy Tickets to a Cook while it is open and claim their winning Tickets once it closes. Non-winning Tickets are refunded their Ticket Price.
                             </Text>
 
                             <Image src={pasta.src} width={150} height={150} alt={"Hotdog"} />
                         </HStack>
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
-                            4. What is 'Guaranteed Liquidity,' and why is it important for a Cook?
+                            4. What is &apos;Guaranteed Liquidity,&apos; and why is it important for a Cook?
                         </h2>
                         <br />
 
                         <HStack>
                             <Image src={salad2.src} width={150} height={150} alt={"Salad"} />
                             <Text>
-                            'Guaranteed Liquidity' is the minimum amount of SOL that must to be raised for the launch to proceed. If this threshold isn't met, all tickets are refunded. This mechanism has three positive outcomes:
+                            &apos;Guaranteed Liquidity&apos; is the minimum amount of SOL that must to be raised for the launch to proceed. If this threshold isn&apos;t met, all tickets are refunded. This mechanism has three positive outcomes:
                             <ul>
                                 <li>    
                                 Minimizes the risk from failed launches for users.
@@ -99,7 +99,7 @@ const FAQ = () => {
                         </HStack>
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
-                            6. What do the 'hype' percentages represent, and how is this rating calculated?
+                            6. What do the &apos;hype&apos; percentages represent, and how is this rating calculated?
                         </h2>
                         <br />
 
@@ -136,13 +136,13 @@ const FAQ = () => {
                         </HStack>
 
                         <h2 className="mt-5  font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE }}>
-                            9. How much does LET'S COOK charge for launches?
+                            9. How much does LET&apos;S COOK charge for launches?
                         </h2>
                         <br />
 
                         <HStack>
                             <Text>
-                            LET'S COOK charges a non-refundable platform fee of 0.01 SOL per ticket purchased. There are no fees to set up a Cook. This fee supports additional feature development and marketing.
+                            LET&apos;S COOK charges a non-refundable platform fee of 0.01 SOL per ticket purchased. There are no fees to set up a Cook. This fee supports additional feature development and marketing.
                             </Text>
 
                             <Image src={fries.src} width={150} height={150} alt={"Hotdog"} />

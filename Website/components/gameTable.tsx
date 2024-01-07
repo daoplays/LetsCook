@@ -10,7 +10,19 @@ import discord from "../public/socialIcons/discord.svg";
 import website from "../public/socialIcons/website.svg";
 import useAppRoot from "../context/useAppRoot";
 import Links from "./Buttons/links";
-const GameTable = () => {
+
+
+export interface LaunchTableFilters {
+    start_date : Date | null,
+    end_date : Date | null
+}
+
+export const defaultLaunchTableFilters: LaunchTableFilters = {
+    start_date : null,
+    end_date : null
+};
+
+const GameTable = ({filters} : { filters : LaunchTableFilters}) => {
     const { sm } = useResponsive();
     const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
 
@@ -24,6 +36,13 @@ const GameTable = () => {
                 </Text>
             </HStack>
         );
+    }
+
+    function filterTable() {
+        return launchList.filter(function (item) {
+            return (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date))
+            && (filters.end_date === null ||  (filters.end_date !== null && item.launch_date < filters.end_date));
+          });  
     }
 
     return (
@@ -48,7 +67,8 @@ const GameTable = () => {
                 </thead>
 
                 <tbody>
-                    {launchList.map((item: LaunchData, index) => (
+                    {filterTable().map((item: LaunchData, index) => (
+                        
                         <ArenaGameCard key={index} launch={item} user_data={currentUserData} />
                     ))}
                 </tbody>
