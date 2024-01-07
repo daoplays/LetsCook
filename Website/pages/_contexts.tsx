@@ -20,6 +20,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const check_launch_data = useRef<boolean>(true);
     const check_user_data = useRef<boolean>(true);
 
+
+
     const CheckLaunchData = useCallback(async () => {
         if (!check_launch_data.current) return;
 
@@ -54,6 +56,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setIsUserDataLoading(false);
     }, [wallet.publicKey]);
 
+    const RecheckLaunchData = useCallback(async () => {
+        check_launch_data.current = true;
+        CheckLaunchData()
+      
+    }, [CheckLaunchData]);
+
     useEffect(() => {
         CheckLaunchData();
     }, [CheckLaunchData, wallet]);
@@ -74,6 +82,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             currentUserData={current_user_data}
             isLaunchDataLoading={isLaunchDataLoading}
             isUserDataLoading={isUserDataLoading}
+            checkLaunchData={RecheckLaunchData}
         >
             {children}
         </AppRootContextProvider>

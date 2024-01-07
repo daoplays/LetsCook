@@ -23,7 +23,7 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
     const { sm } = useResponsive();
     const tableHeaders = ["LOGO", "TICKER", "SOCIALS", "HYPE", "MIN. LIQUIDITY", "LAUNCH"];
 
-    const { launchList, currentUserData } = useAppRoot();
+    const { launchList, currentUserData, checkLaunchData } = useAppRoot();
 
     if (launchList.length === 0) {
         return (
@@ -59,7 +59,7 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
 
                         <th>
                             <Box mr={sm ? 4 : 8} as="button">
-                                <TfiReload size={20} />
+                                <TfiReload size={20} onClick={checkLaunchData}/>
                             </Box>
                         </th>
                     </tr>
