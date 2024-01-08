@@ -65,15 +65,15 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     });
 
     function setData(): boolean {
-        console.log(openDate.toString());
-        console.log(closeDate.toString());
+        // console.log(openDate.toString());
+        // console.log(closeDate.toString());
 
         let balance = 1;
         try {
             let teamPubKey = new PublicKey(teamWallet);
             //balance = await request_current_balance("", teamPubKey);
 
-            console.log("check balance", teamPubKey.toString(), balance);
+            // console.log("check balance", teamPubKey.toString(), balance);
 
             if (balance == 0) {
                 alert("Team Wallet does not exist");
@@ -121,13 +121,13 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         const price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
         const balance_before = await irys.getLoadedBalance();
-        console.log("balance_before", balance_before.toString());
+        // console.log("balance_before", balance_before.toString());
         setSubmitStatus("Transfer balance for images on Arweave");
         if (balance_before.lt(price)) {
             await irys.fund(price);
         }
         const balance_after = await irys.getLoadedBalance();
-        console.log("balance_after", balance_after.toString());
+        // console.log("balance_after", balance_after.toString());
         const tags: Tag[] = [
             { name: "Content-Type", value: newLaunchData.current.icon_file.type },
             { name: "Content-Type", value: newLaunchData.current.banner_file.type },
@@ -142,7 +142,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
         let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.banner_file.name].id;
 
-        console.log(icon_url, banner_url);
+        // console.log(icon_url, banner_url);
         var metadata = {
             name: newLaunchData.current.name,
             symbol: newLaunchData.current.symbol,
@@ -360,11 +360,10 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                     <br></br>
 
-                    <div>
-                        <button className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
-                            PREVIEW
-                        </button>
-                    </div>
+                    <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                        PREVIEW
+                    </button>
+
                     <div
                         style={{
                             display: "flex",

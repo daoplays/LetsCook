@@ -9,6 +9,7 @@ import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
 import Links from "./Buttons/links";
+import { FaSort } from "react-icons/fa";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -111,14 +112,16 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (
                             <th key={i.text}>
-                                <Text
-                                    fontSize={sm ? "medium" : "large"}
-                                    m={0}
-                                    onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                    style={{ cursor: "pointer" }}
-                                >
-                                    {i.text}
-                                </Text>
+                                <HStack justify="center" style={{ cursor: i.text === "LOGO" || i.text === "SOCIALS" ? "" : "pointer" }}>
+                                    <Text
+                                        fontSize={sm ? "medium" : "large"}
+                                        m={0}
+                                        onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                    >
+                                        {i.text}
+                                    </Text>
+                                    {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
+                                </HStack>
                             </th>
                         ))}
 

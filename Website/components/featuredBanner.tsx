@@ -8,6 +8,7 @@ import WoodenButton from "../components/Buttons/woodenButton";
 import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../hooks/trimAddress";
 import Links from "./Buttons/links";
+import { useEffect } from "react";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;

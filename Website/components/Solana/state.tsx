@@ -529,9 +529,12 @@ export class LaunchData {
 }
 
 export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchData {
-    console.log(new_launch_data);
-    console.log(new_launch_data.opendate.toString());
-    console.log(new_launch_data.closedate.toString());
+    // console.log(new_launch_data);
+    // console.log(new_launch_data.opendate.toString());
+    // console.log(new_launch_data.closedate.toString());
+
+    const banner_url = URL.createObjectURL(new_launch_data.banner_file);
+    const icon_url = URL.createObjectURL(new_launch_data.icon_file);
 
     const data = new LaunchData(
         1,
@@ -542,18 +545,18 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         0,
         new_launch_data.name,
         new_launch_data.symbol,
-        new_launch_data.icon_url,
+        icon_url,
         new BN(new_launch_data.total_supply),
         new_launch_data.decimals,
         new_launch_data.num_mints,
-        new BN(new_launch_data.ticket_price),
+        new BN(new_launch_data.ticket_price * LAMPORTS_PER_SOL),
         new BN(new_launch_data.minimum_liquidity),
         new_launch_data.distribution,
         new_launch_data.pagename,
         new_launch_data.description,
         new BN(new_launch_data.launch_date.getTime()),
         new BN(new_launch_data.closedate.getTime()),
-        new_launch_data.banner_url,
+        banner_url,
         [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url],
         PublicKey.default,
         PublicKey.default,
@@ -562,12 +565,11 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         0,
         0,
         0,
-        0
+        0,
     );
-    
+
     return data;
 }
-
 
 export class JoinData {
     constructor(
@@ -839,9 +841,9 @@ class CreateLaunch_Instruction {
 }
 
 export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
-    console.log(new_launch_data);
-    console.log(new_launch_data.opendate.toString());
-    console.log(new_launch_data.closedate.toString());
+    // console.log(new_launch_data);
+    // console.log(new_launch_data.opendate.toString());
+    // console.log(new_launch_data.closedate.toString());
 
     const data = new CreateLaunch_Instruction(
         LaunchInstruction.create_game,
