@@ -31,6 +31,7 @@ interface LaunchPreviewProps {
 
 const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps) => {
     const { xs, sm, md, lg } = useResponsive();
+
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
 
@@ -125,6 +126,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                     color="white"
                                                     alignItems="center"
                                                     justifyContent="center"
+                                                    readOnly
                                                 />
                                                 <Button>+</Button>
                                             </HStack>

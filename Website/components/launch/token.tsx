@@ -164,7 +164,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div>
                                     <label className={styles.label}>
                                         <input id="file" type="file" onChange={handleFileChange} />
-                                        <span className={styles.browse}>BROWSE</span>
+                                        <span className={styles.browse} style={{ cursor: "pointer" }}>
+                                            BROWSE
+                                        </span>
                                     </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
