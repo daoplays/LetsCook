@@ -24,7 +24,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
         return list.filter(function (item) {
-            return bignum_to_num(item.end_date) < current_time;
+            return bignum_to_num(item.end_date) >= current_time;
         });
     }
 
