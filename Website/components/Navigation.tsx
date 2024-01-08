@@ -120,6 +120,7 @@ function Navigation() {
                 spacing={6}
                 hidden={!md || !isOpen}
                 boxShadow="0px 3px 13px 0px rgba(0,0,0,0.75) inset"
+                zIndex={999}
             >
                 <VStack spacing={3} mb={4} className="font-face-kg">
                     {wallet.publicKey && (
