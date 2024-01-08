@@ -302,12 +302,17 @@ const MintPage = () => {
               .filter((item) => item.value > 0)
         : [];
 
-    let splitLaunchDate = new Date(bignum_to_num(launchData.launch_date)).toUTCString().split(" ");
+
+    var local_offset = new Date().getTimezoneOffset();
+    let launch_date = new Date(bignum_to_num(launchData.launch_date))
+    let local_launch_date = new Date(launch_date.getTime() + local_offset * 60 * 1000);
+
+    let splitLaunchDate = launch_date.toString().split(" ");
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
     let splitLaunchTime = splitLaunchDate[4].split(":");
     let launchTime = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + splitLaunchDate[5];
 
-    let splitEndDate = new Date(bignum_to_num(launchData.end_date)).toUTCString().split(" ");
+    let splitEndDate = new Date(bignum_to_num(launchData.end_date)).toString().split(" ");
     let endDate = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
     let splitEndTime = splitEndDate[4].split(":");
     let endTime = splitEndTime[0] + ":" + splitEndTime[1] + " " + splitEndDate[5];
