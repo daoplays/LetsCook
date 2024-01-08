@@ -4,6 +4,7 @@ import {
     get_current_blockhash,
     send_transaction,
     serialise_CreateLaunch_instruction,
+    create_LaunchData
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef } from "react";
 import { Center, VStack, Text, useDisclosure } from "@chakra-ui/react";
@@ -389,7 +390,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             </VStack>
 
             {/* Pass the actual pre-launch data here */}
-            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={launchList[1]} />
+            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
         </Center>
     );
 };
