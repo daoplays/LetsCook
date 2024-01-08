@@ -1,11 +1,13 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef } from "react";
 import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
-import { Center, VStack, Text } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack } from "@chakra-ui/react";
 import { LaunchDataUserInput, defaultUserInput } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
+import WoodenButton from "../Buttons/woodenButton";
+import useResponsive from "../../hooks/useResponsive";
 
 interface TokenPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -13,10 +15,7 @@ interface TokenPageProps {
 }
 
 const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
-    const isDesktopOrLaptop = useMediaQuery({
-        query: "(max-width: 1000px)",
-    });
-
+    const { md } = useResponsive();
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
@@ -115,8 +114,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
     }
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <VStack>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+            <VStack style={{ paddingBottom: md ? 0 : "75px" }}>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Token
                 </Text>
@@ -125,7 +124,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                         {displayImg ? (
                             <img src={displayImg} alt="" className={styles.imgFrame} />
                         ) : (
-                            <Image className={styles.imgFrame} src="/images/Frame 49 (1).png" width={200} height={200} alt="Image Frame" />
+                            <Image className={styles.imgFrame} src="/images/upload-image.png" width={200} height={200} alt="Image Frame" />
                         )}
 
                         <div className={styles.launchBodyUpperFields}>
@@ -201,7 +200,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 </div>
                             </div>
 
-                            <div style={{ width: isDesktopOrLaptop ? "100%" : "40%" }} className={styles.eachField}>
+                            <div style={{ width: md ? "100%" : "40%" }} className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>DECIMALS:</div>
 
                                 <div className={styles.textLabelInput}>
@@ -241,7 +240,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>TICKET PRICE:</div>
 
-                                <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
+                                <div style={{ width: md ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <input
                                         required
                                         className={styles.inputBox}
@@ -259,7 +258,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                             <div className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`}>MINIMUM LIQUIDITY:</div>
 
-                                <div style={{ width: isDesktopOrLaptop ? "100%" : "50%" }} className={styles.textLabelInput}>
+                                <div style={{ width: md ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <input
                                         required
                                         className={styles.inputBox}
@@ -278,7 +277,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                     </div>
                     <br></br>
 
-                    <div className={styles.distributionBox}>
+                    <HStack justify="space-between" align="center" w="100%">
                         <div className={styles.distributionBoxFields}>
                             <div style={{ color: "white" }} className={`${styles.textLabel} font-face-kg`}>
                                 Distribution{" "}
@@ -395,24 +394,23 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                             </div>
                         </div>
 
-                        <div className={styles.piechart}>
-                            <PieChart
-                                animate={true}
-                                totalValue={100}
-                                data={[
-                                    { title: "LetsCookRaffle", value: percentage1, color: "#FF5151" },
-                                    { title: "Liquidity Pool", value: percentage2, color: "#489CFF" },
-                                    { title: "LP Rewards", value: percentage3, color: "#74DD5A" },
-                                    { title: "Airdrops", value: percentage4, color: "#FFEF5E" },
-                                    { title: "Team", value: percentage5, color: "#B96CF6" },
-                                    { title: "Other", value: percentage6, color: "#FF994E" },
-                                    { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
-                                ]}
-                            />
-                        </div>
-                    </div>
+                        <PieChart
+                            animate={true}
+                            totalValue={100}
+                            data={[
+                                { title: "LetsCookRaffle", value: percentage1, color: "#FF5151" },
+                                { title: "Liquidity Pool", value: percentage2, color: "#489CFF" },
+                                { title: "LP Rewards", value: percentage3, color: "#74DD5A" },
+                                { title: "Airdrops", value: percentage4, color: "#FFEF5E" },
+                                { title: "Team", value: percentage5, color: "#B96CF6" },
+                                { title: "Other", value: percentage6, color: "#FF994E" },
+                                { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
+                            ]}
+                            style={{ width: "400px", height: "400px", marginRight: "150px" }}
+                        />
+                    </HStack>
 
-                    <div>
+                    <div style={{ marginTop: "15px" }}>
                         <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
                             NEXT
                         </button>

@@ -115,6 +115,7 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
                                     fontSize={sm ? "medium" : "large"}
                                     m={0}
                                     onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                    style={{ cursor: "pointer" }}
                                 >
                                     {i.text}
                                 </Text>
@@ -163,7 +164,7 @@ const ArenaGameCard = ({ launch, user_data }: { launch: LaunchData; user_data: U
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
-                    <Box m={5} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
                         <Image
                             alt="Launch icon"
                             src={launch.icon}

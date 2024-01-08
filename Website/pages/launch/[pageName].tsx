@@ -33,6 +33,8 @@ import useClaimTickets from "../../hooks/useClaimTokens";
 import useRefundTickets from "../../hooks/useRefundTickets";
 import Links from "../../components/Buttons/links";
 import FeaturedBanner from "../../components/featuredBanner";
+import Timespan from "../../components/launchPreview/timespan";
+import TokenDistribution from "../../components/launchPreview/tokenDistribution";
 
 const MintPage = () => {
     const router = useRouter();
@@ -283,34 +285,18 @@ const MintPage = () => {
 
     if (isLoading)
         return (
-            <HStack justify="center" style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)", height: "90vh" }}>
-                <Text color="white" fontSize="xx-large">
+            <HStack
+                justify="center"
+                alignItems={"center"}
+                style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)", height: "90vh" }}
+            >
+                <Text color="white" fontSize="xx-large" textAlign="center">
                     Prepping on-chain ingredients...
                 </Text>
             </HStack>
         );
 
     if (!launchData) return <PageNotFound />;
-
-    const distribution = launchData.distribution
-        ? launchData.distribution
-              .map((value, index) => ({
-                  title: ["Let's Cook Raffle", "Liquidity Pool", "LP Rewards", "Airdrops", "Team", "Others"][index],
-                  value,
-                  color: ["#FF5151", "#489CFF", "#74DD5A", "#FFEF5E", "#B96CF6", "#FF994E"][index],
-              }))
-              .filter((item) => item.value > 0)
-        : [];
-
-    let splitLaunchDate = new Date(bignum_to_num(launchData.launch_date)).toUTCString().split(" ");
-    let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
-    let splitLaunchTime = splitLaunchDate[4].split(":");
-    let launchTime = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + splitLaunchDate[5];
-
-    let splitEndDate = new Date(bignum_to_num(launchData.end_date)).toUTCString().split(" ");
-    let endDate = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
-    let splitEndTime = splitEndDate[4].split(":");
-    let endTime = splitEndTime[0] + ":" + splitEndTime[1] + " " + splitEndDate[5];
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
@@ -372,19 +358,7 @@ const MintPage = () => {
             <FeaturedBanner featuredLaunch={launchData} />
             <Center>
                 <VStack spacing={5} my={3} px={5} width={sm ? "100%" : "80%"}>
-                    <HStack spacing={sm ? 5 : 20} my={3}>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "x-large"}>
-                            Opens: {launchDate}
-                            <br />
-                            {launchTime}
-                        </Text>
-                        <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="#868E96" />
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "x-large"}>
-                            Closes: {endDate}
-                            <br />
-                            {endTime}
-                        </Text>
-                    </HStack>
+                    <Timespan launchData={launchData} />
 
                     <VStack
                         gap={50}
@@ -471,7 +445,6 @@ const MintPage = () => {
                                         <VStack>
                                             <Box mt={4}>
                                                 <WoodenButton
-                                                    // pass action here (check tickets / refund tickets)
                                                     label={
                                                         cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
                                                             ? "Check Tickets"
@@ -493,7 +466,6 @@ const MintPage = () => {
                                     )}
                                 </Box>
 
-                                {/* Mint Quantity  */}
                                 <HStack maxW="320px" hidden={MINTED_OUT || MINT_FAILED}>
                                     <Button {...dec} size="lg" isDisabled={cook_state === CookState.PRE_LAUNCH}>
                                         -
@@ -513,7 +485,6 @@ const MintPage = () => {
                                     </Button>
                                 </HStack>
 
-                                {/* Mint Button  */}
                                 <Button
                                     size="lg"
                                     isDisabled={cook_state === CookState.PRE_LAUNCH}
@@ -525,7 +496,6 @@ const MintPage = () => {
                                     {wallet.publicKey === null ? "Connect Wallet" : "Mint"}
                                 </Button>
 
-                                {/* Platform fee  */}
                                 {!(cook_state === CookState.PRE_LAUNCH) ? (
                                     <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                         <HStack>
@@ -547,7 +517,6 @@ const MintPage = () => {
                         </Flex>
 
                         <VStack w={xs ? "100%" : "85%"}>
-                            {/* Mint Progress  */}
                             <Progress
                                 hasStripe={MINTED_OUT}
                                 mb={2}
@@ -569,11 +538,10 @@ const MintPage = () => {
                                 value={(100 * Math.min(launchData.tickets_sold, launchData.num_mints)) / launchData.num_mints}
                             />
 
-                            {/* Total tickets sold  */}
                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                 Tickets Sold: {launchData.tickets_sold}
                             </Text>
-                            {/* Liquidity  */}
+
                             <Flex direction={md ? "column" : "row"}>
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Guaranteed Liquidity:
@@ -591,40 +559,7 @@ const MintPage = () => {
                         </VStack>
                     </VStack>
 
-                    {/* Token Distribution  */}
-                    <VStack w="100%" my={10}>
-                        <Text m={0} fontSize={md ? "xl" : 30} color="white" className="font-face-kg">
-                            Distribution
-                        </Text>
-                        <HStack align="center" justify="center" style={{ cursor: "pointer" }}>
-                            {/* Token Supply  */}
-                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                                Total Supply: {bignum_to_num(launchData.total_supply)}
-                            </Text>
-                        </HStack>
-
-                        <Flex align="center" justify="center" flexDirection={md ? "column" : "row"} w="100%" gap={xs ? 3 : 12} mt={3}>
-                            <VStack gap={6} align="start">
-                                {distribution.map((i) => {
-                                    if (i.value <= 0) return;
-                                    return (
-                                        <HStack gap={4} key={i.title}>
-                                            <Box borderRadius={6} bg={i.color} h={35} w={35} />{" "}
-                                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                                                {i.title} - {i.value}%
-                                            </Text>
-                                        </HStack>
-                                    );
-                                })}
-                            </VStack>{" "}
-                            <PieChart
-                                animate={true}
-                                totalValue={100}
-                                data={distribution}
-                                style={{ width: xs ? "100%" : "400px", height: "400px" }}
-                            />
-                        </Flex>
-                    </VStack>
+                    <TokenDistribution launchData={launchData} />
                 </VStack>
             </Center>
         </main>

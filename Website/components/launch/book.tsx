@@ -1,35 +1,27 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef } from "react";
-import { Center, VStack, Text } from "@chakra-ui/react";
-import { useMediaQuery } from "react-responsive";
+import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
     get_current_blockhash,
     send_transaction,
     serialise_CreateLaunch_instruction,
 } from "../../components/Solana/state";
-import {
-    METAPLEX_META,
-    DEBUG,
-    SYSTEM_KEY,
-    PROGRAM,
-    Screen,
-    DEFAULT_FONT_SIZE,
-    RPC_NODE,
-    WSS_NODE,
-} from "../../components/Solana/constants";
+import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef } from "react";
+import { Center, VStack, Text, useDisclosure } from "@chakra-ui/react";
+import { useMediaQuery } from "react-responsive";
+import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import Image from "next/image";
 import DatePicker from "react-datepicker";
 import styles from "../../styles/LaunchBook.module.css";
-import TimePicker from "react-time-picker";
+import bs58 from "bs58";
+import useEditLaunch from "../../hooks/useEditLaunch";
+import useResponsive from "../../hooks/useResponsive";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
-import bs58 from "bs58";
-import { WebIrys } from "@irys/sdk";
-import useEditLaunch from "../../hooks/useEditLaunch";
+import LaunchPreviewModal from "../launchPreview/modal";
+import useAppRoot from "../../context/useAppRoot";
 
 // Define the Tag type
 type Tag = {
@@ -44,9 +36,9 @@ interface BookPageProps {
 
 const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const wallet = useWallet();
+    const { md } = useResponsive();
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
-
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
@@ -293,9 +285,14 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             alert("Please fill all the details on this page.");
         }
     }
+
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    // For demo
+    const { launchList } = useAppRoot();
+
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <VStack>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+            <VStack pb={75} h={md ? "60vh" : "85vh"}>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - BOOK
                 </Text>
@@ -363,7 +360,9 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                     <br></br>
 
                     <div>
-                        <button className={`${styles.nextBtn} font-face-kg `}>PREVIEW</button>
+                        <button className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                            PREVIEW
+                        </button>
                     </div>
                     <div
                         style={{
@@ -373,7 +372,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                             gap: 20,
                         }}
                     >
-                        <button onClick={setLaunchData} className={`${styles.nextBtn} font-face-kg `}>
+                        <button
+                            onClick={() => {
+                                setScreen("details");
+                            }}
+                            className={`${styles.nextBtn} font-face-kg `}
+                        >
                             PREVIOUS
                         </button>
                         <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
@@ -383,6 +387,9 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                 </form>
                 {submitStatus !== null && <Text className={`${styles.nextBtn} font-face-kg `}>{submitStatus}</Text>}
             </VStack>
+
+            {/* Pass the actual pre-launch data here */}
+            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={launchList[1]} />
         </Center>
     );
 };

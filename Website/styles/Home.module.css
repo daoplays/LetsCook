@@ -103,6 +103,7 @@
     align-items: center;
     flex-direction: column;
     width: 100%;
+    z-index: 0;
 }
 .launchBodyUpper {
     display: flex;
