@@ -9,6 +9,7 @@ import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
 import Links from "./Buttons/links";
+import { FaSort } from "react-icons/fa";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -111,13 +112,16 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (
                             <th key={i.text}>
-                                <Text
-                                    fontSize={sm ? "medium" : "large"}
-                                    m={0}
-                                    onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                >
-                                    {i.text}
-                                </Text>
+                                <HStack justify="center" style={{ cursor: i.text === "LOGO" || i.text === "SOCIALS" ? "" : "pointer" }}>
+                                    <Text
+                                        fontSize={sm ? "medium" : "large"}
+                                        m={0}
+                                        onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                    >
+                                        {i.text}
+                                    </Text>
+                                    {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
+                                </HStack>
                             </th>
                         ))}
 
@@ -163,7 +167,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
-                    <Box m={5} bg="#8EFF84" w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
                         <Image
                             alt="Launch icon"
                             src={launch.icon}

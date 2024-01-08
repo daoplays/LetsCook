@@ -6,6 +6,7 @@ import { PublicKey } from "@solana/web3.js";
 
 import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
 import { LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
+import useResponsive from "../../hooks/useResponsive";
 
 interface DetailsPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -13,6 +14,7 @@ interface DetailsPageProps {
 }
 
 const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
+    const { md } = useResponsive();
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
@@ -77,8 +79,8 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     }
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <VStack>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+            <VStack pb={md ? 0 : 75}>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Page
                 </Text>
@@ -104,7 +106,9 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                 <div>
                                     <label className={styles.label}>
                                         <input id="file" type="file" onChange={handleFileChange} />
-                                        <span className={styles.browse}>BROWSE</span>
+                                        <span className={styles.browse} style={{ cursor: "pointer" }}>
+                                            BROWSE
+                                        </span>
                                     </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
@@ -209,19 +213,16 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                     </div>
                     <br></br>
 
-                    {/* <div>
-                        <button className={`${styles.nextBtn} font-face-kg `}>PREVIEW</button>
-                    </div> */}
                     <div
                         style={{
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
                             gap: 20,
+                            marginTop: "-25px",
                         }}
                     >
                         <button
-                            // type="submit"
                             onClick={() => {
                                 setScreen("token");
                             }}

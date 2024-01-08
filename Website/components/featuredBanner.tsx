@@ -1,18 +1,14 @@
 import { VStack, Text, Box, HStack, Flex, Show, Tooltip } from "@chakra-ui/react";
+import { MdOutlineContentCopy } from "react-icons/md";
+import { LaunchData } from "./Solana/state";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
 import WoodenButton from "../components/Buttons/woodenButton";
-import twitter from "../public/socialIcons/twitter.svg";
-import telegram from "../public/socialIcons/telegram.svg";
-import discord from "../public/socialIcons/discord.svg";
-import website from "../public/socialIcons/website.svg";
 import "react-datepicker/dist/react-datepicker.css";
-import { Socials } from "./Solana/constants";
 import trimAddress from "../hooks/trimAddress";
-import { MdOutlineContentCopy } from "react-icons/md";
-import { LaunchData } from "./Solana/state";
 import Links from "./Buttons/links";
+import { useEffect } from "react";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -29,7 +25,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
             bg={"url(" + featuredLaunch.banner + ")"}
             bgSize="cover"
             boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
-            style={{ borderBottom: "1px solid #868E96" }}
+            style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96" }}
         >
             <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
                 <Flex
