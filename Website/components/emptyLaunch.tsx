@@ -1,5 +1,5 @@
 import { Flex, Text, VStack } from "@chakra-ui/react";
-import EmptyLaunches from "../public/images/healthy-food-rafiki.svg";
+import EmptyLaunches from "../public/images/healthy-food-rafiki-empty.svg";
 import Image from "next/image";
 import useResponsive from "../hooks/useResponsive";
 import WoodenButton from "./Buttons/woodenButton";
@@ -24,7 +24,7 @@ const EmptyLaunch = () => {
                 width={md ? 300 : 600}
                 height={md ? 300 : 600}
                 alt="404 Error with a cute animal-cute"
-                style={{ marginLeft: "12px", marginTop: sm ? "-50px" : "" }}
+                style={{ marginLeft: "12px", marginTop: "-40px" }}
             />
 
             <VStack w={md ? "100%" : "800px"} spacing={15} align={md ? "center" : "start"}>
