@@ -26,7 +26,7 @@ interface Header {
     field: string | null;
 }
 
-const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
+const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
@@ -37,7 +37,7 @@ const GameTable = ({ filters }: { filters: LaunchTableFilters }) => {
         { text: "LAUNCH", field: "launch_date" },
     ];
 
-    const { launchList, currentUserData, checkLaunchData } = useAppRoot();
+    const { currentUserData, checkLaunchData } = useAppRoot();
     const [sortedField, setSortedField] = useState<string>("launch_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 

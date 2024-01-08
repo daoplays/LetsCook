@@ -1,7 +1,7 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { RunLaunchDataGPA, LaunchData, UserData, RunUserDataGPA } from "../components/Solana/state";
+import { RunLaunchDataGPA, LaunchData, UserData, RunUserDataGPA, bignum_to_num } from "../components/Solana/state";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
@@ -13,6 +13,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [isUserDataLoading, setIsUserDataLoading] = useState(false);
 
     const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
+    const [home_page_data, setHomePageData] = useState<LaunchData[]>([]);
 
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
@@ -20,15 +21,55 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const check_launch_data = useRef<boolean>(true);
     const check_user_data = useRef<boolean>(true);
 
+    function filterTable({ list }: { list: LaunchData[] }) {
+        let current_time = new Date().getTime();
+        return list.filter(function (item) {
+            return bignum_to_num(item.end_date) < current_time;
+        });
+    }
+
     const CheckLaunchData = useCallback(async () => {
         if (!check_launch_data.current) return;
 
         setIsLaunchDataLoading(true);
 
         let list = await RunLaunchDataGPA("");
+        let close_filtered = filterTable({ list });
         // console.log("running GPA", list);
-        setLaunchData(list);
+        setLaunchData(close_filtered);
 
+        let home_page_data: LaunchData[] = [];
+        let home_page_map = new Map<number, LaunchData>();
+        for (let i = 0; i < close_filtered.length; i++) {
+            let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
+            console.log(bignum_to_num(close_filtered[i].end_date), date);
+            if (home_page_map.has(date)) {
+                let current_entry: LaunchData = home_page_map.get(date);
+                let current_hype = current_entry.positive_votes - current_entry.negative_votes;
+                let new_hype = close_filtered[i].positive_votes - close_filtered[i].negative_votes;
+                if (new_hype > current_hype) {
+                    home_page_map.set(date, close_filtered[i]);
+                }
+            } else {
+                home_page_map.set(date, close_filtered[i]);
+            }
+        }
+
+        home_page_map.forEach((value, key) => {
+            home_page_data.push(value);
+        });
+
+        home_page_data.sort((a, b) => {
+            if (a.end_date < b.end_date) {
+                return -1;
+            }
+            if (a.end_date > b.end_date) {
+                return 1;
+            }
+            return 0;
+        });
+
+        setHomePageData(home_page_data);
         check_launch_data.current = false;
         setIsLaunchDataLoading(false);
     }, []);
@@ -75,6 +116,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     return (
         <AppRootContextProvider
             launchList={launch_data}
+            homePageList={home_page_data}
             userList={user_data}
             currentUserData={current_user_data}
             isLaunchDataLoading={isLaunchDataLoading}

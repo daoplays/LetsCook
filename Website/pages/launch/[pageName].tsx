@@ -298,7 +298,6 @@ const MintPage = () => {
 
     if (!launchData) return <PageNotFound />;
 
-
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
     let current_time = new Date().getTime();

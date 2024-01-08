@@ -17,6 +17,7 @@ import DatePicker from "react-datepicker";
 import useResponsive from "../hooks/useResponsive";
 import GameTable from "../components/gameTable";
 import { defaultLaunchTableFilters, LaunchTableFilters } from "../components/gameTable";
+import useAppRoot from "../context/useAppRoot";
 
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -26,6 +27,7 @@ const CalenderPage = () => {
     const [startDate, setStartDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
     const [endDate, setEndDate] = useState(addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1));
     const [filters, setFilters] = useState<LaunchTableFilters>(defaultLaunchTableFilters);
+    const { launchList } = useAppRoot();
 
     const onChange = (dates) => {
         const [start, end] = dates;
@@ -79,7 +81,7 @@ const CalenderPage = () => {
                     </PopoverContent>
                 </Popover>
             </Flex>
-            <GameTable filters={filters} />
+            <GameTable launchList={launchList} filters={filters} />
         </main>
     );
 };

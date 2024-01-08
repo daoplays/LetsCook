@@ -5,6 +5,7 @@ import { LaunchData, UserData } from "../components/Solana/state";
 
 interface AppRootTypes {
     launchList: LaunchData[];
+    homePageList: LaunchData[];
     userList: UserData[];
     currentUserData: UserData;
     isLaunchDataLoading: boolean;
@@ -17,6 +18,7 @@ export const AppRootContext = createContext<AppRootTypes | null>(null);
 export const AppRootContextProvider = ({
     children,
     launchList,
+    homePageList,
     userList,
     currentUserData,
     isLaunchDataLoading,
@@ -27,6 +29,7 @@ export const AppRootContextProvider = ({
         <AppRootContext.Provider
             value={{
                 launchList,
+                homePageList,
                 userList,
                 currentUserData,
                 isLaunchDataLoading,

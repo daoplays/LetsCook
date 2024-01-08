@@ -4,12 +4,12 @@ import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
 import { defaultLaunchTableFilters } from "../components/gameTable";
 const Home = () => {
-    const { launchList } = useAppRoot();
+    const { homePageList } = useAppRoot();
 
     return (
         <main>
-            <FeaturedBanner featuredLaunch={launchList[0]} />
-            <GameTable filters={defaultLaunchTableFilters} />
+            <FeaturedBanner featuredLaunch={homePageList[0]} />
+            <GameTable launchList={homePageList} filters={defaultLaunchTableFilters} />
         </main>
     );
 };
