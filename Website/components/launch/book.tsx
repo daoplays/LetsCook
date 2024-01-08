@@ -360,11 +360,10 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                     <br></br>
 
-                    <div>
-                        <button className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
-                            PREVIEW
-                        </button>
-                    </div>
+                    <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                        PREVIEW
+                    </button>
+
                     <div
                         style={{
                             display: "flex",
