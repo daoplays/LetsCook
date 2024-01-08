@@ -37,7 +37,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         { text: "LAUNCH", field: "launch_date" },
     ];
 
-    const { currentUserData, checkLaunchData } = useAppRoot();
+    const { currentUserData, checkLaunchData, isLaunchDataLoading } = useAppRoot();
     const [sortedField, setSortedField] = useState<string>("launch_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
@@ -50,7 +50,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         }
     };
 
-    if (launchList.length === 0) {
+    if (isLaunchDataLoading) {
         return (
             <HStack justify="center" align="center" h="15vh">
                 <Text color="white" fontSize="xx-large">

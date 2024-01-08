@@ -11,6 +11,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isUserDataLoading, setIsUserDataLoading] = useState(false);
+    const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
 
     const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
     const [home_page_data, setHomePageData] = useState<LaunchData[]>([]);
@@ -32,6 +33,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (!check_launch_data.current) return;
 
         setIsLaunchDataLoading(true);
+        setIsHomePageDataLoading(true);
 
         let list = await RunLaunchDataGPA("");
         let close_filtered = filterTable({ list });
@@ -72,6 +74,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setHomePageData(home_page_data);
         check_launch_data.current = false;
         setIsLaunchDataLoading(false);
+        setIsHomePageDataLoading(false);
     }, []);
 
     const CheckUserData = useCallback(async () => {
@@ -121,6 +124,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             currentUserData={current_user_data}
             isLaunchDataLoading={isLaunchDataLoading}
             isUserDataLoading={isUserDataLoading}
+            isHomePageDataLoading={isHomePageDataLoading}
             checkLaunchData={RecheckLaunchData}
         >
             {children}
