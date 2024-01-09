@@ -192,9 +192,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 </Text>
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Link href={`/launch/${launch.page_name}`} onClick={(e) => e.stopPropagation()}>
-                    <Button>View</Button>
-                </Link>
+                <Button>View</Button>
             </td>
         </tr>
     );
