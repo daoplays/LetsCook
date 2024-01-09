@@ -2,7 +2,7 @@ import { useState } from "react";
 import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { Box, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "./hypeVote";
 import useResponsive from "../hooks/useResponsive";
@@ -49,16 +49,6 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
             setReverseSort(false);
         }
     };
-
-    if (isLaunchDataLoading) {
-        return (
-            <HStack justify="center" align="center" h="15vh">
-                <Text color="white" fontSize="xx-large">
-                    Prepping on-chain ingredients...
-                </Text>
-            </HStack>
-        );
-    }
 
     launchList.sort((a, b) => {
         if (sortedField !== "hype" && sortedField !== "minimum_liquidity") {
@@ -126,7 +116,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
                         ))}
 
                         <th>
-                            <Box mr={sm ? 4 : 8} as="button">
+                            <Box as="button">
                                 <TfiReload size={20} onClick={checkLaunchData} />
                             </Box>
                         </th>
@@ -199,7 +189,11 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                     {date}
                 </Text>
             </td>
-            <td />
+            <td style={{ minWidth: "100px" }}>
+                <Link href={`/launch/${launch.page_name}`} onClick={(e) => e.stopPropagation()}>
+                    <Button>View</Button>
+                </Link>
+            </td>
         </tr>
     );
 };

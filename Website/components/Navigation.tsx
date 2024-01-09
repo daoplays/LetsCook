@@ -66,10 +66,21 @@ function Navigation() {
                     </Show>
 
                     <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Launch" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/launch">
-                                <Image src="/images/chef-hat.png" width={35} height={35} alt={"Question Mark"} />
-                            </Link>
+                        <Tooltip label="Creator Dashboard" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Image
+                                src="/images/chef-hat.png"
+                                width={35}
+                                height={35}
+                                alt={"Question Mark"}
+                                onClick={() => {
+                                    if (!wallet.connected) {
+                                        alert("Please connect your wallet to access creator dashboard");
+                                    } else {
+                                        window.location.href = "/dashboard";
+                                    }
+                                }}
+                                style={{ cursor: "pointer" }}
+                            />
                         </Tooltip>
                     </Show>
 
@@ -136,11 +147,21 @@ function Navigation() {
                     <Image src="/images/divider.png" alt="Divider" width="320" height={20} />
                 </VStack>
 
-                <Link href="/launch" onClick={onToggle}>
-                    <Text fontFamily="Dealers" color="#683309" fontSize={35}>
-                        LAUNCH
-                    </Text>
-                </Link>
+                <Text
+                    fontFamily="Dealers"
+                    color="#683309"
+                    fontSize={35}
+                    onClick={() => {
+                        if (!wallet.connected) {
+                            alert("Please connect your wallet to access creator dashboard");
+                        } else {
+                            onToggle();
+                            window.location.href = "/dashboard";
+                        }
+                    }}
+                >
+                    CREATOR DASHBOARD
+                </Text>
 
                 <Link href="/calendar" onClick={onToggle}>
                     <Text fontFamily="Dealers" color="#683309" fontSize={35}>

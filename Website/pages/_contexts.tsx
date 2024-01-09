@@ -13,8 +13,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [isUserDataLoading, setIsUserDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
 
-    const [launch_data, setLaunchData] = useState<LaunchData[]>([]);
-    const [home_page_data, setHomePageData] = useState<LaunchData[]>([]);
+    const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
+    const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
 
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);

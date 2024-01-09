@@ -12,7 +12,12 @@ export function DisconnectWalletButton() {
 
     return (
         <>
-            <Box as="button" onClick={() => handleDisconnectWallet()}>
+            <Box
+                as="button"
+                onClick={() => {
+                    handleDisconnectWallet();
+                }}
+            >
                 <div className="font-face-rk">
                     <Text
                         className={styles.connect}

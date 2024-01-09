@@ -1,11 +1,15 @@
+import { defaultLaunchTableFilters } from "../components/gameTable";
 import GameTable from "../components/gameTable";
 import FeaturedBanner from "../components/featuredBanner";
-import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
-import { defaultLaunchTableFilters } from "../components/gameTable";
 import EmptyLaunch from "../components/emptyLaunch";
+import "react-datepicker/dist/react-datepicker.css";
+import Loader from "../components/loader";
+
 const Home = () => {
     const { homePageList } = useAppRoot();
+
+    if (!homePageList) return <Loader />;
 
     if (homePageList.length <= 0) return <EmptyLaunch />;
 

@@ -20,6 +20,8 @@ import { defaultLaunchTableFilters, LaunchTableFilters } from "../components/gam
 import useAppRoot from "../context/useAppRoot";
 
 import "react-datepicker/dist/react-datepicker.css";
+import Loader from "../components/loader";
+import EmptyLaunch from "../components/emptyLaunch";
 
 const CalenderPage = () => {
     const { sm } = useResponsive();
@@ -38,7 +40,9 @@ const CalenderPage = () => {
         setFilters((previous) => ({ ...previous, end_date: end !== null ? addDays(end, 1) : null }));
     };
 
-    console.log("filters", filters);
+    if (!launchList) return <Loader />;
+
+    if (launchList.length <= 0) return <EmptyLaunch />;
 
     return (
         <main>

@@ -35,6 +35,8 @@ import Links from "../../components/Buttons/links";
 import FeaturedBanner from "../../components/featuredBanner";
 import Timespan from "../../components/launchPreview/timespan";
 import TokenDistribution from "../../components/launchPreview/tokenDistribution";
+import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
+import Loader from "../../components/loader";
 
 const MintPage = () => {
     const router = useRouter();
@@ -194,7 +196,7 @@ const MintPage = () => {
     const fetchLaunchData = useCallback(async () => {
         if (!checkLaunchData.current) return;
         if (pageName === undefined || pageName === null) {
-            setIsLoading(false); // Set isLoading to false when pageName is undefined or null
+            setIsLoading(false);
             return;
         }
 
@@ -283,18 +285,7 @@ const MintPage = () => {
 
     if (!pageName) return;
 
-    if (isLoading)
-        return (
-            <HStack
-                justify="center"
-                alignItems={"center"}
-                style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)", height: "90vh" }}
-            >
-                <Text color="white" fontSize="xx-large" textAlign="center">
-                    Prepping on-chain ingredients...
-                </Text>
-            </HStack>
-        );
+    if (isLoading) return <Loader />;
 
     if (!launchData) return <PageNotFound />;
 
@@ -302,56 +293,15 @@ const MintPage = () => {
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
     let current_time = new Date().getTime();
 
-    const enum CookState {
-        PRE_LAUNCH,
-        ACTIVE_NO_TICKETS,
-        ACTIVE_TICKETS,
-        MINT_FAILED_NOT_REFUNDED,
-        MINT_FAILED_REFUNDED,
-        MINT_SUCCEEDED_NO_TICKETS,
-        MINT_SUCCEDED_TICKETS_LEFT,
-        MINT_SUCCEEDED_TICKETS_CHECKED,
-    }
+    const cook_state = useDetermineCookState({ current_time, launchData, join_data });
 
-    let cook_state = CookState.PRE_LAUNCH;
-    if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data === null) {
-        cook_state = CookState.ACTIVE_NO_TICKETS;
-    }
-    if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data !== null) {
-        cook_state = CookState.ACTIVE_TICKETS;
-    }
-    if (current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints && join_data === null) {
-        cook_state = CookState.MINT_FAILED_REFUNDED;
-    }
-    if (current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints && join_data !== null) {
-        cook_state = CookState.MINT_FAILED_NOT_REFUNDED;
-    }
-    if (current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints && join_data === null) {
-        cook_state = CookState.MINT_SUCCEEDED_NO_TICKETS;
-    }
-    if (
-        current_time >= launchData.end_date &&
-        launchData.tickets_sold >= launchData.num_mints &&
-        join_data !== null &&
-        join_data.num_claimed_tickets < join_data.num_tickets
-    ) {
-        cook_state = CookState.MINT_SUCCEDED_TICKETS_LEFT;
-    }
-    if (
-        current_time >= launchData.end_date &&
-        launchData.tickets_sold >= launchData.num_mints &&
-        join_data !== null &&
-        join_data.num_claimed_tickets == join_data.num_tickets
-    ) {
-        cook_state = CookState.MINT_SUCCEEDED_TICKETS_CHECKED;
-    }
-
-    const ACTIVE: boolean = cook_state === CookState.ACTIVE_NO_TICKETS || cook_state === CookState.ACTIVE_TICKETS;
-    const MINTED_OUT: boolean =
-        cook_state === CookState.MINT_SUCCEEDED_NO_TICKETS ||
-        cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT ||
-        cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED;
-    const MINT_FAILED: boolean = cook_state === CookState.MINT_FAILED_NOT_REFUNDED || cook_state === CookState.MINT_FAILED_REFUNDED;
+    const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
+    const MINTED_OUT = [
+        CookState.MINT_SUCCEEDED_NO_TICKETS,
+        CookState.MINT_SUCCEDED_TICKETS_LEFT,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED,
+    ].includes(cook_state);
+    const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
