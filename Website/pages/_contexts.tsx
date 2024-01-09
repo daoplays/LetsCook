@@ -100,7 +100,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [wallet.publicKey]);
 
     const RecheckLaunchData = useCallback(async () => {
-        
         check_launch_data.current = true;
         CheckLaunchData();
     }, [CheckLaunchData]);
