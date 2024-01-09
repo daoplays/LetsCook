@@ -39,8 +39,9 @@ import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookSt
 import Loader from "../../components/loader";
 
 const MintPage = () => {
-    const router = useRouter();
     const wallet = useWallet();
+    const router = useRouter();
+    const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
 
@@ -50,10 +51,9 @@ const MintPage = () => {
 
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
+    const [cookState, setCookState] = useState<CookState | null>(null);
 
-    useEffect(() => {
-        console.log(router.basePath);
-    }, [router]);
+    let current_time = new Date().getTime();
 
     const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
         step: 1,
@@ -73,9 +73,9 @@ const MintPage = () => {
     const { ClaimTokens } = useClaimTickets(launchData);
     const { RefundTickets } = useRefundTickets(launchData);
 
-    const checkLaunchData = useRef<boolean>(true);
+    const cook_state = useDetermineCookState({ current_time, launchData, join_data });
 
-    const { pageName } = router.query;
+    const checkLaunchData = useRef<boolean>(true);
 
     // updates to token page are checked using a websocket to get real time updates
     const join_account_ws_id = useRef<number | null>(null);
@@ -283,6 +283,12 @@ const MintPage = () => {
         }
     }, [value, ticketPrice, launchData]);
 
+    useEffect(() => {
+        if (launchData) {
+            setCookState(cook_state);
+        }
+    }, [cook_state, launchData]);
+
     if (!pageName) return;
 
     if (isLoading) return <Loader />;
@@ -291,17 +297,14 @@ const MintPage = () => {
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = one_mint / bignum_to_num(launchData.total_supply);
-    let current_time = new Date().getTime();
 
-    const cook_state = useDetermineCookState({ current_time, launchData, join_data });
-
-    const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
+    const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cookState);
     const MINTED_OUT = [
         CookState.MINT_SUCCEEDED_NO_TICKETS,
         CookState.MINT_SUCCEDED_TICKETS_LEFT,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED,
-    ].includes(cook_state);
-    const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
+    ].includes(cookState);
+    const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cookState);
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
@@ -362,7 +365,7 @@ const MintPage = () => {
                                         textAlign={"center"}
                                         fontSize={lg ? "x-large" : "xxx-large"}
                                     >
-                                        {cook_state === CookState.PRE_LAUNCH
+                                        {cookState === CookState.PRE_LAUNCH
                                             ? "Warming Up"
                                             : ACTIVE
                                               ? `Total: ${totalCost.toFixed(3)}`
@@ -381,11 +384,11 @@ const MintPage = () => {
                                         if (wallet.publicKey === null) {
                                             handleConnectWallet();
                                         } else {
-                                            cook_state === CookState.MINT_FAILED_NOT_REFUNDED
+                                            cookState === CookState.MINT_FAILED_NOT_REFUNDED
                                                 ? () => RefundTickets()
-                                                : cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
+                                                : cookState === CookState.MINT_SUCCEDED_TICKETS_LEFT
                                                   ? () => CheckTickets()
-                                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
+                                                  : cookState === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
                                                     ? () => ClaimTokens()
                                                     : () => {};
                                         }
@@ -396,11 +399,11 @@ const MintPage = () => {
                                             <Box mt={4}>
                                                 <WoodenButton
                                                     label={
-                                                        cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
+                                                        cookState === CookState.MINT_SUCCEDED_TICKETS_LEFT
                                                             ? "Check Tickets"
-                                                            : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
+                                                            : cookState === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
                                                               ? "Claim Tokens"
-                                                              : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
+                                                              : cookState === CookState.MINT_FAILED_NOT_REFUNDED
                                                                 ? "Refund Tickets"
                                                                 : ""
                                                     }
@@ -417,7 +420,7 @@ const MintPage = () => {
                                 </Box>
 
                                 <HStack maxW="320px" hidden={MINTED_OUT || MINT_FAILED}>
-                                    <Button {...dec} size="lg" isDisabled={cook_state === CookState.PRE_LAUNCH}>
+                                    <Button {...dec} size="lg" isDisabled={cookState === CookState.PRE_LAUNCH}>
                                         -
                                     </Button>
 
@@ -428,16 +431,16 @@ const MintPage = () => {
                                         color="white"
                                         alignItems="center"
                                         justifyContent="center"
-                                        isDisabled={cook_state === CookState.PRE_LAUNCH}
+                                        isDisabled={cookState === CookState.PRE_LAUNCH}
                                     />
-                                    <Button {...inc} size="lg" isDisabled={cook_state === CookState.PRE_LAUNCH}>
+                                    <Button {...inc} size="lg" isDisabled={cookState === CookState.PRE_LAUNCH}>
                                         +
                                     </Button>
                                 </HStack>
 
                                 <Button
                                     size="lg"
-                                    isDisabled={cook_state === CookState.PRE_LAUNCH}
+                                    isDisabled={cookState === CookState.PRE_LAUNCH}
                                     hidden={MINTED_OUT || MINT_FAILED}
                                     onClick={() => {
                                         BuyTickets();
@@ -446,7 +449,7 @@ const MintPage = () => {
                                     {wallet.publicKey === null ? "Connect Wallet" : "Mint"}
                                 </Button>
 
-                                {!(cook_state === CookState.PRE_LAUNCH) ? (
+                                {!(cookState === CookState.PRE_LAUNCH) ? (
                                     <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                         <HStack>
                                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -474,7 +477,7 @@ const MintPage = () => {
                                 h={25}
                                 borderRadius={12}
                                 colorScheme={
-                                    cook_state === CookState.PRE_LAUNCH
+                                    cookState === CookState.PRE_LAUNCH
                                         ? "none"
                                         : ACTIVE
                                           ? "whatsapp"

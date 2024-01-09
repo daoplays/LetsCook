@@ -40,8 +40,8 @@ const EmptyLaunch = () => {
                     mr={md ? 0 : 25}
                     align={sm ? "center" : "start"}
                 >
-                    We're currently working hard behind the scenes to bring you exciting meals. Stay tuned for updates! In the meantime,
-                    feel free to cook your own.
+                    We&apos;re currently working hard behind the scenes to bring you exciting meals. Stay tuned for updates! In the
+                    meantime, feel free to cook your own.
                 </Text>
                 <Link href="/launch">
                     <WoodenButton label="Cook Something" size={22} width={"fit-content"} />

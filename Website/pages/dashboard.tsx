@@ -24,6 +24,7 @@ const DashboardPage = () => {
 
         const filteredLaunches = launchList.filter((launch) => launch.seller.toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (!creatorLaunches) return <Loader />;

@@ -150,9 +150,9 @@ function Navigation() {
                 </VStack>
 
                 <Text
-                    fontFamily="Dealers"
                     color="#683309"
-                    fontSize={35}
+                    fontSize={30}
+                    fontWeight="bold"
                     onClick={() => {
                         if (!wallet.connected) {
                             alert("Please connect your wallet to access creator dashboard");
@@ -162,12 +162,12 @@ function Navigation() {
                         }
                     }}
                 >
-                    CREATOR DASHBOARD
+                    Creator Dashboard
                 </Text>
 
                 <Link href="/calendar" onClick={onToggle}>
-                    <Text fontFamily="Dealers" color="#683309" fontSize={35}>
-                        CALENDAR
+                    <Text color="#683309" fontSize={30} fontWeight="bold">
+                        Calendar
                     </Text>
                 </Link>
 
@@ -175,8 +175,8 @@ function Navigation() {
                     <Text className={styles.connect}>LEADERBOARD</Text>
                 </Link> */}
 
-                <Text fontFamily="Dealers" color="#683309" fontSize={35} style={{ opacity: 0.5 }}>
-                    MY BAGS
+                <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: 0.5 }}>
+                    My Bags
                 </Text>
 
                 {/* <Text className={styles.connect} style={{ opacity: 0.5 }}>
@@ -184,8 +184,8 @@ function Navigation() {
                 </Text> */}
 
                 <Link href="/faq" onClick={onToggle}>
-                    <Text fontFamily="Dealers" color="#683309" fontSize={35}>
-                        FAQS
+                    <Text color="#683309" fontSize={30} fontWeight="bold">
+                        FAQs
                     </Text>
                 </Link>
             </VStack>
