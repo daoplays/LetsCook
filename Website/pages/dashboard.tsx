@@ -18,13 +18,12 @@ const DashboardPage = () => {
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
 
     useEffect(() => {
-        if (!launchList) {
+        if (!launchList || !wallet.connected) {
             return;
         }
 
         const filteredLaunches = launchList.filter((launch) => launch.seller.toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
-
     }, [wallet, launchList]);
 
     if (!creatorLaunches) return <Loader />;
