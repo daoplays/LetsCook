@@ -24,7 +24,8 @@ const DashboardPage = () => {
 
         const filteredLaunches = launchList.filter((launch) => launch.seller.toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
-    }, []);
+
+    }, [wallet, launchList]);
 
     if (!creatorLaunches) return <Loader />;
 
