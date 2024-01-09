@@ -10,6 +10,7 @@ import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
 import Links from "./Buttons/links";
 import { FaSort } from "react-icons/fa";
+import { useRouter } from "next/router";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -137,6 +138,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
 
 const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
     const { sm, md, lg } = useResponsive();
+    const router = useRouter();
     let name = launch.symbol;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
@@ -153,7 +155,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => (window.location.href = `/launch/${launch.page_name}`)}
+            onClick={() => router.push(`/launch/${launch.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>

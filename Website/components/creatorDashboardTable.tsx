@@ -64,6 +64,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
 const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
+    const router = useRouter();
     let launchData = launch;
     let name = launch.symbol;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
@@ -94,7 +95,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => (window.location.href = `/launch/${launch.page_name}`)}
+            onClick={() => router.push(`/launch/${launch.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>

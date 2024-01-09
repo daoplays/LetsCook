@@ -11,6 +11,7 @@ import ContextProviders from "./_contexts";
 import "bootstrap/dist/css/bootstrap.css";
 import "../styles/fonts.css";
 import "../styles/table.css";
+import { PagesProgressBar as ProgressBar } from "next-nprogress-bar";
 
 function MyApp({ Component, pageProps }) {
     const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
@@ -18,6 +19,7 @@ function MyApp({ Component, pageProps }) {
     return (
         <NoSSR>
             <ChakraProvider theme={theme}>
+                <ProgressBar options={{ showSpinner: false }} height="3px" />
                 <WalletProvider wallets={wallets} autoConnect>
                     <WalletModalProvider>
                         <ContextProviders>

@@ -11,6 +11,7 @@ import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
 
 const DashboardPage = () => {
+    const router = useRouter();
     const wallet = useWallet();
     const { sm } = useResponsive();
     const { launchList } = useAppRoot();
@@ -23,7 +24,7 @@ const DashboardPage = () => {
 
         const filteredLaunches = launchList.filter((launch) => launch.seller.toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
-    }, [launchList]);
+    }, []);
 
     if (!creatorLaunches) return <Loader />;
 
@@ -46,9 +47,11 @@ const DashboardPage = () => {
                 >
                     Creator Dashboard
                 </Text>
-                <Link href="/launch" w={sm ? "100%" : "fit-content"}>
-                    <Button w={sm ? "100%" : "fit-content"}>New Launch</Button>
-                </Link>
+                {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
+                <Button w={sm ? "100%" : "fit-content"} onClick={() => router.push("/launch")}>
+                    New Launch
+                </Button>
+                {/* </Link> */}
             </Flex>
             <CreatorDashboardTable creatorLaunches={creatorLaunches} />
         </main>

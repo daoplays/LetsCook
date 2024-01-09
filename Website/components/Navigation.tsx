@@ -7,8 +7,10 @@ import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
 import MainButton from "./Buttons/mainButton";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 function Navigation() {
+    const router = useRouter();
     const wallet = useWallet();
     const { md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
@@ -76,7 +78,7 @@ function Navigation() {
                                     if (!wallet.connected) {
                                         alert("Please connect your wallet to access creator dashboard");
                                     } else {
-                                        window.location.href = "/dashboard";
+                                        router.push(`/dashboard`);
                                     }
                                 }}
                                 style={{ cursor: "pointer" }}
@@ -156,7 +158,7 @@ function Navigation() {
                             alert("Please connect your wallet to access creator dashboard");
                         } else {
                             onToggle();
-                            window.location.href = "/dashboard";
+                            router.push("/dashboard");
                         }
                     }}
                 >
