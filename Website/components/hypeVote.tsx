@@ -136,7 +136,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (user_data !== null) {
+                            if (wallet !== null) {
                                 Vote({ vote: 1 });
                             } else {
                                 handleConnectWallet();
@@ -151,7 +151,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (user_data !== null) {
+                            if (wallet !== null) {
                                 Vote({ vote: 2 });
                             } else {
                                 handleConnectWallet();

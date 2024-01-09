@@ -24,6 +24,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
         return list.filter(function (item) {
+            //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
             return bignum_to_num(item.end_date) >= current_time;
         });
     }
@@ -35,14 +36,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         let list = await RunLaunchDataGPA("");
         let close_filtered = filterTable({ list });
-        // console.log("running GPA", list);
+        //console.log("running GPA", list);
         setLaunchData(close_filtered);
 
         let home_page_data: LaunchData[] = [];
         let home_page_map = new Map<number, LaunchData>();
         for (let i = 0; i < close_filtered.length; i++) {
             let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-            console.log(bignum_to_num(close_filtered[i].end_date), date);
+            //console.log(bignum_to_num(close_filtered[i].end_date), date);
             if (home_page_map.has(date)) {
                 let current_entry: LaunchData = home_page_map.get(date);
                 let current_hype = current_entry.positive_votes - current_entry.negative_votes;
@@ -96,6 +97,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [wallet.publicKey]);
 
     const RecheckLaunchData = useCallback(async () => {
+        
         check_launch_data.current = true;
         CheckLaunchData();
     }, [CheckLaunchData]);
