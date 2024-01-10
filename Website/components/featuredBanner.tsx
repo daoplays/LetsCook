@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../hooks/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
+import { LaunchKeys } from "./Solana/constants";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -63,13 +64,15 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                             </Flex>
                             <HStack spacing={3} align="start" justify="start">
                                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
-                                    CA: {trimAddress(featuredLaunch.mint_address.toString())}
+                                    CA: {trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())}
                                 </Text>
 
                                 <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
                                     <div
                                         style={{ cursor: "pointer" }}
-                                        onClick={() => navigator.clipboard.writeText(featuredLaunch.mint_address.toString())}
+                                        onClick={() =>
+                                            navigator.clipboard.writeText(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                        }
                                     >
                                         <MdOutlineContentCopy color="white" size={lg ? 25 : 35} />
                                     </div>
@@ -77,7 +80,9 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
 
                                 <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                     <Link
-                                        href={`https://solscan.io/account/${featuredLaunch.mint_address.toString()}?cluster=devnet`}
+                                        href={`https://solscan.io/account/${featuredLaunch.keys[
+                                            LaunchKeys.MintAddress
+                                        ].toString()}?cluster=devnet`}
                                         target="_blank"
                                     >
                                         <Image src="/images/solscan.png" width={lg ? 25 : 35} height={lg ? 25 : 35} alt="Solscan icon" />

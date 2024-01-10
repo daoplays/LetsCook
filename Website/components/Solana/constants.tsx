@@ -67,3 +67,10 @@ export const enum Socials {
     Telegram = 2,
     Discord = 3,
 }
+
+export const enum LaunchKeys {
+    Seller = 0,
+    TeamWallet = 1,
+    MintAddress = 2,
+    WSOLAddress = 3,
+}

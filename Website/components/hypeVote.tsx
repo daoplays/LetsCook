@@ -2,25 +2,32 @@ import { useCallback, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
-import { PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE } from "./Solana/constants";
+import { PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE, LaunchKeys } from "./Solana/constants";
 import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
+import useAppRoot from "../context/useAppRoot";
 
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
+    const { checkLaunchData } = useAppRoot();
     const hype_vote_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Hype vote transaction failed, please try again");
-        }
-        hype_vote_ws_id.current = null;
-    }, []);
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Hype vote transaction failed, please try again");
+            } else {
+                await checkLaunchData();
+            }
+            hype_vote_ws_id.current = null;
+        },
+        [checkLaunchData],
+    );
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
@@ -104,7 +111,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
         }
     }
 
-    if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.seller.toString()) {
+    if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.keys[LaunchKeys.Seller].toString()) {
         return (
             <>
                 {total_votes > 0 && (

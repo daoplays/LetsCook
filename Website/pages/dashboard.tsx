@@ -9,6 +9,7 @@ import useAppRoot from "../context/useAppRoot";
 import { LaunchData } from "../components/Solana/state";
 import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
+import { LaunchKeys } from "../components/Solana/constants";
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -22,7 +23,7 @@ const DashboardPage = () => {
             return;
         }
 
-        const filteredLaunches = launchList.filter((launch) => launch.seller.toString() === wallet.publicKey.toString());
+        const filteredLaunches = launchList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
     }, [wallet, launchList]);
 

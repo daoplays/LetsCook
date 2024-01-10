@@ -63,7 +63,7 @@ import {
     LaunchData,
     LaunchInstruction,
 } from "./state";
-import { RPC_NODE, PROGRAM } from "./constants";
+import { RPC_NODE, PROGRAM, LaunchKeys } from "./constants";
 
 const PROGRAMIDS = DEVNET_PROGRAM_ID;
 const addLookupTableInfo = LOOKUP_TABLE_CACHE;
@@ -276,7 +276,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         const addQuoteAmount = new BN(10000); // 10000 / 10 ** 6,
         const startTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7; // start from 7 days later
 
-        const seed_base = launch_data.mint_address.toBase58().slice(0, 31);
+        const seed_base = launch_data.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
         const targetMargetId = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "1",
@@ -320,7 +320,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
             version: 4,
             marketVersion: 3,
             marketId: targetMargetId.publicKey,
-            baseMint: launch_data.mint_address,
+            baseMint: launch_data.keys[LaunchKeys.MintAddress],
             quoteMint: quoteToken.mint,
             baseDecimals: launch_data.decimals,
             quoteDecimals: quoteToken.decimals,
@@ -335,7 +335,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         let createPool_data = serialise_RaydiumCreatePool_Instruction(poolInfo.nonce, startTime, addBaseAmount, addQuoteAmount);
 
         let program_base_account = await getAssociatedTokenAddress(
-            launch_data.mint_address, // mint
+            launch_data.keys[LaunchKeys.MintAddress], // mint
             sol_account, // owner
             true, // allow owner off curve
         );
@@ -353,7 +353,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         );
 
         let user_base_account = await getAssociatedTokenAddress(
-            launch_data.mint_address, // mint
+            launch_data.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
@@ -396,7 +396,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
             { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
 
             { pubkey: program_base_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data.sol_address, isSigner: false, isWritable: true },
+            { pubkey: launch_data.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
             { pubkey: program_lp_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -471,7 +471,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         var transaction_response = await send_transaction("", encoded_transaction);
 
         console.log(transaction_response);
-    }, [wallet, launch_data.decimals, launch_data.mint_address, launch_data.sol_address]);
+    }, [wallet, launch_data]);
 
     const createMarket = useCallback(async () => {
         const connection = new Connection(RPC_NODE);
@@ -481,7 +481,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         let min_order_size = 1;
         let tick_size = 0.01;
 
-        const seed_base = launch_data.mint_address.toBase58().slice(0, 31);
+        const seed_base = launch_data.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
 
         const market = await generatePubKey({
             fromPublicKey: wallet.publicKey,
@@ -511,7 +511,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         const baseVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "6", programId: TOKEN_PROGRAM_ID });
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
 
-        console.log("mint", launch_data.mint_address.toString());
+        console.log("mint", launch_data.keys[LaunchKeys.MintAddress].toString());
         console.log("market", market.publicKey.toString());
 
         const feeRateBps = 0;
@@ -560,7 +560,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                 space: 165,
                 programId: TOKEN_PROGRAM_ID,
             }),
-            createInitializeAccount3Instruction(baseVault.publicKey, launch_data.mint_address, vaultOwner),
+            createInitializeAccount3Instruction(baseVault.publicKey, launch_data.keys[LaunchKeys.MintAddress], vaultOwner),
             createInitializeAccount3Instruction(quoteVault.publicKey, quoteToken.mint, vaultOwner),
         );
 
@@ -637,7 +637,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                     asks: asks.publicKey,
                     baseVault: baseVault.publicKey,
                     quoteVault: quoteVault.publicKey,
-                    baseMint: launch_data.mint_address,
+                    baseMint: launch_data.keys[LaunchKeys.MintAddress],
                     quoteMint: quoteToken.mint,
 
                     baseLotSize: baseLotSize,
@@ -658,7 +658,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                 asks: asks.publicKey,
                 baseVault: baseVault.publicKey,
                 quoteVault: quoteVault.publicKey,
-                baseMint: launch_data.mint_address,
+                baseMint: launch_data.keys[LaunchKeys.MintAddress],
                 quoteMint: quoteToken.mint,
             },
             innerTransactions: [
@@ -711,7 +711,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         }
 
         await createPool();
-    }, [wallet, createPool, launch_data.decimals, launch_data.mint_address]);
+    }, [wallet, createPool, launch_data]);
 
     return (
         <Box

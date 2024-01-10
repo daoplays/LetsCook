@@ -31,6 +31,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }
 
     const CheckLaunchData = useCallback(async () => {
+        //console.log("in check launch data", check_launch_data.current)
         if (!check_launch_data.current) return;
 
         setIsLaunchDataLoading(true);
@@ -71,7 +72,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
             return 0;
         });
-
+        //console.log(home_page_data);
         setHomePageData(home_page_data);
         check_launch_data.current = false;
         setIsLaunchDataLoading(false);
