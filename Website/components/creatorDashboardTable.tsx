@@ -20,6 +20,9 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
+    const [sortedField, setSortedField] = useState<string | null>(null);
+    const [reverseSort, setReverseSort] = useState<boolean>(false);
+
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
         { text: "TICKER", field: "symbol" },
@@ -28,6 +31,27 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         { text: "DATE", field: "date" },
     ];
 
+    const handleHeaderClick = (field: string | null) => {
+        if (field === sortedField) {
+            setReverseSort(!reverseSort);
+        } else {
+            setSortedField(field);
+            setReverseSort(false);
+        }
+    };
+
+    const sortedLaunches = [...creatorLaunches].sort((a, b) => {
+        if (sortedField === "symbol") {
+            return reverseSort ? b.symbol.localeCompare(a.symbol) : a.symbol.localeCompare(b.symbol);
+        } else if (sortedField === "liquidity") {
+            return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
+        } else if (sortedField === "date") {
+            return reverseSort ? b.launch_date - a.launch_date : a.launch_date - b.launch_date;
+        }
+
+        return 0;
+    });
+
     return (
         <TableContainer>
             <table width="100%" className="custom-centered-table font-face-rk">
@@ -35,7 +59,12 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (
                             <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
+                                <HStack
+                                    gap={sm ? 1 : 2}
+                                    justify="center"
+                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
+                                    onClick={() => handleHeaderClick(i.field)}
+                                >
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
                                     </Text>
@@ -53,8 +82,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                 </thead>
 
                 <tbody>
-                    {creatorLaunches.map((i) => (
-                        <LaunchCard key={i.name} launch={i} />
+                    {sortedLaunches.map((launch) => (
+                        <LaunchCard key={launch.name} launch={launch} />
                     ))}
                 </tbody>
             </table>
