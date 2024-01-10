@@ -17,7 +17,7 @@ const PYTH_ETH_PROD = new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWd
 const PYTH_SOL_PROD = new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG");
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-export const PROGRAM = new PublicKey("77dE9wpUeohmz7QzXNqkfFAp3ZXSAWQod3ioHPBE4N1v");
+export const PROGRAM = new PublicKey("7dXAFUrJMRTAK9YcpzimGQNPz3Q5yH4K61AdUtnC2i9c");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
 
 // account seeds
@@ -73,4 +73,10 @@ export const enum LaunchKeys {
     TeamWallet = 1,
     MintAddress = 2,
     WSOLAddress = 3,
+}
+
+export enum LaunchFlags {
+    MintedToUser = 0,
+    PointsAwarded = 1,
+    LPState = 2,
 }

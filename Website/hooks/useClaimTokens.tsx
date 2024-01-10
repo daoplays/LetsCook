@@ -12,6 +12,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 
 const useClaimTokens = (launchData: LaunchData) => {
     const wallet = useWallet();
@@ -45,7 +46,7 @@ const useClaimTokens = (launchData: LaunchData) => {
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
+        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;
         }
@@ -57,8 +58,8 @@ const useClaimTokens = (launchData: LaunchData) => {
         const game_id = new myU64(launchData.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
         console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.mint_address.toString());
-        console.log("sol", launchData.sol_address.toString());
+        console.log("Mint", launchData.keys[LaunchKeys.MintAddress].toString());
+        console.log("sol", launchData.keys[LaunchKeys.WSOLAddress].toString());
 
         let user_join_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
@@ -66,7 +67,7 @@ const useClaimTokens = (launchData: LaunchData) => {
         )[0];
 
         let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.mint_address.toBytes(), Buffer.from("Temp")],
+            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
             PROGRAM,
         )[0];
 
@@ -75,13 +76,13 @@ const useClaimTokens = (launchData: LaunchData) => {
         let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
 
         let token_raffle_account_key = await getAssociatedTokenAddress(
-            launchData.mint_address, // mint
+            launchData.keys[LaunchKeys.MintAddress], // mint
             program_sol_account, // owner
             true, // allow owner off curve
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
-            launchData.mint_address, // mint
+            launchData.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
@@ -94,13 +95,13 @@ const useClaimTokens = (launchData: LaunchData) => {
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
-            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
 
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: launchData.mint_address, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[LaunchKeys.MintAddress], isSigner: false, isWritable: true },
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 

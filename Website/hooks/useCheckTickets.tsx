@@ -11,6 +11,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, PYTH_BTC, PYTH_ETH, PYTH_SOL, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 
 const useCheckTickets = (launchData: LaunchData) => {
     const wallet = useWallet();
@@ -44,7 +45,7 @@ const useCheckTickets = (launchData: LaunchData) => {
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
+        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;
         }
@@ -56,8 +57,8 @@ const useCheckTickets = (launchData: LaunchData) => {
         const game_id = new myU64(launchData.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
         console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.mint_address.toString());
-        console.log("sol", launchData.sol_address.toString());
+        console.log("Mint", launchData.keys[LaunchKeys.MintAddress].toString());
+        console.log("sol", launchData.keys[LaunchKeys.WSOLAddress].toString());
 
         let user_join_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],

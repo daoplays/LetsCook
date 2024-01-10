@@ -12,6 +12,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 
 const useRefundTickets = (launchData: LaunchData) => {
     const wallet = useWallet();
@@ -34,7 +35,7 @@ const useRefundTickets = (launchData: LaunchData) => {
 
         if (wallet.signTransaction === undefined) return;
 
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
+        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;
         }
@@ -55,7 +56,7 @@ const useRefundTickets = (launchData: LaunchData) => {
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.mint_address.toBytes(), Buffer.from("Temp")],
+            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
             PROGRAM,
         )[0];
 
@@ -64,8 +65,8 @@ const useRefundTickets = (launchData: LaunchData) => {
         const game_id = new myU64(launchData.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
         console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.mint_address.toString());
-        console.log("sol", launchData.sol_address.toString());
+        console.log("Mint", launchData.keys[LaunchKeys.MintAddress].toString());
+        console.log("sol", launchData.keys[LaunchKeys.WSOLAddress].toString());
 
         let user_join_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
@@ -80,7 +81,7 @@ const useRefundTickets = (launchData: LaunchData) => {
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },

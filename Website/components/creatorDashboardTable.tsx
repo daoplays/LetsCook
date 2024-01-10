@@ -10,7 +10,7 @@ import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
 import useDetermineCookState, { CookState } from "../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
-
+import useCreateMarket from "../hooks/useCreateMarket";
 interface Header {
     text: string;
     field: string | null;
@@ -191,7 +191,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center">
-                    {MINTED_OUT && <Button onClick={(e) => e.stopPropagation()}>Launch LP</Button>}
+                    {MINTED_OUT && <Button onClick={() => useCreateMarket(launchData)}>Launch LP</Button>}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable ? <Button onClick={(e) => e.stopPropagation()}>Edit</Button> : <Box w={100} />}
