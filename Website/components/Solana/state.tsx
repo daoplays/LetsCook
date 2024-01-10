@@ -575,7 +575,6 @@ export class JoinData {
     constructor(
         readonly account_type: number,
         readonly joiner_key: PublicKey,
-        readonly sol_key: PublicKey,
         readonly game_id: bignum,
         readonly num_tickets: number,
         readonly num_claimed_tickets: number,
@@ -587,7 +586,6 @@ export class JoinData {
         [
             ["account_type", u8],
             ["joiner_key", publicKey],
-            ["sol_key", publicKey],
             ["game_id", u64],
             ["num_tickets", u16],
             ["num_claimed_tickets", u16],
@@ -598,7 +596,6 @@ export class JoinData {
             new JoinData(
                 args.account_type!,
                 args.joiner_key!,
-                args.sol_key!,
                 args.game_id!,
                 args.num_tickets!,
                 args.num_claimed_tickets!,
