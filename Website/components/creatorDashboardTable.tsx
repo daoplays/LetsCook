@@ -162,7 +162,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center">
-                    {!MINTED_OUT && <Button onClick={(e) => e.stopPropagation()}>Launch LP</Button>}
+                    {MINTED_OUT && <Button onClick={(e) => e.stopPropagation()}>Launch LP</Button>}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable ? <Button onClick={(e) => e.stopPropagation()}>Edit</Button> : <Box w={100} />}
