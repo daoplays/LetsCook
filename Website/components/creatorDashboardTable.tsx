@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { FaSort } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -20,6 +20,9 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
+    const [sortedField, setSortedField] = useState<string | null>(null);
+    const [reverseSort, setReverseSort] = useState<boolean>(false);
+
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
         { text: "TICKER", field: "symbol" },
@@ -28,6 +31,27 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         { text: "DATE", field: "date" },
     ];
 
+    const handleHeaderClick = (field: string | null) => {
+        if (field === sortedField) {
+            setReverseSort(!reverseSort);
+        } else {
+            setSortedField(field);
+            setReverseSort(false);
+        }
+    };
+
+    const sortedLaunches = [...creatorLaunches].sort((a, b) => {
+        if (sortedField === "symbol") {
+            return reverseSort ? b.symbol.localeCompare(a.symbol) : a.symbol.localeCompare(b.symbol);
+        } else if (sortedField === "liquidity") {
+            return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
+        } else if (sortedField === "date") {
+            return reverseSort ? b.launch_date - a.launch_date : a.launch_date - b.launch_date;
+        }
+
+        return 0;
+    });
+
     return (
         <TableContainer>
             <table width="100%" className="custom-centered-table font-face-rk">
@@ -35,7 +59,12 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (
                             <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
+                                <HStack
+                                    gap={sm ? 1 : 2}
+                                    justify="center"
+                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
+                                    onClick={() => handleHeaderClick(i.field)}
+                                >
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
                                     </Text>
@@ -53,8 +82,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                 </thead>
 
                 <tbody>
-                    {creatorLaunches.map((i) => (
-                        <LaunchCard key={i.name} launch={i} />
+                    {sortedLaunches.map((launch) => (
+                        <LaunchCard key={launch.name} launch={launch} />
                     ))}
                 </tbody>
             </table>
@@ -71,6 +100,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     let current_time = new Date().getTime();
+
+    const timeDifference = current_time - launch.launch_date;
+    const isEditable = timeDifference < 48 * 60 * 60 * 1000; // 48 hours
 
     const cook_state = useDetermineCookState({ current_time, launchData });
 
@@ -145,18 +177,25 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
 
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)}/
-                    {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
-                </Text>
+                <VStack>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)}/
+                        {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
+                    </Text>
+                </VStack>
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {date}
                 </Text>
             </td>
-            <td style={{ minWidth: md ? "100px" : "" }}>
-                <Button onClick={(e) => e.stopPropagation()}>Edit</Button>
+            <td style={{ minWidth: md ? "230px" : "" }}>
+                <HStack justify="center">
+                    {MINTED_OUT && <Button onClick={(e) => e.stopPropagation()}>Launch LP</Button>}
+
+                    {/* editable only when it is less than 48hrs from launch date */}
+                    {isEditable ? <Button onClick={(e) => e.stopPropagation()}>Edit</Button> : <Box w={100} />}
+                </HStack>
             </td>
         </tr>
     );

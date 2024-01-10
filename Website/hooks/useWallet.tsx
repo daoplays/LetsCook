@@ -15,6 +15,7 @@ const UseWalletConnection = () => {
     }, [wallet]);
 
     const handleConnectWallet = useCallback(async () => {
+        console.log("call connect wallet");
         setVisible(true);
     }, [setVisible]);
 
