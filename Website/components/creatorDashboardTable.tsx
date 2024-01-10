@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { FaSort } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -71,6 +71,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     let current_time = new Date().getTime();
+
+    const timeDifference = current_time - launch.launch_date;
+    const isEditable = timeDifference < 48 * 60 * 60 * 1000; // 48 hours
 
     const cook_state = useDetermineCookState({ current_time, launchData });
 
@@ -145,18 +148,25 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
 
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)}/
-                    {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
-                </Text>
+                <VStack>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)}/
+                        {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
+                    </Text>
+                </VStack>
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {date}
                 </Text>
             </td>
-            <td style={{ minWidth: md ? "100px" : "" }}>
-                <Button onClick={(e) => e.stopPropagation()}>Edit</Button>
+            <td style={{ minWidth: md ? "230px" : "" }}>
+                <HStack justify="center">
+                    {!MINTED_OUT && <Button onClick={(e) => e.stopPropagation()}>Launch LP</Button>}
+
+                    {/* editable only when it is less than 48hrs from launch date */}
+                    {isEditable ? <Button onClick={(e) => e.stopPropagation()}>Edit</Button> : <Box w={100} />}
+                </HStack>
             </td>
         </tr>
     );
