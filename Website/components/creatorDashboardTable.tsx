@@ -94,6 +94,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     const router = useRouter();
+    const { CreateMarket } = useCreateMarket(launch);
+
     let launchData = launch;
     let name = launch.symbol;
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
@@ -191,7 +193,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center">
-                    {MINTED_OUT && <Button onClick={() => useCreateMarket(launchData)}>Launch LP</Button>}
+                    {MINTED_OUT && <Button onClick={() => CreateMarket()}>Launch LP</Button>}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable ? <Button onClick={(e) => e.stopPropagation()}>Edit</Button> : <Box w={100} />}

@@ -474,10 +474,9 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
     }, [wallet, launch_data]);
 
     const createMarket = useCallback(async () => {
-
         // if we have already done this then just skip this step
         if (launch_data.flags[LaunchFlags.LPState] > 0) {
-            console.log("Market already exists")
+            console.log("Market already exists");
             return;
         }
 

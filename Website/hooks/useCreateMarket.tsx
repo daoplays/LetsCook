@@ -13,7 +13,7 @@ import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/co
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 
-import { Dispatch, SetStateAction, useEffect} from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 
 import BN from "bn.js";
 import Decimal from "decimal.js";
@@ -58,7 +58,6 @@ import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
     createInitializeAccount3Instruction,
 } from "@solana/spl-token";
-
 
 import {
     serialise_RaydiumCreatePool_Instruction,
@@ -290,7 +289,7 @@ const useCreateMarket = (launchData: LaunchData) => {
     const CreateMarket = async () => {
         // if we have already done this then just skip this step
         if (launchData.flags[LaunchFlags.LPState] > 0) {
-            console.log("Market already exists")
+            console.log("Market already exists");
             return;
         }
 
@@ -532,7 +531,6 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
-
         const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
 
         var account_vector = [
@@ -545,7 +543,6 @@ const useCreateMarket = (launchData: LaunchData) => {
             { pubkey: eventQueue.publicKey, isSigner: false, isWritable: true },
             { pubkey: bids.publicKey, isSigner: false, isWritable: true },
             { pubkey: asks.publicKey, isSigner: false, isWritable: true },
-
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: PROGRAMIDS.OPENBOOK_MARKET, isSigner: false, isWritable: true });
@@ -555,7 +552,6 @@ const useCreateMarket = (launchData: LaunchData) => {
             programId: PROGRAM,
             data: instruction_data,
         });
-
 
         let list_txArgs = await get_current_blockhash("");
 
@@ -578,8 +574,7 @@ const useCreateMarket = (launchData: LaunchData) => {
         } catch (error) {
             console.log(error);
             return;
-        } 
-
+        }
     };
 
     return { CreateMarket, isLoading };

@@ -384,8 +384,7 @@ const MintPage = () => {
                                         console.log(wallet.publicKey);
                                         if (wallet.publicKey === null) {
                                             handleConnectWallet();
-                                        }
-                                        else {
+                                        } else {
                                             cookState === CookState.MINT_FAILED_NOT_REFUNDED
                                                 ? () => RefundTickets()
                                                 : cookState === CookState.MINT_SUCCEDED_TICKETS_LEFT
@@ -445,10 +444,7 @@ const MintPage = () => {
                                     isDisabled={cookState === CookState.PRE_LAUNCH}
                                     hidden={MINTED_OUT || MINT_FAILED}
                                     onClick={() => {
-                                        wallet.publicKey === null ?
-                                            handleConnectWallet()
-                                        :
-                                            BuyTickets();
+                                        wallet.publicKey === null ? handleConnectWallet() : BuyTickets();
                                     }}
                                 >
                                     {wallet.publicKey === null ? "Connect Wallet" : "Mint"}
