@@ -43,3 +43,7 @@ input[type="file"] {
 ::placeholder {
     color: white !important ;
 }
+
+.Toastify__toast-body {
+    white-space: pre-line;
+}

@@ -8,6 +8,8 @@ import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
+import { toast } from "react-toastify";
+import { useRouter } from "next/router";
 
 interface EditLaunchProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -16,7 +18,7 @@ interface EditLaunchProps {
 
 const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
     const wallet = useWallet();
-
+    const router = useRouter();
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
@@ -63,7 +65,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
-        setSubmitStatus("Set Launch Metadata");
+        const createLaunch = toast.loading("Launching your token...");
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -73,7 +75,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                alert("Transaction error, please try again");
+                toast.error("Transaction failed, please try again");
                 return;
             }
 
@@ -83,10 +85,22 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setSubmitStatus(null);
+            toast.update(createLaunch, {
+                render: "Congratulations! Your token has been successfully launched.",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
+            router.push("/dashboard");
         } catch (error) {
             console.log(error);
-            setSubmitStatus(null);
+            toast.update(createLaunch, {
+                render: "Transaction failed, please try again",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
     };

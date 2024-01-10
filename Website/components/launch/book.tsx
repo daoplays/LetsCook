@@ -23,6 +23,8 @@ import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import LaunchPreviewModal from "../launchPreview/modal";
 import useAppRoot from "../../context/useAppRoot";
+import { toast } from "react-toastify";
+import { useRouter } from "next/router";
 
 // Define the Tag type
 type Tag = {
@@ -36,6 +38,7 @@ interface BookPageProps {
 }
 
 const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
+    const router = useRouter();
     const wallet = useWallet();
     const { md } = useResponsive();
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
@@ -51,7 +54,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             console.log(result);
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
-                alert("Transaction failed, please try again");
+                toast.error("Transaction failed, please try again");
             }
             if (signature_ws_id.current === 1) {
                 await EditLaunch();
@@ -76,16 +79,16 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             // console.log("check balance", teamPubKey.toString(), balance);
 
             if (balance == 0) {
-                alert("Team Wallet does not exist");
+                toast.error("Team wallet does not exists");
                 return false;
             }
         } catch (error) {
-            alert("Invalid Team Wallet");
+            toast.error("Invalid team wallet");
             return false;
         }
 
         if (closeDate.getTime() < openDate.getTime()) {
-            alert("Close date must be after launch date");
+            toast.error("Close date must be set after launch date");
             return false;
         }
 
@@ -122,23 +125,63 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         const price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
         const balance_before = await irys.getLoadedBalance();
         // console.log("balance_before", balance_before.toString());
-        setSubmitStatus("Transfer balance for images on Arweave");
+
+        const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
+
         if (balance_before.lt(price)) {
-            await irys.fund(price);
+            try {
+                await irys.fund(price);
+                // toast.update(fundingToast, {
+                //     render: "Your account has been successfully funded.",
+                //     type: "success",
+                //     isLoading: false,
+                //     autoClose: 3000,
+                // });
+            } catch (error) {
+                toast.update(uploadImageToArweave, {
+                    render: "Oops! Something went wrong during funding. Please try again later. ",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
+            }
         }
+
         const balance_after = await irys.getLoadedBalance();
         // console.log("balance_after", balance_after.toString());
+
         const tags: Tag[] = [
             { name: "Content-Type", value: newLaunchData.current.icon_file.type },
             { name: "Content-Type", value: newLaunchData.current.banner_file.type },
         ];
-        setSubmitStatus("Sign for image upload to Arweave");
+
+        // const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
         const receipt = await irys.uploadFolder([newLaunchData.current.icon_file, newLaunchData.current.banner_file], {
             //@ts-ignore
             tags,
         });
 
-        console.log("Uploaded successfully.", "https://gateway.irys.xyz/" + receipt.id);
+        if (!receipt) {
+            toast.update(uploadImageToArweave, {
+                render: `Failed to upload images, please try again later.
+                View: https://gateway.irys.xyz/${receipt.id}`,
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
+            return;
+        }
+
+        toast.update(uploadImageToArweave, {
+            render: `Images have been uploaded successfully!
+            View: https://gateway.irys.xyz/${receipt.id}`,
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+
         let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
         let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.banner_file.name].id;
 
@@ -155,15 +198,43 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         const json_file = new File([blob], "metadata.json");
 
         const json_price = await irys.getPrice(json_file.size);
-        setSubmitStatus("Transfer balance for nft metadata on Arweave");
+
+        const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
+
         await irys.fund(json_price);
+        // toast.update(fundMetadata, {
+        //     render: "Your account has been successfully funded.",
+        //     type: "success",
+        //     isLoading: false,
+        //     autoClose: 3000,
+        // });
+
         const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
 
-        setSubmitStatus("Sign for metadata upload to Arweave");
+        // const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
         const json_receipt = await irys.uploadFile(json_file, {
             tags: json_tags,
         });
-        console.log("Uploaded successfully.", "https://gateway.irys.xyz/" + json_receipt.id);
+
+        if (!json_receipt) {
+            toast.update(uploadImageToArweave, {
+                render: `Failed to upload token metadata, please try again later.`,
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
+            return;
+        }
+
+        toast.update(fundMetadata, {
+            render: `Token metadata has been uploaded successfully!
+            View: https://gateway.irys.xyz/${json_receipt.id}`,
+            type: "success",
+            isLoading: false,
+            pauseOnFocusLoss: false,
+            autoClose: 3000,
+        });
 
         newLaunchData.current.uri = "https://gateway.irys.xyz/" + json_receipt.id;
         newLaunchData.current.icon_url = icon_url;
@@ -252,7 +323,9 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }));
 
         transaction.partialSign(token_mint_keypair);
-        setSubmitStatus("Create Launch Accounts");
+
+        const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
+
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -261,7 +334,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                alert("Transaction error, please try again");
+                toast.error("Transaction failed, please try again");
                 return;
             }
 
@@ -271,9 +344,23 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = 1;
+
+            toast.update(createLaunch, {
+                render: "Launch account is ready",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
             connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
+            toast.update(createLaunch, {
+                render: "We couldn't create your launch accounts. Please try again.",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
     }, [wallet, newLaunchData, check_signature_update]);
@@ -283,7 +370,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         if (closeDate && openDate && teamWallet) {
             Launch(e);
         } else {
-            alert("Please fill all the details on this page.");
+            toast.error("Please fill all the details on this page.");
         }
     }
 
@@ -385,7 +472,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                         </button>
                     </div>
                 </form>
-                {submitStatus !== null && <Text className={`${styles.nextBtn} font-face-kg `}>{submitStatus}</Text>}
+                {/* {submitStatus !== null && <Text className={`${styles.nextBtn} font-face-kg `}>{submitStatus}</Text>} */}
             </VStack>
 
             {/* Pass the actual pre-launch data here */}
