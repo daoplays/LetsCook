@@ -96,7 +96,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {
-                render: "Transaction failed, please try again",
+                render: "Something went wrong launching your token , please try again later.",
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,

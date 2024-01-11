@@ -122,21 +122,35 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             },
         });
 
-        const price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
-        const balance_before = await irys.getLoadedBalance();
-        // console.log("balance_before", balance_before.toString());
-
         const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
+
+        let price;
+        let balance_before;
+
+        try {
+            price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
+            balance_before = await irys.getLoadedBalance();
+        } catch (e) {
+            toast.update(uploadImageToArweave, {
+                render: e,
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        // console.log("balance_before", balance_before.toString());
 
         if (balance_before.lt(price)) {
             try {
                 await irys.fund(price);
-                // toast.update(fundingToast, {
-                //     render: "Your account has been successfully funded.",
-                //     type: "success",
-                //     isLoading: false,
-                //     autoClose: 3000,
-                // });
+                toast.update(uploadImageToArweave, {
+                    render: "Your account has been successfully funded.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
             } catch (error) {
                 toast.update(uploadImageToArweave, {
                     render: "Oops! Something went wrong during funding. Please try again later. ",
@@ -156,31 +170,32 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             { name: "Content-Type", value: newLaunchData.current.banner_file.type },
         ];
 
-        // const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
-        const receipt = await irys.uploadFolder([newLaunchData.current.icon_file, newLaunchData.current.banner_file], {
-            //@ts-ignore
-            tags,
-        });
+        const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
 
-        if (!receipt) {
-            toast.update(uploadImageToArweave, {
-                render: `Failed to upload images, please try again later.
+        let receipt;
+
+        try {
+            receipt = await irys.uploadFolder([newLaunchData.current.icon_file, newLaunchData.current.banner_file], {
+                //@ts-ignore
+                tags,
+            });
+            toast.update(uploadToArweave, {
+                render: `Images have been uploaded successfully!
                 View: https://gateway.irys.xyz/${receipt.id}`,
                 type: "success",
+                isLoading: false,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            toast.update(uploadToArweave, {
+                render: `Failed to upload images, please try again later.`,
+                type: "error",
                 isLoading: false,
                 autoClose: 3000,
             });
 
             return;
         }
-
-        toast.update(uploadImageToArweave, {
-            render: `Images have been uploaded successfully!
-            View: https://gateway.irys.xyz/${receipt.id}`,
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
 
         let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
         let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.banner_file.name].id;
@@ -201,40 +216,53 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
 
-        await irys.fund(json_price);
-        // toast.update(fundMetadata, {
-        //     render: "Your account has been successfully funded.",
-        //     type: "success",
-        //     isLoading: false,
-        //     autoClose: 3000,
-        // });
+        try {
+            await irys.fund(json_price);
+            toast.update(fundMetadata, {
+                render: "Your account has been successfully funded.",
+                type: "success",
+                isLoading: false,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            toast.update(fundMetadata, {
+                render: "Something went wrong. Please try again later. ",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
 
         const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
 
-        // const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
-        const json_receipt = await irys.uploadFile(json_file, {
-            tags: json_tags,
-        });
+        const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
 
-        if (!json_receipt) {
-            toast.update(uploadImageToArweave, {
-                render: `Failed to upload token metadata, please try again later.`,
+        let json_receipt;
+
+        try {
+            json_receipt = await irys.uploadFile(json_file, {
+                tags: json_tags,
+            });
+
+            toast.update(uploadMetadata, {
+                render: `Token metadata has been uploaded successfully!
+                View: https://gateway.irys.xyz/${json_receipt.id}`,
                 type: "success",
+                isLoading: false,
+                pauseOnFocusLoss: false,
+                autoClose: 2000,
+            });
+        } catch (error) {
+            toast.update(uploadMetadata, {
+                render: `Failed to upload token metadata, please try again later.`,
+                type: "error",
                 isLoading: false,
                 autoClose: 3000,
             });
 
             return;
         }
-
-        toast.update(fundMetadata, {
-            render: `Token metadata has been uploaded successfully!
-            View: https://gateway.irys.xyz/${json_receipt.id}`,
-            type: "success",
-            isLoading: false,
-            pauseOnFocusLoss: false,
-            autoClose: 3000,
-        });
 
         newLaunchData.current.uri = "https://gateway.irys.xyz/" + json_receipt.id;
         newLaunchData.current.icon_url = icon_url;

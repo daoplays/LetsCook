@@ -27,6 +27,7 @@ function MyApp({ Component, pageProps }) {
                 newestOnTop={false}
                 closeOnClick
                 pauseOnFocusLoss={false}
+                pauseOnHover={false}
                 rtl={false}
                 draggable
                 theme="light"
