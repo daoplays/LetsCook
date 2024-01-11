@@ -1,4 +1,4 @@
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE, LaunchKeys } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
     get_current_blockhash,
@@ -51,20 +51,6 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
 
-    useEffect(() => {
-        const { edit, preFilledData } = router.query;
-
-        if (edit && preFilledData) {
-            const parsedPreFilledData: LaunchData = JSON.parse(Array.isArray(preFilledData) ? preFilledData[0] : preFilledData);
-
-            const launch = new Date(parseInt(parsedPreFilledData.launch_date, 16));
-            const end = new Date(parseInt(parsedPreFilledData.end_date, 16));
-
-            setOpenDate(launch);
-            setcloseDate(end);
-            setTeamWallet(parsedPreFilledData.team_wallet.toString() || "");
-        }
-    }, [router.query]);
 
     const check_signature_update = useCallback(
         async (result: any) => {

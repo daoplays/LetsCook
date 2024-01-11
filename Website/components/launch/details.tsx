@@ -80,44 +80,6 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         if (setData()) setScreen("book");
     }
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchData = async () => {
-            try {
-                const { edit, preFilledData } = router.query;
-
-                if (edit && preFilledData) {
-                    const parsedPreFilledData = JSON.parse(Array.isArray(preFilledData) ? preFilledData[0] : preFilledData);
-
-                    let bannerImage = await fetch(parsedPreFilledData.banner);
-                    let data = await bannerImage.blob();
-                    let metadata = {
-                        type: "image/jpeg",
-                    };
-                    let file = new File([data], parsedPreFilledData.symbol, metadata);
-                    newLaunchData.current.banner_file = file;
-
-                    if (isMounted) {
-                        setName(parsedPreFilledData.page_name || "");
-                        setDescription(parsedPreFilledData.description || "");
-                        setWeb(parsedPreFilledData.socials[0] || "");
-                        setTelegram(parsedPreFilledData.socials[2] || "");
-                        setTwitter(parsedPreFilledData.socials[1] || "");
-                        setDiscord(parsedPreFilledData.socials[3] || "");
-                    }
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-        fetchData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [router.query]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">

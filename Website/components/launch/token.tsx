@@ -17,6 +17,8 @@ interface TokenPageProps {
 }
 
 const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
+
+    //console.log(newLaunchData.current)
     const router = useRouter();
     const { md } = useResponsive();
     const [name, setName] = useState<string>(newLaunchData.current.name);
@@ -115,54 +117,6 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         newLaunchData.current.distribution[5] = parseFloat(distribution6);
         setScreen("details");
     }
-
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchData = async () => {
-            try {
-                const { edit, preFilledData } = router.query;
-
-                if (edit && preFilledData) {
-                    const parsedPreFilledData: LaunchData = JSON.parse(Array.isArray(preFilledData) ? preFilledData[0] : preFilledData);
-
-                    let displayImage = await fetch(parsedPreFilledData.icon);
-                    let data = await displayImage.blob();
-                    let metadata = {
-                        type: "image/jpeg",
-                    };
-                    let file = new File([data], parsedPreFilledData.symbol, metadata);
-                    newLaunchData.current.icon_file = file;
-
-                    const ticketPrice = bignum_to_num(parseInt(parsedPreFilledData.ticket_price, 16)) / LAMPORTS_PER_SOL;
-
-                    if (isMounted) {
-                        setName(parsedPreFilledData.name || "");
-                        setSymbol(parsedPreFilledData.symbol || "");
-                        setDisplayImg(parsedPreFilledData.icon || "");
-                        setTotalSupply(parseInt(parsedPreFilledData.total_supply).toString() || "");
-                        setDecimal(parsedPreFilledData.decimals?.toString() || "");
-                        setMints(parsedPreFilledData.num_mints?.toString() || "");
-                        setTotalPrice(ticketPrice.toString() || "");
-                        setDistribution1(parsedPreFilledData.distribution[0]?.toString() || "");
-                        setDistribution2(parsedPreFilledData.distribution[1]?.toString() || "");
-                        setDistribution3(parsedPreFilledData.distribution[2]?.toString() || "");
-                        setDistribution4(parsedPreFilledData.distribution[3]?.toString() || "");
-                        setDistribution5(parsedPreFilledData.distribution[4]?.toString() || "");
-                        setDistribution6(parsedPreFilledData.distribution[5]?.toString() || "");
-                    }
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        };
-
-        fetchData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [router.query]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">

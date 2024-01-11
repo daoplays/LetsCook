@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
+import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -95,6 +95,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     const router = useRouter();
     const { CreateMarket } = useCreateMarket(launch);
+    const {newLaunchData} = useAppRoot();
 
     let launchData = launch;
     let name = launch.symbol;
@@ -205,10 +206,10 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                         <Button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                router.push({
-                                    pathname: `/launch`,
-                                    query: { edit: true, preFilledData: JSON.stringify(launch) },
-                                });
+                                newLaunchData.current = create_LaunchDataInput(launch)
+                                router.push(
+                                    `/launch`   
+                                );
                             }}
                         >
                             Edit

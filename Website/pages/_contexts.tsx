@@ -1,7 +1,7 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { RunLaunchDataGPA, LaunchData, UserData, RunUserDataGPA, bignum_to_num } from "../components/Solana/state";
+import { RunLaunchDataGPA, LaunchData, UserData, RunUserDataGPA, bignum_to_num, LaunchDataUserInput, defaultUserInput } from "../components/Solana/state";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
@@ -21,6 +21,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const check_launch_data = useRef<boolean>(true);
     const check_user_data = useRef<boolean>(true);
+
+    const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
 
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -130,6 +132,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             isUserDataLoading={isUserDataLoading}
             isHomePageDataLoading={isHomePageDataLoading}
             checkLaunchData={RecheckLaunchData}
+            newLaunchData={newLaunchData}
         >
             {children}
         </AppRootContextProvider>

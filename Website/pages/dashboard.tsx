@@ -1,12 +1,12 @@
 import { Button, Flex, Link, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import useResponsive from "../hooks/useResponsive";
 import CreatorDashboardTable from "../components/creatorDashboardTable";
 import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
-import { LaunchData } from "../components/Solana/state";
+import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";
 import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";

@@ -10,7 +10,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const Launch = () => {
     const [screen, setScreen] = useState("token");
-    const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
+    const {newLaunchData} = useAppRoot();
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)", paddingTop: "50px" }}>

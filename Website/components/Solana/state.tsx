@@ -583,6 +583,47 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     return data;
 }
 
+export function create_LaunchDataInput(launch_data: LaunchData): LaunchDataUserInput {
+    // console.log(new_launch_data);
+    // console.log(new_launch_data.opendate.toString());
+    // console.log(new_launch_data.closedate.toString());
+
+
+    const data: LaunchDataUserInput = {
+        name: launch_data.name,
+        symbol: launch_data.symbol,
+        icon_file: null,
+        uri_file: null,
+        banner_file: null,
+        icon_url: launch_data.icon,
+        banner_url: launch_data.banner,
+        displayImg: null,
+        total_supply: 0,
+        decimals: launch_data.decimals,
+        num_mints: launch_data.num_mints,
+        minimum_liquidity: 0,
+        ticket_price: 0,
+        distribution: launch_data.distribution,
+        launch_date: new Date(new Date().setHours(0, 0, 0, 0)),
+        uri: launch_data.meta_url,
+        pagename: launch_data.page_name,
+        description: launch_data.description,
+        web_url: "https://",
+        tele_url: "https://",
+        twt_url: "https://X.com/",
+        disc_url: "https://",
+        opendate: new Date(bignum_to_num(launch_data.launch_date)),
+        opentime: "",
+        closedate: new Date(bignum_to_num(launch_data.end_date)),
+        closetime: "",
+        opendateLP: new Date(new Date().setHours(0, 0, 0, 0)),
+        opentimeLP: "",
+        team_wallet: "",
+    };
+
+    return data;
+}
+
 export class JoinData {
     constructor(
         readonly account_type: number,
