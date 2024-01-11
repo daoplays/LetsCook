@@ -1,12 +1,13 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useState, useEffect } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
 import { Center, VStack, Text } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
 import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
-import { LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
+import { LaunchData, LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
+import { useRouter } from "next/router";
 
 interface DetailsPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -14,6 +15,7 @@ interface DetailsPageProps {
 }
 
 const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
+    const router = useRouter();
     const { md } = useResponsive();
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
@@ -77,6 +79,45 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     function setLaunchData(e) {
         if (setData()) setScreen("book");
     }
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchData = async () => {
+            try {
+                const { edit, preFilledData } = router.query;
+
+                if (edit && preFilledData) {
+                    const parsedPreFilledData = JSON.parse(Array.isArray(preFilledData) ? preFilledData[0] : preFilledData);
+
+                    let bannerImage = await fetch(parsedPreFilledData.banner);
+                    let data = await bannerImage.blob();
+                    let metadata = {
+                        type: "image/jpeg",
+                    };
+                    let file = new File([data], parsedPreFilledData.symbol, metadata);
+                    newLaunchData.current.banner_file = file;
+
+                    if (isMounted) {
+                        setName(parsedPreFilledData.page_name || "");
+                        setDescription(parsedPreFilledData.description || "");
+                        setWeb(parsedPreFilledData.socials[0] || "");
+                        setTelegram(parsedPreFilledData.socials[2] || "");
+                        setTwitter(parsedPreFilledData.socials[1] || "");
+                        setDiscord(parsedPreFilledData.socials[3] || "");
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [router.query]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">

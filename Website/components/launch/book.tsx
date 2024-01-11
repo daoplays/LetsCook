@@ -5,8 +5,10 @@ import {
     send_transaction,
     serialise_CreateLaunch_instruction,
     create_LaunchData,
+    LaunchData,
+    bignum_to_num,
 } from "../../components/Solana/state";
-import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect } from "react";
 import { Center, VStack, Text, useDisclosure } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
@@ -48,6 +50,21 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const signature_ws_id = useRef<number | null>(null);
 
     const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
+
+    useEffect(() => {
+        const { edit, preFilledData } = router.query;
+
+        if (edit && preFilledData) {
+            const parsedPreFilledData: LaunchData = JSON.parse(Array.isArray(preFilledData) ? preFilledData[0] : preFilledData);
+
+            const launch = new Date(parseInt(parsedPreFilledData.launch_date, 16));
+            const end = new Date(parseInt(parsedPreFilledData.end_date, 16));
+
+            setOpenDate(launch);
+            setcloseDate(end);
+            setTeamWallet(parsedPreFilledData.team_wallet.toString() || "");
+        }
+    }, [router.query]);
 
     const check_signature_update = useCallback(
         async (result: any) => {
