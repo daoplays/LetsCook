@@ -60,13 +60,13 @@ const EmptyLaunch = () => {
         <VStack minHeight="92vh" style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)" }}>
             <Box
                 w="100%"
-                h={lg ? 320 : 380}
+                h={lg ? 350 : 400}
                 bg={"url(./images/banner.png)"}
                 bgSize="cover"
                 boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
                 style={{ borderBottom: "1px solid #868E96" }}
             >
-                <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)" w="100%" h="100%">
+                <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 150%)" w="100%" h="100%">
                     <VStack px={4} justify="center" w="100%" h={"100%"} spacing={6}>
                         <Text m={0} fontSize={sm ? 30 : md ? 45 : 60} color="white" className="font-face-kg" align={"center"}>
                             Have a killer meme idea?
