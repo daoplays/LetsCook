@@ -104,7 +104,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     let current_time = new Date().getTime();
 
     const timeDifference = current_time - launch.launch_date;
-    const isEditable = timeDifference < 48 * 60 * 60 * 1000; // 48 hours
+    const isEditable = timeDifference > 48 * 60 * 60 * 1000; // 48 hours
 
     const cook_state = useDetermineCookState({ current_time, launchData });
 
@@ -181,7 +181,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <VStack>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)}/
+                        {((Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL)}/
                         {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>

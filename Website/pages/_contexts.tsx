@@ -38,9 +38,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setIsHomePageDataLoading(true);
 
         let list = await RunLaunchDataGPA("");
-        let close_filtered = filterTable({ list });
+        
         //console.log("running GPA", list);
-        setLaunchData(close_filtered);
+        setLaunchData(list);
+
+        let close_filtered = filterTable({ list });
 
         let home_page_data: LaunchData[] = [];
         let home_page_map = new Map<number, LaunchData>();

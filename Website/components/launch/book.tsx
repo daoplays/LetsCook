@@ -250,8 +250,6 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        let fees_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
-
         const token_mint_keypair = Keypair.generate();
         var token_mint_pubkey = token_mint_keypair.publicKey;
         let token_meta_key = PublicKey.findProgramAddressSync(
@@ -265,12 +263,6 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             true, // allow owner off curve
         );
 
-        let user_token_account_key = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -278,10 +270,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         if (DEBUG) {
             console.log("arena: ", program_data_account.toString());
             console.log("game_data_account: ", launch_data_account.toString());
-            console.log("sol_data_account: ", fees_account.toString());
             console.log("wsol seed", wrapped_sol_seed);
             console.log("mint", token_mint_pubkey.toString());
         }
+
+        let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
@@ -293,14 +286,14 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: fees_account, isSigner: false, isWritable: true },
             { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
-            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
+            { pubkey: team_wallet, isSigner: false, isWritable: true },
+
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
