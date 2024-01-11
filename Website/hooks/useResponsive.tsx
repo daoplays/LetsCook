@@ -21,7 +21,11 @@ const useResponsive = () => {
         query: "(max-width: 1440px)",
     });
 
-    return { xs, sm, lg, md, xl };
+    const xxl = useMediaQuery({
+        query: "(max-width: 1650px)",
+    });
+
+    return { xs, sm, lg, md, xl, xxl };
 };
 
 export default useResponsive;

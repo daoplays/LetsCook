@@ -10,6 +10,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import useAppRoot from "../context/useAppRoot";
 
 interface EditLaunchProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -19,6 +20,8 @@ interface EditLaunchProps {
 const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
     const wallet = useWallet();
     const router = useRouter();
+    const { checkLaunchData } = useAppRoot();
+
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
@@ -28,6 +31,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
             alert("Transaction failed, please try again");
         }
         signature_ws_id.current = null;
+        await checkLaunchData();
     }, []);
 
     const EditLaunch = async () => {
@@ -96,7 +100,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {
-                render: "Transaction failed, please try again",
+                render: "Something went wrong launching your token , please try again later.",
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,

@@ -386,11 +386,11 @@ const MintPage = () => {
                                             handleConnectWallet();
                                         } else {
                                             cookState === CookState.MINT_FAILED_NOT_REFUNDED
-                                                ? () => RefundTickets()
+                                                ? RefundTickets()
                                                 : cookState === CookState.MINT_SUCCEDED_TICKETS_LEFT
-                                                  ? () => CheckTickets()
+                                                  ? CheckTickets()
                                                   : cookState === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
-                                                    ? () => ClaimTokens()
+                                                    ? ClaimTokens()
                                                     : () => {};
                                         }
                                     }}

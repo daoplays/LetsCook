@@ -103,10 +103,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
 
     let current_time = new Date().getTime();
 
-    const timeDifference = current_time - launch.launch_date;
+    const timeDifference = launch.launch_date - current_time;
     const isEditable = timeDifference > 48 * 60 * 60 * 1000; // 48 hours
-
-    const cook_state = useDetermineCookState({ current_time, launchData });
+    const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
     const MINTED_OUT = [
@@ -115,6 +114,12 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED,
     ].includes(cook_state);
     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
+
+    //buttonClicked:
+    const LaunchLPClicked = (e) => {
+        e.stopPropagation();
+        CreateMarket();
+    };
 
     return (
         <tr
@@ -181,7 +186,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <VStack>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {((Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL)}/
+                        {(Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL}/
                         {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>
@@ -193,7 +198,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center">
-                    {MINTED_OUT && <Button onClick={() => CreateMarket()}>Launch LP</Button>}
+                    {MINTED_OUT && <Button onClick={(e) => LaunchLPClicked(e)}>Launch LP</Button>}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable ? <Button onClick={(e) => e.stopPropagation()}>Edit</Button> : <Box w={100} />}

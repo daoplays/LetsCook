@@ -20,6 +20,7 @@ interface Props {
 const useDetermineCookState = ({ current_time, launchData, join_data }: Props) => {
     if (!launchData) return;
 
+    console.log("join data", join_data);
     if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data === null) {
         return CookState.ACTIVE_NO_TICKETS;
     }

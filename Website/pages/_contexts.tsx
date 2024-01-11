@@ -38,7 +38,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setIsHomePageDataLoading(true);
 
         let list = await RunLaunchDataGPA("");
-        
+
         //console.log("running GPA", list);
         setLaunchData(list);
 

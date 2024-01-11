@@ -5,6 +5,7 @@ import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/co
 import { useCallback, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 
 interface BuyTicketsProps {
     launchData: LaunchData;
@@ -43,7 +44,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        if (wallet.publicKey.toString() == launchData.seller.toString()) {
+        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;
         }
@@ -60,6 +61,8 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             PROGRAM,
         )[0];
 
+        let feesAccount = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
+
         const instruction_data = serialise_BuyTickets_instruction(value);
 
         var account_vector = [
@@ -67,7 +70,8 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: launchData.sol_address, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
+            { pubkey: feesAccount, isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
