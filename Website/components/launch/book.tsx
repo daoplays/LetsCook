@@ -445,6 +445,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
                                         <DatePicker
+                                            disabled={newLaunchData.current.edit_mode === true}
                                             showTimeSelect
                                             timeFormat="HH:mm"
                                             timeIntervals={15}
@@ -461,6 +462,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
                                         <DatePicker
+                                            disabled={newLaunchData.current.edit_mode === true}
                                             showTimeSelect
                                             timeFormat="HH:mm"
                                             timeIntervals={15}

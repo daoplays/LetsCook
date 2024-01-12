@@ -135,6 +135,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
                                         value={newLaunchData.current.banner_file !== null ? "File Selected" : "No File Selected"}
+                                        readOnly
                                     />
                                 </div>
                             </div>

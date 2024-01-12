@@ -184,6 +184,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <Input
+                                        readOnly
                                         disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
@@ -295,6 +296,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         }
                                         disabled
                                         style={{ cursor: "not-allowed" }}
+                                        readOnly
                                     />
                                     <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
                                 </div>

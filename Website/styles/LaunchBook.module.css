@@ -112,6 +112,14 @@
     text-align: center !important;
     font-family: "ChalkBoard";
 }
+.textLabelInputDate input:disabled {
+    opacity: 0.4;
+    border: 1px solid rgba(255, 255, 255, 0.761);
+    background-color: #494949; /* Darker background color for disabled state */
+    color: white; /*     border-color:;
+ text color for disabled state */
+    cursor: not-allowed; /* Change cursor to not-allowed for better user experience */
+}
 .inputTxtarea {
     position: relative;
     background-color: #494949;
