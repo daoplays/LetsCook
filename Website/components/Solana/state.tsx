@@ -605,7 +605,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         disc_url: launch_data.socials[Socials.Discord].toString(),
         opendate: new Date(bignum_to_num(launch_data.launch_date)),
         closedate: new Date(bignum_to_num(launch_data.end_date)),
-        team_wallet: "",
+        team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
     };
 
     return data;

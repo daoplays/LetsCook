@@ -36,8 +36,6 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
     const [distribution5, setDistribution5] = useState(newLaunchData.current.distribution[4].toString());
     const [distribution6, setDistribution6] = useState(newLaunchData.current.distribution[5].toString());
 
-    const { editing } = router.query;
-
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
@@ -141,7 +139,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         maxLength={25}
                                         required
@@ -158,7 +156,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 <div style={{ width: "50%" }} className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         maxLength={8}
                                         required
@@ -176,14 +174,17 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div>
                                     <label className={styles.label}>
                                         <input id="file" type="file" onChange={handleFileChange} />
-                                        <span className={styles.browse} style={{ cursor: editing === "true" ? "not-allowed" : "pointer" }}>
+                                        <span
+                                            className={styles.browse}
+                                            style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer" }}
+                                        >
                                             BROWSE
                                         </span>
                                     </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
@@ -203,7 +204,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         required
                                         className={styles.inputBox}
@@ -222,7 +223,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         required
                                         className={styles.inputBox}
@@ -244,7 +245,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         required
                                         className={styles.inputBox}
@@ -263,7 +264,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 <div style={{ width: md ? "100%" : "50%" }} className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         required
                                         className={styles.inputBox}

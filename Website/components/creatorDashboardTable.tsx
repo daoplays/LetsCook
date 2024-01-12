@@ -144,10 +144,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
 
         setIsEditing(false);
 
-        router.push({
-            pathname: `/launch`,
-            query: { editing: true },
-        });
+        router.push("/launch");
     };
 
     return (

@@ -102,17 +102,17 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             return false;
         }
 
-        if (current_time > openDate.getTime()) {
-            toast.error("Cannot create launch that starts in the past");
-            return false;
-        }
-
         if (closeDate.getTime() < openDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
         }
 
-        if (openDate.getTime() < (new Date()).getTime()) {
+        if (openDate.getTime() < new Date().getTime()) {
+            toast.error("Close date must be set after launch date");
+            return false;
+        }
+
+        if (openDate.getTime() < new Date().getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
         }
@@ -136,7 +136,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         // if this is in edit mode then just call that function
-        if (newLaunchData.current.edit_mode) {
+        if (newLaunchData.current.edit_mode === true) {
             await EditLaunch();
             return;
         }
@@ -482,7 +482,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            disabled={editing === "true"}
+                                            disabled={newLaunchData.current.edit_mode === true}
                                             size="lg"
                                             required
                                             className={styles.inputBox}

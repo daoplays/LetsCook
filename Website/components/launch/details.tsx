@@ -26,8 +26,6 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
 
-    const { editing } = router.query;
-
     const { launchList } = useAppRoot();
 
     const handleNameChange = (e) => {
@@ -46,15 +44,15 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         }
     };
 
-    function setLaunchData(e) {
+    async function setLaunchData(e) {
         e.preventDefault();
 
-        const nameExists = launchList.filter((launch) => launch.page_name === name);
+        // const nameExists = launchList.filter((launch) => launch.page_name === name);
 
-        if (nameExists.length) {
-            toast.error("Page name already exists");
-            return;
-        }
+        // if (nameExists.length) {
+        //     toast.error("Page name already exists");
+        //     return;
+        // }
 
         if (description.length > 250) {
             toast.error("Description should be less than 250 characters long");
@@ -72,12 +70,15 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         )[0];
 
         let balance = 0;
-        //balance = await request_current_balance("", launch_data_account);
 
-        console.log("check balance", launch_data_account.toString(), balance);
+        if (newLaunchData.current.edit_mode === false) {
+            balance = await request_current_balance("", launch_data_account);
+        }
+
+        // console.log("check balance", launch_data_account.toString(), balance);
 
         if (balance > 0) {
-            alert("page name already taken");
+            toast.error("Page name already exists");
             return;
         }
 
@@ -119,14 +120,17 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                 <div>
                                     <label className={styles.label}>
                                         <input id="file" type="file" onChange={handleFileChange} />
-                                        <span className={styles.browse} style={{ cursor: editing === "true" ? "not-allowed" : "pointer" }}>
+                                        <span
+                                            className={styles.browse}
+                                            style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer" }}
+                                        >
                                             BROWSE
                                         </span>
                                     </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={editing === "true"}
+                                        disabled={newLaunchData.current.edit_mode === true}
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
