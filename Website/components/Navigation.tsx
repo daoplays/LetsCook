@@ -63,9 +63,20 @@ function Navigation() {
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/bags">
-                                <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} />
-                            </Link>
+                            <Image
+                                src="/images/money-bag.png"
+                                width={35}
+                                height={35}
+                                alt={"Money Bag"}
+                                onClick={() => {
+                                    if (!wallet.connected) {
+                                        alert("Please connect your wallet to access your bags");
+                                    } else {
+                                        router.push(`/bags`);
+                                    }
+                                }}
+                                style={{ cursor: "pointer" }}
+                            />
                         </Tooltip>
                     </Show>
 
@@ -177,11 +188,21 @@ function Navigation() {
                     <Text className={styles.connect}>LEADERBOARD</Text>
                 </Link> */}
 
-                <Link href="/bags" onClick={onToggle}>
-                    <Text color="#683309" fontSize={30} fontWeight="bold">
-                        My Bags
-                    </Text>
-                </Link>
+                <Text
+                    color="#683309"
+                    fontSize={30}
+                    fontWeight="bold"
+                    onClick={() => {
+                        if (!wallet.connected) {
+                            alert("Please connect your wallet to access creator dashboard");
+                        } else {
+                            onToggle();
+                            router.push("/bags");
+                        }
+                    }}
+                >
+                    My Bags
+                </Text>
 
                 {/* <Text className={styles.connect} style={{ opacity: 0.5 }}>
                     HISTORY
