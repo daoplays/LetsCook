@@ -136,8 +136,8 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         setIsEditing(true);
         newLaunchData.current = create_LaunchDataInput(launch, true);
 
-        let bannerFile = await convertImageURLToFile(launch.banner, "");
-        let iconFile = await convertImageURLToFile(launch.icon, "");
+        let bannerFile = await convertImageURLToFile(launch.banner, `${launch.name} banner image`);
+        let iconFile = await convertImageURLToFile(launch.icon, `${launch.name} icon image`);
 
         newLaunchData.current.banner_file = bannerFile;
         newLaunchData.current.icon_file = iconFile;
