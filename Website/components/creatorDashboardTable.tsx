@@ -13,6 +13,7 @@ import { useRouter } from "next/router";
 import useCreateMarket from "../hooks/useCreateMarket";
 import convertToBlob from "../hooks/useConvertToBlob";
 import convertImageURLToFile from "../hooks/useConvertToBlob";
+import { LaunchFlags } from "./Solana/constants";
 interface Header {
     text: string;
     field: string | null;
@@ -22,8 +23,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
-    const [sortedField, setSortedField] = useState<string | null>(null);
-    const [reverseSort, setReverseSort] = useState<boolean>(false);
+    const [sortedField, setSortedField] = useState<string | null>("date");
+    const [reverseSort, setReverseSort] = useState<boolean>(true);
 
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
@@ -221,7 +222,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "80px" }}>
-                    {MINTED_OUT && <Button onClick={(e) => LaunchLPClicked(e)}>Launch LP</Button>}
+                    {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && <Button onClick={(e) => LaunchLPClicked(e)}>Launch LP</Button>}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable && (

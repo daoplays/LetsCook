@@ -48,6 +48,7 @@ import { createInitializeAccount3Instruction } from "@solana/spl-token";
 
 import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import useCreateAMM from "./useCreateAMM";
 
 const PROGRAMIDS = DEVNET_PROGRAM_ID;
 const addLookupTableInfo = LOOKUP_TABLE_CACHE;
@@ -141,19 +142,27 @@ const DEFAULT_TOKEN = {
 
 const useCreateMarket = (launchData: LaunchData) => {
     const wallet = useWallet();
+    const { CreateAMM } = useCreateAMM(launchData);
 
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-        }
-        signature_ws_id.current = null;
-    }, []);
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Transaction failed, please try again");
+            }
+
+            if (signature_ws_id.current === 2) {
+                await CreateAMM();
+            }
+            signature_ws_id.current = null;
+        },
+        [CreateAMM],
+    );
 
     function initializeMarketInstruction({
         programId,
@@ -272,6 +281,7 @@ const useCreateMarket = (launchData: LaunchData) => {
         console.log(launchData);
         if (launchData.flags[LaunchFlags.LPState] > 0) {
             console.log("Market already exists");
+            await CreateAMM();
             return;
         }
 
@@ -282,7 +292,7 @@ const useCreateMarket = (launchData: LaunchData) => {
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
         const makeTxVersion = TxVersion.V0;
         let min_order_size = 1;
-        let tick_size = 0.01;
+        let tick_size = 0.000001;
 
         const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
 
@@ -597,7 +607,8 @@ const useCreateMarket = (launchData: LaunchData) => {
 
             console.log("list sig: ", signature);
 
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            signature_ws_id.current = 2;
+            connection.onSignature(signature, check_signature_update, "confirmed");
 
             toast.update(updateCookAccountsToast, {
                 render: "Cook accounts updated",
