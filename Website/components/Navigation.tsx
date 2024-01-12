@@ -63,7 +63,9 @@ function Navigation() {
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} style={{ cursor: "not-allowed" }} />
+                            <Link href="/bags">
+                                <Image src="/images/money-bag.png" width={35} height={35} alt={"Money Bag"} />
+                            </Link>
                         </Tooltip>
                     </Show>
 
@@ -175,9 +177,11 @@ function Navigation() {
                     <Text className={styles.connect}>LEADERBOARD</Text>
                 </Link> */}
 
-                <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: 0.5 }}>
-                    My Bags
-                </Text>
+                <Link href="/bags" onClick={onToggle}>
+                    <Text color="#683309" fontSize={30} fontWeight="bold">
+                        My Bags
+                    </Text>
+                </Link>
 
                 {/* <Text className={styles.connect} style={{ opacity: 0.5 }}>
                     HISTORY
