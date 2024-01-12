@@ -45,7 +45,6 @@ const BagsPage = () => {
                 >
                     My Bags
                 </Text>
-                <Button w={sm ? "100%" : "fit-content"}>Claim All</Button>
             </Flex>
             <MyBagsTable bags={joinedLaunches} />
         </main>

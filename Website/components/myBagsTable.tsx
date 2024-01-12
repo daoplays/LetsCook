@@ -30,7 +30,7 @@ const MyBagsTable = ({ bags }: { bags: LaunchData[] }) => {
         { text: "TICKER", field: "symbol" },
         { text: "STATUS", field: null },
         { text: "LIQUIDITY", field: "liquidity" },
-        { text: "DATE", field: "date" },
+        { text: "ENDS", field: "date" },
     ];
 
     const handleHeaderClick = (field: string | null) => {
@@ -106,7 +106,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
 
     let current_time = new Date().getTime();
 
-    let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
+    let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });

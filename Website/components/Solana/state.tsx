@@ -912,20 +912,47 @@ class EditLaunch_Instruction {
     constructor(
         readonly instruction: number,
         readonly description: string,
+        readonly distribution: number[],
+        readonly website: string,
+        readonly twitter: string,
+        readonly telegram: string,
+        readonly discord: string,
     ) {}
 
     static readonly struct = new FixableBeetStruct<EditLaunch_Instruction>(
         [
             ["instruction", u8],
             ["description", utf8String],
+            ["distribution", uniformFixedSizeArray(u8, 6)],
+            ["website", utf8String],
+            ["twitter", utf8String],
+            ["telegram", utf8String],
+            ["discord", utf8String],
         ],
-        (args) => new EditLaunch_Instruction(args.instruction!, args.description!),
+        (args) =>
+            new EditLaunch_Instruction(
+                args.instruction!,
+                args.description!,
+                args.distribution!,
+                args.website!,
+                args.twitter!,
+                args.telegram!,
+                args.discord!,
+            ),
         "EditLaunch_Instruction",
     );
 }
 
 export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
-    const data = new EditLaunch_Instruction(LaunchInstruction.edit_launch, new_launch_data.description);
+    const data = new EditLaunch_Instruction(
+        LaunchInstruction.edit_launch,
+        new_launch_data.description,
+        new_launch_data.distribution,
+        new_launch_data.web_url,
+        new_launch_data.twt_url,
+        new_launch_data.tele_url,
+        new_launch_data.disc_url,
+    );
     const [buf] = EditLaunch_Instruction.struct.serialize(data);
 
     return buf;
