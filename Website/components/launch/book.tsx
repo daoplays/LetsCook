@@ -409,7 +409,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             });
             return;
         }
-    }, [wallet, newLaunchData, check_signature_update]);
+    }, [wallet, newLaunchData, EditLaunch, check_signature_update]);
 
     function confirm(e) {
         e.preventDefault();
@@ -440,6 +440,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
                                         <DatePicker
+                                            disabled={newLaunchData.current.edit_mode === true}
                                             showTimeSelect
                                             timeFormat="HH:mm"
                                             timeIntervals={15}
@@ -456,7 +457,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
                                         <DatePicker
-                                            readonly={true}
+                                            disabled={newLaunchData.current.edit_mode === true}
                                             showTimeSelect
                                             timeFormat="HH:mm"
                                             timeIntervals={15}

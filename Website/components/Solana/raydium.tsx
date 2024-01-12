@@ -473,7 +473,6 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         console.log(transaction_response);
     }, [wallet, launch_data]);
 
-
     return (
         <Box
             as="button"

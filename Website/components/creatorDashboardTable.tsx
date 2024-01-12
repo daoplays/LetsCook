@@ -104,13 +104,10 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     let launchData = launch;
     let name = launch.symbol;
 
-    let current_time = new Date().getTime();
-    let local_date = new Date();
+    let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
+    let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
-    let utc_launch_date = new Date(bignum_to_num(launchData.launch_date));
-    let local_launch_date = new Date(utc_launch_date.setMinutes(utc_launch_date.getMinutes() - local_date.getTimezoneOffset()));
-    let splitLaunchDate = local_launch_date.toUTCString().split(" ");
-    let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+    let current_time = new Date().getTime();
 
     const timeDifference = launchData.launch_date - current_time;
     const isEditable = timeDifference > 48 * 60 * 60 * 1000; // 48 hours
@@ -219,7 +216,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launchDate}
+                    {date}
                 </Text>
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>

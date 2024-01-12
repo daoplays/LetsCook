@@ -5,7 +5,7 @@ import {
     myU64,
     send_transaction,
     serialise_basic_instruction,
-    request_current_balance
+    request_current_balance,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -44,15 +44,9 @@ import {
     TransactionMessage,
 } from "@solana/web3.js";
 
-import {
-    createInitializeAccount3Instruction,
-} from "@solana/spl-token";
+import { createInitializeAccount3Instruction } from "@solana/spl-token";
 
-import {
-    serialise_RaydiumInitMarket_Instruction,
-    MarketStateLayoutV2,
-    bignum_to_num,
-} from "../components/Solana/state";
+import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 
 const PROGRAMIDS = DEVNET_PROGRAM_ID;
@@ -382,7 +376,6 @@ const useCreateMarket = (launchData: LaunchData) => {
             transaction.add(ins1[i]);
         }
         try {
-
             let base_balance = await request_current_balance("", baseVault.publicKey);
 
             if (base_balance == 0) {
@@ -400,9 +393,8 @@ const useCreateMarket = (launchData: LaunchData) => {
                 isLoading: false,
                 autoClose: 3000,
             });
-        }
-        catch(error) {
-            console.log(error)
+        } catch (error) {
+            console.log(error);
             toast.update(createMarketToast, {
                 render: "Token account creation failed.  Please try later",
                 type: "error",
@@ -412,7 +404,6 @@ const useCreateMarket = (launchData: LaunchData) => {
         }
 
         const createMarketAccountsToast = toast.loading("(2/4) Create market accounts...");
-
 
         const ins2: TransactionInstruction[] = [];
         ins2.push(
@@ -554,8 +545,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 isLoading: false,
                 autoClose: 3000,
             });
-        }
-        catch(error) {
+        } catch (error) {
             toast.update(createMarketAccountsToast, {
                 render: "Market account creation failed, please try again later",
                 type: "error",
@@ -565,7 +555,6 @@ const useCreateMarket = (launchData: LaunchData) => {
         }
 
         const updateCookAccountsToast = toast.loading("(3/4) Update Cook accounts...");
-
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -616,7 +605,6 @@ const useCreateMarket = (launchData: LaunchData) => {
                 isLoading: false,
                 autoClose: 3000,
             });
-
         } catch (error) {
             console.log(error);
             toast.update(updateCookAccountsToast, {

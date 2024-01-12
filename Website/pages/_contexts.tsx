@@ -1,7 +1,15 @@
 "use client";
 
 import { useWallet } from "@solana/wallet-adapter-react";
-import { RunLaunchDataGPA, LaunchData, UserData, RunUserDataGPA, bignum_to_num, LaunchDataUserInput, defaultUserInput } from "../components/Solana/state";
+import {
+    RunLaunchDataGPA,
+    LaunchData,
+    UserData,
+    RunUserDataGPA,
+    bignum_to_num,
+    LaunchDataUserInput,
+    defaultUserInput,
+} from "../components/Solana/state";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
