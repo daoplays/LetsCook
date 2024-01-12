@@ -141,12 +141,8 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
     const router = useRouter();
     let name = launch.symbol;
 
-    let local_date = new Date();
-
-    let utc_launch_date = new Date(bignum_to_num(launch.launch_date));
-    let local_launch_date = new Date(utc_launch_date.setMinutes(utc_launch_date.getMinutes() - local_date.getTimezoneOffset()));
-    let splitLaunchDate = local_launch_date.toUTCString().split(" ");
-    let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+    let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
+    let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     return (
         <tr
@@ -194,7 +190,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launchDate}
+                    {date}
                 </Text>
             </td>
             <td style={{ minWidth: "100px" }}>
