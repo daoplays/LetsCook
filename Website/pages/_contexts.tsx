@@ -9,6 +9,8 @@ import {
     bignum_to_num,
     LaunchDataUserInput,
     defaultUserInput,
+    JoinData,
+    RunJoinDataGPA,
 } from "../components/Solana/state";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
@@ -27,8 +29,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
 
+    const [join_data, setJoinData] = useState<JoinData[]>([]);
+
     const check_launch_data = useRef<boolean>(true);
     const check_user_data = useRef<boolean>(true);
+    const check_join_data = useRef<boolean>(true);
 
     const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
 
@@ -112,6 +117,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setIsUserDataLoading(false);
     }, [wallet.publicKey]);
 
+    const CheckJoinedData = useCallback(async () => {
+        if (!check_join_data.current) return;
+
+        let join_data_list = await RunJoinDataGPA(wallet);
+        setJoinData(join_data_list);
+    }, [wallet]);
+
     const RecheckLaunchData = useCallback(async () => {
         check_launch_data.current = true;
         CheckLaunchData();
@@ -126,8 +138,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [CheckUserData, wallet]);
 
     useEffect(() => {
+        CheckJoinedData();
+    }, [CheckJoinedData, wallet]);
+
+    useEffect(() => {
         check_launch_data.current = true;
         check_user_data.current = true;
+        check_join_data.current = true;
     }, [wallet]);
 
     return (
@@ -136,6 +153,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             homePageList={home_page_data}
             userList={user_data}
             currentUserData={current_user_data}
+            joinData={join_data}
             isLaunchDataLoading={isLaunchDataLoading}
             isUserDataLoading={isUserDataLoading}
             isHomePageDataLoading={isHomePageDataLoading}

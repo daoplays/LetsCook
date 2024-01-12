@@ -1,7 +1,7 @@
 "use client";
 
 import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
-import { LaunchData, UserData, LaunchDataUserInput } from "../components/Solana/state";
+import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
 
 interface AppRootTypes {
     launchList: LaunchData[];
@@ -13,6 +13,7 @@ interface AppRootTypes {
     isHomePageDataLoading: boolean;
     checkLaunchData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
+    joinData: JoinData[];
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -28,6 +29,7 @@ export const AppRootContextProvider = ({
     isHomePageDataLoading,
     checkLaunchData,
     newLaunchData,
+    joinData,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -41,6 +43,7 @@ export const AppRootContextProvider = ({
                 isHomePageDataLoading,
                 checkLaunchData,
                 newLaunchData,
+                joinData,
             }}
         >
             {children}

@@ -13,7 +13,7 @@ import {
     array,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
 import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials } from "./constants";
 import { Box } from "@chakra-ui/react";
@@ -758,13 +758,14 @@ export async function RunUserDataGPA(bearer: string): Promise<UserData[]> {
     return result;
 }
 
-export async function RunJoinDataGPA(): Promise<JoinData[]> {
-    const wallet = useWallet();
+export async function RunJoinDataGPA(wallet: WalletContextState | null): Promise<JoinData[]> {
+    if (!wallet.publicKey) return;
+
     let index_buffer = uInt8ToLEBytes(3);
     let account_bytes = bs58.encode(index_buffer);
     let wallet_bytes = PublicKey.default.toBase58();
 
-    console.log("wallet", wallet !== null ? wallet.toString() : "null");
+    // console.log("wallet", wallet !== null ? wallet.toString() : "null");
     if (wallet !== null) {
         wallet_bytes = wallet.publicKey.toBase58();
     }

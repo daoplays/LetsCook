@@ -1,32 +1,30 @@
 import { Button, Flex, Text } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import React, { useCallback, useEffect, useState } from "react";
 import useResponsive from "../hooks/useResponsive";
 import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
-import { LaunchData } from "../components/Solana/state";
+import { JoinData, LaunchData, RunJoinDataGPA } from "../components/Solana/state";
 import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";
 import MyBagsTable from "../components/myBagsTable";
 
 const BagsPage = () => {
-    const wallet = useWallet();
     const { sm } = useResponsive();
-    const { launchList, currentUserData } = useAppRoot();
-    const [bags, setBags] = useState<LaunchData[] | null>(null);
+    const { joinData, launchList } = useAppRoot();
+    const [joinedLaunches, setJoinedLaunches] = useState<LaunchData[] | null>(null);
 
     useEffect(() => {
-        if (!launchList || !wallet.connected) {
-            return;
+        if (joinData && launchList) {
+            const userJoinedLaunches = launchList.filter((launch) => {
+                const joinedGameIds = joinData.map((join) => join.game_id.toString());
+                return joinedGameIds.includes(launch.game_id.toString());
+            });
+
+            setJoinedLaunches(userJoinedLaunches);
         }
+    }, [joinData, launchList]);
 
-        // console.log("Launch List: ", launchList[0].last_interaction.toString());
-        // console.log("Current User: ", currentUserData.user_key.toString());
-        const filteredLaunches = launchList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
-        setBags(filteredLaunches);
-    }, [wallet, launchList]);
-
-    if (!bags) return <Loader />;
+    if (!joinedLaunches) return <Loader />;
 
     return (
         <main>
@@ -49,7 +47,7 @@ const BagsPage = () => {
                 </Text>
                 <Button w={sm ? "100%" : "fit-content"}>Claim All</Button>
             </Flex>
-            <MyBagsTable bags={bags} />
+            <MyBagsTable bags={joinedLaunches} />
         </main>
     );
 };
