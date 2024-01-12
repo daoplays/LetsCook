@@ -1,13 +1,15 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, useEffect } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
-import { Center, VStack, Text } from "@chakra-ui/react";
+import { Center, VStack, Text, Input } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
 import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
 import { LaunchData, LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
+import useAppRoot from "../../context/useAppRoot";
+import { toast } from "react-toastify";
 
 interface DetailsPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -23,6 +25,10 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
     const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
+
+    const { editing } = router.query;
+
+    const { launchList } = useAppRoot();
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -40,14 +46,23 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         }
     };
 
-    function setData(): boolean {
+    function setLaunchData(e) {
+        e.preventDefault();
+
+        const nameExists = launchList.filter((launch) => launch.page_name === name);
+
+        if (nameExists.length) {
+            toast.error("Page name already exists");
+            return;
+        }
+
         if (description.length > 250) {
-            alert("Description can be at most 500 characters long");
-            return false;
+            toast.error("Description should be less than 250 characters long");
+            return;
         }
 
         if (newLaunchData.current.banner_file === null) {
-            alert("Please select a banner image.");
+            toast.error("Please select a banner image.");
             return;
         }
 
@@ -63,7 +78,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
 
         if (balance > 0) {
             alert("page name already taken");
-            return false;
+            return;
         }
 
         newLaunchData.current.pagename = name;
@@ -73,13 +88,8 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
 
-        return true;
+        setScreen("book");
     }
-
-    function setLaunchData(e) {
-        if (setData()) setScreen("book");
-    }
-
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -109,17 +119,18 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                 <div>
                                     <label className={styles.label}>
                                         <input id="file" type="file" onChange={handleFileChange} />
-                                        <span className={styles.browse} style={{ cursor: "pointer" }}>
+                                        <span className={styles.browse} style={{ cursor: editing === "true" ? "not-allowed" : "pointer" }}>
                                             BROWSE
                                         </span>
                                     </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
                                         value={newLaunchData.current.banner_file !== null ? "File Selected" : "No File Selected"}
-                                        disabled
                                     />
                                 </div>
                             </div>
@@ -148,7 +159,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                 <img className={styles.mediaLogo} src="./images/web.png" alt="" />
                                 <div className={styles.textLabelInput}>
                                     <input
-                                        placeholder="URL"
+                                        placeholder="Enter your Website URL"
                                         className={styles.inputBox}
                                         type="text"
                                         value={web}
@@ -167,7 +178,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                 <div className={styles.textLabelInput}>
                                     <input
                                         className={styles.inputBox}
-                                        placeholder="URL"
+                                        placeholder="Enter your Telegram Invite URL"
                                         type="text"
                                         value={telegram}
                                         onChange={(e) => {
@@ -185,7 +196,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                     <input
                                         required
                                         className={styles.inputBox}
-                                        placeholder="URL"
+                                        placeholder="Enter your Twitter URL"
                                         type="text"
                                         value={twitter}
                                         onChange={(e) => {
@@ -203,7 +214,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                 <div className={styles.textLabelInput}>
                                     <input
                                         className={styles.inputBox}
-                                        placeholder="URL"
+                                        placeholder="Enter your Discord Invite URL"
                                         type="text"
                                         value={discord}
                                         onChange={(e) => {
@@ -226,6 +237,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                         }}
                     >
                         <button
+                            type="button"
                             onClick={() => {
                                 setScreen("token");
                             }}

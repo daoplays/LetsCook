@@ -1,4 +1,13 @@
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE, LaunchKeys } from "../../components/Solana/constants";
+import {
+    METAPLEX_META,
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    DEFAULT_FONT_SIZE,
+    RPC_NODE,
+    WSS_NODE,
+    LaunchKeys,
+} from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
     get_current_blockhash,
@@ -9,7 +18,7 @@ import {
     bignum_to_num,
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect } from "react";
-import { Center, VStack, Text, useDisclosure } from "@chakra-ui/react";
+import { Center, VStack, Text, useDisclosure, Input } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -49,8 +58,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
-    const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
+    const { editing } = router.query;
 
+    let current_time = new Date().getTime();
+
+    const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -87,6 +99,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             }
         } catch (error) {
             toast.error("Invalid team wallet");
+            return false;
+        }
+
+        if (current_time > openDate.getTime()) {
+            toast.error("Cannot create launch that starts in the past");
             return false;
         }
 
@@ -464,7 +481,9 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                                     </div>
 
                                     <div className={styles.textLabelInput}>
-                                        <input
+                                        <Input
+                                            disabled={editing === "true"}
+                                            size="lg"
                                             required
                                             className={styles.inputBox}
                                             type="text"

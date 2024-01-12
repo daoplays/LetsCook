@@ -18,6 +18,8 @@ const DashboardPage = () => {
     const { launchList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
 
+    const { newLaunchData } = useAppRoot();
+
     useEffect(() => {
         if (!launchList || !wallet.connected) {
             return;
@@ -49,7 +51,13 @@ const DashboardPage = () => {
                     Creator Dashboard
                 </Text>
                 {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
-                <Button w={sm ? "100%" : "fit-content"} onClick={() => router.push("/launch")}>
+                <Button
+                    w={sm ? "100%" : "fit-content"}
+                    onClick={() => {
+                        newLaunchData.current = defaultUserInput;
+                        router.push("/launch");
+                    }}
+                >
                     New Launch
                 </Button>
                 {/* </Link> */}

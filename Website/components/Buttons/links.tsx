@@ -18,13 +18,13 @@ const Links = ({ featuredLaunch }: LinksProps) => {
 
     return (
         <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[Socials.Twitter] : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Twitter] : "#"} target="_blank">
                 <Image src={twitter.src} alt="Twitter Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
             </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[Socials.Telegram] : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Telegram] : "#"} target="_blank">
                 <Image src={telegram.src} alt="Telegram Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
             </Link>
-            <Link href={featuredLaunch !== null ? "https://twitter.com/" + featuredLaunch.socials[Socials.Discord] : "#"} target="_blank">
+            <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Discord] : "#"} target="_blank">
                 <Image src={discord.src} alt="Discord Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
             </Link>
             <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Website] : "#"} target="_blank">

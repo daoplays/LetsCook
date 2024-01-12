@@ -11,6 +11,8 @@ import useAppRoot from "../context/useAppRoot";
 import useDetermineCookState, { CookState } from "../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
 import useCreateMarket from "../hooks/useCreateMarket";
+import convertToBlob from "../hooks/useConvertToBlob";
+import convertImageURLToFile from "../hooks/useConvertToBlob";
 interface Header {
     text: string;
     field: string | null;
@@ -92,20 +94,27 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 };
 
 const LaunchCard = ({ launch }: { launch: LaunchData }) => {
-    const { sm, md, lg } = useResponsive();
     const router = useRouter();
+    const { sm, md, lg } = useResponsive();
     const { CreateMarket } = useCreateMarket(launch);
-    const {newLaunchData} = useAppRoot();
+    const { newLaunchData } = useAppRoot();
+
+    const [isEditing, setIsEditing] = useState(false);
 
     let launchData = launch;
     let name = launch.symbol;
-    let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
-    let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     let current_time = new Date().getTime();
+    let local_date = new Date();
 
-    const timeDifference = launch.launch_date - current_time;
-    const isEditable = timeDifference > 48 * 60 * 60 * 1000; // 48 hours
+    let utc_launch_date = new Date(bignum_to_num(launchData.launch_date));
+    let local_launch_date = new Date(utc_launch_date.setMinutes(utc_launch_date.getMinutes() - local_date.getTimezoneOffset()));
+    let splitLaunchDate = local_launch_date.toUTCString().split(" ");
+    let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+
+    const timeDifference = launchData.launch_date - current_time;
+    const isEditable = timeDifference < 48 * 60 * 60 * 1000; // 48 hours
+
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
@@ -120,6 +129,25 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const LaunchLPClicked = (e) => {
         e.stopPropagation();
         CreateMarket();
+    };
+
+    const EditClicked = async (e) => {
+        e.stopPropagation();
+        setIsEditing(true);
+        newLaunchData.current = create_LaunchDataInput(launch, true);
+
+        let bannerFile = await convertImageURLToFile(launch.banner, "");
+        let iconFile = await convertImageURLToFile(launch.icon, "");
+
+        newLaunchData.current.banner_file = bannerFile;
+        newLaunchData.current.icon_file = iconFile;
+
+        setIsEditing(false);
+
+        router.push({
+            pathname: `/launch`,
+            query: { editing: true },
+        });
     };
 
     return (
@@ -194,28 +222,18 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {date}
+                    {launchDate}
                 </Text>
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
-                <HStack justify="center">
+                <HStack justify="center" style={{ minWidth: "80px" }}>
                     {MINTED_OUT && <Button onClick={(e) => LaunchLPClicked(e)}>Launch LP</Button>}
 
                     {/* editable only when it is less than 48hrs from launch date */}
-                    {isEditable ? (
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                newLaunchData.current = create_LaunchDataInput(launch, true)
-                                router.push(
-                                    `/launch`   
-                                );
-                            }}
-                        >
+                    {isEditable && (
+                        <Button onClick={(e) => EditClicked(e)} isLoading={isEditing}>
                             Edit
                         </Button>
-                    ) : (
-                        <Box w={100} />
                     )}
                 </HStack>
             </td>

@@ -15,7 +15,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { DEBUG, RPC_NODE, PROGRAM, Socials } from "./constants";
+import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials } from "./constants";
 import { Box } from "@chakra-ui/react";
 
 import BN from "bn.js";
@@ -404,10 +404,10 @@ export const defaultUserInput: LaunchDataUserInput = {
     uri: "",
     pagename: "",
     description: "",
-    web_url: "https://",
-    tele_url: "https://",
-    twt_url: "https://X.com/",
-    disc_url: "https://",
+    web_url: "",
+    tele_url: "",
+    twt_url: "",
+    disc_url: "",
     opendate: new Date(new Date().setHours(0, 0, 0, 0)),
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
@@ -580,7 +580,6 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
 
-
     const data: LaunchDataUserInput = {
         edit_mode: edit_mode,
         name: launch_data.name,
@@ -594,7 +593,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         total_supply: bignum_to_num(launch_data.total_supply),
         decimals: launch_data.decimals,
         num_mints: launch_data.num_mints,
-        minimum_liquidity: bignum_to_num(launch_data.ticket_price) * launch_data.num_mints / LAMPORTS_PER_SOL,
+        minimum_liquidity: (bignum_to_num(launch_data.ticket_price) * launch_data.num_mints) / LAMPORTS_PER_SOL,
         ticket_price: bignum_to_num(launch_data.ticket_price) / LAMPORTS_PER_SOL,
         distribution: launch_data.distribution,
         uri: launch_data.meta_url,

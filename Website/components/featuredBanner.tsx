@@ -64,14 +64,21 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                             </Flex>
                             <HStack spacing={3} align="start" justify="start">
                                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
-                                    CA: {trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())}
+                                    CA:{" "}
+                                    {featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
+                                        ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                        : ""}
                                 </Text>
 
                                 <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
                                     <div
                                         style={{ cursor: "pointer" }}
                                         onClick={() =>
-                                            navigator.clipboard.writeText(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                            navigator.clipboard.writeText(
+                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
+                                                    ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                                    : "",
+                                            )
                                         }
                                     >
                                         <MdOutlineContentCopy color="white" size={lg ? 25 : 35} />
@@ -80,9 +87,11 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
 
                                 <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                     <Link
-                                        href={`https://solscan.io/account/${featuredLaunch.keys[
-                                            LaunchKeys.MintAddress
-                                        ].toString()}?cluster=devnet`}
+                                        href={`https://solscan.io/account/${
+                                            featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
+                                                ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                                : ""
+                                        }?cluster=devnet`}
                                         target="_blank"
                                     >
                                         <Image src="/images/solscan.png" width={lg ? 25 : 35} height={lg ? 25 : 35} alt="Solscan icon" />

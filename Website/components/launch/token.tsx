@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef, useEffect } from "react";
 import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
-import { Center, VStack, Text, HStack } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input } from "@chakra-ui/react";
 import { LaunchData, LaunchDataUserInput, bignum_to_num, defaultUserInput } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
@@ -10,6 +10,8 @@ import WoodenButton from "../Buttons/woodenButton";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import useAppRoot from "../../context/useAppRoot";
+import { toast } from "react-toastify";
 
 interface TokenPageProps {
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
@@ -17,7 +19,6 @@ interface TokenPageProps {
 }
 
 const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
-
     //console.log(newLaunchData.current)
     const router = useRouter();
     const { md } = useResponsive();
@@ -35,6 +36,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
     const [distribution5, setDistribution5] = useState(newLaunchData.current.distribution[4].toString());
     const [distribution6, setDistribution6] = useState(newLaunchData.current.distribution[5].toString());
 
+    const { editing } = router.query;
+
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
@@ -50,7 +53,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                 newLaunchData.current.icon_file = file;
                 setDisplayImg(URL.createObjectURL(e.target.files[0]));
             } else {
-                alert("File size exceeds 1MB limit.");
+                toast.error("File size exceeds 1MB limit.");
             }
         }
     };
@@ -75,27 +78,27 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         e.preventDefault();
 
         if (totalPercentage !== 100) {
-            alert("The percentages must add up to 100%");
+            toast.error("The total percentage must add up to 100%.");
             return;
         }
 
         if (newLaunchData.current.icon_file === null) {
-            alert("Please select an icon image.");
+            toast.error("Please select an icon image.");
             return;
         }
 
         if (parseFloat(ticketPrice) < 0.00001) {
-            alert("Minimum ticket price is 0.00001 SOL");
+            toast.error("Minimum ticket price is 0.00001 SOL");
             return;
         }
 
         if (symbol.length > 10) {
-            alert("Maximum symbol length is 10 characters");
+            toast.error("Maximum symbol length is 10 characters");
             return;
         }
 
         if (name.length > 25) {
-            alert("Maximum name length is 25 characters");
+            toast.error("Maximum name length is 25 characters");
             return;
         }
 
@@ -137,7 +140,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         maxLength={25}
                                         required
                                         className={styles.inputBox}
@@ -152,7 +157,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>Symbol:</div>
 
                                 <div style={{ width: "50%" }} className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         maxLength={8}
                                         required
                                         className={styles.inputBox}
@@ -169,17 +176,18 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div>
                                     <label className={styles.label}>
                                         <input id="file" type="file" onChange={handleFileChange} />
-                                        <span className={styles.browse} style={{ cursor: "pointer" }}>
+                                        <span className={styles.browse} style={{ cursor: editing === "true" ? "not-allowed" : "pointer" }}>
                                             BROWSE
                                         </span>
                                     </label>
                                 </div>
                                 <div className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
                                         value={newLaunchData.current.icon_file !== null ? "File Selected" : "No File Selected"}
-                                        disabled
                                     />
                                 </div>
                             </div>
@@ -194,7 +202,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 </div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         required
                                         className={styles.inputBox}
                                         type="number"
@@ -211,7 +221,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>DECIMALS:</div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         required
                                         className={styles.inputBox}
                                         type="number"
@@ -231,7 +243,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>MINTS:</div>
 
                                 <div className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         required
                                         className={styles.inputBox}
                                         type="number"
@@ -248,7 +262,9 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>TICKET PRICE:</div>
 
                                 <div style={{ width: md ? "100%" : "50%" }} className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        disabled={editing === "true"}
+                                        size="lg"
                                         required
                                         className={styles.inputBox}
                                         type="number"
@@ -266,7 +282,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={`${styles.textLabel} font-face-kg`}>MINIMUM LIQUIDITY:</div>
 
                                 <div style={{ width: md ? "100%" : "50%" }} className={styles.textLabelInput}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         required
                                         className={styles.inputBox}
                                         type="number"
@@ -295,7 +312,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.colorBox1}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>LetsCookRaffle</div>
                                 <div className={styles.distributionField}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         required
                                         value={parseInt(distribution1).toFixed(0)}
                                         onChange={(e) => {
@@ -314,7 +332,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.colorBox2}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Pool</div>
                                 <div className={styles.distributionField}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         required
                                         value={parseInt(distribution2).toFixed(0)}
                                         onChange={(e) => {
@@ -333,7 +352,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.colorBox3}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>LP Rewards</div>
                                 <div className={styles.distributionField}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         value={parseInt(distribution3).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution3(e.target.value);
@@ -351,7 +371,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.colorBox4}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops</div>
                                 <div className={styles.distributionField}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         value={parseInt(distribution4).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution4(e.target.value);
@@ -369,7 +390,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.colorBox5}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
                                 <div className={styles.distributionField}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         value={parseInt(distribution5).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution5(e.target.value);
@@ -387,7 +409,8 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 <div className={styles.colorBox6}></div>
                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Website)</div>
                                 <div className={styles.distributionField}>
-                                    <input
+                                    <Input
+                                        size="lg"
                                         value={parseInt(distribution6).toFixed(0)}
                                         onChange={(e) => {
                                             setDistribution6(e.target.value);
@@ -419,7 +442,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                     </HStack>
 
                     <HStack mt={15}>
-                        <button type="submit" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/")}>
+                        <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                             Cancel
                         </button>
                         <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
