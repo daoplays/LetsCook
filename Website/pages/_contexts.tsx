@@ -50,7 +50,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let home_page_map = new Map<number, LaunchData>();
         for (let i = 0; i < close_filtered.length; i++) {
             let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-            //console.log(bignum_to_num(close_filtered[i].end_date), date);
+            console.log(close_filtered[i].symbol, bignum_to_num(close_filtered[i].end_date), date);
             if (home_page_map.has(date)) {
                 let current_entry: LaunchData = home_page_map.get(date);
                 let current_hype = current_entry.positive_votes - current_entry.negative_votes;

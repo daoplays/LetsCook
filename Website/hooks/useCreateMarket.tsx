@@ -5,6 +5,7 @@ import {
     myU64,
     send_transaction,
     serialise_basic_instruction,
+    request_current_balance
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -12,14 +13,8 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
-
-import { Dispatch, SetStateAction, useEffect } from "react";
-
 import BN from "bn.js";
-import Decimal from "decimal.js";
-import { useConnection } from "@solana/wallet-adapter-react";
-import { Center, VStack, Text, Box, HStack, FormControl, Input } from "@chakra-ui/react";
-import { sha256 } from "@noble/hashes/sha256";
+import { toast } from "react-toastify";
 
 import {
     Token,
@@ -50,21 +45,13 @@ import {
 } from "@solana/web3.js";
 
 import {
-    getAssociatedTokenAddress,
-    AccountLayout,
-    getAssociatedTokenAddressSync,
-    createAssociatedTokenAccountInstruction,
-    createSyncNativeInstruction,
-    ASSOCIATED_TOKEN_PROGRAM_ID,
     createInitializeAccount3Instruction,
 } from "@solana/spl-token";
 
 import {
-    serialise_RaydiumCreatePool_Instruction,
     serialise_RaydiumInitMarket_Instruction,
     MarketStateLayoutV2,
     bignum_to_num,
-    serialise_InitMarket_Instruction,
 } from "../components/Solana/state";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 
@@ -288,12 +275,15 @@ const useCreateMarket = (launchData: LaunchData) => {
 
     const CreateMarket = async () => {
         // if we have already done this then just skip this step
+        console.log(launchData);
         if (launchData.flags[LaunchFlags.LPState] > 0) {
             console.log("Market already exists");
             return;
         }
 
         const connection = new Connection(RPC_NODE);
+
+        const createMarketToast = toast.loading("(1/4) Creating the market token accounts");
 
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
         const makeTxVersion = TxVersion.V0;
@@ -391,13 +381,38 @@ const useCreateMarket = (launchData: LaunchData) => {
         for (let i = 0; i < ins1.length; i++) {
             transaction.add(ins1[i]);
         }
+        try {
 
-        let signed_transaction = await wallet.signTransaction(transaction);
-        const encoded_transaction = bs58.encode(signed_transaction.serialize());
+            let base_balance = await request_current_balance("", baseVault.publicKey);
 
-        var transaction_response = await send_transaction("", encoded_transaction);
-        console.log("init market accounts");
-        console.log(transaction_response);
+            if (base_balance == 0) {
+                let signed_transaction = await wallet.signTransaction(transaction);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+                var transaction_response = await send_transaction("", encoded_transaction);
+                console.log("init market accounts");
+                console.log(transaction_response);
+            }
+
+            toast.update(createMarketToast, {
+                render: "Token accounts created",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        }
+        catch(error) {
+            console.log(error)
+            toast.update(createMarketToast, {
+                render: "Token account creation failed.  Please try later",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        }
+
+        const createMarketAccountsToast = toast.loading("(2/4) Create market accounts...");
+
 
         const ins2: TransactionInstruction[] = [];
         ins2.push(
@@ -521,13 +536,36 @@ const useCreateMarket = (launchData: LaunchData) => {
         console.log("market tx:");
         console.log(market_tx.length, market_tx[0]);
 
-        for (let i = 0; i < market_tx.length; i++) {
-            let market_transaction = await wallet.signTransaction(market_tx[i]);
-            const encoded_market_transaction = bs58.encode(market_transaction.serialize());
+        try {
+            let market_balance = await request_current_balance("", market.publicKey);
+            if (market_balance == 0) {
+                for (let i = 0; i < market_tx.length; i++) {
+                    let market_transaction = await wallet.signTransaction(market_tx[i]);
+                    const encoded_market_transaction = bs58.encode(market_transaction.serialize());
 
-            var market_transaction_response = await send_transaction("", encoded_market_transaction);
-            console.log(market_transaction_response);
+                    var market_transaction_response = await send_transaction("", encoded_market_transaction);
+                    console.log(market_transaction_response);
+                }
+            }
+
+            toast.update(createMarketAccountsToast, {
+                render: "Market accounts created",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
         }
+        catch(error) {
+            toast.update(createMarketAccountsToast, {
+                render: "Market account creation failed, please try again later",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        }
+
+        const updateCookAccountsToast = toast.loading("(3/4) Update Cook accounts...");
+
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -571,8 +609,22 @@ const useCreateMarket = (launchData: LaunchData) => {
             console.log("list sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+
+            toast.update(updateCookAccountsToast, {
+                render: "Cook accounts updated",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
         } catch (error) {
             console.log(error);
+            toast.update(updateCookAccountsToast, {
+                render: "Cook account update failed, please try again later",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
     };

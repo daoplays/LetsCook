@@ -83,8 +83,8 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     });
 
     function setData(): boolean {
-        // console.log(openDate.toString());
-        // console.log(closeDate.toString());
+        console.log(openDate.toString());
+        console.log(closeDate.toString());
 
         let balance = 1;
         try {
@@ -102,18 +102,13 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             return false;
         }
 
-        if (closeDate.getTime() < openDate.getTime()) {
+        if (!newLaunchData.current.edit_mode && closeDate.getTime() < openDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
         }
 
-        if (openDate.getTime() < new Date().getTime()) {
-            toast.error("Close date must be set after launch date");
-            return false;
-        }
-
-        if (openDate.getTime() < new Date().getTime()) {
-            toast.error("Close date must be set after launch date");
+        if (!newLaunchData.current.edit_mode && openDate.getTime() < new Date().getTime()) {
+            toast.error("Open date must be set after now");
             return false;
         }
 
@@ -461,6 +456,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
                                         <DatePicker
+                                            readonly={true}
                                             showTimeSelect
                                             timeFormat="HH:mm"
                                             timeIntervals={15}

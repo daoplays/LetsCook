@@ -35,11 +35,11 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },
         { text: "MIN. LIQUIDITY", field: "minimum_liquidity" },
-        { text: "LAUNCH", field: "launch_date" },
+        { text: "ENDS", field: "end_date" },
     ];
 
     const { currentUserData, checkLaunchData, isLaunchDataLoading } = useAppRoot();
-    const [sortedField, setSortedField] = useState<string>("launch_date");
+    const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
     const handleHeaderClick = (e) => {
@@ -141,11 +141,8 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
     const router = useRouter();
     let name = launch.symbol;
 
-    let local_date = new Date();
-
-    let utc_launch_date = new Date(bignum_to_num(launch.launch_date));
-    let local_launch_date = new Date(utc_launch_date.setMinutes(utc_launch_date.getMinutes() - local_date.getTimezoneOffset()));
-    let splitLaunchDate = local_launch_date.toUTCString().split(" ");
+    let utc_end_date = new Date(bignum_to_num(launch.end_date));
+    let splitLaunchDate = utc_end_date.toUTCString().split(" ");
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
 
     return (

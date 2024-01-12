@@ -56,6 +56,8 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
             PROGRAM,
         )[0];
 
+        console.log("launch account", newLaunchData.current.pagename, launch_data_account.toString());
+
         const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
 
         var account_vector = [

@@ -113,7 +113,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
 
     const timeDifference = launchData.launch_date - current_time;
-    const isEditable = timeDifference < 48 * 60 * 60 * 1000; // 48 hours
+    const isEditable = timeDifference > 48 * 60 * 60 * 1000; // 48 hours
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
 
