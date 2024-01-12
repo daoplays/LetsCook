@@ -95,6 +95,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             return false;
         }
 
+        if (openDate.getTime() < (new Date()).getTime()) {
+            toast.error("Close date must be set after launch date");
+            return false;
+        }
+
         newLaunchData.current.opendate = openDate;
         newLaunchData.current.closedate = closeDate;
         newLaunchData.current.team_wallet = teamWallet;
@@ -112,6 +117,12 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
+
+        // if this is in edit mode then just call that function
+        if (newLaunchData.current.edit_mode) {
+            await EditLaunch();
+            return;
+        }
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 

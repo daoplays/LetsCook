@@ -15,7 +15,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { DEBUG, RPC_NODE, PROGRAM } from "./constants";
+import { DEBUG, RPC_NODE, PROGRAM, Socials } from "./constants";
 import { Box } from "@chakra-ui/react";
 
 import BN from "bn.js";
@@ -358,6 +358,7 @@ export const enum LaunchInstruction {
 }
 
 export interface LaunchDataUserInput {
+    edit_mode: boolean;
     name: string;
     symbol: string;
     icon_file: File | null;
@@ -371,7 +372,6 @@ export interface LaunchDataUserInput {
     minimum_liquidity: number;
     ticket_price: number;
     distribution: number[];
-    launch_date: Date;
     uri: string;
     pagename: string;
     description: string;
@@ -381,15 +381,12 @@ export interface LaunchDataUserInput {
     disc_url: string;
     displayImg: string;
     opendate: Date;
-    opentime: string;
     closedate: Date;
-    closetime: string;
-    opendateLP: Date;
-    opentimeLP: string;
     team_wallet: string;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
+    edit_mode: false,
     name: "",
     symbol: "",
     icon_file: null,
@@ -404,7 +401,6 @@ export const defaultUserInput: LaunchDataUserInput = {
     minimum_liquidity: 0,
     ticket_price: 0,
     distribution: [0, 0, 0, 0, 0, 0],
-    launch_date: new Date(new Date().setHours(0, 0, 0, 0)),
     uri: "",
     pagename: "",
     description: "",
@@ -413,11 +409,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     twt_url: "https://X.com/",
     disc_url: "https://",
     opendate: new Date(new Date().setHours(0, 0, 0, 0)),
-    opentime: "",
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
-    closetime: "",
-    opendateLP: new Date(new Date().setHours(0, 0, 0, 0)),
-    opentimeLP: "",
     team_wallet: "",
 };
 
@@ -564,7 +556,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         new_launch_data.num_mints,
         new BN(new_launch_data.ticket_price * LAMPORTS_PER_SOL),
         new BN(new_launch_data.minimum_liquidity),
-        new BN(new_launch_data.launch_date.getTime()),
+        new BN(new_launch_data.opendate.getTime()),
         new BN(new_launch_data.closedate.getTime()),
 
         0,
@@ -583,13 +575,14 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     return data;
 }
 
-export function create_LaunchDataInput(launch_data: LaunchData): LaunchDataUserInput {
+export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boolean): LaunchDataUserInput {
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
 
 
     const data: LaunchDataUserInput = {
+        edit_mode: edit_mode,
         name: launch_data.name,
         symbol: launch_data.symbol,
         icon_file: null,
@@ -597,27 +590,22 @@ export function create_LaunchDataInput(launch_data: LaunchData): LaunchDataUserI
         banner_file: null,
         icon_url: launch_data.icon,
         banner_url: launch_data.banner,
-        displayImg: null,
-        total_supply: 0,
+        displayImg: launch_data.icon,
+        total_supply: bignum_to_num(launch_data.total_supply),
         decimals: launch_data.decimals,
         num_mints: launch_data.num_mints,
-        minimum_liquidity: 0,
-        ticket_price: 0,
+        minimum_liquidity: bignum_to_num(launch_data.ticket_price) * launch_data.num_mints / LAMPORTS_PER_SOL,
+        ticket_price: bignum_to_num(launch_data.ticket_price) / LAMPORTS_PER_SOL,
         distribution: launch_data.distribution,
-        launch_date: new Date(new Date().setHours(0, 0, 0, 0)),
         uri: launch_data.meta_url,
         pagename: launch_data.page_name,
         description: launch_data.description,
-        web_url: "https://",
-        tele_url: "https://",
-        twt_url: "https://X.com/",
-        disc_url: "https://",
+        web_url: launch_data.socials[Socials.Website].toString(),
+        tele_url: launch_data.socials[Socials.Telegram].toString(),
+        twt_url: launch_data.socials[Socials.Twitter].toString(),
+        disc_url: launch_data.socials[Socials.Discord].toString(),
         opendate: new Date(bignum_to_num(launch_data.launch_date)),
-        opentime: "",
         closedate: new Date(bignum_to_num(launch_data.end_date)),
-        closetime: "",
-        opendateLP: new Date(new Date().setHours(0, 0, 0, 0)),
-        opentimeLP: "",
         team_wallet: "",
     };
 

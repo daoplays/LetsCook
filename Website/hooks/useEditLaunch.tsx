@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
-import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../components/Solana/state";
+import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction, defaultUserInput } from "../components/Solana/state";
 import { DEBUG, SYSTEM_KEY, PROGRAM, RPC_NODE, WSS_NODE } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
@@ -31,6 +31,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
             alert("Transaction failed, please try again");
         }
         signature_ws_id.current = null;
+        newLaunchData.current = defaultUserInput;
         await checkLaunchData();
     }, []);
 
@@ -89,6 +90,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            
             toast.update(createLaunch, {
                 render: "Congratulations! Your token has been successfully launched.",
                 type: "success",

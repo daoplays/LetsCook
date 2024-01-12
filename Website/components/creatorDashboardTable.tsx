@@ -206,7 +206,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                         <Button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                newLaunchData.current = create_LaunchDataInput(launch)
+                                newLaunchData.current = create_LaunchDataInput(launch, true)
                                 router.push(
                                     `/launch`   
                                 );
