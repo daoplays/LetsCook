@@ -28,7 +28,7 @@ interface Header {
 }
 
 const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
-    //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
+    console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
@@ -173,30 +173,31 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                     </Box>
                 </Center>
             </td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>
+            <td style={{ minWidth: "175px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {name}
                 </Text>
             </td>
-            <td style={{ minWidth: "200px" }}>
+            <td style={{ minWidth: "180px" }}>
                 <Links featuredLaunch={launch} />
             </td>
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "150px" }}>
                 <HypeVote launch_data={launch} user_data={user_data} />
             </td>
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>
+            <td style={{ minWidth: "170px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)} SOL
                 </Text>
             </td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>
+            <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {date}
                 </Text>
             </td>
-            <td style={{ minWidth: "100px" }}>
+            {/* <td style={{ minWidth: "100px" }}>
                 <Button>View</Button>
-            </td>
+            </td> */}
+            <td style={{ minWidth: "75px" }} />
         </tr>
     );
 };
