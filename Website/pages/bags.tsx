@@ -40,7 +40,7 @@ const BagsPage = () => {
         <main>
             <Flex
                 px={4}
-                py={18}
+                py={sm ? 22 : 37}
                 gap={2}
                 alignItems="center"
                 justifyContent="end"
