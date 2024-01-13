@@ -19,45 +19,28 @@ import {
     Token,
     DEVNET_PROGRAM_ID,
     MAINNET_PROGRAM_ID,
-    RAYDIUM_MAINNET,
-    Currency,
     Liquidity,
     SYSTEM_PROGRAM_ID,
     RENT_PROGRAM_ID,
     LOOKUP_TABLE_CACHE,
-    splitTxAndSigners,
-    InnerSimpleTransaction,
-    CacheLTA,
-    InnerSimpleV0Transaction,
 } from "@raydium-io/raydium-sdk";
 
 import {
-    Keypair,
-    SystemProgram,
     ComputeBudgetProgram,
-    LAMPORTS_PER_SOL,
-    SYSVAR_RENT_PUBKEY,
-    VersionedTransaction,
-    Signer,
-    AddressLookupTableAccount,
-    TransactionMessage,
 } from "@solana/web3.js";
 
 import {
     getAssociatedTokenAddress,
-    AccountLayout,
-    getAssociatedTokenAddressSync,
-    createAssociatedTokenAccountInstruction,
-    createSyncNativeInstruction,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    createInitializeAccount3Instruction,
 } from "@solana/spl-token";
-import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
 
-const PROGRAMIDS = DEVNET_PROGRAM_ID;
-const addLookupTableInfo = LOOKUP_TABLE_CACHE;
+const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
+const addLookupTableInfo = PROD ? LOOKUP_TABLE_CACHE : undefined;
+
+//https://github.com/raydium-io/raydium-amm
+const RAYDIUM_FEES = PROD ? new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5") : new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR")
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -181,8 +164,6 @@ const useCreateAMM = (launchData: LaunchData) => {
         console.log(program_quote_account.toString());
         console.log(program_base_account.toString());
 
-        //https://github.com/raydium-io/raydium-amm
-        let feeAccount = new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR");
 
         const keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -200,7 +181,7 @@ const useCreateAMM = (launchData: LaunchData) => {
             { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
             { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
             { pubkey: poolInfo.configId, isSigner: false, isWritable: false },
-            { pubkey: feeAccount, isSigner: false, isWritable: true },
+            { pubkey: RAYDIUM_FEES, isSigner: false, isWritable: true },
             { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
             { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
 

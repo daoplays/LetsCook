@@ -8,6 +8,7 @@ import UseWalletConnection from "../hooks/useWallet";
 import MainButton from "./Buttons/mainButton";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import useAppRoot from "../context/useAppRoot";
 
 function Navigation() {
     const router = useRouter();
@@ -15,6 +16,7 @@ function Navigation() {
     const { md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
+    const { currentUserData } = useAppRoot();
 
     return (
         <>
@@ -38,12 +40,12 @@ function Navigation() {
                     </Text>
                 </Link>
                 <HStack gap={3}>
-                    {/* <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
+                     <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
                             <Image height={20} width={20} src="/images/sauce.png" alt="Sauce" />
-                            <div>1,400</div>
+                            <div>{currentUserData === null ? 0 : currentUserData.total_points}</div>
                         </div>
-                    </Tooltip> */}
+                    </Tooltip> 
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Mint Calendar" hasArrow fontSize="large" offset={[0, 15]}>

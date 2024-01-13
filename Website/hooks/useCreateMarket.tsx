@@ -21,10 +21,6 @@ import {
     DEVNET_PROGRAM_ID,
     MAINNET_PROGRAM_ID,
     RAYDIUM_MAINNET,
-    Currency,
-    Liquidity,
-    SYSTEM_PROGRAM_ID,
-    RENT_PROGRAM_ID,
     LOOKUP_TABLE_CACHE,
     splitTxAndSigners,
     InnerSimpleTransaction,
@@ -47,11 +43,11 @@ import {
 import { createInitializeAccount3Instruction } from "@solana/spl-token";
 
 import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
 import useCreateAMM from "./useCreateAMM";
 
-const PROGRAMIDS = DEVNET_PROGRAM_ID;
-const addLookupTableInfo = LOOKUP_TABLE_CACHE;
+const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
+const addLookupTableInfo = PROD? LOOKUP_TABLE_CACHE : undefined; 
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -520,7 +516,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 computeBudgetConfig: undefined,
                 payer: wallet.publicKey,
                 innerTransaction: ins.innerTransactions,
-                lookupTableCache: undefined,
+                lookupTableCache: addLookupTableInfo,
             }),
         };
 

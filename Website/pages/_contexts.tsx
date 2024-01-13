@@ -12,6 +12,8 @@ import {
     JoinData,
     RunJoinDataGPA,
 } from "../components/Solana/state";
+import {RPC_NODE, WSS_NODE, PROGRAM} from "../components/Solana/constants";
+import { PublicKey, Connection } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
@@ -66,7 +68,7 @@ const CheckLaunchData = async (
         }
         return 0;
     });
-    //console.log(home_page_data);
+    console.log(home_page_data);
     setHomePageData(home_page_data);
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
@@ -92,6 +94,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const check_user_data = useRef<boolean>(true);
     const check_join_data = useRef<boolean>(true);
 
+    const user_account_ws_id = useRef<number | null>(null);
+
+
     const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
 
     function filterTable({ list }: { list: LaunchData[] }) {
@@ -101,6 +106,52 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             return bignum_to_num(item.end_date) >= current_time;
         });
     }
+
+    // websockets for monitoring user data
+
+    const check_user_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+
+            console.log("have event data", event_data, user_account_ws_id.current);
+            let account_data = Buffer.from(event_data, "base64");
+            try {
+                const [updated_data] = UserData.struct.deserialize(account_data);
+
+                console.log(updated_data);
+
+                if (current_user_data === null) {
+                    setCurrentUserData(updated_data);
+                    return;
+                }
+
+                if (updated_data.total_points > current_user_data.total_points || updated_data.votes.length > current_user_data.votes.length) {
+                    setCurrentUserData(updated_data);
+                }
+            } catch (error) {
+                console.log("error reading user data");
+                setCurrentUserData(null);
+            }
+        },
+        [current_user_data],
+    );
+
+    // launch account subscription handler
+    useEffect(() => {
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+        if (user_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
+
+            console.log("subscribe to user data");
+            let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+            user_account_ws_id.current = connection.onAccountChange(user_data_account, check_user_update, "confirmed");
+        }
+    }, [wallet, check_user_update]);
 
     const CheckUserData = useCallback(async () => {
         if (!check_user_data.current) return;
