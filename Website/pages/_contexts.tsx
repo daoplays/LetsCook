@@ -17,7 +17,6 @@ import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
 
 const CheckLaunchData = async (check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData) => {
-    console.log("in check launch data", check_launch_data.current) 
     if (!check_launch_data.current) return;
 
 
@@ -26,7 +25,7 @@ const CheckLaunchData = async (check_launch_data, setIsLaunchDataLoading, setIsH
 
     let list = await RunLaunchDataGPA("");
 
-    console.log("running GPA", list);
+    console.log("check launch data");
     setLaunchData(list);
 
     let close_filtered = filterTable({ list });
@@ -97,10 +96,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
     }
 
-    
-
     const CheckUserData = useCallback(async () => {
         if (!check_user_data.current) return;
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+        
+        console.log("check user data", wallet.connected, wallet.connecting, wallet.disconnecting)
 
         setIsUserDataLoading(true);
 
@@ -116,15 +117,20 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 }
             }
         }
-
         setIsUserDataLoading(false);
-    }, [wallet.publicKey]);
+        check_user_data.current = false;
+    }, [wallet]);
 
     const CheckJoinedData = useCallback(async () => {
         if (!check_join_data.current) return;
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+        console.log("check join data")
+
 
         let join_data_list = await RunJoinDataGPA(wallet);
         setJoinData(join_data_list);
+        check_join_data.current = false;
     }, [wallet]);
 
     const RecheckLaunchData = useCallback(async () => {
@@ -137,18 +143,16 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, []);
 
     useEffect(() => {
-        CheckUserData();
-    }, [CheckUserData]);
 
-    useEffect(() => {
-        CheckJoinedData();
-    }, [CheckJoinedData]);
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
-    useEffect(() => {
-        check_launch_data.current = true;
         check_user_data.current = true;
         check_join_data.current = true;
-    }, [wallet]);
+
+        CheckUserData();
+        CheckJoinedData();
+
+    }, [wallet, CheckUserData, CheckJoinedData]);
     
 
     return (
