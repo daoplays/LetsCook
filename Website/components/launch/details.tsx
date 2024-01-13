@@ -64,10 +64,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
             return;
         }
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(name), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
 
         let balance = 0;
 

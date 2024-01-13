@@ -345,8 +345,8 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export interface JoinedLaunch {
-    join_data : JoinData;
-    launch_data : LaunchData;
+    join_data: JoinData;
+    launch_data: LaunchData;
 }
 
 export const enum LaunchInstruction {

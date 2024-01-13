@@ -25,7 +25,7 @@ import EmptyLaunch from "../components/emptyLaunch";
 
 const defaultCalendarFilters: LaunchTableFilters = {
     start_date: new Date(new Date().setHours(0, 0, 0, 0)),
-    end_date: addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1)
+    end_date: addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1),
 };
 
 const CalenderPage = () => {

@@ -20,13 +20,13 @@ const BagsPage = () => {
                 return joinedGameIds.includes(launch.game_id.toString());
             });
 
-            let joinedLaunches : JoinedLaunch[] = [];
+            let joinedLaunches: JoinedLaunch[] = [];
             for (let i = 0; i < joinData.length; i++) {
                 const joinedLaunch = launchList.filter((launch) => {
                     return joinData[i].game_id.eq(launch.game_id);
                 });
                 console.log(joinedLaunch[0].game_id.toString(), joinData[i].game_id.toString());
-                let joined_launch : JoinedLaunch = {join_data : joinData[i], launch_data : joinedLaunch[0]}
+                let joined_launch: JoinedLaunch = { join_data: joinData[i], launch_data: joinedLaunch[0] };
                 joinedLaunches.push(joined_launch);
             }
 
@@ -56,7 +56,7 @@ const BagsPage = () => {
                     My Bags
                 </Text>
             </Flex>
-            <MyBagsTable bags={joinedLaunches}/>
+            <MyBagsTable bags={joinedLaunches} />
         </main>
     );
 };

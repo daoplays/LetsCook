@@ -19,7 +19,7 @@ interface Header {
     field: string | null;
 }
 
-const MyBagsTable = ({ bags }: { bags: JoinedLaunch[]}) => {
+const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
@@ -46,13 +46,18 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[]}) => {
 
     const sortedLaunches = [...bags].sort((a, b) => {
         if (sortedField === "symbol") {
-            return reverseSort ? b.launch_data.symbol.localeCompare(a.launch_data.symbol) : a.launch_data.symbol.localeCompare(b.launch_data.symbol);
+            return reverseSort
+                ? b.launch_data.symbol.localeCompare(a.launch_data.symbol)
+                : a.launch_data.symbol.localeCompare(b.launch_data.symbol);
         } else if (sortedField === "liquidity") {
-            return reverseSort ? b.launch_data.minimum_liquidity - a.launch_data.minimum_liquidity : a.launch_data.minimum_liquidity - b.launch_data.minimum_liquidity;
+            return reverseSort
+                ? b.launch_data.minimum_liquidity - a.launch_data.minimum_liquidity
+                : a.launch_data.minimum_liquidity - b.launch_data.minimum_liquidity;
         } else if (sortedField === "date") {
-            return reverseSort ? b.launch_data.launch_date - a.launch_data.launch_date : a.launch_data.launch_date - b.launch_data.launch_date;
-        }
-        else if (sortedField === "tickets") {
+            return reverseSort
+                ? b.launch_data.launch_date - a.launch_data.launch_date
+                : a.launch_data.launch_date - b.launch_data.launch_date;
+        } else if (sortedField === "tickets") {
             return reverseSort ? b.join_data.num_tickets - a.join_data.num_tickets : a.join_data.num_tickets - b.join_data.num_tickets;
         }
 
@@ -135,7 +140,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
         }
     };
 
-    console.log("cook state", cook_state)
+    console.log("cook state", cook_state);
     return (
         <tr
             style={{
@@ -196,32 +201,33 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                               ? "Cook Failed"
                               : "Unknown"}
                 </Badge>
-            
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                {MINT_FAILED &&
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.join_data.num_tickets} to refund {(launch.join_data.num_tickets * bignum_to_num(launch.launch_data.ticket_price) / LAMPORTS_PER_SOL)} SOL
-                </Text>
-                }
-                {!MINT_FAILED && launch.join_data.num_tickets > launch.join_data.num_claimed_tickets &&
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.join_data.num_tickets} ({launch.join_data.num_tickets - launch.join_data.num_claimed_tickets} to check)
-                </Text>
-                }
-                {!MINT_FAILED && launch.join_data.num_tickets === launch.join_data.num_claimed_tickets &&
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.join_data.num_winning_tickets} / {launch.join_data.num_tickets - launch.join_data.num_winning_tickets}
-                </Text>
-                }
+                {MINT_FAILED && (
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.join_data.num_tickets} to refund{" "}
+                        {(launch.join_data.num_tickets * bignum_to_num(launch.launch_data.ticket_price)) / LAMPORTS_PER_SOL} SOL
+                    </Text>
+                )}
+                {!MINT_FAILED && launch.join_data.num_tickets > launch.join_data.num_claimed_tickets && (
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.join_data.num_tickets} ({launch.join_data.num_tickets - launch.join_data.num_claimed_tickets} to check)
+                    </Text>
+                )}
+                {!MINT_FAILED && launch.join_data.num_tickets === launch.join_data.num_claimed_tickets && (
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.join_data.num_winning_tickets} / {launch.join_data.num_tickets - launch.join_data.num_winning_tickets}
+                    </Text>
+                )}
             </td>
 
             <td style={{ minWidth: "170px" }}>
                 <VStack>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {(Math.min(launch.launch_data.tickets_sold, launch.launch_data.num_mints) * launch.launch_data.ticket_price) / LAMPORTS_PER_SOL}/
-                        {(launch.launch_data.num_mints * launch.launch_data.ticket_price) / LAMPORTS_PER_SOL} SOL
+                        {(Math.min(launch.launch_data.tickets_sold, launch.launch_data.num_mints) * launch.launch_data.ticket_price) /
+                            LAMPORTS_PER_SOL}
+                        /{(launch.launch_data.num_mints * launch.launch_data.ticket_price) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>
             </td>
@@ -236,17 +242,25 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                         <Button onClick={(e) => handleButtonClick(e)} isLoading={CheckingTickets || ClaimingTokens || RefundingTickets}>
                             {cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
                                 ? "Check Tickets"
-                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED && launch.launch_data.flags[LaunchFlags.LPState] == 2
+                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED &&
+                                    launch.launch_data.flags[LaunchFlags.LPState] == 2 &&
+                                    launch.join_data.ticket_status === 1
                                   ? "Claim Tokens"
-                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED 
-                                            && launch.launch_data.flags[LaunchFlags.LPState] < 2 && launch.join_data.ticket_status === 0
-                                  ? "Refund Losing Tickets"
-                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED 
-                                  && launch.launch_data.flags[LaunchFlags.LPState] < 2 && launch.join_data.ticket_status === 1
-                                    ? "Waiting for LP"
-                                  : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
-                                    ? "Refund Tickets"
-                                    : ""}
+                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED &&
+                                      launch.launch_data.flags[LaunchFlags.LPState] == 2 &&
+                                      launch.join_data.ticket_status === 0
+                                    ? "Claim Tokens and Refund"
+                                    : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED &&
+                                        launch.launch_data.flags[LaunchFlags.LPState] < 2 &&
+                                        launch.join_data.ticket_status === 0
+                                      ? "Refund Losing Tickets"
+                                      : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED &&
+                                          launch.launch_data.flags[LaunchFlags.LPState] < 2 &&
+                                          launch.join_data.ticket_status === 1
+                                        ? "Waiting for LP"
+                                        : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
+                                          ? "Refund Tickets"
+                                          : ""}
                         </Button>
                     )}
                 </HStack>
