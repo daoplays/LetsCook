@@ -301,8 +301,10 @@ const MintPage = () => {
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cookState);
     const MINTED_OUT = [
         CookState.MINT_SUCCEEDED_NO_TICKETS,
-        CookState.MINT_SUCCEDED_TICKETS_LEFT,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED,
+        CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
     ].includes(cookState);
     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cookState);
 
@@ -385,13 +387,15 @@ const MintPage = () => {
                                         if (wallet.publicKey === null) {
                                             handleConnectWallet();
                                         } else {
-                                            cookState === CookState.MINT_FAILED_NOT_REFUNDED
-                                                ? RefundTickets()
-                                                : cookState === CookState.MINT_SUCCEDED_TICKETS_LEFT
-                                                  ? CheckTickets()
-                                                  : cookState === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
-                                                    ? ClaimTokens()
-                                                    : () => {};
+
+                                            if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
+                                                CheckTickets();
+                                            } else if ((cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP  && join_data?.ticket_status === 0)
+                                                || cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP) {
+                                                ClaimTokens();
+                                            } else if (cook_state === CookState.MINT_FAILED_NOT_REFUNDED || CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT) {
+                                                RefundTickets();
+                                            }
                                         }
                                     }}
                                 >
@@ -399,15 +403,27 @@ const MintPage = () => {
                                         <VStack>
                                             <Box mt={4}>
                                                 <WoodenButton
-                                                    label={
-                                                        cookState === CookState.MINT_SUCCEDED_TICKETS_LEFT
+                                                    label=
+                                                        {cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK
                                                             ? "Check Tickets"
-                                                            : cookState === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
+                                                            : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
+                                                                join_data.ticket_status === 1
                                                               ? "Claim Tokens"
-                                                              : cookState === CookState.MINT_FAILED_NOT_REFUNDED
-                                                                ? "Refund Tickets"
-                                                                : ""
-                                                    }
+                                                              : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
+                                                                  join_data.ticket_status === 0
+                                                                ? "Claim Tokens and Refund"
+                                                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
+                                                                    join_data.ticket_status === 0
+                                                                  ? "Refund Losing Tickets"
+                                                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
+                                                                      join_data.ticket_status === 1
+                                                                    ? "Waiting for LP"
+                                                                    : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+                                                                    ? "LP Timeout, Refund remaining tickets"
+                                                                    : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
+                                                                      ? "Refund Tickets"
+                                                                      : ""}
+                                                    
                                                     size={28}
                                                 />
                                             </Box>

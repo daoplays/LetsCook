@@ -82,6 +82,6 @@ export const enum LaunchKeys {
 
 export enum LaunchFlags {
     MintedToUser = 0,
-    PointsAwarded = 1,
+    LaunchFailed = 1,
     LPState = 2,
 }
