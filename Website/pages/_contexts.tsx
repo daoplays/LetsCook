@@ -16,6 +16,58 @@ import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "rea
 import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
 
+const CheckLaunchData = async (check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData) => {
+    console.log("in check launch data", check_launch_data.current) 
+    if (!check_launch_data.current) return;
+
+
+    setIsLaunchDataLoading(true);
+    setIsHomePageDataLoading(true);
+
+    let list = await RunLaunchDataGPA("");
+
+    console.log("running GPA", list);
+    setLaunchData(list);
+
+    let close_filtered = filterTable({ list });
+
+    let home_page_data: LaunchData[] = [];
+    let home_page_map = new Map<number, LaunchData>();
+    for (let i = 0; i < close_filtered.length; i++) {
+        let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
+        //console.log(close_filtered[i].symbol, bignum_to_num(close_filtered[i].end_date), date);
+        if (home_page_map.has(date)) {
+            let current_entry: LaunchData = home_page_map.get(date);
+            let current_hype = current_entry.positive_votes - current_entry.negative_votes;
+            let new_hype = close_filtered[i].positive_votes - close_filtered[i].negative_votes;
+            if (new_hype > current_hype) {
+                home_page_map.set(date, close_filtered[i]);
+            }
+        } else {
+            home_page_map.set(date, close_filtered[i]);
+        }
+    }
+
+    home_page_map.forEach((value, key) => {
+        home_page_data.push(value);
+    });
+
+    home_page_data.sort((a, b) => {
+        if (a.end_date < b.end_date) {
+            return -1;
+        }
+        if (a.end_date > b.end_date) {
+            return 1;
+        }
+        return 0;
+    });
+    //console.log(home_page_data);
+    setHomePageData(home_page_data);
+    setIsLaunchDataLoading(false);
+    setIsHomePageDataLoading(false);
+    check_launch_data.current = false;
+}
+
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
 
@@ -45,56 +97,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
     }
 
-    const CheckLaunchData = useCallback(async () => {
-        //console.log("in check launch data", check_launch_data.current)
-        if (!check_launch_data.current) return;
-
-        setIsLaunchDataLoading(true);
-        setIsHomePageDataLoading(true);
-
-        let list = await RunLaunchDataGPA("");
-
-        //console.log("running GPA", list);
-        setLaunchData(list);
-
-        let close_filtered = filterTable({ list });
-
-        let home_page_data: LaunchData[] = [];
-        let home_page_map = new Map<number, LaunchData>();
-        for (let i = 0; i < close_filtered.length; i++) {
-            let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-            console.log(close_filtered[i].symbol, bignum_to_num(close_filtered[i].end_date), date);
-            if (home_page_map.has(date)) {
-                let current_entry: LaunchData = home_page_map.get(date);
-                let current_hype = current_entry.positive_votes - current_entry.negative_votes;
-                let new_hype = close_filtered[i].positive_votes - close_filtered[i].negative_votes;
-                if (new_hype > current_hype) {
-                    home_page_map.set(date, close_filtered[i]);
-                }
-            } else {
-                home_page_map.set(date, close_filtered[i]);
-            }
-        }
-
-        home_page_map.forEach((value, key) => {
-            home_page_data.push(value);
-        });
-
-        home_page_data.sort((a, b) => {
-            if (a.end_date < b.end_date) {
-                return -1;
-            }
-            if (a.end_date > b.end_date) {
-                return 1;
-            }
-            return 0;
-        });
-        //console.log(home_page_data);
-        setHomePageData(home_page_data);
-        check_launch_data.current = false;
-        setIsLaunchDataLoading(false);
-        setIsHomePageDataLoading(false);
-    }, []);
+    
 
     const CheckUserData = useCallback(async () => {
         if (!check_user_data.current) return;
@@ -107,7 +110,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (wallet.publicKey !== null) {
             for (let i = 0; i < user_list.length; i++) {
                 if (user_list[i].user_key.toString() == wallet.publicKey.toString()) {
-                    console.log("have current user", user_list[i]);
+                    //console.log("have current user", user_list[i]);
                     setCurrentUserData(user_list[i]);
                     break;
                 }
@@ -126,26 +129,27 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const RecheckLaunchData = useCallback(async () => {
         check_launch_data.current = true;
-        CheckLaunchData();
-    }, [CheckLaunchData]);
+        CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
+    }, []);
 
     useEffect(() => {
-        CheckLaunchData();
-    }, [CheckLaunchData, wallet]);
+        CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
+    }, []);
 
     useEffect(() => {
         CheckUserData();
-    }, [CheckUserData, wallet]);
+    }, [CheckUserData]);
 
     useEffect(() => {
         CheckJoinedData();
-    }, [CheckJoinedData, wallet]);
+    }, [CheckJoinedData]);
 
     useEffect(() => {
         check_launch_data.current = true;
         check_user_data.current = true;
         check_join_data.current = true;
     }, [wallet]);
+    
 
     return (
         <AppRootContextProvider

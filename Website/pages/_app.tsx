@@ -16,7 +16,7 @@ import "../styles/fonts.css";
 import "../styles/table.css";
 
 function MyApp({ Component, pageProps }) {
-    const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
+    const wallets = useMemo(() => [], []);
 
     return (
         <NoSSR>

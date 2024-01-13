@@ -28,7 +28,7 @@ interface Header {
 }
 
 const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
-    console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
+    //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
