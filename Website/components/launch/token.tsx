@@ -100,6 +100,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
             return;
         }
 
+        if (parseFloat(distribution2) === 0) {
+            toast.error("LP allocation must be greater than zero");
+            return;
+        }
+
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;
         newLaunchData.current.displayImg = displayImg;

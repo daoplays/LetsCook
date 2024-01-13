@@ -65,7 +65,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         }
 
         let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
+            [Buffer.from(name), Buffer.from("Launch")],
             PROGRAM,
         )[0];
 
@@ -75,7 +75,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
             balance = await request_current_balance("", launch_data_account);
         }
 
-        // console.log("check balance", launch_data_account.toString(), balance);
+        console.log("check balance", name, launch_data_account.toString(), balance);
 
         if (balance > 0) {
             toast.error("Page name already exists");

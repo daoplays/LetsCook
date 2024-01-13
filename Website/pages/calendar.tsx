@@ -16,19 +16,24 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import useResponsive from "../hooks/useResponsive";
 import GameTable from "../components/gameTable";
-import { defaultLaunchTableFilters, LaunchTableFilters } from "../components/gameTable";
+import { LaunchTableFilters } from "../components/gameTable";
 import useAppRoot from "../context/useAppRoot";
 
 import "react-datepicker/dist/react-datepicker.css";
 import Loader from "../components/loader";
 import EmptyLaunch from "../components/emptyLaunch";
 
+const defaultCalendarFilters: LaunchTableFilters = {
+    start_date: new Date(new Date().setHours(0, 0, 0, 0)),
+    end_date: addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1)
+};
+
 const CalenderPage = () => {
     const { sm } = useResponsive();
     const initialFocusRef = React.useRef();
     const [startDate, setStartDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
     const [endDate, setEndDate] = useState(addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1));
-    const [filters, setFilters] = useState<LaunchTableFilters>(defaultLaunchTableFilters);
+    const [filters, setFilters] = useState<LaunchTableFilters>(defaultCalendarFilters);
     const { launchList } = useAppRoot();
 
     const onChange = (dates) => {

@@ -344,6 +344,11 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+export interface JoinedLaunch {
+    join_data : JoinData;
+    launch_data : LaunchData;
+}
+
 export const enum LaunchInstruction {
     init = 0,
     create_game = 1,

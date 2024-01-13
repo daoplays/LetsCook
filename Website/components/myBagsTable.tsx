@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput } from "./Solana/state";
+import { LaunchData, UserData, bignum_to_num, JoinData, JoinedLaunch } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -12,13 +12,14 @@ import { useRouter } from "next/router";
 import useCheckTickets from "../hooks/useCheckTickets";
 import useRefundTickets from "../hooks/useRefundTickets";
 import useClaimTokens from "../hooks/useClaimTokens";
+import { LaunchFlags } from "./Solana/constants";
 
 interface Header {
     text: string;
     field: string | null;
 }
 
-const MyBagsTable = ({ bags }: { bags: LaunchData[] }) => {
+const MyBagsTable = ({ bags }: { bags: JoinedLaunch[]}) => {
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
@@ -29,6 +30,7 @@ const MyBagsTable = ({ bags }: { bags: LaunchData[] }) => {
         { text: "LOGO", field: null },
         { text: "TICKER", field: "symbol" },
         { text: "STATUS", field: null },
+        { text: "TICKETS", field: "tickets" },
         { text: "LIQUIDITY", field: "liquidity" },
         { text: "ENDS", field: "date" },
     ];
@@ -44,11 +46,14 @@ const MyBagsTable = ({ bags }: { bags: LaunchData[] }) => {
 
     const sortedLaunches = [...bags].sort((a, b) => {
         if (sortedField === "symbol") {
-            return reverseSort ? b.symbol.localeCompare(a.symbol) : a.symbol.localeCompare(b.symbol);
+            return reverseSort ? b.launch_data.symbol.localeCompare(a.launch_data.symbol) : a.launch_data.symbol.localeCompare(b.launch_data.symbol);
         } else if (sortedField === "liquidity") {
-            return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
+            return reverseSort ? b.launch_data.minimum_liquidity - a.launch_data.minimum_liquidity : a.launch_data.minimum_liquidity - b.launch_data.minimum_liquidity;
         } else if (sortedField === "date") {
-            return reverseSort ? b.launch_date - a.launch_date : a.launch_date - b.launch_date;
+            return reverseSort ? b.launch_data.launch_date - a.launch_data.launch_date : a.launch_data.launch_date - b.launch_data.launch_date;
+        }
+        else if (sortedField === "tickets") {
+            return reverseSort ? b.join_data.num_tickets - a.join_data.num_tickets : a.join_data.num_tickets - b.join_data.num_tickets;
         }
 
         return 0;
@@ -85,7 +90,7 @@ const MyBagsTable = ({ bags }: { bags: LaunchData[] }) => {
 
                 <tbody>
                     {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.name} launch={launch} />
+                        <LaunchCard key={launch.launch_data.name} launch={launch} />
                     ))}
                 </tbody>
             </table>
@@ -93,23 +98,22 @@ const MyBagsTable = ({ bags }: { bags: LaunchData[] }) => {
     );
 };
 
-const LaunchCard = ({ launch }: { launch: LaunchData }) => {
+const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
-    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch);
-    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch);
-    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(launch);
+    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data);
+    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data);
+    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(launch.launch_data);
 
-    let launchData = launch;
-    let name = launch.symbol;
+    let name = launch.launch_data.symbol;
 
     let current_time = new Date().getTime();
 
-    let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
+    let splitDate = new Date(bignum_to_num(launch.launch_data.end_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
-    const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
+    const cook_state = useDetermineCookState({ current_time, launchData: launch.launch_data, join_data: launch.join_data });
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
     const MINTED_OUT = [
@@ -131,6 +135,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         }
     };
 
+    console.log("cook state", cook_state)
     return (
         <tr
             style={{
@@ -144,14 +149,14 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.page_name}`)}
+            onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
                     <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={launch.launch_data.icon}
                             width={md ? 45 : 75}
                             height={md ? 45 : 75}
                             style={{ borderRadius: "8px" }}
@@ -191,13 +196,32 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                               ? "Cook Failed"
                               : "Unknown"}
                 </Badge>
+            
+            </td>
+
+            <td style={{ minWidth: "150px" }}>
+                {MINT_FAILED &&
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {launch.join_data.num_tickets} to refund {(launch.join_data.num_tickets * bignum_to_num(launch.launch_data.ticket_price) / LAMPORTS_PER_SOL)} SOL
+                </Text>
+                }
+                {!MINT_FAILED && launch.join_data.num_tickets > launch.join_data.num_claimed_tickets &&
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {launch.join_data.num_tickets} ({launch.join_data.num_tickets - launch.join_data.num_claimed_tickets} to check)
+                </Text>
+                }
+                {!MINT_FAILED && launch.join_data.num_tickets === launch.join_data.num_claimed_tickets &&
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {launch.join_data.num_winning_tickets} / {launch.join_data.num_tickets - launch.join_data.num_winning_tickets}
+                </Text>
+                }
             </td>
 
             <td style={{ minWidth: "170px" }}>
                 <VStack>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {(Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL}/
-                        {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
+                        {(Math.min(launch.launch_data.tickets_sold, launch.launch_data.num_mints) * launch.launch_data.ticket_price) / LAMPORTS_PER_SOL}/
+                        {(launch.launch_data.num_mints * launch.launch_data.ticket_price) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>
             </td>
@@ -212,8 +236,14 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                         <Button onClick={(e) => handleButtonClick(e)} isLoading={CheckingTickets || ClaimingTokens || RefundingTickets}>
                             {cook_state === CookState.MINT_SUCCEDED_TICKETS_LEFT
                                 ? "Check Tickets"
-                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED
+                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED && launch.launch_data.flags[LaunchFlags.LPState] == 2
                                   ? "Claim Tokens"
+                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED 
+                                            && launch.launch_data.flags[LaunchFlags.LPState] < 2 && launch.join_data.ticket_status === 0
+                                  ? "Refund Losing Tickets"
+                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED 
+                                  && launch.launch_data.flags[LaunchFlags.LPState] < 2 && launch.join_data.ticket_status === 1
+                                    ? "Waiting for LP"
                                   : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
                                     ? "Refund Tickets"
                                     : ""}

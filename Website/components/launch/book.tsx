@@ -102,7 +102,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             return false;
         }
 
-        if (!newLaunchData.current.edit_mode && closeDate.getTime() < openDate.getTime()) {
+        if (!newLaunchData.current.edit_mode && closeDate.getTime() <= openDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
         }
