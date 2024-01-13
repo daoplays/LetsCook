@@ -16,6 +16,9 @@ const PYTH_BTC_PROD = new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoM
 const PYTH_ETH_PROD = new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB");
 const PYTH_SOL_PROD = new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG");
 
+const DEV_FEES = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
+const PROD_FEES = new PublicKey("8T5LPmj4fghsUGdGZo6VTHS5w5mUWYwFxLYrgdBg5mXA");
+
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("7dXAFUrJMRTAK9YcpzimGQNPz3Q5yH4K61AdUtnC2i9c");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
@@ -38,9 +41,11 @@ export const PROD = false;
 export const TEST = true;
 export const DEBUG = true;
 
-export const PYTH_BTC = PYTH_BTC_DEV;
-export const PYTH_ETH = PYTH_ETH_DEV;
-export const PYTH_SOL = PYTH_SOL_DEV;
+export const PYTH_BTC = PROD ? PYTH_BTC_PROD : PYTH_BTC_DEV;
+export const PYTH_ETH = PROD ? PYTH_ETH_PROD : PYTH_ETH_DEV;
+export const PYTH_SOL = PROD ? PYTH_SOL_PROD : PYTH_SOL_DEV;
+
+export const FEES_KEY = PROD ? PROD_FEES : DEV_FEES;
 
 export var network_string = "devnet";
 export var RPC_NODE = DEV_RPC_NODE;

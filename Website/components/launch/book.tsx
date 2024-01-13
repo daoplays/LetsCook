@@ -16,9 +16,10 @@ import {
     create_LaunchData,
     LaunchData,
     bignum_to_num,
+    request_current_balance,
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect } from "react";
-import { Center, VStack, Text, useDisclosure, Input } from "@chakra-ui/react";
+import { Center, VStack, Text, useDisclosure, Input, HStack } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -58,11 +59,24 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
-    const { editing } = router.query;
-
-    let current_time = new Date().getTime();
-
     const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
+
+    const local_date = new Date();
+    var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
+    console.log(zone);
+
+    let local_launch_date = new Date(openDate.setMinutes(openDate.getMinutes() - local_date.getTimezoneOffset()));
+    let local_end_date = new Date(closeDate.setMinutes(closeDate.getMinutes() - local_date.getTimezoneOffset()));
+
+    let splitLaunchDate = local_launch_date.toUTCString().split(" ");
+    let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+    let splitLaunchTime = splitLaunchDate[4].split(":");
+    let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
+
+    let splitEndDate = local_end_date.toUTCString().split(" ");
+    let endDateString = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
+    let splitEndTime = splitEndDate[4].split(":");
+    let endTimeString = splitEndTime[0] + ":" + splitEndTime[1] + " " + zone;
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -82,19 +96,17 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         query: "(max-width: 1000px)",
     });
 
-    function setData(): boolean {
-        console.log(openDate.toString());
-        console.log(closeDate.toString());
-
+    async function setData(e): Promise<boolean> {
+        console.log("in set data");
         let balance = 1;
         try {
             let teamPubKey = new PublicKey(teamWallet);
-            //balance = await request_current_balance("", teamPubKey);
+            balance = await request_current_balance("", teamPubKey);
 
-            // console.log("check balance", teamPubKey.toString(), balance);
+            console.log("check balance", teamPubKey.toString(), balance);
 
             if (balance == 0) {
-                toast.error("Team wallet does not exists");
+                toast.error("Team wallet does not exist");
                 return false;
             }
         } catch (error) {
@@ -119,12 +131,13 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         return true;
     }
 
-    function setLaunchData(e) {
-        if (setData()) setScreen("details");
+    async function prevPage(e) {
+        console.log("check previous");
+        if (await setData(e)) setScreen("details");
     }
 
-    function Launch(e) {
-        if (setData()) CreateLaunch();
+    async function Launch(e) {
+        if (await setData(e)) CreateLaunch();
     }
 
     const CreateLaunch = useCallback(async () => {
@@ -411,18 +424,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         }
     }, [wallet, newLaunchData, EditLaunch, check_signature_update]);
 
-    function confirm(e) {
-        e.preventDefault();
-        if (closeDate && openDate && teamWallet) {
-            Launch(e);
-        } else {
-            toast.error("Please fill all the details on this page.");
-        }
-    }
-
     const { isOpen, onOpen, onClose } = useDisclosure();
-    // For demo
-    const { launchList } = useAppRoot();
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -430,7 +432,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - BOOK
                 </Text>
-                <form onSubmit={confirm} className={styles.launchBody}>
+                <form className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
                         <div className={styles.launchBodyUpperFields}>
                             <div className={`${styles.textLabel} font-face-kg`}>TOKEN RAFFLE</div>
@@ -439,14 +441,19 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                                     <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            showTimeSelect
-                                            timeFormat="HH:mm"
-                                            timeIntervals={15}
-                                            selected={openDate}
-                                            onChange={(date) => setOpenDate(date)}
-                                        />
+                                        <HStack>
+                                            <DatePicker
+                                                disabled={newLaunchData.current.edit_mode === true}
+                                                showTimeSelect
+                                                timeFormat="HH:mm"
+                                                timeIntervals={15}
+                                                selected={openDate}
+                                                onChange={(date) => setOpenDate(date)}
+                                            />
+                                            <Text m="0" color="white" font-face-kg>
+                                                {launchDateString} {launchTimeString}
+                                            </Text>
+                                        </HStack>
                                     </div>
                                 </div>
                             </div>
@@ -456,14 +463,19 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                                     <div className={`${styles.textLabel} font-face-kg`}>CLOSE DATE:</div>
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            showTimeSelect
-                                            timeFormat="HH:mm"
-                                            timeIntervals={15}
-                                            selected={closeDate}
-                                            onChange={(date) => setcloseDate(date)}
-                                        />
+                                        <HStack>
+                                            <DatePicker
+                                                disabled={newLaunchData.current.edit_mode === true}
+                                                showTimeSelect
+                                                timeFormat="HH:mm"
+                                                timeIntervals={15}
+                                                selected={closeDate}
+                                                onChange={(date) => setcloseDate(date)}
+                                            />
+                                            <Text m="0" color="white" font-face-kg>
+                                                {endDateString} {endTimeString}
+                                            </Text>
+                                        </HStack>
                                     </div>
                                 </div>
                             </div>
@@ -510,14 +522,21 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                         }}
                     >
                         <button
-                            onClick={() => {
-                                setScreen("details");
+                            type="button"
+                            onClick={(e) => {
+                                prevPage(e);
                             }}
                             className={`${styles.nextBtn} font-face-kg `}
                         >
                             PREVIOUS
                         </button>
-                        <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                Launch(e);
+                            }}
+                            className={`${styles.nextBtn} font-face-kg `}
+                        >
                             CONFIRM
                         </button>
                     </div>

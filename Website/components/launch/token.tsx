@@ -56,21 +56,15 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
         }
     };
 
-    const percentage1 = parseInt(distribution1);
-    const percentage2 = parseInt(distribution2);
-    const percentage3 = parseInt(distribution3);
-    const percentage4 = parseInt(distribution4);
-    const percentage5 = parseInt(distribution5);
-    const percentage6 = parseInt(distribution6);
+    const percentage1 = isNaN(parseInt(distribution1)) ? 0 : parseInt(distribution1);
+    const percentage2 = isNaN(parseInt(distribution2)) ? 0 : parseInt(distribution2);
+    const percentage3 = isNaN(parseInt(distribution3)) ? 0 : parseInt(distribution3);
+    const percentage4 = isNaN(parseInt(distribution4)) ? 0 : parseInt(distribution4);
+    const percentage5 = isNaN(parseInt(distribution5)) ? 0 : parseInt(distribution5);
+    const percentage6 = isNaN(parseInt(distribution6)) ? 0 : parseInt(distribution6);
 
     // Calculate the total sum of all percentages
-    const totalPercentage =
-        parseInt(distribution1) +
-        parseInt(distribution2) +
-        parseInt(distribution3) +
-        parseInt(distribution4) +
-        parseInt(distribution5) +
-        parseInt(distribution6);
+    const totalPercentage = percentage1 + percentage2 + percentage3 + percentage4 + percentage5 + percentage6;
 
     function setLaunchData(e) {
         e.preventDefault();

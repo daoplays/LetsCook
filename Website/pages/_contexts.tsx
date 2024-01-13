@@ -16,9 +16,15 @@ import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "rea
 import { AppRootContextProvider } from "../context/useAppRoot";
 import "bootstrap/dist/css/bootstrap.css";
 
-const CheckLaunchData = async (check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData) => {
+const CheckLaunchData = async (
+    check_launch_data,
+    setIsLaunchDataLoading,
+    setIsHomePageDataLoading,
+    setLaunchData,
+    filterTable,
+    setHomePageData,
+) => {
     if (!check_launch_data.current) return;
-
 
     setIsLaunchDataLoading(true);
     setIsHomePageDataLoading(true);
@@ -65,7 +71,7 @@ const CheckLaunchData = async (check_launch_data, setIsLaunchDataLoading, setIsH
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
     check_launch_data.current = false;
-}
+};
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
@@ -100,8 +106,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (!check_user_data.current) return;
         if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
-        
-        console.log("check user data", wallet.connected, wallet.connecting, wallet.disconnecting)
+        console.log("check user data", wallet.connected, wallet.connecting, wallet.disconnecting);
 
         setIsUserDataLoading(true);
 
@@ -125,8 +130,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (!check_join_data.current) return;
         if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
-        console.log("check join data")
-
+        console.log("check join data");
 
         let join_data_list = await RunJoinDataGPA(wallet);
         setJoinData(join_data_list);
@@ -143,7 +147,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, []);
 
     useEffect(() => {
-
         if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
         check_user_data.current = true;
@@ -151,9 +154,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         CheckUserData();
         CheckJoinedData();
-
     }, [wallet, CheckUserData, CheckJoinedData]);
-    
 
     return (
         <AppRootContextProvider

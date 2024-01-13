@@ -44,24 +44,56 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         }
     };
 
-    async function setLaunchData(e) {
+    function containsNone(str: string, set: string[]) {
+        return str.split("").every(function (ch) {
+            return set.indexOf(ch) === -1;
+        });
+    }
+
+    async function setData(e): Promise<boolean> {
         e.preventDefault();
 
-        // const nameExists = launchList.filter((launch) => launch.page_name === name);
+        let invalid_chars = [
+            ":",
+            "/",
+            "?",
+            "#",
+            "[",
+            "]",
+            "@",
+            "&",
+            "=",
+            "+",
+            "$",
+            ",",
+            "{",
+            "}",
+            "|",
+            "\\",
+            "^",
+            "~",
+            "`",
+            "<",
+            ">",
+            "%",
+            " ",
+            '"',
+        ];
+        console.log("invalid chars:", invalid_chars);
 
-        // if (nameExists.length) {
-        //     toast.error("Page name already exists");
-        //     return;
-        // }
+        if (!containsNone(name, invalid_chars)) {
+            toast.error("Page name contains invalid characters for URL");
+            return false;
+        }
 
         if (description.length > 250) {
             toast.error("Description should be less than 250 characters long");
-            return;
+            return false;
         }
 
         if (newLaunchData.current.banner_file === null) {
             toast.error("Please select a banner image.");
-            return;
+            return false;
         }
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
@@ -76,7 +108,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
 
         if (balance > 0) {
             toast.error("Page name already exists");
-            return;
+            return false;
         }
 
         newLaunchData.current.pagename = name;
@@ -86,7 +118,15 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
 
-        setScreen("book");
+        return true;
+    }
+
+    async function nextPage(e) {
+        if (await setData(e)) setScreen("book");
+    }
+
+    async function prevPage(e) {
+        if (await setData(e)) setScreen("token");
     }
 
     return (
@@ -95,7 +135,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - Page
                 </Text>
-                <form onSubmit={setLaunchData} className={styles.launchBody}>
+                <form className={styles.launchBody}>
                     <div className={styles.launchBodyUpper}>
                         <div className={styles.launchBodyUpperFields}>
                             <div className={styles.eachField}>
@@ -240,14 +280,20 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                     >
                         <button
                             type="button"
-                            onClick={() => {
-                                setScreen("token");
+                            onClick={(e) => {
+                                prevPage(e);
                             }}
                             className={`${styles.nextBtn} font-face-kg `}
                         >
                             PREVIOUS
                         </button>
-                        <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                nextPage(e);
+                            }}
+                            className={`${styles.nextBtn} font-face-kg `}
+                        >
                             NEXT
                         </button>
                     </div>
