@@ -37,6 +37,7 @@ import Timespan from "../../components/launchPreview/timespan";
 import TokenDistribution from "../../components/launchPreview/tokenDistribution";
 import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import Loader from "../../components/loader";
+import { WarningModal } from "../../components/Solana/modals";
 
 const MintPage = () => {
     const wallet = useWallet();
@@ -68,7 +69,7 @@ const MintPage = () => {
 
     const { value } = input;
 
-    const { BuyTickets } = useBuyTickets({ launchData, value });
+    const { BuyTickets, openWarning, isWarningOpened, closeWarning, setApprove } = useBuyTickets({ launchData, value });
     const { CheckTickets } = useCheckTickets(launchData);
     const { ClaimTokens } = useClaimTickets(launchData);
     const { RefundTickets } = useRefundTickets(launchData);
@@ -304,7 +305,7 @@ const MintPage = () => {
         CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
     ].includes(cookState);
     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cookState);
 
@@ -387,13 +388,18 @@ const MintPage = () => {
                                         if (wallet.publicKey === null) {
                                             handleConnectWallet();
                                         } else {
-
                                             if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
                                                 CheckTickets();
-                                            } else if ((cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP  && join_data?.ticket_status === 0)
-                                                || cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP) {
+                                            } else if (
+                                                (cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
+                                                    join_data?.ticket_status === 0) ||
+                                                cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP
+                                            ) {
                                                 ClaimTokens();
-                                            } else if (cook_state === CookState.MINT_FAILED_NOT_REFUNDED || CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT) {
+                                            } else if (
+                                                cook_state === CookState.MINT_FAILED_NOT_REFUNDED ||
+                                                CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+                                            ) {
                                                 RefundTickets();
                                             }
                                         }
@@ -403,8 +409,8 @@ const MintPage = () => {
                                         <VStack>
                                             <Box mt={4}>
                                                 <WoodenButton
-                                                    label=
-                                                        {cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK
+                                                    label={
+                                                        cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK
                                                             ? "Check Tickets"
                                                             : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
                                                                 join_data.ticket_status === 1
@@ -419,11 +425,11 @@ const MintPage = () => {
                                                                       join_data.ticket_status === 1
                                                                     ? "Waiting for LP"
                                                                     : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
-                                                                    ? "LP Timeout, Refund remaining tickets"
-                                                                    : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
-                                                                      ? "Refund Tickets"
-                                                                      : ""}
-                                                    
+                                                                      ? "LP Timeout, Refund remaining tickets"
+                                                                      : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
+                                                                        ? "Refund Tickets"
+                                                                        : ""
+                                                    }
                                                     size={28}
                                                 />
                                             </Box>
@@ -460,7 +466,7 @@ const MintPage = () => {
                                     isDisabled={cookState === CookState.PRE_LAUNCH}
                                     hidden={MINTED_OUT || MINT_FAILED}
                                     onClick={() => {
-                                        wallet.publicKey === null ? handleConnectWallet() : BuyTickets();
+                                        wallet.publicKey === null ? handleConnectWallet() : openWarning();
                                     }}
                                 >
                                     {wallet.publicKey === null ? "Connect Wallet" : "Mint"}
@@ -532,6 +538,14 @@ const MintPage = () => {
                     <TokenDistribution launchData={launchData} />
                 </VStack>
             </Center>
+            <WarningModal
+                launchData={launchData}
+                value={value}
+                isWarningOpened={isWarningOpened}
+                closeWarning={closeWarning}
+                setApprove={setApprove}
+                BuyTickets={BuyTickets}
+            />
         </main>
     );
 };

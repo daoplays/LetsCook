@@ -6,6 +6,8 @@ import { useCallback, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags, FEES_KEY } from "../components/Solana/constants";
+import { WarningModal } from "../components/Solana/modals";
+import { useDisclosure } from "@chakra-ui/react";
 
 interface BuyTicketsProps {
     launchData: LaunchData;
@@ -14,6 +16,8 @@ interface BuyTicketsProps {
 
 const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     const wallet = useWallet();
+    const { isOpen: isWarningOpened, onOpen: openWarning, onClose: closeWarning } = useDisclosure();
+    const [isApproveWarning, setIsApproveWarning] = useState(false);
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -27,6 +31,13 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         }
         signature_ws_id.current = null;
     }, []);
+
+    const setApprove = (state: boolean) => {
+        return new Promise<void>((resolve) => {
+            setIsApproveWarning(state);
+            resolve();
+        });
+    };
 
     const BuyTickets = async () => {
         setIsLoading(true);
@@ -107,7 +118,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         }
     };
 
-    return { BuyTickets, isLoading };
+    return { BuyTickets, isLoading, openWarning, isWarningOpened, closeWarning, setApprove };
 };
 
 export default useBuyTickets;
