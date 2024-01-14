@@ -109,7 +109,7 @@ const TermsPage = () => {
                             <VStack key={i.title} spacing={sm ? 1 : 3} align={sm ? "center" : "start"}>
                                 <h2
                                     className="font-face-kg"
-                                    style={{ fontSize: DUNGEON_FONT_SIZE, textAlign: sm ? "center" : "start", lineHeight: 1.5 }}
+                                    style={{ fontSize: sm ? 18 : DUNGEON_FONT_SIZE, textAlign: sm ? "center" : "start", lineHeight: 1.5 }}
                                 >
                                     {index + 1}. {i.title}
                                 </h2>
