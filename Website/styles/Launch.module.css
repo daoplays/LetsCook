@@ -100,7 +100,6 @@ label.label input[type="file"] {
     right: 5px;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
     height: auto;
 }
 .launchBodyLower {
@@ -155,11 +154,10 @@ label.label input[type="file"] {
 .distributionField input {
     background-color: #494949;
     box-shadow: none;
+    width: 100px;
     border: 1px solid rgba(255, 255, 255, 0.761);
-    padding: 10px;
     border-radius: 5px;
     color: white;
-    width: 100px;
 }
 .colorBox1 {
     background-color: #ff5151;
@@ -195,8 +193,6 @@ label.label input[type="file"] {
     color: #683309;
     background-image: url(../public/images/Wood\ Panel.png);
     background-size: cover;
-    padding: 10px;
-    font-size: 20px;
     border-radius: 5px;
 }
 .nextBtn {
@@ -208,7 +204,7 @@ label.label input[type="file"] {
     border-radius: 5px;
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1184px) {
     .imgFrame {
         width: 250px;
     }
@@ -288,7 +284,6 @@ label.label input[type="file"] {
         right: 5px;
         top: 50%;
         transform: translateY(-50%);
-        width: 20px;
         height: auto;
     }
     .launchBodyLower {
