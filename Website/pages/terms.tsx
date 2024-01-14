@@ -106,7 +106,7 @@ const TermsPage = () => {
 
                     <VStack spacing={sm ? 10 : 20} align={sm ? "center" : "start"}>
                         {content.map((i, index) => (
-                            <VStack spacing={sm ? 1 : 3} align={sm ? "center" : "start"}>
+                            <VStack key={i.title} spacing={sm ? 1 : 3} align={sm ? "center" : "start"}>
                                 <h2
                                     className="font-face-kg"
                                     style={{ fontSize: DUNGEON_FONT_SIZE, textAlign: sm ? "center" : "start", lineHeight: 1.5 }}

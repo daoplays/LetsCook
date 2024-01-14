@@ -14,44 +14,41 @@ function Footer() {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     return (
-        <>
-            <HStack
-                bg="url(/images/footer_fill.jpeg)"
-                bgSize="cover"
-                boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.75)"
-                py={2}
-                px={4}
-                justify="start"
-                gap={3}
-            >
-                <MainButton action={() => router.push("/terms")} label="TERMS" />
-                <Image
-                    src={twitter.src}
-                    width={30}
-                    height={30}
-                    alt={"Twitter"}
-                    style={{
-                        backgroundColor: "#683309",
-                        borderRadius: "50%",
-                        padding: 5,
-                        cursor: "not-allowed",
-                    }}
-                />
-                <Image
-                    src={telegram.src}
-                    width={30}
-                    height={30}
-                    alt={"Telegram"}
-                    style={{
-                        backgroundColor: "#683309",
-                        borderRadius: "50%",
-                        padding: 5,
-                        cursor: "not-allowed",
-                    }}
-                />
-            </HStack>
-            <TermsModal show_value={isOpen} showFunction={onClose} />
-        </>
+        <HStack
+            bg="url(/images/footer_fill.jpeg)"
+            bgSize="cover"
+            boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.75)"
+            py={2}
+            px={4}
+            justify="start"
+            gap={3}
+        >
+            <MainButton action={() => router.push("/terms")} label="TERMS" />
+            <Image
+                src={twitter.src}
+                width={30}
+                height={30}
+                alt={"Twitter"}
+                style={{
+                    backgroundColor: "#683309",
+                    borderRadius: "50%",
+                    padding: 5,
+                    cursor: "not-allowed",
+                }}
+            />
+            <Image
+                src={telegram.src}
+                width={30}
+                height={30}
+                alt={"Telegram"}
+                style={{
+                    backgroundColor: "#683309",
+                    borderRadius: "50%",
+                    padding: 5,
+                    cursor: "not-allowed",
+                }}
+            />
+        </HStack>
     );
 }
 
