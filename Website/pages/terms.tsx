@@ -1,7 +1,6 @@
 "use client";
 
 import { VStack, Text, Box, List, ListItem, Center, HStack } from "@chakra-ui/react";
-import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
 import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE } from "../components/Solana/constants";
 
@@ -88,25 +87,28 @@ const TermsPage = () => {
             <Center>
                 <VStack
                     px={sm ? 6 : 12}
-                    spacing={0}
+                    spacing={10}
                     width={lg ? "100%" : "85%"}
                     className="font-face-rk"
                     style={{ color: "white", fontSize: DUNGEON_FONT_SIZE }}
                 >
                     <VStack spacing={0}>
-                        <h2 className="font-face-kg" style={{ fontSize: DEFAULT_FONT_SIZE, textAlign: "center" }}>
-                            <Center>TERMS & CONDITIONS</Center>
+                        <h2
+                            className="font-face-kg"
+                            style={{ fontSize: DEFAULT_FONT_SIZE, textAlign: sm ? "center" : "start", lineHeight: 1.5 }}
+                        >
+                            TERMS & CONDITIONS
                         </h2>
                         <Text align="center" lineHeight={1.25}>
                             By using this site, you agree to the following Terms and Conditions:
                         </Text>
                     </VStack>
 
-                    <VStack spacing={sm ? 0 : 8} align={sm ? "center" : "start"}>
+                    <VStack spacing={sm ? 10 : 20} align={sm ? "center" : "start"}>
                         {content.map((i, index) => (
-                            <VStack spacing={0} align={sm ? "center" : "start"}>
+                            <VStack spacing={sm ? 1 : 3} align={sm ? "center" : "start"}>
                                 <h2
-                                    className="mt-5  font-face-kg"
+                                    className="font-face-kg"
                                     style={{ fontSize: DUNGEON_FONT_SIZE, textAlign: sm ? "center" : "start", lineHeight: 1.5 }}
                                 >
                                     {index + 1}. {i.title}
