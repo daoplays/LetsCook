@@ -5,7 +5,6 @@ import twitter from "../public/images/Twitter.png";
 import telegram from "../public/images/Telegram.png";
 
 import styles from "./header.module.css";
-import { TermsModal } from "./Solana/modals";
 import MainButton from "./Buttons/mainButton";
 import Image from "next/image";
 import { useRouter } from "next/router";

@@ -37,6 +37,7 @@ import Timespan from "../../components/launchPreview/timespan";
 import TokenDistribution from "../../components/launchPreview/tokenDistribution";
 import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import Loader from "../../components/loader";
+import { WarningModal } from "../../components/Solana/modals";
 
 const MintPage = () => {
     const wallet = useWallet();
@@ -68,7 +69,7 @@ const MintPage = () => {
 
     const { value } = input;
 
-    const { BuyTickets } = useBuyTickets({ launchData, value });
+    const { BuyTickets, openWarning, isWarningOpened, closeWarning, setApprove } = useBuyTickets({ launchData, value });
     const { CheckTickets } = useCheckTickets(launchData);
     const { ClaimTokens } = useClaimTickets(launchData);
     const { RefundTickets } = useRefundTickets(launchData);
@@ -467,7 +468,7 @@ const MintPage = () => {
                                     isDisabled={cookState === CookState.PRE_LAUNCH}
                                     hidden={MINTED_OUT || MINT_FAILED}
                                     onClick={() => {
-                                        wallet.publicKey === null ? handleConnectWallet() : BuyTickets();
+                                        wallet.publicKey === null ? handleConnectWallet() : openWarning();
                                     }}
                                 >
                                     {wallet.publicKey === null ? "Connect Wallet" : "Mint"}
@@ -539,6 +540,14 @@ const MintPage = () => {
                     <TokenDistribution launchData={launchData} />
                 </VStack>
             </Center>
+            <WarningModal
+                launchData={launchData}
+                value={value}
+                isWarningOpened={isWarningOpened}
+                closeWarning={closeWarning}
+                setApprove={setApprove}
+                BuyTickets={BuyTickets}
+            />
         </main>
     );
 };
