@@ -8,8 +8,10 @@ import styles from "./header.module.css";
 import { TermsModal } from "./Solana/modals";
 import MainButton from "./Buttons/mainButton";
 import Image from "next/image";
+import { useRouter } from "next/router";
 
 function Footer() {
+    const router = useRouter();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     return (
@@ -23,7 +25,7 @@ function Footer() {
                 justify="start"
                 gap={3}
             >
-                <MainButton action={onOpen} label="TERMS" />
+                <MainButton action={() => router.push("/terms")} label="TERMS" />
                 <Image
                     src={twitter.src}
                     width={30}
