@@ -69,7 +69,7 @@ const MintPage = () => {
 
     const { value } = input;
 
-    const { BuyTickets, openWarning, isWarningOpened, closeWarning, setApprove } = useBuyTickets({ launchData, value });
+    const { BuyTickets, openWarning, isWarningOpened, closeWarning } = useBuyTickets({ launchData, value });
     const { CheckTickets } = useCheckTickets(launchData);
     const { ClaimTokens } = useClaimTickets(launchData);
     const { RefundTickets } = useRefundTickets(launchData);
@@ -373,7 +373,7 @@ const MintPage = () => {
                                         {cookState === CookState.PRE_LAUNCH
                                             ? "Warming Up"
                                             : ACTIVE
-                                              ? `Total: ${totalCost.toFixed(3)}`
+                                              ? `Total: ${totalCost.toFixed(2)}`
                                               : MINTED_OUT
                                                 ? "Cooked Out!"
                                                 : MINT_FAILED
@@ -545,7 +545,6 @@ const MintPage = () => {
                 value={value}
                 isWarningOpened={isWarningOpened}
                 closeWarning={closeWarning}
-                setApprove={setApprove}
                 BuyTickets={BuyTickets}
             />
         </main>

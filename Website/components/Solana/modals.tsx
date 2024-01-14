@@ -8,13 +8,12 @@ import useBuyTickets from "../../hooks/useBuyTickets";
 interface WarningModalProps {
     isWarningOpened?: boolean;
     closeWarning?: () => void;
-    setApprove?: Dispatch<SetStateAction<boolean>>;
     BuyTickets: () => void;
     launchData: LaunchData;
     value: number;
 }
 
-export function WarningModal({ isWarningOpened, closeWarning, setApprove, BuyTickets }: WarningModalProps) {
+export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: WarningModalProps) {
     const { sm } = useResponsive();
 
     return (
@@ -75,7 +74,6 @@ export function WarningModal({ isWarningOpened, closeWarning, setApprove, BuyTic
                                     p={3}
                                     style={{ cursor: "pointer" }}
                                     onClick={() => {
-                                        setApprove(true);
                                         BuyTickets();
                                     }}
                                 >

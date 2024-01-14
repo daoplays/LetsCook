@@ -4,10 +4,10 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags, FEES_KEY } from "../components/Solana/constants";
-import { WarningModal } from "../components/Solana/modals";
 import { useDisclosure } from "@chakra-ui/react";
+import { toast } from "react-toastify";
+import bs58 from "bs58";
 
 interface BuyTicketsProps {
     launchData: LaunchData;
@@ -17,7 +17,8 @@ interface BuyTicketsProps {
 const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     const wallet = useWallet();
     const { isOpen: isWarningOpened, onOpen: openWarning, onClose: closeWarning } = useDisclosure();
-    const [isApproveWarning, setIsApproveWarning] = useState(false);
+
+    const ticketLabel = value <= 1 ? "ticket" : "tickets";
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -32,15 +33,8 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         signature_ws_id.current = null;
     }, []);
 
-    const setApprove = (state: boolean) => {
-        return new Promise<void>((resolve) => {
-            setIsApproveWarning(state);
-            resolve();
-        });
-    };
-
     const BuyTickets = async () => {
-        setIsLoading(true);
+        const buyingTickets = toast.loading(`Minting ${value} ${ticketLabel}`);
 
         if (wallet.signTransaction === undefined) return;
 
@@ -108,17 +102,30 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            toast.update(buyingTickets, {
+                render: `Successfully minted ${value} ${ticketLabel}!`,
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
 
             // console.log("join sig: ", signature);
         } catch (error) {
             console.log(error);
+            toast.update(buyingTickets, {
+                render: `Failed to mint ${ticketLabel}, please try again.`,
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         } finally {
             setIsLoading(false);
+            closeWarning();
         }
     };
 
-    return { BuyTickets, isLoading, openWarning, isWarningOpened, closeWarning, setApprove };
+    return { BuyTickets, isLoading, openWarning, isWarningOpened, closeWarning };
 };
 
 export default useBuyTickets;
