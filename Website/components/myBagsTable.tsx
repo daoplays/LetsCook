@@ -126,7 +126,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
         CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
     ].includes(cook_state);
     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
 
@@ -135,8 +135,10 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
         if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
             CheckTickets();
-        } else if ((cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP  && launch.join_data.ticket_status === 0)
-            || cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP) {
+        } else if (
+            (cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP && launch.join_data.ticket_status === 0) ||
+            cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP
+        ) {
             ClaimTokens();
         } else if (cook_state === CookState.MINT_FAILED_NOT_REFUNDED || CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT) {
             RefundTickets();
@@ -210,12 +212,12 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                 {MINT_FAILED && (
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
                         {launch.join_data.num_tickets}
-                        
                     </Text>
                 )}
                 {!MINT_FAILED && launch.join_data.num_tickets > launch.join_data.num_claimed_tickets && (
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.join_data.num_tickets} <br/> ({launch.join_data.num_tickets - launch.join_data.num_claimed_tickets} to check)
+                        {launch.join_data.num_tickets} <br /> ({launch.join_data.num_tickets - launch.join_data.num_claimed_tickets} to
+                        check)
                     </Text>
                 )}
                 {!MINT_FAILED && launch.join_data.num_tickets === launch.join_data.num_claimed_tickets && (
@@ -243,26 +245,32 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                 <HStack justify="center" style={{ minWidth: "65px" }}>
                     {(MINTED_OUT || MINT_FAILED) && (
                         <Button onClick={(e) => handleButtonClick(e)} isLoading={CheckingTickets || ClaimingTokens || RefundingTickets}>
-                            {cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK
-                                ? "Check Tickets"
-                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
-                                    launch.join_data.ticket_status === 1
-                                  ? "Claim Tokens"
-                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
-                                      launch.join_data.ticket_status === 0
-                                    ? "Claim Tokens and Refund"
-                                    : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
-                                        launch.join_data.ticket_status === 0
-                                      ? 
-                                      <Text m="0">Refund Losing Tickets <br/>{((launch.join_data.num_tickets - launch.join_data.num_winning_tickets) * bignum_to_num(launch.launch_data.ticket_price)) / LAMPORTS_PER_SOL} SOL</Text>
-                                      : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
-                                          launch.join_data.ticket_status === 1
-                                        ? "Waiting for LP"
-                                        : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
-                                        ? "LP Timeout, Refund remaining tickets"
-                                        : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
-                                          ? <Text m="0">Refund Tickets <br/>{(launch.join_data.num_tickets * bignum_to_num(launch.launch_data.ticket_price)) / LAMPORTS_PER_SOL} SOL</Text>
-                                          : ""}
+                            {cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK ? (
+                                "Check Tickets"
+                            ) : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP && launch.join_data.ticket_status === 1 ? (
+                                "Claim Tokens"
+                            ) : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP && launch.join_data.ticket_status === 0 ? (
+                                "Claim Tokens and Refund"
+                            ) : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP && launch.join_data.ticket_status === 0 ? (
+                                <Text m="0">
+                                    Refund Losing Tickets <br />
+                                    {((launch.join_data.num_tickets - launch.join_data.num_winning_tickets) *
+                                        bignum_to_num(launch.launch_data.ticket_price)) /
+                                        LAMPORTS_PER_SOL}{" "}
+                                    SOL
+                                </Text>
+                            ) : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP && launch.join_data.ticket_status === 1 ? (
+                                "Waiting for LP"
+                            ) : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT ? (
+                                "LP Timeout, Refund remaining tickets"
+                            ) : cook_state === CookState.MINT_FAILED_NOT_REFUNDED ? (
+                                <Text m="0">
+                                    Refund Tickets <br />
+                                    {(launch.join_data.num_tickets * bignum_to_num(launch.launch_data.ticket_price)) / LAMPORTS_PER_SOL} SOL
+                                </Text>
+                            ) : (
+                                ""
+                            )}
                         </Button>
                     )}
                 </HStack>

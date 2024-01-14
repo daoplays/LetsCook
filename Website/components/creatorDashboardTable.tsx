@@ -121,7 +121,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
     ].includes(cook_state);
     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
 

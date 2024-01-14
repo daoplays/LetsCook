@@ -47,7 +47,7 @@ import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
 import useCreateAMM from "./useCreateAMM";
 
 const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
-const addLookupTableInfo = PROD? LOOKUP_TABLE_CACHE : undefined; 
+const addLookupTableInfo = PROD ? LOOKUP_TABLE_CACHE : undefined;
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;

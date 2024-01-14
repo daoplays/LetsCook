@@ -11,7 +11,7 @@ export const enum CookState {
     MINT_SUCCEDED_TICKETS_TO_CHECK,
     MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
     MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-    MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+    MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
 }
 
 interface Props {
@@ -42,33 +42,16 @@ const useDetermineCookState = ({ current_time, launchData, join_data }: Props) =
     if (MINT_SUCEEDED && join_data === null) {
         return CookState.MINT_SUCCEEDED_NO_TICKETS;
     }
-    if (
-        MINT_SUCEEDED &&
-        join_data !== null &&
-        join_data.num_claimed_tickets < join_data.num_tickets
-    ) {
+    if (MINT_SUCEEDED && join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets) {
         return CookState.MINT_SUCCEDED_TICKETS_TO_CHECK;
     }
-    if (
-        MINT_SUCEEDED &&
-        TICKETS_CLAIMED &&
-        LP_CREATED
-    ) {
+    if (MINT_SUCEEDED && TICKETS_CLAIMED && LP_CREATED) {
         return CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP;
     }
-    if (
-        MINT_SUCEEDED &&
-        TICKETS_CLAIMED &&
-        !LP_CREATED
-    ) {
+    if (MINT_SUCEEDED && TICKETS_CLAIMED && !LP_CREATED) {
         return CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP;
     }
-    if (
-        MINT_SUCEEDED &&
-        TICKETS_CLAIMED &&
-        !LP_CREATED &&
-        current_time >= launchData.end_date + 14 * 24 * 60 * 60 * 1000
-    ) {
+    if (MINT_SUCEEDED && TICKETS_CLAIMED && !LP_CREATED && current_time >= launchData.end_date + 14 * 24 * 60 * 60 * 1000) {
         return CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT;
     }
     return CookState.PRE_LAUNCH;

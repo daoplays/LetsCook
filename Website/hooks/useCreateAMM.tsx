@@ -25,22 +25,18 @@ import {
     LOOKUP_TABLE_CACHE,
 } from "@raydium-io/raydium-sdk";
 
-import {
-    ComputeBudgetProgram,
-} from "@solana/web3.js";
+import { ComputeBudgetProgram } from "@solana/web3.js";
 
-import {
-    getAssociatedTokenAddress,
-    TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
 
 const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 const addLookupTableInfo = PROD ? LOOKUP_TABLE_CACHE : undefined;
 
 //https://github.com/raydium-io/raydium-amm
-const RAYDIUM_FEES = PROD ? new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5") : new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR")
+const RAYDIUM_FEES = PROD
+    ? new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5")
+    : new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR");
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -163,7 +159,6 @@ const useCreateAMM = (launchData: LaunchData) => {
         console.log(user_lp_account.toString());
         console.log(program_quote_account.toString());
         console.log(program_base_account.toString());
-
 
         const keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

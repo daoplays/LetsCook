@@ -12,7 +12,7 @@ import {
     JoinData,
     RunJoinDataGPA,
 } from "../components/Solana/state";
-import {RPC_NODE, WSS_NODE, PROGRAM} from "../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
@@ -96,7 +96,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const user_account_ws_id = useRef<number | null>(null);
 
-
     const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
 
     function filterTable({ list }: { list: LaunchData[] }) {
@@ -128,7 +127,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     return;
                 }
 
-                if (updated_data.total_points > current_user_data.total_points || updated_data.votes.length > current_user_data.votes.length) {
+                if (
+                    updated_data.total_points > current_user_data.total_points ||
+                    updated_data.votes.length > current_user_data.votes.length
+                ) {
                     setCurrentUserData(updated_data);
                 }
             } catch (error) {
@@ -141,11 +143,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     // launch account subscription handler
     useEffect(() => {
-
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (user_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
-
             console.log("subscribe to user data");
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
