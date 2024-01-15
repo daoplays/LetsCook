@@ -15,14 +15,15 @@ import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
 
 interface TokenPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
+const TokenPage = ({ setScreen }: TokenPageProps) => {
     //console.log(newLaunchData.current)
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
@@ -97,6 +98,22 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
         if (parseFloat(distribution2) === 0) {
             toast.error("Liquidity pool allocation must be greater than zero");
+            return;
+        }
+
+        if (parseFloat(distribution1) === 0) {
+            toast.error("Raffle allocation must be greater than zero");
+            return;
+        }
+
+        if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (percentage1 / 100) < parseInt(mints)) {
+
+            toast.error("Not enough tokens to support the raffle");
+            return;
+        }
+
+        if (parseInt(totalSupply) < 10) {
+            toast.error("Total supply of tokens must be over 10");
             return;
         }
 

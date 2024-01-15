@@ -7,6 +7,7 @@ import {
     RPC_NODE,
     WSS_NODE,
     LaunchKeys,
+    PROD,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -56,6 +57,8 @@ import { useRouter } from "next/router";
 import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 
+let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
+
 // Define the Tag type
 type Tag = {
     name: string;
@@ -63,14 +66,15 @@ type Tag = {
 };
 
 interface BookPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
+const BookPage = ({ setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
     const { sm, md, lg } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
@@ -79,8 +83,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
     const [closeDateAndTime, setCloseDateAndTime] = useState("-- --");
-
-    const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
+    const { EditLaunch } = useEditLaunch();
 
     const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
@@ -181,7 +184,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         const irys_wallet = { name: "phantom", provider: wallet };
         const irys = new WebIrys({
-            url: "https://devnet.irys.xyz",
+            url: IRYS_URL,
             token: "solana",
             wallet: irys_wallet,
             config: {

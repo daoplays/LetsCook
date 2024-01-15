@@ -1,11 +1,11 @@
-import { HStack, Link } from "@chakra-ui/react";
+import { HStack, Link, Text } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 
-import twitter from "../../public/socialIcons/twitter.svg";
-import telegram from "../../public/socialIcons/telegram.svg";
-import discord from "../../public/socialIcons/discord.svg";
-import website from "../../public/socialIcons/website.svg";
+import twitter from "../../public/socialIcons/new/XIcon.png";
+import telegram from "../../public/socialIcons/new/telegramIcon.png";
+import discord from "../../public/socialIcons/new/discordIcon.png";
+import website from "../../public/socialIcons/new/websiteIcon.png";
 import { Socials } from "../Solana/constants";
 import { LaunchData } from "../Solana/state";
 

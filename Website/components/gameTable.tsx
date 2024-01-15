@@ -28,11 +28,11 @@ interface Header {
 }
 
 const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
-    console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
+    //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
-        { text: "TICKER", field: "symbol" },
+        { text: "ICON", field: null },
+        { text: "SYMBOL", field: "symbol" },
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },
         { text: "MIN. LIQUIDITY", field: "minimum_liquidity" },
@@ -99,7 +99,11 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
 
     return (
         <TableContainer>
-            <table width="100%" className="custom-centered-table font-face-rk">
+            <table
+                width="100%"
+                className="custom-centered-table font-face-rk"
+                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
+            >
                 <thead>
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (
@@ -145,6 +149,8 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
     let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
+    const socialsExist = launch.socials.some((social) => social !== "");
+
     return (
         <tr
             style={{
@@ -179,14 +185,20 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
-                <Links featuredLaunch={launch} />
+                {socialsExist ? (
+                    <Links featuredLaunch={launch} />
+                ) : (
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        No Socials
+                    </Text>
+                )}
             </td>
             <td style={{ minWidth: "150px" }}>
                 <HypeVote launch_data={launch} user_data={user_data} />
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)} SOL
+                    {bignum_to_num(launch.minimum_liquidity) / LAMPORTS_PER_SOL} SOL
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>

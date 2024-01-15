@@ -14,15 +14,14 @@ const Launch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
     const [screen, setScreen] = useState("token");
-    const { newLaunchData } = useAppRoot();
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)", paddingTop: lg ? "25px" : "50px" }}>
-            {screen === "token" && <TokenPage newLaunchData={newLaunchData} setScreen={setScreen} />}
+            {screen === "token" && <TokenPage setScreen={setScreen} />}
 
-            {screen === "details" && <DetailsPage newLaunchData={newLaunchData} setScreen={setScreen} />}
+            {screen === "details" && <DetailsPage setScreen={setScreen} />}
 
-            {screen === "book" && <BookPage newLaunchData={newLaunchData} setScreen={setScreen} />}
+            {screen === "book" && <BookPage setScreen={setScreen} />}
         </main>
     );
 };

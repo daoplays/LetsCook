@@ -18,15 +18,10 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
 
-interface EditLaunchProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
-    setSubmitStatus: Dispatch<SetStateAction<string>>;
-}
-
-const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
+const useEditLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { checkLaunchData } = useAppRoot();
+    const { newLaunchData, checkLaunchData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -38,6 +33,7 @@ const useEditLaunch = ({ newLaunchData, setSubmitStatus }: EditLaunchProps) => {
         }
         signature_ws_id.current = null;
         newLaunchData.current = defaultUserInput;
+        console.log(defaultUserInput);
         await checkLaunchData();
     }, []);
 

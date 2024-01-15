@@ -13,19 +13,21 @@ import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
 
 interface DetailsPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
+const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
     const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
+    const [banner_name, setBannerName] = useState<string>("");
 
     const { launchList } = useAppRoot();
 
@@ -39,6 +41,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         if (file) {
             if (file.size <= 4194304) {
                 newLaunchData.current.banner_file = file;
+                setBannerName(file.name);
             } else {
                 alert("File size exceeds 4MB limit.");
             }

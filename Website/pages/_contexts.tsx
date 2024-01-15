@@ -42,7 +42,7 @@ const CheckLaunchData = async (
     let home_page_map = new Map<number, LaunchData>();
     for (let i = 0; i < close_filtered.length; i++) {
         let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-        //console.log(close_filtered[i].symbol, bignum_to_num(close_filtered[i].end_date), date);
+        //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
         if (home_page_map.has(date)) {
             let current_entry: LaunchData = home_page_map.get(date);
             let current_hype = current_entry.positive_votes - current_entry.negative_votes;
@@ -96,7 +96,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const user_account_ws_id = useRef<number | null>(null);
 
-    const newLaunchData = useRef<LaunchDataUserInput>(defaultUserInput);
+    const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
 
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -110,17 +110,17 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const check_user_update = useCallback(
         async (result: any) => {
-            console.log(result);
+            //console.log(result);
             // if we have a subscription field check against ws_id
 
             let event_data = result.data;
 
-            console.log("have event data", event_data, user_account_ws_id.current);
+            //console.log("have event data", event_data, user_account_ws_id.current);
             let account_data = Buffer.from(event_data, "base64");
             try {
                 const [updated_data] = UserData.struct.deserialize(account_data);
 
-                console.log(updated_data);
+                //console.log(updated_data);
 
                 if (current_user_data === null) {
                     setCurrentUserData(updated_data);
@@ -146,7 +146,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (user_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
-            console.log("subscribe to user data");
+            //console.log("subscribe to user data");
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
             user_account_ws_id.current = connection.onAccountChange(user_data_account, check_user_update, "confirmed");
@@ -191,7 +191,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const RecheckLaunchData = useCallback(async () => {
         check_launch_data.current = true;
         CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
-    }, []);
+        check_join_data.current = true;
+        CheckJoinedData();
+    }, [CheckJoinedData]);
 
     useEffect(() => {
         CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
