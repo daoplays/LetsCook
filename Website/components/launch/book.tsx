@@ -83,7 +83,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
     const [closeDateAndTime, setCloseDateAndTime] = useState("-- --");
 
-    const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
+    const { EditLaunch } = useEditLaunch();
 
     const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
