@@ -18,8 +18,24 @@ import {
     bignum_to_num,
     request_current_balance,
 } from "../../components/Solana/state";
-import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect } from "react";
-import { Center, VStack, Text, useDisclosure, Input, HStack } from "@chakra-ui/react";
+import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
+import {
+    Center,
+    VStack,
+    Text,
+    useDisclosure,
+    Input,
+    HStack,
+    Popover,
+    Button,
+    PopoverTrigger,
+    PopoverContent,
+    PopoverArrow,
+    PopoverCloseButton,
+    PopoverHeader,
+    PopoverBody,
+    IconButton,
+} from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -37,6 +53,8 @@ import LaunchPreviewModal from "../launchPreview/modal";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import React from "react";
+import { FaCalendarAlt } from "react-icons/fa";
 
 // Define the Tag type
 type Tag = {
@@ -52,31 +70,41 @@ interface BookPageProps {
 const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
-    const { md } = useResponsive();
+    const { sm, md, lg } = useResponsive();
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
+    const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
+    const [closeDateAndTime, setCloseDateAndTime] = useState("-- --");
+
     const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
 
-    const local_date = new Date();
+    const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
     console.log(zone);
 
-    let local_launch_date = new Date(openDate.setMinutes(openDate.getMinutes() - local_date.getTimezoneOffset()));
-    let local_end_date = new Date(closeDate.setMinutes(closeDate.getMinutes() - local_date.getTimezoneOffset()));
+    useEffect(() => {
+        let local_launch_date = new Date(openDate.setMinutes(openDate.getMinutes() - local_date.getTimezoneOffset()));
+        let splitLaunchDate = local_launch_date.toUTCString().split(" ");
+        let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+        let splitLaunchTime = splitLaunchDate[4].split(":");
+        let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
 
-    let splitLaunchDate = local_launch_date.toUTCString().split(" ");
-    let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
-    let splitLaunchTime = splitLaunchDate[4].split(":");
-    let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
+        setLaunchDateAndTime(`${launchDateString} ${launchTimeString}`);
+    }, [openDate, local_date, zone]);
 
-    let splitEndDate = local_end_date.toUTCString().split(" ");
-    let endDateString = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
-    let splitEndTime = splitEndDate[4].split(":");
-    let endTimeString = splitEndTime[0] + ":" + splitEndTime[1] + " " + zone;
+    useEffect(() => {
+        let local_end_date = new Date(closeDate.setMinutes(closeDate.getMinutes() - local_date.getTimezoneOffset()));
+        let splitEndDate = local_end_date.toUTCString().split(" ");
+        let endDateString = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
+        let splitEndTime = splitEndDate[4].split(":");
+        let endTimeString = splitEndTime[0] + ":" + splitEndTime[1] + " " + zone;
+
+        setCloseDateAndTime(`${endDateString} ${endTimeString}`);
+    }, [closeDate, local_date, zone]);
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -426,125 +454,152 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
     const { isOpen, onOpen, onClose } = useDisclosure();
 
+    const { isOpen: isStartOpen, onToggle: onToggleStart, onClose: onCloseStart } = useDisclosure();
+    const { isOpen: isEndOpen, onToggle: onToggleEnd, onClose: OnCloseEnd } = useDisclosure();
+
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack pb={75} h={md ? "60vh" : "85vh"}>
+            <VStack pb={75} h={"85vh"} w="100%">
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - BOOK
                 </Text>
-                <form className={styles.launchBody}>
-                    <div className={styles.launchBodyUpper}>
-                        <div className={styles.launchBodyUpperFields}>
-                            <div className={`${styles.textLabel} font-face-kg`}>TOKEN RAFFLE</div>
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
+                <form style={{ width: lg ? "100%" : "1200px" }}>
+                    <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
+                        <div className={`${styles.textLabel} font-face-kg`}>TOKEN RAFFLE</div>
 
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <HStack>
-                                            <DatePicker
-                                                disabled={newLaunchData.current.edit_mode === true}
-                                                showTimeSelect
-                                                timeFormat="HH:mm"
-                                                timeIntervals={15}
-                                                selected={openDate}
-                                                onChange={(date) => setOpenDate(date)}
+                        <HStack spacing={15}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                OPEN DATE:
+                            </div>
+
+                            <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                <HStack spacing={5}>
+                                    <Popover isOpen={isStartOpen} onClose={onCloseStart} placement="bottom" closeOnBlur={false}>
+                                        <PopoverTrigger>
+                                            <IconButton
+                                                onClick={onToggleStart}
+                                                aria-label="FaCalendarAlt"
+                                                icon={<FaCalendarAlt size={22} />}
                                             />
-                                            <Text m="0" color="white" font-face-kg>
-                                                {launchDateString} {launchTimeString}
-                                            </Text>
-                                        </HStack>
-                                    </div>
-                                </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent width="fit-content">
+                                            <PopoverArrow />
+                                            <PopoverBody>
+                                                <DatePicker
+                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    showTimeSelect
+                                                    timeFormat="HH:mm"
+                                                    timeIntervals={15}
+                                                    selected={openDate}
+                                                    onChange={(date) => {
+                                                        setOpenDate(date);
+                                                        onCloseStart();
+                                                    }}
+                                                    inline
+                                                />
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <Text m="0" color="white" font-face-kg fontSize={sm ? "small" : "large"}>
+                                        {launchDateAndTime}
+                                    </Text>
+                                </HStack>
                             </div>
+                        </HStack>
 
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>CLOSE DATE:</div>
-
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <HStack>
-                                            <DatePicker
-                                                disabled={newLaunchData.current.edit_mode === true}
-                                                showTimeSelect
-                                                timeFormat="HH:mm"
-                                                timeIntervals={15}
-                                                selected={closeDate}
-                                                onChange={(date) => setcloseDate(date)}
+                        <HStack spacing={15}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                CLOSE DATE:
+                            </div>
+                            <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                <HStack spacing={5}>
+                                    <Popover isOpen={isEndOpen} onClose={OnCloseEnd} placement="bottom" closeOnBlur={false}>
+                                        <PopoverTrigger>
+                                            <IconButton
+                                                onClick={onToggleEnd}
+                                                aria-label="FaCalendarAlt"
+                                                icon={<FaCalendarAlt size={22} />}
                                             />
-                                            <Text m="0" color="white" font-face-kg>
-                                                {endDateString} {endTimeString}
-                                            </Text>
-                                        </HStack>
-                                    </div>
-                                </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent width="fit-content">
+                                            <PopoverArrow />
+                                            <PopoverCloseButton />
+                                            <PopoverBody>
+                                                <DatePicker
+                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    showTimeSelect
+                                                    timeFormat="HH:mm"
+                                                    timeIntervals={15}
+                                                    selected={closeDate}
+                                                    onChange={(date) => {
+                                                        setcloseDate(date);
+                                                        OnCloseEnd();
+                                                    }}
+                                                    inline
+                                                />
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Popover>
+
+                                    <Text m="0" color="white" font-face-kg fontSize={sm ? "small" : "large"}>
+                                        {closeDateAndTime}
+                                    </Text>
+                                </HStack>
                             </div>
+                        </HStack>
 
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachFieldLong}>
-                                    <div
-                                        style={{ width: isDesktopOrLaptop ? "100%" : "20%" }}
-                                        className={`${styles.textLabel} font-face-kg`}
-                                    >
-                                        TEAM WALLET:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            size="lg"
-                                            required
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={teamWallet}
-                                            onChange={(e) => {
-                                                setTeamWallet(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
+                        <HStack spacing={15} w="100%">
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                TEAM WALLET:
                             </div>
-                        </div>
-                    </div>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    disabled={newLaunchData.current.edit_mode === true}
+                                    size={sm ? "medium" : "lg"}
+                                    required
+                                    placeholder="Enter Solana Wallet Address"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    value={teamWallet}
+                                    onChange={(e) => {
+                                        setTeamWallet(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        </HStack>
 
-                    <br></br>
-
-                    <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
-                        PREVIEW
-                    </button>
-
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: 20,
-                        }}
-                    >
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                prevPage(e);
-                            }}
-                            className={`${styles.nextBtn} font-face-kg `}
-                        >
-                            PREVIOUS
-                        </button>
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                Launch(e);
-                            }}
-                            className={`${styles.nextBtn} font-face-kg `}
-                        >
-                            CONFIRM
-                        </button>
-                    </div>
+                        <VStack spacing={3} align="center" justify="center" w="100%">
+                            <HStack>
+                                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                                    PREVIEW
+                                </button>
+                            </HStack>
+                            <HStack spacing={3}>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        prevPage(e);
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    PREVIOUS
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        Launch(e);
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    CONFIRM
+                                </button>
+                            </HStack>
+                        </VStack>
+                    </VStack>
                 </form>
-                {/* {submitStatus !== null && <Text className={`${styles.nextBtn} font-face-kg `}>{submitStatus}</Text>} */}
             </VStack>
 
-            {/* Pass the actual pre-launch data here */}
             <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
         </Center>
     );
