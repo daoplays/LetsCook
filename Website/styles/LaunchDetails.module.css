@@ -140,7 +140,7 @@ label.label input[type="file"] {
     align-items: center;
     width: 100%;
     flex-direction: row;
-    gap: 20px;
+    gap: 15px;
 }
 .launchBodyLowerVertical {
     display: flex;

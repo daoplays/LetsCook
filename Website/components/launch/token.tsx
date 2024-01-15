@@ -96,7 +96,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         if (parseFloat(distribution2) === 0) {
-            toast.error("LP allocation must be greater than zero");
+            toast.error("Liquidity pool allocation must be greater than zero");
             return;
         }
 
@@ -344,8 +344,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             />
                                             <Image
                                                 className={styles.percentage}
-                                                width={20}
-                                                height={20}
+                                                width={lg ? 15 : 20}
+                                                height={lg ? 15 : 20}
                                                 src="/images/perc.png"
                                                 alt="Percentage"
                                             />
@@ -369,8 +369,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             />
                                             <Image
                                                 className={styles.percentage}
-                                                width={20}
-                                                height={20}
+                                                width={lg ? 15 : 20}
+                                                height={lg ? 15 : 20}
                                                 src="/images/perc.png"
                                                 alt="Percentage"
                                             />
@@ -394,8 +394,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             />
                                             <Image
                                                 className={styles.percentage}
-                                                width={20}
-                                                height={20}
+                                                width={lg ? 15 : 20}
+                                                height={lg ? 15 : 20}
                                                 src="/images/perc.png"
                                                 alt="Percentage"
                                             />
@@ -419,8 +419,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             />
                                             <Image
                                                 className={styles.percentage}
-                                                width={20}
-                                                height={20}
+                                                width={lg ? 15 : 20}
+                                                height={lg ? 15 : 20}
                                                 src="/images/perc.png"
                                                 alt="Percentage"
                                             />
@@ -444,8 +444,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             />
                                             <Image
                                                 className={styles.percentage}
-                                                width={20}
-                                                height={20}
+                                                width={lg ? 15 : 20}
+                                                height={lg ? 15 : 20}
                                                 src="/images/perc.png"
                                                 alt="Percentage"
                                             />

@@ -50,7 +50,6 @@
 .textLabel {
     font-size: 18px;
     color: white;
-    width: 50%;
     text-transform: capitalize !important;
 }
 .textLabelInput {
@@ -236,7 +235,7 @@
     display: none !important;
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1184px) {
     .inputBox {
         /* width: 100%; */
     }
@@ -286,7 +285,6 @@
         color: white;
         width: max-content;
         text-transform: capitalize !important;
-        width: max-content;
     }
     .textLabelInput {
         position: relative;
@@ -310,7 +308,6 @@
         padding: 10px;
         border-radius: 5px;
         color: white;
-        width: 100px;
     }
     .textLabelInputTime input {
         position: relative;
