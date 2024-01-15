@@ -432,7 +432,7 @@ const BookPage = ({setScreen }: BookPageProps) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} height="100%" width="100%">
             <VStack pb={75} h={md ? "60vh" : "85vh"}>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - BOOK
@@ -488,7 +488,7 @@ const BookPage = ({setScreen }: BookPageProps) => {
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachFieldLong}>
                                     <div
-                                        style={{ width: isDesktopOrLaptop ? "100%" : "20%" }}
+                                        style={{ width: isDesktopOrLaptop ? "20%" : "20%" }}
                                         className={`${styles.textLabel} font-face-kg`}
                                     >
                                         TEAM WALLET:
@@ -496,6 +496,7 @@ const BookPage = ({setScreen }: BookPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
+                                        style={{width:'100%'}}
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size="lg"
                                             required

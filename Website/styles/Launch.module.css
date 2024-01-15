@@ -12,6 +12,13 @@ label.label input[type="file"] {
 .browse {
     font-family: "KGSummerSunshineBlackout";
 }
+.pieChartColumn{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: row;
+    width: 100%;
+}
 .inputBox::file-selector-button {
     color: #683309;
     background-image: url(../public/images/Wood\ Panel.png);
@@ -32,6 +39,11 @@ label.label input[type="file"] {
     width: 60vw;
     gap: 20px;
     z-index: 0;
+}
+.pieChart{
+    width: 400px;
+    margin-top: 40px;
+    /* margin-left: 100px; */
 }
 .launchBodyUpper {
     display: flex;
@@ -402,5 +414,16 @@ label.label input[type="file"] {
     .textLabel2 {
         font-family: "ReemKufiRegular";
         font-size: 20px;
+    }
+    .pieChartColumn{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 100%;
+    }
+    .pieChart{
+        width: 100%;
+        margin-top: 40px;
     }
 }

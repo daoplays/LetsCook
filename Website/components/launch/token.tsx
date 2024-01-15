@@ -310,7 +310,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                     </div>
                     <br></br>
 
-                    <HStack justify="space-between" align="center" w="100%">
+                    <div className={styles.pieChartColumn} justify="space-between" align="center" w="100%">
                         <div className={styles.distributionBoxFields}>
                             <div style={{ color: "white" }} className={`${styles.textLabel} font-face-kg`}>
                                 Distribution{" "}
@@ -445,9 +445,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 { title: "Other", value: percentage6, color: "#FF994E" },
                                 { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                             ]}
-                            style={{ width: "400px", height: "400px", marginRight: "150px" }}
+                            className={styles.pieChart}
+                            // style={{ width: "400px", height: "400px", marginRight: "150px" }}
                         />
-                    </HStack>
+                    </div>
 
                     <HStack mt={15}>
                         <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
