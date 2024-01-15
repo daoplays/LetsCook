@@ -126,7 +126,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
     const Browse = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "80px" : "120px" }}>
+            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                 Icon:
             </div>
             <div>
@@ -167,7 +167,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 {lg && <Browse />}
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "80px" : "120px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                                         Name:
                                     </div>
 
@@ -187,11 +187,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "80px" : "120px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                                         Symbol:
                                     </div>
 
-                                    <InputGroup style={{ width: lg ? "100%" : "50%", position: "relative" }}>
+                                    <InputGroup style={{ position: "relative" }}>
                                         <InputLeftElement>
                                             <FaDollarSign size={22} style={{ opacity: 0.5, marginTop: lg ? 0 : 8 }} />
                                         </InputLeftElement>
@@ -214,11 +214,58 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
-
+                        s
                         <VStack mt={lg ? 1 : 5} spacing={lg ? 8 : 10} w="100%">
+                            <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
+                                        Total Supply:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            disabled={newLaunchData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="Enter Token Total Supply"
+                                            type="number"
+                                            min="1"
+                                            value={totalSupply !== "0" ? totalSupply : ""}
+                                            onChange={(e) => {
+                                                setTotalSupply(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+
+                                <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
+                                        Decimals:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            disabled={newLaunchData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="1-9"
+                                            type="number"
+                                            min="1"
+                                            max="9"
+                                            value={decimal !== "0" ? decimal : ""}
+                                            onChange={(e) => {
+                                                setDecimal(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+                            </HStack>
+
                             <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "80px" : "100px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
                                         MINTS:
                                     </div>
 
@@ -240,11 +287,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "80px" : "120px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
                                         Ticket Price:
                                     </div>
 
-                                    <div style={{ width: lg ? "100%" : "50%" }} className={styles.textLabelInput}>
+                                    <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                         <Input
                                             placeholder={"Enter Price Per Ticket"}
                                             disabled={newLaunchData.current.edit_mode === true}
@@ -261,34 +308,34 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </div>
                                 </HStack>
                             </HStack>
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "80px" : "120px" }}>
-                                        Minimum Liquidity:
-                                    </div>
 
-                                    <div style={{ width: lg ? "100%" : "50%" }} className={styles.textLabelInput}>
-                                        <Input
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            type="number"
-                                            value={
-                                                !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
-                                                    ? parseFloat(mints) * parseFloat(ticketPrice)
-                                                    : 0
-                                            }
-                                            disabled
-                                            style={{ cursor: "not-allowed" }}
-                                            readOnly
-                                        />
-                                        <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
-                                    </div>
-                                </HStack>
-                            </div>
+                            {/* <div className={styles.launchBodyLowerHorizontal}> */}
+                            <HStack spacing={lg ? 0 : 1} className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                    Minimum Liquidity:
+                                </div>
+
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        size={lg ? "md" : "lg"}
+                                        required
+                                        className={styles.inputBox}
+                                        type="number"
+                                        value={
+                                            !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
+                                                ? parseFloat(mints) * parseFloat(ticketPrice)
+                                                : 0
+                                        }
+                                        disabled
+                                        style={{ cursor: "not-allowed" }}
+                                        readOnly
+                                    />
+                                    <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                </div>
+                            </HStack>
+                            {/* </div> */}
                         </VStack>
-
-                        <VStack mt={lg ? 1 : 5} spacing={5} w="100%" align="start">
+                        <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
                             <div style={{ color: "white" }} className={`${styles.textLabel} font-face-kg`}>
                                 Distribution:
                             </div>
@@ -440,8 +487,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     <HStack spacing={5} align="center" justify="space-between" w="100%">
                                         <HStack spacing={5}>
                                             <Box w={50} h={30} bg="#ff994e" />
+                                            <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Website)</div>
                                         </HStack>
-                                        <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Website)</div>
+
                                         <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
                                             <Input
                                                 size="lg"
@@ -486,7 +534,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 )}
                             </HStack>
                         </VStack>
-
                         <HStack mt={sm ? 0 : 15}>
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
