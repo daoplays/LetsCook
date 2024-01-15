@@ -286,7 +286,7 @@
         color: white;
         width: max-content;
         text-transform: capitalize !important;
-        width: 100%;
+        width: max-content;
     }
     .textLabelInput {
         position: relative;
