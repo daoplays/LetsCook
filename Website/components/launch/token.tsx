@@ -295,9 +295,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                 spacing={5}
                             >
                                 <VStack spacing={5} align="start" w={sm ? "100%" : ""} className={styles.distributionBoxFields}>
-                                    <HStack spacing={5} align="center">
-                                        <Box w={50} h={30} bg="#ff5151" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>LetsCookRaffle</div>
+                                    <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                        <HStack spacing={5}>
+                                            <Box w={50} h={30} bg="#ff5151" />
+                                            <div className={`${styles.textLabel} ${styles.textLabel2} `}>LetsCookRaffle</div>
+                                        </HStack>
                                         <div className={styles.distributionField}>
                                             <Input
                                                 size={"lg"}
@@ -321,9 +323,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         </div>
                                     </HStack>
 
-                                    <HStack spacing={5} align="center">
-                                        <Box w={50} h={30} bg="#489cff" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Pool</div>
+                                    <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                        <HStack spacing={5}>
+                                            <Box w={50} h={30} bg="#489cff" />
+                                            <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Pool</div>
+                                        </HStack>
                                         <div className={styles.distributionField}>
                                             <Input
                                                 size="lg"
@@ -347,9 +351,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         </div>
                                     </HStack>
 
-                                    <HStack spacing={5} align="center">
-                                        <Box w={50} h={30} bg="#74dd5a" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2}`}>LP Rewards</div>
+                                    <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                        <HStack spacing={5}>
+                                            <Box w={50} h={30} bg="#74dd5a" />
+                                            <div className={`${styles.textLabel} ${styles.textLabel2}`}>LP Rewards</div>
+                                        </HStack>
                                         <div className={styles.distributionField}>
                                             <Input
                                                 size="lg"
@@ -372,9 +378,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         </div>
                                     </HStack>
 
-                                    <HStack spacing={5} align="center">
-                                        <Box w={50} h={30} bg="#ffef5e" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops</div>
+                                    <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                        <HStack spacing={5}>
+                                            <Box w={50} h={30} bg="#ffef5e" />
+                                            <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops</div>
+                                        </HStack>
                                         <div className={styles.distributionField}>
                                             <Input
                                                 size="lg"
@@ -397,9 +405,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         </div>
                                     </HStack>
 
-                                    <HStack spacing={5} align="center">
-                                        <Box w={50} h={30} bg="#b96cf6" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
+                                    <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                        <HStack spacing={5}>
+                                            <Box w={50} h={30} bg="#b96cf6" />
+                                            <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
+                                        </HStack>
                                         <div className={styles.distributionField}>
                                             <Input
                                                 size="lg"
@@ -422,10 +432,12 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         </div>
                                     </HStack>
 
-                                    <HStack spacing={5} align="center">
-                                        <Box w={50} h={30} bg="#ff994e" />
+                                    <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                        <HStack spacing={5}>
+                                            <Box w={50} h={30} bg="#ff994e" />
+                                        </HStack>
                                         <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Website)</div>
-                                        <div className={styles.distributionField}>
+                                        <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
                                             <Input
                                                 size="lg"
                                                 value={parseInt(distribution6).toFixed(0)}
@@ -450,7 +462,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
                                 {(distribution1 || distribution2 || distribution3 || distribution4 || distribution5 || distribution6) !==
                                     "0" && (
-                                    <HStack flexGrow={1} justify="center" align="center">
+                                    <HStack flexGrow={1} justify="center" align="center" py={3}>
                                         <PieChart
                                             animate={true}
                                             totalValue={100}
