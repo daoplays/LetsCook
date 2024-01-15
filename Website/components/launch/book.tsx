@@ -7,7 +7,7 @@ import {
     RPC_NODE,
     WSS_NODE,
     LaunchKeys,
-    PROD
+    PROD,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -51,12 +51,11 @@ interface BookPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const BookPage = ({setScreen }: BookPageProps) => {
+const BookPage = ({ setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
     const { md } = useResponsive();
     const { newLaunchData } = useAppRoot();
-
 
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
@@ -496,7 +495,7 @@ const BookPage = ({setScreen }: BookPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                        style={{width:'100%'}}
+                                            style={{ width: "100%" }}
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size="lg"
                                             required

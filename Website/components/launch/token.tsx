@@ -194,7 +194,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
+                                        value={
+                                            newLaunchData.current.icon_file !== null
+                                                ? newLaunchData.current.icon_file.name
+                                                : "No File Selected"
+                                        }
                                     />
                                 </div>
                             </div>

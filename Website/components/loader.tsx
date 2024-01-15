@@ -1,5 +1,5 @@
 import { HStack, Text, VStack } from "@chakra-ui/react";
-import {ClockLoader} from "react-spinners";
+import { ClockLoader } from "react-spinners";
 
 const Loader = () => {
     return (

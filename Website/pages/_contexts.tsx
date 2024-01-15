@@ -68,7 +68,7 @@ const CheckLaunchData = async (
         }
         return 0;
     });
-    //console.log(home_page_data);
+    console.log(home_page_data);
     setHomePageData(home_page_data);
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
@@ -96,7 +96,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const user_account_ws_id = useRef<number | null>(null);
 
-    const newLaunchData = useRef<LaunchDataUserInput>({...defaultUserInput});
+    const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
 
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();

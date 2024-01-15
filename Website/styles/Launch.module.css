@@ -12,7 +12,7 @@ label.label input[type="file"] {
 .browse {
     font-family: "KGSummerSunshineBlackout";
 }
-.pieChartColumn{
+.pieChartColumn {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -40,7 +40,7 @@ label.label input[type="file"] {
     gap: 20px;
     z-index: 0;
 }
-.pieChart{
+.pieChart {
     width: 400px;
     margin-top: 40px;
     /* margin-left: 100px; */
@@ -415,14 +415,14 @@ label.label input[type="file"] {
         font-family: "ReemKufiRegular";
         font-size: 20px;
     }
-    .pieChartColumn{
+    .pieChartColumn {
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: column;
         width: 100%;
     }
-    .pieChart{
+    .pieChart {
         width: 100%;
         margin-top: 40px;
     }

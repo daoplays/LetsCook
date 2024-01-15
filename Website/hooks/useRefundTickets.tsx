@@ -15,7 +15,7 @@ import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import useAppRoot from "../context/useAppRoot";
 
-const useRefundTickets = (launchData: LaunchData, updateData : boolean = false) => {
+const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkLaunchData } = useAppRoot();
 

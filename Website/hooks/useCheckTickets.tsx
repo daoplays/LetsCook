@@ -14,7 +14,7 @@ import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import useAppRoot from "../context/useAppRoot";
 
-const useCheckTickets = (launchData: LaunchData, updateData : boolean = false) => {
+const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkLaunchData } = useAppRoot();
 
@@ -25,7 +25,7 @@ const useCheckTickets = (launchData: LaunchData, updateData : boolean = false) =
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
-        
+
         signature_ws_id.current = null;
 
         if (result.err !== null) {
@@ -33,11 +33,9 @@ const useCheckTickets = (launchData: LaunchData, updateData : boolean = false) =
             return;
         }
 
-
         if (updateData) {
             await checkLaunchData();
         }
-
     }, []);
 
     const CheckTickets = async () => {

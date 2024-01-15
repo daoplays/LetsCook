@@ -20,7 +20,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const { md } = useResponsive();
     const { newLaunchData } = useAppRoot();
 
-
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
@@ -175,7 +174,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={newLaunchData.current.banner_file !== null ?  banner_name  : "No File Selected"}
+                                        value={newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
                                         readOnly
                                     />
                                 </div>
