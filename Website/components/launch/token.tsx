@@ -100,6 +100,17 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return;
         }
 
+        if (parseFloat(distribution1) === 0) {
+            toast.error("Raffle allocation must be greater than zero");
+            return;
+        }
+
+        if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (percentage1 / 100) < parseInt(mints)) {
+
+            toast.error("Not enough tokens to support the raffle");
+            return;
+        }
+
         if (parseInt(totalSupply) < 10) {
             toast.error("Total supply of tokens must be over 10");
             return;

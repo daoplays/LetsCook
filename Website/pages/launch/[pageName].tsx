@@ -337,7 +337,7 @@ const MintPage = () => {
                                 </HStack>
 
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Total Winning Tickets: {launchData.mints_won}
+                                    Total Mints: {launchData.num_mints}
                                 </Text>
 
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
