@@ -23,12 +23,12 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
-    const [sortedField, setSortedField] = useState<string | null>(null);
+    const [sortedField, setSortedField] = useState<string | null>("date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
-        { text: "TICKER", field: "symbol" },
+        { text: "ICON", field: null },
+        { text: "SYMBOL", field: "symbol" },
         { text: "STATUS", field: null },
         { text: "TICKETS", field: "tickets" },
         { text: "LIQUIDITY", field: "liquidity" },
@@ -111,9 +111,9 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
-    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data);
-    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data);
-    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(launch.launch_data);
+    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, true);
+    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, true);
+    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(launch.launch_data, true);
 
     let name = launch.launch_data.symbol;
 
@@ -149,7 +149,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
         }
     };
 
-    console.log("cook state", cook_state);
+    //console.log("cook state", cook_state);
     return (
         <tr
             style={{

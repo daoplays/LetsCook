@@ -7,6 +7,7 @@ import {
     RPC_NODE,
     WSS_NODE,
     LaunchKeys,
+    PROD
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -38,6 +39,8 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 
+let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
+
 // Define the Tag type
 type Tag = {
     name: string;
@@ -45,21 +48,23 @@ type Tag = {
 };
 
 interface BookPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
+const BookPage = ({setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
     const { md } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
+
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
-    const { EditLaunch } = useEditLaunch({ newLaunchData, setSubmitStatus });
+    const { EditLaunch } = useEditLaunch();
 
     const local_date = new Date();
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
@@ -153,7 +158,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
         const irys_wallet = { name: "phantom", provider: wallet };
         const irys = new WebIrys({
-            url: "https://devnet.irys.xyz",
+            url: IRYS_URL,
             token: "solana",
             wallet: irys_wallet,
             config: {
@@ -427,7 +432,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} height="100%" width="100%">
             <VStack pb={75} h={md ? "60vh" : "85vh"}>
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - BOOK
@@ -450,7 +455,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                                                 selected={openDate}
                                                 onChange={(date) => setOpenDate(date)}
                                             />
-                                            <Text m="0" color="white" font-face-kg>
+                                            <Text m="0" color="white" className="font-face-kg">
                                                 {launchDateString} {launchTimeString}
                                             </Text>
                                         </HStack>
@@ -472,7 +477,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                                                 selected={closeDate}
                                                 onChange={(date) => setcloseDate(date)}
                                             />
-                                            <Text m="0" color="white" font-face-kg>
+                                            <Text m="0" color="white" className="font-face-kg">
                                                 {endDateString} {endTimeString}
                                             </Text>
                                         </HStack>
@@ -483,7 +488,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachFieldLong}>
                                     <div
-                                        style={{ width: isDesktopOrLaptop ? "100%" : "20%" }}
+                                        style={{ width: isDesktopOrLaptop ? "20%" : "20%" }}
                                         className={`${styles.textLabel} font-face-kg`}
                                     >
                                         TEAM WALLET:
@@ -491,6 +496,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
+                                        style={{width:'100%'}}
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size="lg"
                                             required

@@ -25,7 +25,7 @@ const BagsPage = () => {
                 const joinedLaunch = launchList.filter((launch) => {
                     return joinData[i].game_id.eq(launch.game_id);
                 });
-                console.log(joinedLaunch[0].game_id.toString(), joinData[i].game_id.toString());
+                //console.log(joinedLaunch[0].game_id.toString(), joinData[i].game_id.toString());
                 let joined_launch: JoinedLaunch = { join_data: joinData[i], launch_data: joinedLaunch[0] };
                 joinedLaunches.push(joined_launch);
             }
@@ -53,7 +53,7 @@ const BagsPage = () => {
                     style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                     align={"center"}
                 >
-                    My Bags
+                    My Bag
                 </Text>
             </Flex>
             <MyBagsTable bags={joinedLaunches} />

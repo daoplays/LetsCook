@@ -12,19 +12,22 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 
 interface DetailsPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
+const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const router = useRouter();
     const { md } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
+
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
     const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
+    const [banner_name, setBannerName] = useState<string>("");
 
     const { launchList } = useAppRoot();
 
@@ -38,6 +41,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
         if (file) {
             if (file.size <= 4194304) {
                 newLaunchData.current.banner_file = file;
+                setBannerName(file.name);
             } else {
                 alert("File size exceeds 4MB limit.");
             }
@@ -171,7 +175,7 @@ const DetailsPage = ({ newLaunchData, setScreen }: DetailsPageProps) => {
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={newLaunchData.current.banner_file !== null ? "File Selected" : "No File Selected"}
+                                        value={newLaunchData.current.banner_file !== null ?  banner_name  : "No File Selected"}
                                         readOnly
                                     />
                                 </div>
