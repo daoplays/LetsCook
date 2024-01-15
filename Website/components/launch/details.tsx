@@ -185,7 +185,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     </div>
 
                                     <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                        {newLaunchData.current.banner_file !== null ? "File Selected" : "No File Selected"}
+                                        {newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
                                     </Text>
                                 </HStack>
                             </div>

@@ -153,7 +153,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newLaunchData.current.icon_file !== null ? "File Selected" : "No File Selected"}
+                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
             </Text>
         </HStack>
     );
@@ -298,6 +298,50 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </div>
                                 </HStack>
                             </div>
+
+                        <div className={styles.launchBodyLowerHorizontal}>
+                            <div className={styles.eachField}>
+                                <div style={{ width: "40%" }} className={`${styles.textLabel} font-face-kg`}>
+                                    TOTAL SUPPLY:
+                                </div>
+
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        disabled={newLaunchData.current.edit_mode === true}
+                                        size="lg"
+                                        required
+                                        className={styles.inputBox}
+                                        type="number"
+                                        min="1"
+                                        value={totalSupply}
+                                        onChange={(e) => {
+                                            setTotalSupply(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            </div>
+
+                            <div style={{ width: md ? "100%" : "40%" }} className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`}>DECIMALS:</div>
+
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        disabled={newLaunchData.current.edit_mode === true}
+                                        size="lg"
+                                        required
+                                        className={styles.inputBox}
+                                        type="number"
+                                        min="1"
+                                        max="9"
+                                        value={decimal}
+                                        onChange={(e) => {
+                                            setDecimal(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        
                         </VStack>
 
                         <VStack mt={lg ? 1 : 5} spacing={5} w="100%" align="start">
