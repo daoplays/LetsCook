@@ -17,7 +17,7 @@ function Footer() {
         <HStack
             bg="url(/images/footer_fill.jpeg)"
             bgSize="cover"
-            boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.75)"
+            boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.55)"
             py={2}
             px={4}
             justify="start"

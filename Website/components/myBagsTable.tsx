@@ -66,7 +66,11 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
 
     return (
         <TableContainer>
-            <table width="100%" className="custom-centered-table font-face-rk">
+            <table
+                width="100%"
+                className="custom-centered-table font-face-rk"
+                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 120%)" }}
+            >
                 <thead>
                     <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
                         {tableHeaders.map((i) => (

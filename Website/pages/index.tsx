@@ -14,7 +14,7 @@ const Home = () => {
     if (homePageList.length <= 0) return <EmptyLaunch />;
 
     return (
-        <main>
+        <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
             <FeaturedBanner featuredLaunch={homePageList[0]} />
             <GameTable launchList={homePageList} filters={defaultLaunchTableFilters} />
         </main>
