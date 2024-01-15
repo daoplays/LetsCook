@@ -13,21 +13,30 @@ import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/co
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import useAppRoot from "../context/useAppRoot";
 
-const useClaimTokens = (launchData: LaunchData) => {
+const useClaimTokens = (launchData: LaunchData, updateData : boolean = false) => {
     const wallet = useWallet();
+    const { checkLaunchData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
+        //console.log(result);
         // if we have a subscription field check against ws_id
+
+        signature_ws_id.current = null;
         if (result.err !== null) {
             alert("Transaction failed, please try again");
+            return;
         }
-        signature_ws_id.current = null;
+
+        if (updateData) {
+            await checkLaunchData();
+        }
+        
     }, []);
 
     const ClaimTokens = async () => {

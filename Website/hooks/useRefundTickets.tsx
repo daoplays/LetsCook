@@ -13,9 +13,11 @@ import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/co
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import useAppRoot from "../context/useAppRoot";
 
-const useRefundTickets = (launchData: LaunchData) => {
+const useRefundTickets = (launchData: LaunchData, updateData : boolean = false) => {
     const wallet = useWallet();
+    const { checkLaunchData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -28,6 +30,10 @@ const useRefundTickets = (launchData: LaunchData) => {
             alert("Transaction failed, please try again");
         }
         signature_ws_id.current = null;
+
+        if (updateData) {
+            await checkLaunchData();
+        }
     }, []);
 
     const RefundTickets = async () => {

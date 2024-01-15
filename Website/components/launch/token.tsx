@@ -14,14 +14,15 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 
 interface TokenPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
+const TokenPage = ({ setScreen }: TokenPageProps) => {
     //console.log(newLaunchData.current)
     const router = useRouter();
     const { md } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
@@ -96,6 +97,11 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
 
         if (parseFloat(distribution2) === 0) {
             toast.error("LP allocation must be greater than zero");
+            return;
+        }
+
+        if (parseInt(totalSupply) < 10) {
+            toast.error("Total supply of tokens must be over 10");
             return;
         }
 
@@ -188,7 +194,7 @@ const TokenPage = ({ newLaunchData, setScreen }: TokenPageProps) => {
                                         size="lg"
                                         className={`${styles.inputBox} font-face-kg `}
                                         type="text"
-                                        value={newLaunchData.current.icon_file !== null ? "File Selected" : "No File Selected"}
+                                        value={newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
                                     />
                                 </div>
                             </div>

@@ -28,11 +28,11 @@ interface Header {
 }
 
 const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
-    console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
+    //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
-        { text: "TICKER", field: "symbol" },
+        { text: "ICON", field: null },
+        { text: "SYMBOL", field: "symbol" },
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },
         { text: "MIN. LIQUIDITY", field: "minimum_liquidity" },
@@ -186,7 +186,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)} SOL
+                    {bignum_to_num(launch.minimum_liquidity) / LAMPORTS_PER_SOL} SOL
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>

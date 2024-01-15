@@ -12,9 +12,11 @@ import { PROGRAM, PYTH_BTC, PYTH_ETH, PYTH_SOL, RPC_NODE, SYSTEM_KEY, WSS_NODE }
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import useAppRoot from "../context/useAppRoot";
 
-const useCheckTickets = (launchData: LaunchData) => {
+const useCheckTickets = (launchData: LaunchData, updateData : boolean = false) => {
     const wallet = useWallet();
+    const { checkLaunchData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -23,10 +25,19 @@ const useCheckTickets = (launchData: LaunchData) => {
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
+        
+        signature_ws_id.current = null;
+
         if (result.err !== null) {
             alert("Transaction failed, please try again");
+            return;
         }
-        signature_ws_id.current = null;
+
+
+        if (updateData) {
+            await checkLaunchData();
+        }
+
     }, []);
 
     const CheckTickets = async () => {
