@@ -23,7 +23,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
-
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
@@ -298,50 +297,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </div>
                                 </HStack>
                             </div>
-
-                        <div className={styles.launchBodyLowerHorizontal}>
-                            <div className={styles.eachField}>
-                                <div style={{ width: "40%" }} className={`${styles.textLabel} font-face-kg`}>
-                                    TOTAL SUPPLY:
-                                </div>
-
-                                <div className={styles.textLabelInput}>
-                                    <Input
-                                        disabled={newLaunchData.current.edit_mode === true}
-                                        size="lg"
-                                        required
-                                        className={styles.inputBox}
-                                        type="number"
-                                        min="1"
-                                        value={totalSupply}
-                                        onChange={(e) => {
-                                            setTotalSupply(e.target.value);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                            </div>
-
-                            <div style={{ width: md ? "100%" : "40%" }} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`}>DECIMALS:</div>
-
-                                <div className={styles.textLabelInput}>
-                                    <Input
-                                        disabled={newLaunchData.current.edit_mode === true}
-                                        size="lg"
-                                        required
-                                        className={styles.inputBox}
-                                        type="number"
-                                        min="1"
-                                        max="9"
-                                        value={decimal}
-                                        onChange={(e) => {
-                                            setDecimal(e.target.value);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        
                         </VStack>
 
                         <VStack mt={lg ? 1 : 5} spacing={5} w="100%" align="start">

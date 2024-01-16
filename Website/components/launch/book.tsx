@@ -74,7 +74,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const wallet = useWallet();
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
-
     const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
