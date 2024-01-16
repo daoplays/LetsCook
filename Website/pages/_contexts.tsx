@@ -68,7 +68,7 @@ const CheckLaunchData = async (
         }
         return 0;
     });
-    console.log(home_page_data);
+    console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
     setHomePageData(home_page_data);
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);

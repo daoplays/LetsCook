@@ -38,6 +38,7 @@ import TokenDistribution from "../../components/launchPreview/tokenDistribution"
 import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import Loader from "../../components/loader";
 import { WarningModal } from "../../components/Solana/modals";
+import { ButtonString } from "../../components/user_status";
 
 const MintPage = () => {
     const wallet = useWallet();
@@ -339,6 +340,9 @@ const MintPage = () => {
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Total Mints: {launchData.num_mints}
                                 </Text>
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    Tickets Sold: {launchData.tickets_sold}
+                                </Text>
 
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
@@ -410,32 +414,10 @@ const MintPage = () => {
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>
                                             <Box mt={4}>
-                                                <WoodenButton
-                                                    label={
-                                                        cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK
-                                                            ? "Check Tickets"
-                                                            : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
-                                                                join_data.ticket_status === 1
-                                                              ? "Claim Tokens"
-                                                              : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP &&
-                                                                  join_data.ticket_status === 0
-                                                                ? "Claim Tokens and Refund"
-                                                                : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
-                                                                    join_data.ticket_status === 0
-                                                                  ? "Refund Losing Tickets"
-                                                                  : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
-                                                                      join_data.ticket_status === 1
-                                                                    ? "Waiting for LP"
-                                                                    : cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
-                                                                      ? "LP Timeout, Refund remaining tickets"
-                                                                      : cook_state === CookState.MINT_FAILED_NOT_REFUNDED
-                                                                        ? "Refund Tickets"
-                                                                        : ""
-                                                    }
-                                                    size={28}
-                                                />
+                                                <WoodenButton label={ButtonString(cook_state, join_data, launchData)} size={28} />
                                             </Box>
-                                            {MINTED_OUT && (
+
+                                            {MINTED_OUT && join_data !== null && join_data.num_tickets > join_data.num_claimed_tickets && (
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                                     {(100 * win_prob).toFixed(3)}% chance per ticket
                                                 </Text>
@@ -478,13 +460,10 @@ const MintPage = () => {
                                     <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                         <HStack>
                                             <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                Platform fee: 0.01
+                                                Platform fee per ticket: 0.01
                                             </Text>
                                             <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                                         </HStack>
-                                        <Text m="0" mt={-3} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                            per ticket
-                                        </Text>
                                     </VStack>
                                 ) : (
                                     <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
@@ -515,11 +494,22 @@ const MintPage = () => {
                                 size="sm"
                                 value={(100 * Math.min(launchData.tickets_sold, launchData.num_mints)) / launchData.num_mints}
                             />
-
-                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                Tickets Sold: {launchData.tickets_sold}
-                            </Text>
-
+                            {(join_data === null || join_data.num_claimed_tickets === 0) && (
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    You own {join_data !== null ? join_data.num_tickets : 0} Tickets{" "}
+                                    {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
+                                        ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
+                                        : ""}
+                                </Text>
+                            )}
+                            {join_data !== null && join_data.num_claimed_tickets > 0 && (
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    You Have {join_data.num_winning_tickets} Winning Tickets{" "}
+                                    {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
+                                        ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
+                                        : ""}
+                                </Text>
+                            )}
                             <Flex direction={md ? "column" : "row"}>
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Guaranteed Liquidity:

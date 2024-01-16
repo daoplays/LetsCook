@@ -503,7 +503,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         </PopoverContent>
                                     </Popover>
 
-                                    <Text m="0" color="white" font-face-kg fontSize={sm ? "small" : "large"}>
+                                    <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
                                         {launchDateAndTime}
                                     </Text>
                                 </HStack>
@@ -544,7 +544,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         </PopoverContent>
                                     </Popover>
 
-                                    <Text m="0" color="white" font-face-kg fontSize={sm ? "small" : "large"}>
+                                    <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
                                         {closeDateAndTime}
                                     </Text>
                                 </HStack>
