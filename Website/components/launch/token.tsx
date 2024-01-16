@@ -106,7 +106,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (percentage1 / 100) < parseInt(mints)) {
-
             toast.error("Not enough tokens to support the raffle");
             return;
         }
