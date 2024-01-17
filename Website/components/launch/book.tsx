@@ -86,7 +86,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
-    console.log(zone);
+    // console.log(zone);
 
     useEffect(() => {
         let local_launch_date = new Date(openDate.setMinutes(openDate.getMinutes() - local_date.getTimezoneOffset()));
@@ -110,7 +110,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const check_signature_update = useCallback(
         async (result: any) => {
-            console.log(result);
+            // console.log(result);
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
                 toast.error("Transaction failed, please try again");
@@ -133,7 +133,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             let teamPubKey = new PublicKey(teamWallet);
             balance = await request_current_balance("", teamPubKey);
 
-            console.log("check balance", teamPubKey.toString(), balance);
+            // console.log("check balance", teamPubKey.toString(), balance);
 
             if (balance == 0) {
                 toast.error("Team wallet does not exist");
@@ -371,7 +371,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             console.log("mint", token_mint_pubkey.toString());
         }
 
-        let team_wallet = new PublicKey(teamWallet);
+        let team_wallet;
+
+        try {
+            team_wallet = new PublicKey(formData.team_wallet);
+        } catch (error) {
+            toast.error("Error creating PublicKey:", error);
+        }
 
         const instruction_data = serialise_CreateLaunch_instruction(formData);
 
