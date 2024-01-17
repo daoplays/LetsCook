@@ -8,6 +8,7 @@ import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
 import useAppRoot from "../context/useAppRoot";
+import { toast } from "react-toastify";
 
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
@@ -18,13 +19,29 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     const check_signature_update = useCallback(
         async (result: any) => {
             console.log(result);
+            hype_vote_ws_id.current = null;
+
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
                 alert("Hype vote transaction failed, please try again");
+                return;
             } else {
                 await checkLaunchData();
             }
-            hype_vote_ws_id.current = null;
+
+            /*toast.success("First Hype Vote!",
+            {
+                position: "bottom-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                icon: ({theme, type}) =>  <img src="/images/thumbs-up.svg"/>
+            });*/
+
         },
         [checkLaunchData],
     );

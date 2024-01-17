@@ -16,6 +16,7 @@ import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
+
 import "bootstrap/dist/css/bootstrap.css";
 
 const CheckLaunchData = async (
@@ -96,7 +97,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const user_account_ws_id = useRef<number | null>(null);
 
-    const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
+    const newLaunchData = useRef<LaunchDataUserInput>({...defaultUserInput});
 
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -128,8 +129,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 }
 
                 if (
-                    updated_data.total_points > current_user_data.total_points ||
-                    updated_data.votes.length > current_user_data.votes.length
+                    updated_data.total_points > current_user_data.total_points
                 ) {
                     setCurrentUserData(updated_data);
                 }
