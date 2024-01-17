@@ -98,6 +98,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
 
+    const [formData, setFormData] = useState<LaunchDataUserInput>({ ...defaultUserInput });
+
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
         return list.filter(function (item) {
@@ -221,6 +223,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             isHomePageDataLoading={isHomePageDataLoading}
             checkLaunchData={RecheckLaunchData}
             newLaunchData={newLaunchData}
+            formData={formData}
+            setFormData={setFormData}
         >
             {children}
         </AppRootContextProvider>

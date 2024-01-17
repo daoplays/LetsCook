@@ -73,10 +73,10 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
     const { sm, md, lg } = useResponsive();
-    const { newLaunchData } = useAppRoot();
-    const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
-    const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
-    const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
+    const { formData, setFormData } = useAppRoot();
+    const [openDate, setOpenDate] = useState<Date>(formData.opendate);
+    const [closeDate, setcloseDate] = useState<Date>(formData.closedate);
+    const [teamWallet, setTeamWallet] = useState<string>(formData.team_wallet);
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const signature_ws_id = useRef<number | null>(null);
 
@@ -144,19 +144,22 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
-        if (!newLaunchData.current.edit_mode && closeDate.getTime() <= openDate.getTime()) {
+        if (!formData.edit_mode && closeDate.getTime() <= openDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
         }
 
-        if (!newLaunchData.current.edit_mode && openDate.getTime() < new Date().getTime()) {
+        if (!formData.edit_mode && openDate.getTime() < new Date().getTime()) {
             toast.error("Open date must be set after now");
             return false;
         }
 
-        newLaunchData.current.opendate = openDate;
-        newLaunchData.current.closedate = closeDate;
-        newLaunchData.current.team_wallet = teamWallet;
+        setFormData({
+            ...formData,
+            opendate: openDate,
+            closedate: closeDate,
+            team_wallet: teamWallet,
+        });
 
         return true;
     }
@@ -174,7 +177,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         // if this is in edit mode then just call that function
-        if (newLaunchData.current.edit_mode === true) {
+        if (formData.edit_mode === true) {
             await EditLaunch();
             return;
         }
@@ -197,7 +200,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let balance_before;
 
         try {
-            price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
+            price = await irys.getPrice(formData.icon_file.size + formData.banner_file.size);
             balance_before = await irys.getLoadedBalance();
         } catch (e) {
             toast.update(uploadImageToArweave, {
@@ -235,8 +238,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         // console.log("balance_after", balance_after.toString());
 
         const tags: Tag[] = [
-            { name: "Content-Type", value: newLaunchData.current.icon_file.type },
-            { name: "Content-Type", value: newLaunchData.current.banner_file.type },
+            { name: "Content-Type", value: formData.icon_file.type },
+            { name: "Content-Type", value: formData.banner_file.type },
         ];
 
         const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
@@ -244,7 +247,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let receipt;
 
         try {
-            receipt = await irys.uploadFolder([newLaunchData.current.icon_file, newLaunchData.current.banner_file], {
+            receipt = await irys.uploadFolder([formData.icon_file, formData.banner_file], {
                 //@ts-ignore
                 tags,
             });
@@ -266,14 +269,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return;
         }
 
-        let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
-        let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.banner_file.name].id;
+        let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[formData.icon_file.name].id;
+        let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[formData.banner_file.name].id;
 
         // console.log(icon_url, banner_url);
         var metadata = {
-            name: newLaunchData.current.name,
-            symbol: newLaunchData.current.symbol,
-            description: newLaunchData.current.description,
+            name: formData.name,
+            symbol: formData.symbol,
+            description: formData.description,
             image: icon_url,
         };
 
@@ -333,17 +336,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return;
         }
 
-        newLaunchData.current.uri = "https://gateway.irys.xyz/" + json_receipt.id;
-        newLaunchData.current.icon_url = icon_url;
-        newLaunchData.current.banner_url = banner_url;
+        formData.uri = "https://gateway.irys.xyz/" + json_receipt.id;
+        formData.icon_url = icon_url;
+        formData.banner_url = banner_url;
 
         let program_data_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(formData.pagename), Buffer.from("Launch")], PROGRAM)[0];
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -371,9 +371,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             console.log("mint", token_mint_pubkey.toString());
         }
 
-        let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
+        let team_wallet = new PublicKey(formData.team_wallet);
 
-        const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
+        const instruction_data = serialise_CreateLaunch_instruction(formData);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -452,7 +452,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             });
             return;
         }
-    }, [wallet, newLaunchData, EditLaunch, check_signature_update]);
+    }, [wallet, formData, EditLaunch, check_signature_update]);
 
     const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -488,7 +488,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             <PopoverArrow />
                                             <PopoverBody>
                                                 <DatePicker
-                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    disabled={formData.edit_mode === true}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
                                                     timeIntervals={15}
@@ -529,7 +529,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             <PopoverCloseButton />
                                             <PopoverBody>
                                                 <DatePicker
-                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    disabled={formData.edit_mode === true}
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
                                                     timeIntervals={15}
@@ -557,7 +557,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
-                                    disabled={newLaunchData.current.edit_mode === true}
+                                    disabled={formData.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
                                     placeholder="Enter Solana Wallet Address"
@@ -573,7 +573,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
                             <HStack>
-                                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                                <button
+                                    type="button"
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                    onClick={async (e) => {
+                                        await setData(e);
+                                        onOpen();
+                                    }}
+                                >
                                     PREVIEW
                                 </button>
                             </HStack>
@@ -602,7 +609,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 </form>
             </VStack>
 
-            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
+            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(formData)} />
         </Center>
     );
 };

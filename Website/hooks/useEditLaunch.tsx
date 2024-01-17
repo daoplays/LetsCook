@@ -21,7 +21,7 @@ import useAppRoot from "../context/useAppRoot";
 const useEditLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newLaunchData, checkLaunchData } = useAppRoot();
+    const { checkLaunchData, formData, setFormData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -32,7 +32,7 @@ const useEditLaunch = () => {
             toast.error("Transaction failed, please try again");
         }
         signature_ws_id.current = null;
-        newLaunchData.current = defaultUserInput;
+        setFormData({ ...defaultUserInput });
         console.log(defaultUserInput);
         await checkLaunchData();
     }, []);
@@ -47,14 +47,11 @@ const useEditLaunch = () => {
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(formData.pagename), Buffer.from("Launch")], PROGRAM)[0];
 
-        console.log("launch account", newLaunchData.current.pagename, launch_data_account.toString());
+        console.log("launch account", formData.pagename, launch_data_account.toString());
 
-        const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
+        const instruction_data = serialise_EditLaunch_instruction(formData);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

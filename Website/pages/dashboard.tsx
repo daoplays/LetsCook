@@ -15,10 +15,8 @@ const DashboardPage = () => {
     const router = useRouter();
     const wallet = useWallet();
     const { sm } = useResponsive();
-    const { launchList } = useAppRoot();
+    const { launchList, setFormData } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
-
-    const { newLaunchData } = useAppRoot();
 
     useEffect(() => {
         if (!launchList || !wallet.connected) {
@@ -54,7 +52,7 @@ const DashboardPage = () => {
                 <Button
                     w={sm ? "100%" : "fit-content"}
                     onClick={() => {
-                        newLaunchData.current = defaultUserInput;
+                        setFormData({ ...defaultUserInput });
                         router.push("/launch");
                     }}
                 >

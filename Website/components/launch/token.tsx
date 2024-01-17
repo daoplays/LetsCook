@@ -19,23 +19,22 @@ interface TokenPageProps {
 }
 
 const TokenPage = ({ setScreen }: TokenPageProps) => {
-    //console.log(newLaunchData.current)
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { newLaunchData } = useAppRoot();
-    const [name, setName] = useState<string>(newLaunchData.current.name);
-    const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
-    const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
-    const [totalSupply, setTotalSupply] = useState<string>(newLaunchData.current.total_supply.toString());
-    const [decimal, setDecimal] = useState<string>(newLaunchData.current.decimals.toString());
-    const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
-    const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
-    const [distribution1, setDistribution1] = useState(newLaunchData.current.distribution[0].toString());
-    const [distribution2, setDistribution2] = useState(newLaunchData.current.distribution[1].toString());
-    const [distribution3, setDistribution3] = useState(newLaunchData.current.distribution[2].toString());
-    const [distribution4, setDistribution4] = useState(newLaunchData.current.distribution[3].toString());
-    const [distribution5, setDistribution5] = useState(newLaunchData.current.distribution[4].toString());
-    const [distribution6, setDistribution6] = useState(newLaunchData.current.distribution[5].toString());
+    const { formData, setFormData } = useAppRoot();
+    const [name, setName] = useState<string>(formData.name);
+    const [symbol, setSymbol] = useState<string>(formData.symbol);
+    const [displayImg, setDisplayImg] = useState<string>(formData.displayImg);
+    const [totalSupply, setTotalSupply] = useState<string>(formData.total_supply.toString());
+    const [decimal, setDecimal] = useState<string>(formData.decimals.toString());
+    const [mints, setMints] = useState<string>(formData.num_mints.toString());
+    const [ticketPrice, setTotalPrice] = useState<string>(formData.ticket_price.toString());
+    const [distribution1, setDistribution1] = useState(formData.distribution[0].toString());
+    const [distribution2, setDistribution2] = useState(formData.distribution[1].toString());
+    const [distribution3, setDistribution3] = useState(formData.distribution[2].toString());
+    const [distribution4, setDistribution4] = useState(formData.distribution[3].toString());
+    const [distribution5, setDistribution5] = useState(formData.distribution[4].toString());
+    const [distribution6, setDistribution6] = useState(formData.distribution[5].toString());
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -49,7 +48,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
         if (file) {
             if (file.size <= 1048576) {
-                newLaunchData.current.icon_file = file;
+                formData.icon_file = file;
                 setDisplayImg(URL.createObjectURL(e.target.files[0]));
             } else {
                 toast.error("File size exceeds 1MB limit.");
@@ -75,7 +74,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return;
         }
 
-        if (newLaunchData.current.icon_file === null) {
+        if (formData.icon_file === null) {
             toast.error("Please select an icon image.");
             return;
         }
@@ -115,22 +114,26 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return;
         }
 
-        newLaunchData.current.name = name;
-        newLaunchData.current.symbol = symbol;
-        newLaunchData.current.displayImg = displayImg;
-        newLaunchData.current.total_supply = parseInt(totalSupply);
+        setFormData({
+            ...formData,
+            name: name,
+            symbol: symbol,
+            displayImg: displayImg,
+            total_supply: parseInt(totalSupply),
+            decimals: parseInt(decimal),
+            num_mints: parseInt(mints),
+            ticket_price: parseFloat(ticketPrice),
+            minimum_liquidity: Math.round(parseFloat(mints) * parseFloat(ticketPrice)),
+            distribution: [
+                parseFloat(distribution1),
+                parseFloat(distribution2),
+                parseFloat(distribution3),
+                parseFloat(distribution4),
+                parseFloat(distribution5),
+                parseFloat(distribution6),
+            ],
+        });
 
-        newLaunchData.current.decimals = parseInt(decimal);
-
-        newLaunchData.current.num_mints = parseInt(mints);
-        newLaunchData.current.ticket_price = parseFloat(ticketPrice);
-        newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
-        newLaunchData.current.distribution[0] = parseFloat(distribution1);
-        newLaunchData.current.distribution[1] = parseFloat(distribution2);
-        newLaunchData.current.distribution[2] = parseFloat(distribution3);
-        newLaunchData.current.distribution[3] = parseFloat(distribution4);
-        newLaunchData.current.distribution[4] = parseFloat(distribution5);
-        newLaunchData.current.distribution[5] = parseFloat(distribution6);
         setScreen("details");
     }
 
@@ -144,14 +147,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                     <input id="file" type="file" onChange={handleFileChange} />
                     <span
                         className={styles.browse}
-                        style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        style={{ cursor: formData.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
                     >
                         BROWSE
                     </span>
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
+                {formData.icon_file !== null ? formData.icon_file.name : "No File Selected"}
             </Text>
         </HStack>
     );
@@ -184,7 +187,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             placeholder="Enter Token Name. (Ex. Solana)"
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={formData.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
@@ -209,7 +212,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             pl={9}
                                             bg="#494949"
                                             placeholder="Enter Token Ticker. (Ex. SOL)"
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={formData.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             required
@@ -234,7 +237,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={formData.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
@@ -256,7 +259,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={formData.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
@@ -282,7 +285,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             placeholder={"Enter Ticket Mint Limit (Ex. 1000)"}
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={formData.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
@@ -304,7 +307,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                         <Input
                                             placeholder={"Enter Price Per Ticket"}
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={formData.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}

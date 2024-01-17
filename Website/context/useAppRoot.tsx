@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
+import { PropsWithChildren, createContext, useContext, MutableRefObject, Dispatch, SetStateAction } from "react";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
 
 interface AppRootTypes {
@@ -14,6 +14,8 @@ interface AppRootTypes {
     checkLaunchData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
     joinData: JoinData[];
+    formData: LaunchDataUserInput;
+    setFormData: Dispatch<SetStateAction<LaunchDataUserInput>>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -30,6 +32,8 @@ export const AppRootContextProvider = ({
     checkLaunchData,
     newLaunchData,
     joinData,
+    formData,
+    setFormData,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -44,6 +48,8 @@ export const AppRootContextProvider = ({
                 checkLaunchData,
                 newLaunchData,
                 joinData,
+                formData,
+                setFormData,
             }}
         >
             {children}

@@ -19,16 +19,14 @@ interface DetailsPageProps {
 const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { newLaunchData } = useAppRoot();
-    const [name, setName] = useState<string>(newLaunchData.current.pagename);
-    const [description, setDescription] = useState<string>(newLaunchData.current.description);
-    const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
-    const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
-    const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
-    const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
+    const { formData, setFormData } = useAppRoot();
+    const [name, setName] = useState<string>(formData.pagename);
+    const [description, setDescription] = useState<string>(formData.description);
+    const [web, setWeb] = useState<string>(formData.web_url);
+    const [telegram, setTelegram] = useState<string>(formData.tele_url);
+    const [twitter, setTwitter] = useState(formData.twt_url);
+    const [discord, setDiscord] = useState(formData.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
-
-    const { launchList } = useAppRoot();
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -39,7 +37,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
         if (file) {
             if (file.size <= 4194304) {
-                newLaunchData.current.banner_file = file;
+                formData.banner_file = file;
                 setBannerName(file.name);
             } else {
                 alert("File size exceeds 4MB limit.");
@@ -94,7 +92,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        if (newLaunchData.current.banner_file === null) {
+        if (formData.banner_file === null) {
             toast.error("Please select a banner image.");
             return false;
         }
@@ -103,7 +101,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
         let balance = 0;
 
-        if (newLaunchData.current.edit_mode === false) {
+        if (formData.edit_mode === false) {
             balance = await request_current_balance("", launch_data_account);
         }
 
@@ -114,12 +112,15 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        newLaunchData.current.pagename = name;
-        newLaunchData.current.description = description;
-        newLaunchData.current.web_url = web;
-        newLaunchData.current.twt_url = twitter;
-        newLaunchData.current.disc_url = discord;
-        newLaunchData.current.tele_url = telegram;
+        setFormData({
+            ...formData,
+            pagename: name,
+            description: description,
+            web_url: web,
+            twt_url: twitter,
+            disc_url: discord,
+            tele_url: telegram,
+        });
 
         return true;
     }
@@ -176,7 +177,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                             <input id="file" type="file" onChange={handleFileChange} />
                                             <span
                                                 className={styles.browse}
-                                                style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer" }}
+                                                style={{ cursor: formData.edit_mode === true ? "not-allowed" : "pointer" }}
                                             >
                                                 BROWSE
                                             </span>
@@ -184,7 +185,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     </div>
 
                                     <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                        {newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
+                                        {formData.banner_file !== null ? banner_name : "No File Selected"}
                                     </Text>
                                 </HStack>
                             </div>

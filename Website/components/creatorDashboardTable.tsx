@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput } from "./Solana/state";
+import { LaunchData, LaunchDataUserInput, UserData, bignum_to_num, create_LaunchDataInput, defaultUserInput } from "./Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -102,7 +102,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { CreateMarket } = useCreateMarket(launch);
-    const { newLaunchData } = useAppRoot();
+    const { setFormData } = useAppRoot();
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -138,13 +138,16 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const EditClicked = async (e) => {
         e.stopPropagation();
         setIsEditing(true);
-        newLaunchData.current = create_LaunchDataInput(launch, true);
 
+        let editData = create_LaunchDataInput(launch, true);
         let bannerFile = await convertImageURLToFile(launch.banner, `${launch.name} banner image`);
         let iconFile = await convertImageURLToFile(launch.icon, `${launch.name} icon image`);
 
-        newLaunchData.current.banner_file = bannerFile;
-        newLaunchData.current.icon_file = iconFile;
+        setFormData({
+            ...editData,
+            banner_file: bannerFile,
+            icon_file: iconFile,
+        });
 
         setIsEditing(false);
 
