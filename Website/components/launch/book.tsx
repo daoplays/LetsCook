@@ -371,7 +371,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             console.log("mint", token_mint_pubkey.toString());
         }
 
-        let team_wallet = new PublicKey(formData.team_wallet);
+        let team_wallet = new PublicKey(teamWallet);
 
         const instruction_data = serialise_CreateLaunch_instruction(formData);
 
