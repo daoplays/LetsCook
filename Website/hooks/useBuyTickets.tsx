@@ -34,7 +34,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     }, []);
 
     const BuyTickets = async () => {
-        const buyingTickets = toast.loading(`Minting ${value} ${ticketLabel}`);
+        const buyingTickets = toast.loading(`Buying ${value} ${ticketLabel}`);
 
         if (wallet.signTransaction === undefined) return;
 
@@ -103,7 +103,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             toast.update(buyingTickets, {
-                render: `Successfully minted ${value} ${ticketLabel}!`,
+                render: `Successfully bought ${value} ${ticketLabel}!`,
                 type: "success",
                 isLoading: false,
                 autoClose: 3000,
@@ -113,7 +113,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         } catch (error) {
             console.log(error);
             toast.update(buyingTickets, {
-                render: `Failed to mint ${ticketLabel}, please try again.`,
+                render: `Failed to buy ${ticketLabel}, please try again.`,
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,

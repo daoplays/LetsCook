@@ -312,6 +312,8 @@ const MintPage = () => {
     ].includes(cookState);
     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cookState);
 
+    const ticketLabel = (join_data !== null ? join_data.num_tickets : 0) <= 1 ? "ticket" : "tickets";
+
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
             <FeaturedBanner featuredLaunch={launchData} />
@@ -338,10 +340,11 @@ const MintPage = () => {
                                 </HStack>
 
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Total Mints: {launchData.num_mints}
-                                </Text>
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     Tickets Sold: {launchData.tickets_sold}
+                                </Text>
+
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    Total Winning Tickets: {launchData.num_mints}
                                 </Text>
 
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -350,13 +353,13 @@ const MintPage = () => {
 
                                 <HStack align="center" gap={3}>
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        Auto Refund:
+                                        Insurance:
                                     </Text>
                                     <Checkbox size="lg" isChecked colorScheme="green" />
                                     <Tooltip
-                                        label="You will get a refund if liquidity threshhold is not reached."
+                                        label="You will get a refund for any losing tickets or if the cook fails to reach the Guaranteed Liquidity."
                                         hasArrow
-                                        w={270}
+                                        w={300}
                                         fontSize="large"
                                         offset={[0, 10]}
                                     >
@@ -379,7 +382,7 @@ const MintPage = () => {
                                             : ACTIVE
                                               ? `Total: ${totalCost.toFixed(2)}`
                                               : MINTED_OUT
-                                                ? "Cooked Out!"
+                                                ? "Cook Out!"
                                                 : MINT_FAILED
                                                   ? "Cook Failed"
                                                   : "none"}
@@ -396,6 +399,8 @@ const MintPage = () => {
                                         } else {
                                             if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
                                                 CheckTickets();
+                                            } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
+                                                return;
                                             } else if (
                                                 (cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
                                                     join_data?.ticket_status === 0) ||
@@ -413,9 +418,14 @@ const MintPage = () => {
                                 >
                                     {(MINTED_OUT || MINT_FAILED) && (
                                         <VStack>
-                                            <Box mt={4}>
-                                                <WoodenButton label={ButtonString(cook_state, join_data, launchData)} size={28} />
-                                            </Box>
+                                            {cookState === CookState.MINT_FAILED_REFUNDED ||
+                                            cookState === CookState.MINT_SUCCEEDED_NO_TICKETS ? (
+                                                <></>
+                                            ) : (
+                                                <Box mt={4}>
+                                                    <WoodenButton label={ButtonString(cook_state, join_data, launchData)} size={28} />
+                                                </Box>
+                                            )}
 
                                             {MINTED_OUT && join_data !== null && join_data.num_tickets > join_data.num_claimed_tickets && (
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -453,7 +463,7 @@ const MintPage = () => {
                                         wallet.publicKey === null ? handleConnectWallet() : openWarning();
                                     }}
                                 >
-                                    {wallet.publicKey === null ? "Connect Wallet" : "Mint"}
+                                    {wallet.publicKey === null ? "Connect Wallet" : "Buy Tickets"}
                                 </Button>
 
                                 {!(cookState === CookState.PRE_LAUNCH) ? (
@@ -474,9 +484,24 @@ const MintPage = () => {
                         </Flex>
 
                         <VStack w={xs ? "100%" : "85%"}>
+                            <Flex direction={md ? "column" : "row"}>
+                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    Guaranteed Liquidity:
+                                </Text>
+                                <HStack justify="center">
+                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                        &nbsp;
+                                        {(Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
+                                            LAMPORTS_PER_SOL}{" "}
+                                        of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                    </Text>
+                                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                </HStack>
+                            </Flex>
+
                             <Progress
                                 hasStripe={MINTED_OUT}
-                                mb={2}
+                                mb={3}
                                 w="100%"
                                 h={25}
                                 borderRadius={12}
@@ -496,7 +521,7 @@ const MintPage = () => {
                             />
                             {(join_data === null || join_data.num_claimed_tickets === 0) && (
                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    You own {join_data !== null ? join_data.num_tickets : 0} Tickets{" "}
+                                    You own {join_data !== null ? join_data.num_tickets : 0} {ticketLabel}{" "}
                                     {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
                                         ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
                                         : ""}
@@ -510,20 +535,6 @@ const MintPage = () => {
                                         : ""}
                                 </Text>
                             )}
-                            <Flex direction={md ? "column" : "row"}>
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Guaranteed Liquidity:
-                                </Text>
-                                <HStack justify="center">
-                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        &nbsp;
-                                        {(Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
-                                            LAMPORTS_PER_SOL}
-                                        /{(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
-                                    </Text>
-                                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                                </HStack>
-                            </Flex>
                         </VStack>
                     </VStack>
 

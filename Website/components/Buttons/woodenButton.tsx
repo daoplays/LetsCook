@@ -18,7 +18,7 @@ const WoodenButton = ({ action, label, size, width }: WoodenButtonProps) => {
             borderRadius={10}
             px={5}
             onClick={action}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: label === "Waiting for LP" ? "not-allowed" : "pointer" }}
         >
             <VStack h="100%" align="center" justify="center">
                 <Text

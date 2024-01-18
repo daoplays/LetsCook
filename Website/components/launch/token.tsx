@@ -116,8 +116,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return;
         }
 
-        
-
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;
         newLaunchData.current.displayImg = displayImg;
@@ -284,7 +282,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            placeholder={"Enter Ticket Mint Limit (Ex. 1000)"}
+                                            placeholder={"Enter Total Number of Winning Tickets"}
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             required

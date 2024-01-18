@@ -206,7 +206,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                         : ACTIVE
                           ? "Cooking"
                           : MINTED_OUT
-                            ? "Cooked Out"
+                            ? "Cook Out"
                             : MINT_FAILED
                               ? "Cook Failed"
                               : "Unknown"}
