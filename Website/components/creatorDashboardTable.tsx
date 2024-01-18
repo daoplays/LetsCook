@@ -90,7 +90,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
                 <tbody>
                     {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.name} launch={launch} />
+                        <LaunchCard key={launch.page_name} launch={launch} />
                     ))}
                 </tbody>
             </table>

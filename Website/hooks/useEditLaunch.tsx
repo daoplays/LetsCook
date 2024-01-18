@@ -5,7 +5,6 @@ import {
     get_current_blockhash,
     send_transaction,
     serialise_EditLaunch_instruction,
-    defaultUserInput,
 } from "../components/Solana/state";
 import { DEBUG, SYSTEM_KEY, PROGRAM, RPC_NODE, WSS_NODE } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -27,13 +26,20 @@ const useEditLaunch = () => {
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
+        signature_ws_id.current = null;
+
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
             toast.error("Transaction failed, please try again");
+            return
         }
-        signature_ws_id.current = null;
-        newLaunchData.current = defaultUserInput;
-        console.log(defaultUserInput);
+
+        // reset the urls so we know these have been submitted
+        newLaunchData.current.icon_url = "";
+        newLaunchData.current.banner_url = "";
+        newLaunchData.current.uri = "";
+        newLaunchData.current.edit_mode = false;
+        console.log(newLaunchData.current);
         await checkLaunchData();
     }, []);
 

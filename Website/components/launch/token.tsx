@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler
 import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text, HStack, Input, InputRightElement, InputGroup, InputLeftElement, Spacer, Box } from "@chakra-ui/react";
-import { LaunchData, LaunchDataUserInput, bignum_to_num, defaultUserInput } from "../../components/Solana/state";
+import { LaunchData, LaunchDataUserInput, bignum_to_num } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -23,6 +23,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
+
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
@@ -114,6 +115,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             toast.error("Total supply of tokens must be over 10");
             return;
         }
+
+        
 
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;
