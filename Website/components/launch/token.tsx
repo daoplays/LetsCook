@@ -277,7 +277,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                        MINTS:
+                                        WINNING TICKETS:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
