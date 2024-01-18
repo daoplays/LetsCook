@@ -129,6 +129,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     async function setData(e): Promise<boolean> {
         console.log("in set data");
         let balance = 1;
+
         try {
             let teamPubKey = new PublicKey(teamWallet);
             balance = await request_current_balance("", teamPubKey);
@@ -154,15 +155,19 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
+        console.log(formData);
+
+        return true;
+    }
+
+    useEffect(() => {
         setFormData({
             ...formData,
             opendate: openDate,
             closedate: closeDate,
             team_wallet: teamWallet,
         });
-
-        return true;
-    }
+    }, [openDate, closeDate, teamWallet]);
 
     async function prevPage(e) {
         console.log("check previous");
@@ -371,13 +376,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             console.log("mint", token_mint_pubkey.toString());
         }
 
-        let team_wallet;
-
-        try {
-            team_wallet = new PublicKey(formData.team_wallet);
-        } catch (error) {
-            toast.error("Error creating PublicKey:", error);
-        }
+        const team_wallet = new PublicKey(formData.team_wallet);
 
         const instruction_data = serialise_CreateLaunch_instruction(formData);
 
