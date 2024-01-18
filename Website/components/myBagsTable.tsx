@@ -206,7 +206,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                         : ACTIVE
                           ? "Cooking"
                           : MINTED_OUT
-                            ? "Cooked Out"
+                            ? "Cook Out"
                             : MINT_FAILED
                               ? "Cook Failed"
                               : "Unknown"}
@@ -244,7 +244,13 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "65px" }}>
                     {(MINTED_OUT || MINT_FAILED) && (
-                        <Button onClick={(e) => handleButtonClick(e)} isLoading={CheckingTickets || ClaimingTokens || RefundingTickets}>
+                        <Button
+                            onClick={(e) => handleButtonClick(e)}
+                            isLoading={CheckingTickets || ClaimingTokens || RefundingTickets}
+                            isDisabled={
+                                cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP && launch.join_data.ticket_status === 1
+                            }
+                        >
                             {ButtonString(cook_state, launch.join_data, launch.launch_data)}
                         </Button>
                     )}

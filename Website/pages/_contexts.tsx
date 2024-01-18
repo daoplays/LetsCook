@@ -97,7 +97,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const user_account_ws_id = useRef<number | null>(null);
 
-    const newLaunchData = useRef<LaunchDataUserInput>({...defaultUserInput});
+    const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
 
     function filterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -128,9 +128,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     return;
                 }
 
-                if (
-                    updated_data.total_points > current_user_data.total_points
-                ) {
+                if (updated_data.total_points > current_user_data.total_points) {
                     setCurrentUserData(updated_data);
                 }
             } catch (error) {

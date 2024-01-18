@@ -173,8 +173,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        console.log(newLaunchData.current.icon_url)
-        console.log(newLaunchData.current.banner_url)
+        console.log(newLaunchData.current.icon_url);
+        console.log(newLaunchData.current.banner_url);
         // if this is in edit mode then just call that function
         if (newLaunchData.current.edit_mode === true) {
             await EditLaunch();
@@ -193,8 +193,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             },
         });
 
-
-        if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == ""){
+        if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
             let price;
@@ -277,7 +276,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             newLaunchData.current.banner_url = banner_url;
         }
 
-        if (newLaunchData.current.uri == "" ){
+        if (newLaunchData.current.uri == "") {
             // console.log(icon_url, banner_url);
             var metadata = {
                 name: newLaunchData.current.name,

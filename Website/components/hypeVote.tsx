@@ -41,7 +41,6 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 theme: "light",
                 icon: ({theme, type}) =>  <img src="/images/thumbs-up.svg"/>
             });*/
-
         },
         [checkLaunchData],
     );

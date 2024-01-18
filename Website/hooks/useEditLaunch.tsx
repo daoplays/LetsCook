@@ -1,11 +1,6 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
-import {
-    LaunchDataUserInput,
-    get_current_blockhash,
-    send_transaction,
-    serialise_EditLaunch_instruction,
-} from "../components/Solana/state";
+import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../components/Solana/state";
 import { DEBUG, SYSTEM_KEY, PROGRAM, RPC_NODE, WSS_NODE } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
@@ -31,7 +26,7 @@ const useEditLaunch = () => {
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
             toast.error("Transaction failed, please try again");
-            return
+            return;
         }
 
         // reset the urls so we know these have been submitted
