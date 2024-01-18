@@ -76,7 +76,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                         onClick={() =>
                                             navigator.clipboard.writeText(
                                                 featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                    ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                                    ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
                                                     : "",
                                             )
                                         }
@@ -89,7 +89,7 @@ const FeaturedBanner = ({ featuredLaunch }: FeaturedBannerProps) => {
                                     <Link
                                         href={`https://solscan.io/account/${
                                             featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                                ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
                                                 : ""
                                         }?cluster=devnet`}
                                         target="_blank"
