@@ -20,7 +20,7 @@ const DEV_FEES = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
 const PROD_FEES = new PublicKey("8T5LPmj4fghsUGdGZo6VTHS5w5mUWYwFxLYrgdBg5mXA");
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-export const PROGRAM = new PublicKey("7dXAFUrJMRTAK9YcpzimGQNPz3Q5yH4K61AdUtnC2i9c");
+export const PROGRAM = new PublicKey("9ug9UELN1KWscDGGfD4ZmpkPWjQp25jmKHPjX1JLKSjj");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
 
 // account seeds

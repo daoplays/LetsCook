@@ -502,7 +502,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                     selected={openDate}
                                                     onChange={(date) => {
                                                         setOpenDate(date);
-                                                        onCloseStart();
+                                                        //onCloseStart();
                                                     }}
                                                     inline
                                                 />
@@ -538,12 +538,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                 <DatePicker
                                                     disabled={newLaunchData.current.edit_mode === true}
                                                     showTimeSelect
+                                                    keepOpen
                                                     timeFormat="HH:mm"
                                                     timeIntervals={15}
                                                     selected={closeDate}
                                                     onChange={(date) => {
                                                         setcloseDate(date);
-                                                        OnCloseEnd();
+                                                        //OnCloseEnd();
                                                     }}
                                                     inline
                                                 />

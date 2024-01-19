@@ -651,22 +651,46 @@ export class JoinData {
     );
 }
 
+export class UserStats {
+    constructor(
+        readonly flags: number[],
+        readonly values: number[],
+        readonly amounts: bignum[],
+        readonly achievements: number[],
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<UserStats>(
+        [
+            ["flags", array(u8)],
+            ["values", array(u32)],
+            ["amounts", array(u64)],
+            ["achievements", array(u8)],
+        ],
+        (args) => new UserStats(args.flags!, args.values!, args.amounts!, args.achievements!),
+        "UserStats",
+    );
+}
+
 export class UserData {
     constructor(
         readonly account_type: number,
         readonly user_key: PublicKey,
+        readonly user_name: string,
         readonly total_points: number,
         readonly votes: number[],
+        readonly stats : UserStats
     ) {}
 
     static readonly struct = new FixableBeetStruct<UserData>(
         [
             ["account_type", u8],
             ["user_key", publicKey],
+            ["user_name", utf8String],
             ["total_points", u32],
             ["votes", array(u64)],
+            ["stats", UserStats.struct]
         ],
-        (args) => new UserData(args.account_type!, args.user_key!, args.total_points!, args.votes!),
+        (args) => new UserData(args.account_type!, args.user_key!, args.user_name!, args.total_points!, args.votes!, args.stats!),
         "UserData",
     );
 }
