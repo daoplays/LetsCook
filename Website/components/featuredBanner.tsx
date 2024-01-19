@@ -136,9 +136,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     lineHeight={1.15}
                                     align={lg ? "center" : "start"}
                                 >
-                                    {/* {featuredLaunch !== null ? featuredLaunch.description.substring(0, 200) : ""} */}
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed laoreet nisi at elit venenatis fringilla.
-                                    Cras ut semper quam, sit.
+                                    {featuredLaunch !== null ? featuredLaunch.description.substring(0, 200) : ""}
                                 </Text>
                             </VStack>
                         </HStack>
