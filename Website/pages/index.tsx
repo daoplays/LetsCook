@@ -15,7 +15,7 @@ const Home = () => {
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-            <FeaturedBanner featuredLaunch={homePageList[0]} />
+            <FeaturedBanner featuredLaunch={homePageList[0]} isHomePage={true} />
             <GameTable launchList={homePageList} filters={defaultLaunchTableFilters} />
         </main>
     );

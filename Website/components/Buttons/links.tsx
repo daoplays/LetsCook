@@ -16,25 +16,33 @@ interface LinksProps {
 const Links = ({ featuredLaunch }: LinksProps) => {
     const { lg } = useResponsive();
 
+    function addHttpsIfMissing(url) {
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return url;
+        } else {
+            return `https://${url}`;
+        }
+    }
+
     return (
         <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
             {featuredLaunch.socials[Socials.Twitter] !== "" && (
-                <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Twitter] : "#"} target="_blank">
+                <Link href={featuredLaunch !== null ? addHttpsIfMissing(featuredLaunch.socials[Socials.Twitter]) : "#"} target="_blank">
                     <Image src={twitter.src} alt="Twitter Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                 </Link>
             )}
             {featuredLaunch.socials[Socials.Telegram] !== "" && (
-                <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Telegram] : "#"} target="_blank">
+                <Link href={featuredLaunch !== null ? addHttpsIfMissing(featuredLaunch.socials[Socials.Telegram]) : "#"} target="_blank">
                     <Image src={telegram.src} alt="Telegram Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                 </Link>
             )}
             {featuredLaunch.socials[Socials.Discord] !== "" && (
-                <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Discord] : "#"} target="_blank">
+                <Link href={featuredLaunch !== null ? addHttpsIfMissing(featuredLaunch.socials[Socials.Discord]) : "#"} target="_blank">
                     <Image src={discord.src} alt="Discord Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                 </Link>
             )}
             {featuredLaunch.socials[Socials.Website] !== "" && (
-                <Link href={featuredLaunch !== null ? featuredLaunch.socials[Socials.Website] : "#"} target="_blank">
+                <Link href={featuredLaunch !== null ? addHttpsIfMissing(featuredLaunch.socials[Socials.Website]) : "#"} target="_blank">
                     <Image src={website.src} alt="Website Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                 </Link>
             )}

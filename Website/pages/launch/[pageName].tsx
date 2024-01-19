@@ -315,9 +315,9 @@ const MintPage = () => {
 
     return (
         <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-            <FeaturedBanner featuredLaunch={launchData} />
+            <FeaturedBanner featuredLaunch={launchData} isHomePage={false} />
             <Center>
-                <VStack spacing={5} my={3} px={5} width={sm ? "100%" : "80%"}>
+                <VStack spacing={5} my={3} px={5} width={md ? "100%" : "80%"}>
                     <Timespan launchData={launchData} />
 
                     <VStack
@@ -327,10 +327,11 @@ const MintPage = () => {
                         borderRadius={12}
                         border="1px solid white"
                         h="fit-content"
-                        style={{ maxWidth: "980px" }}
+                        w={lg ? "100%" : "fit-content"}
+                        style={{ maxWidth: lg ? "100%" : "980px" }}
                     >
                         <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
-                            <VStack align="start" gap={xs ? 3 : 5}>
+                            <VStack align={md ? "center" : "start"} gap={xs ? 3 : 5}>
                                 <HStack>
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                         Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
@@ -516,6 +517,8 @@ const MintPage = () => {
                                               : "none"
                                 }
                                 size="sm"
+                                max={launchData.num_mints}
+                                min={0}
                                 value={(100 * Math.min(launchData.tickets_sold, launchData.num_mints)) / launchData.num_mints}
                             />
                             {(join_data === null || join_data.num_claimed_tickets === 0) && (
