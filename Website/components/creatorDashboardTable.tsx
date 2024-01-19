@@ -202,7 +202,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                     }
                 >
                     {cook_state === CookState.PRE_LAUNCH
-                        ? "Waiting to Cook"
+                        ? "Warming Up"
                         : ACTIVE
                           ? "Cooking"
                           : MINTED_OUT
