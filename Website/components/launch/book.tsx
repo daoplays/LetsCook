@@ -493,6 +493,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         </PopoverTrigger>
                                         <PopoverContent width="fit-content">
                                             <PopoverArrow />
+                                            <PopoverCloseButton />
+                                            <PopoverHeader h={34} />
                                             <PopoverBody>
                                                 <DatePicker
                                                     disabled={newLaunchData.current.edit_mode === true}
@@ -504,6 +506,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                         setOpenDate(date);
                                                         //onCloseStart();
                                                     }}
+                                                    onClickOutside={() => onCloseStart()}
                                                     inline
                                                 />
                                             </PopoverBody>
@@ -534,6 +537,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         <PopoverContent width="fit-content">
                                             <PopoverArrow />
                                             <PopoverCloseButton />
+                                            <PopoverHeader h={34} />
                                             <PopoverBody>
                                                 <DatePicker
                                                     disabled={newLaunchData.current.edit_mode === true}
@@ -546,6 +550,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                         setcloseDate(date);
                                                         //OnCloseEnd();
                                                     }}
+                                                    onClickOutside={() => OnCloseEnd()}
                                                     inline
                                                 />
                                             </PopoverBody>
