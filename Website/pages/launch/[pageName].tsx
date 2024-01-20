@@ -31,7 +31,6 @@ import useCheckTickets from "../../hooks/useCheckTickets";
 import useBuyTickets from "../../hooks/useBuyTickets";
 import useClaimTickets from "../../hooks/useClaimTokens";
 import useRefundTickets from "../../hooks/useRefundTickets";
-import Links from "../../components/Buttons/links";
 import FeaturedBanner from "../../components/featuredBanner";
 import Timespan from "../../components/launchPreview/timespan";
 import TokenDistribution from "../../components/launchPreview/tokenDistribution";
