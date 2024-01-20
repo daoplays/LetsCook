@@ -170,7 +170,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                         <HStack w="100%" style={{ position: "relative", alignItems: "center", justifyContent: "center" }}>
                             <Progress
                                 w="100%"
-                                h={33}
+                                h={sm ? 26 : 33}
                                 borderRadius={20}
                                 sx={{
                                     "& > div": {
@@ -184,16 +184,22 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                             />
                             <HStack style={{ position: "absolute", zIndex: 1 }}>
-                                <Text m="0" color="black" fontSize="large" fontFamily="ReemKufiRegular">
+                                <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
                                     Guaranteed Liquidity:
                                 </Text>
                                 <HStack justify="center">
-                                    <Text m="0" color="black" fontSize="large" fontFamily="ReemKufiRegular">
+                                    <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
                                         {(Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) * featuredLaunch.ticket_price) /
                                             LAMPORTS_PER_SOL}{" "}
                                         of {(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
                                     </Text>
-                                    <Image src="/images/sol.png" width={25} height={25} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                    <Image
+                                        src="/images/sol.png"
+                                        width={sm ? 20 : 25}
+                                        height={sm ? 20 : 25}
+                                        alt="SOL Icon"
+                                        style={{ marginLeft: sm ? 0 : -3 }}
+                                    />
                                 </HStack>
                             </HStack>
                         </HStack>
