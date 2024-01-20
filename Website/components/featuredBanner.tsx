@@ -170,13 +170,18 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                         <HStack w="100%" style={{ position: "relative", alignItems: "center", justifyContent: "center" }}>
                             <Progress
                                 w="100%"
-                                h={30}
-                                borderRadius={12}
-                                colorScheme={"whatsapp"}
+                                h={33}
+                                borderRadius={20}
+                                sx={{
+                                    "& > div": {
+                                        background: "linear-gradient(90deg, #5CA573  10%, #25D366 90%)",
+                                    },
+                                }}
                                 size="sm"
-                                max={featuredLaunch.num_mints}
+                                max={(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
                                 min={0}
                                 value={(100 * Math.min(featuredLaunch.tickets_sold, featuredLaunch.num_mints)) / featuredLaunch.num_mints}
+                                boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                             />
                             <HStack style={{ position: "absolute", zIndex: 1 }}>
                                 <Text m="0" color="black" fontSize="large" fontFamily="ReemKufiRegular">
