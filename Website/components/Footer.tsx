@@ -21,9 +21,10 @@ function Footer() {
             py={2}
             px={4}
             justify="start"
-            gap={3}
+            gap={2}
         >
             <MainButton action={() => router.push("/terms")} label="TERMS" />
+            <MainButton action={() => router.push("/faq")} label="FAQs" />
             <Image
                 src={twitter.src}
                 width={30}

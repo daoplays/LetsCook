@@ -13,6 +13,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
+import getImageDimensions from "../../hooks/useGetImageDimension";
 
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -45,13 +46,19 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         setSymbol(e.target.value);
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
         if (file) {
             if (file.size <= 1048576) {
-                newLaunchData.current.icon_file = file;
-                setDisplayImg(URL.createObjectURL(e.target.files[0]));
+                const dimensions = await getImageDimensions(file);
+
+                if (dimensions.width === dimensions.height) {
+                    newLaunchData.current.icon_file = file;
+                    setDisplayImg(URL.createObjectURL(e.target.files[0]));
+                } else {
+                    toast.error("Please upload an image with equal width and height.");
+                }
             } else {
                 toast.error("File size exceeds 1MB limit.");
             }
