@@ -170,11 +170,11 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                         <HStack w="100%" style={{ position: "relative", alignItems: "center", justifyContent: "center" }}>
                             <Progress
                                 w="100%"
-                                h={sm ? 26 : 33}
+                                h={29}
                                 borderRadius={20}
                                 sx={{
                                     "& > div": {
-                                        background: "linear-gradient(90deg, #5CA573  10%, #25D366 90%)",
+                                        background: "linear-gradient(180deg, #8DFE7A 0%, #3E9714 100%)",
                                     },
                                 }}
                                 size="sm"
@@ -195,8 +195,8 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     </Text>
                                     <Image
                                         src="/images/sol.png"
-                                        width={sm ? 20 : 25}
-                                        height={sm ? 20 : 25}
+                                        width={20}
+                                        height={20}
                                         alt="SOL Icon"
                                         style={{ marginLeft: sm ? 0 : -3 }}
                                     />
