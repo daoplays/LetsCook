@@ -132,6 +132,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         newLaunchData.current.distribution[3] = parseFloat(distribution4);
         newLaunchData.current.distribution[4] = parseFloat(distribution5);
         newLaunchData.current.distribution[5] = parseFloat(distribution6);
+
         setScreen("details");
     }
 

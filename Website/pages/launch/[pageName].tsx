@@ -291,7 +291,7 @@ const MintPage = () => {
         }
     }, [cook_state, launchData]);
 
-    console.log(launchData);
+    //console.log(launchData);
 
     if (!pageName) return;
 

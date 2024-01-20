@@ -11,6 +11,7 @@ import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
+import { make_tweet } from "../components/launch/twitter";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -28,6 +29,8 @@ const useEditLaunch = () => {
             toast.error("Transaction failed, please try again");
             return;
         }
+
+        let response = await make_tweet(newLaunchData.current.pagename);
 
         // reset the urls so we know these have been submitted
         newLaunchData.current.icon_url = "";
