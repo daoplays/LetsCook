@@ -62,7 +62,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 height={lg ? 130 : 200}
                                 alt="$LOGO"
                                 hidden={lg}
-                                style={{ borderRadius: sm ? "12px" : "8px" }}
+                                style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
                             />
                         )}
                         <VStack gap={lg ? 2 : 3} alignItems={lg ? "center" : "left"}>

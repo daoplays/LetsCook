@@ -174,7 +174,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                             src={launch.launch_data.icon}
                             width={md ? 45 : 75}
                             height={md ? 45 : 75}
-                            style={{ borderRadius: "8px" }}
+                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                 </Center>
