@@ -8,8 +8,8 @@ import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
 import NoSSR from "../utils/NoSSR";
 import ContextProviders from "./_contexts";
-import { PagesProgressBar as ProgressBar } from "next-nprogress-bar";
 import { ToastContainer } from "react-toastify";
+import NextTopLoader from "nextjs-toploader";
 import "bootstrap/dist/css/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/fonts.css";
@@ -33,8 +33,7 @@ function MyApp({ Component, pageProps }) {
                 theme="light"
             />
             <ChakraProvider theme={theme}>
-                <ProgressBar options={{ showSpinner: false }} height="3px" />
-
+                <NextTopLoader />
                 <WalletProvider wallets={wallets} autoConnect>
                     <WalletModalProvider>
                         <ContextProviders>
