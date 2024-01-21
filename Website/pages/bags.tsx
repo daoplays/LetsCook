@@ -7,6 +7,7 @@ import { JoinData, LaunchData, JoinedLaunch, bignum_to_num } from "../components
 import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";
 import MyBagsTable from "../components/myBagsTable";
+import Head from "next/head";
 
 const BagsPage = () => {
     const { sm } = useResponsive();
@@ -37,27 +38,32 @@ const BagsPage = () => {
     if (!joinedLaunches) return <Loader />;
 
     return (
-        <main>
-            <Flex
-                px={4}
-                py={sm ? 22 : 37}
-                gap={2}
-                alignItems="center"
-                justifyContent="end"
-                style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-            >
-                <Text
-                    fontSize={sm ? 25 : 35}
-                    color="white"
-                    className="font-face-kg"
-                    style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                    align={"center"}
+        <>
+            <Head>
+                <title>Let&apos;s Cook | My Bags</title>
+            </Head>
+            <main>
+                <Flex
+                    px={4}
+                    py={sm ? 22 : 37}
+                    gap={2}
+                    alignItems="center"
+                    justifyContent="end"
+                    style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
                 >
-                    My Bag
-                </Text>
-            </Flex>
-            <MyBagsTable bags={joinedLaunches} />
-        </main>
+                    <Text
+                        fontSize={sm ? 25 : 35}
+                        color="white"
+                        className="font-face-kg"
+                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        My Bag
+                    </Text>
+                </Flex>
+                <MyBagsTable bags={joinedLaunches} />
+            </main>
+        </>
     );
 };
 
