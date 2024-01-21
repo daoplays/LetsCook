@@ -22,6 +22,8 @@ export default class _Document extends Document {
                     />
                     <meta property="og:image" content="https://letscook.wtf/letscook-seo-image.png" />
 
+                    <meta name="twitter:site" content="@letscook_sol" />
+                    <meta name="twitter:creator" content="@Dave_Kayac" />
                     <meta name="twitter:card" content="summary_large_image" />
                     <meta name="twitter:title" content="Your go-to platform for launching Solana Tokens / Memecoins." />
                     <meta
