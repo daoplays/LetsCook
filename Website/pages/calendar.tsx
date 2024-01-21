@@ -18,7 +18,7 @@ import useResponsive from "../hooks/useResponsive";
 import GameTable from "../components/gameTable";
 import { LaunchTableFilters } from "../components/gameTable";
 import useAppRoot from "../context/useAppRoot";
-
+import Head from "next/head";
 import "react-datepicker/dist/react-datepicker.css";
 import Loader from "../components/loader";
 import EmptyLaunch from "../components/emptyLaunch";
@@ -50,48 +50,53 @@ const CalenderPage = () => {
     if (launchList.length <= 0) return <EmptyLaunch />;
 
     return (
-        <main>
-            <Flex
-                px={4}
-                py={18}
-                gap={2}
-                alignItems="center"
-                justifyContent="end"
-                style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-            >
-                <Text
-                    fontSize={sm ? 25 : 35}
-                    color="white"
-                    className="font-face-kg"
-                    style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                    align={"center"}
+        <>
+            <Head>
+                <title>Let&apos;s Cook | Calendar</title>
+            </Head>
+            <main>
+                <Flex
+                    px={4}
+                    py={18}
+                    gap={2}
+                    alignItems="center"
+                    justifyContent="end"
+                    style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
                 >
-                    Mint Calendar
-                </Text>
-                <Popover initialFocusRef={initialFocusRef} placement="bottom" closeOnBlur={false}>
-                    <PopoverTrigger>
-                        <Button w={sm ? "100%" : "fit-content"}>Filter By Date</Button>
-                    </PopoverTrigger>
-                    <PopoverContent width={268}>
-                        <PopoverArrow />
-                        <PopoverCloseButton />
-                        <PopoverHeader>Select Date or Range</PopoverHeader>
-                        <PopoverBody>
-                            <DatePicker
-                                selected={startDate}
-                                onChange={onChange}
-                                startDate={startDate}
-                                endDate={endDate}
-                                selectsRange
-                                selectsDisabledDaysInRange
-                                inline
-                            />
-                        </PopoverBody>
-                    </PopoverContent>
-                </Popover>
-            </Flex>
-            <GameTable launchList={launchList} filters={filters} />
-        </main>
+                    <Text
+                        fontSize={sm ? 25 : 35}
+                        color="white"
+                        className="font-face-kg"
+                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        Mint Calendar
+                    </Text>
+                    <Popover initialFocusRef={initialFocusRef} placement="bottom" closeOnBlur={false}>
+                        <PopoverTrigger>
+                            <Button w={sm ? "100%" : "fit-content"}>Filter By Date</Button>
+                        </PopoverTrigger>
+                        <PopoverContent width={268}>
+                            <PopoverArrow />
+                            <PopoverCloseButton />
+                            <PopoverHeader>Select Date or Range</PopoverHeader>
+                            <PopoverBody>
+                                <DatePicker
+                                    selected={startDate}
+                                    onChange={onChange}
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    selectsRange
+                                    selectsDisabledDaysInRange
+                                    inline
+                                />
+                            </PopoverBody>
+                        </PopoverContent>
+                    </Popover>
+                </Flex>
+                <GameTable launchList={launchList} filters={filters} />
+            </main>
+        </>
     );
 };
 

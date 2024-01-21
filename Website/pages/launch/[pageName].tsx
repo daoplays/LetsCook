@@ -38,6 +38,7 @@ import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookSt
 import Loader from "../../components/loader";
 import { WarningModal } from "../../components/Solana/modals";
 import { ButtonString } from "../../components/user_status";
+import Head from "next/head";
 
 const MintPage = () => {
     const wallet = useWallet();
@@ -314,246 +315,252 @@ const MintPage = () => {
     const ticketLabel = (join_data !== null ? join_data.num_tickets : 0) <= 1 ? "ticket" : "tickets";
 
     return (
-        <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-            <FeaturedBanner featuredLaunch={launchData} isHomePage={false} />
-            <Center>
-                <VStack spacing={5} my={3} px={5} width={md ? "100%" : "80%"}>
-                    <Timespan launchData={launchData} />
+        <>
+            <Head>
+                <title>Let&apos;s Cook | {launchData.page_name}</title>
+            </Head>
+            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
+                <FeaturedBanner featuredLaunch={launchData} isHomePage={false} />
+                <Center>
+                    <VStack spacing={5} my={3} px={5} width={md ? "100%" : "80%"}>
+                        <Timespan launchData={launchData} />
 
-                    <VStack
-                        gap={50}
-                        p={md ? 25 : 50}
-                        bg="rgba(255, 255, 255, 0.20)"
-                        borderRadius={12}
-                        border="1px solid white"
-                        h="fit-content"
-                        w={lg ? "100%" : "fit-content"}
-                        style={{ maxWidth: lg ? "100%" : "980px" }}
-                    >
-                        <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
-                            <VStack align={md ? "center" : "start"} gap={xs ? 3 : 5}>
-                                <HStack>
+                        <VStack
+                            gap={50}
+                            p={md ? 25 : 50}
+                            bg="rgba(255, 255, 255, 0.20)"
+                            borderRadius={12}
+                            border="1px solid white"
+                            h="fit-content"
+                            w={lg ? "100%" : "fit-content"}
+                            style={{ maxWidth: lg ? "100%" : "980px" }}
+                        >
+                            <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
+                                <VStack align={md ? "center" : "start"} gap={xs ? 3 : 5}>
+                                    <HStack>
+                                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                        </Text>
+                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                    </HStack>
+
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                        Tickets Sold: {launchData.tickets_sold}
                                     </Text>
-                                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                                </HStack>
 
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Tickets Sold: {launchData.tickets_sold}
-                                </Text>
-
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Total Winning Tickets: {launchData.num_mints}
-                                </Text>
-
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
-                                </Text>
-
-                                <HStack align="center" gap={3}>
                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        Insurance:
+                                        Total Winning Tickets: {launchData.num_mints}
                                     </Text>
-                                    <Checkbox size="lg" isChecked colorScheme="green" />
-                                    <Tooltip
-                                        label="You will get a refund for any losing tickets or if the cook fails to reach the Guaranteed Liquidity."
-                                        hasArrow
-                                        w={300}
-                                        fontSize="large"
-                                        offset={[0, 10]}
-                                    >
-                                        <Image width={25} height={25} src="/images/help.png" alt="Help" />
-                                    </Tooltip>
-                                </HStack>
-                            </VStack>
 
-                            <VStack align="center" justify="center" gap={3}>
-                                <HStack>
-                                    <Text
-                                        m="0"
-                                        color="white"
-                                        className="font-face-kg"
-                                        textAlign={"center"}
-                                        fontSize={lg ? "x-large" : "xxx-large"}
-                                    >
-                                        {cookState === CookState.PRE_LAUNCH
-                                            ? "Warming Up"
-                                            : ACTIVE
-                                              ? `Total: ${totalCost.toFixed(2)}`
-                                              : MINTED_OUT
-                                                ? "Cook Out!"
-                                                : MINT_FAILED
-                                                  ? "Cook Failed"
-                                                  : "none"}
+                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                        Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
                                     </Text>
-                                    {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
-                                </HStack>
 
-                                <Box
-                                    mt={-3}
-                                    onClick={() => {
-                                        console.log(wallet.publicKey);
-                                        if (wallet.publicKey === null) {
-                                            handleConnectWallet();
-                                        } else {
-                                            if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
-                                                CheckTickets();
-                                            } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
-                                                return;
-                                            } else if (
-                                                (cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
-                                                    join_data?.ticket_status === 0) ||
-                                                cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP
-                                            ) {
-                                                ClaimTokens();
-                                            } else if (
-                                                cook_state === CookState.MINT_FAILED_NOT_REFUNDED ||
-                                                CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
-                                            ) {
-                                                RefundTickets();
+                                    <HStack align="center" gap={3}>
+                                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            Insurance:
+                                        </Text>
+                                        <Checkbox size="lg" isChecked colorScheme="green" />
+                                        <Tooltip
+                                            label="You will get a refund for any losing tickets or if the cook fails to reach the Guaranteed Liquidity."
+                                            hasArrow
+                                            w={300}
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                        </Tooltip>
+                                    </HStack>
+                                </VStack>
+
+                                <VStack align="center" justify="center" gap={3}>
+                                    <HStack>
+                                        <Text
+                                            m="0"
+                                            color="white"
+                                            className="font-face-kg"
+                                            textAlign={"center"}
+                                            fontSize={lg ? "x-large" : "xxx-large"}
+                                        >
+                                            {cookState === CookState.PRE_LAUNCH
+                                                ? "Warming Up"
+                                                : ACTIVE
+                                                ? `Total: ${totalCost.toFixed(2)}`
+                                                : MINTED_OUT
+                                                    ? "Cook Out!"
+                                                    : MINT_FAILED
+                                                    ? "Cook Failed"
+                                                    : "none"}
+                                        </Text>
+                                        {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
+                                    </HStack>
+
+                                    <Box
+                                        mt={-3}
+                                        onClick={() => {
+                                            console.log(wallet.publicKey);
+                                            if (wallet.publicKey === null) {
+                                                handleConnectWallet();
+                                            } else {
+                                                if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
+                                                    CheckTickets();
+                                                } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
+                                                    return;
+                                                } else if (
+                                                    (cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP &&
+                                                        join_data?.ticket_status === 0) ||
+                                                    cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP
+                                                ) {
+                                                    ClaimTokens();
+                                                } else if (
+                                                    cook_state === CookState.MINT_FAILED_NOT_REFUNDED ||
+                                                    CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
+                                                ) {
+                                                    RefundTickets();
+                                                }
                                             }
-                                        }
-                                    }}
-                                >
-                                    {(MINTED_OUT || MINT_FAILED) && (
-                                        <VStack>
-                                            {cookState === CookState.MINT_FAILED_REFUNDED ||
-                                            cookState === CookState.MINT_SUCCEEDED_NO_TICKETS ? (
-                                                <></>
-                                            ) : (
-                                                <Box mt={4}>
-                                                    <WoodenButton label={ButtonString(cook_state, join_data, launchData)} size={28} />
-                                                </Box>
-                                            )}
+                                        }}
+                                    >
+                                        {(MINTED_OUT || MINT_FAILED) && (
+                                            <VStack>
+                                                {cookState === CookState.MINT_FAILED_REFUNDED ||
+                                                cookState === CookState.MINT_SUCCEEDED_NO_TICKETS ? (
+                                                    <></>
+                                                ) : (
+                                                    <Box mt={4}>
+                                                        <WoodenButton label={ButtonString(cook_state, join_data, launchData)} size={28} />
+                                                    </Box>
+                                                )}
 
-                                            {MINTED_OUT && join_data !== null && join_data.num_tickets > join_data.num_claimed_tickets && (
-                                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                    {(100 * win_prob).toFixed(3)}% chance per ticket
-                                                </Text>
-                                            )}
-                                        </VStack>
-                                    )}
-                                </Box>
+                                                {MINTED_OUT && join_data !== null && join_data.num_tickets > join_data.num_claimed_tickets && (
+                                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                                        {(100 * win_prob).toFixed(3)}% chance per ticket
+                                                    </Text>
+                                                )}
+                                            </VStack>
+                                        )}
+                                    </Box>
 
-                                <HStack maxW="320px" hidden={MINTED_OUT || MINT_FAILED}>
-                                    <Button {...dec} size="lg" isDisabled={cookState === CookState.PRE_LAUNCH}>
-                                        -
-                                    </Button>
+                                    <HStack maxW="320px" hidden={MINTED_OUT || MINT_FAILED}>
+                                        <Button {...dec} size="lg" isDisabled={cookState === CookState.PRE_LAUNCH}>
+                                            -
+                                        </Button>
 
-                                    <Input
-                                        {...input}
+                                        <Input
+                                            {...input}
+                                            size="lg"
+                                            fontSize="x-large"
+                                            color="white"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                            isDisabled={cookState === CookState.PRE_LAUNCH}
+                                        />
+                                        <Button {...inc} size="lg" isDisabled={cookState === CookState.PRE_LAUNCH}>
+                                            +
+                                        </Button>
+                                    </HStack>
+
+                                    <Button
                                         size="lg"
-                                        fontSize="x-large"
-                                        color="white"
-                                        alignItems="center"
-                                        justifyContent="center"
                                         isDisabled={cookState === CookState.PRE_LAUNCH}
-                                    />
-                                    <Button {...inc} size="lg" isDisabled={cookState === CookState.PRE_LAUNCH}>
-                                        +
+                                        hidden={MINTED_OUT || MINT_FAILED}
+                                        onClick={() => {
+                                            wallet.publicKey === null ? handleConnectWallet() : openWarning();
+                                        }}
+                                    >
+                                        {wallet.publicKey === null ? "Connect Wallet" : "Buy Tickets"}
                                     </Button>
-                                </HStack>
 
-                                <Button
-                                    size="lg"
-                                    isDisabled={cookState === CookState.PRE_LAUNCH}
-                                    hidden={MINTED_OUT || MINT_FAILED}
-                                    onClick={() => {
-                                        wallet.publicKey === null ? handleConnectWallet() : openWarning();
-                                    }}
-                                >
-                                    {wallet.publicKey === null ? "Connect Wallet" : "Buy Tickets"}
-                                </Button>
+                                    {!(cookState === CookState.PRE_LAUNCH) ? (
+                                        <VStack hidden={MINTED_OUT || MINT_FAILED}>
+                                            <HStack>
+                                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                                    Platform fee per ticket: 0.01
+                                                </Text>
+                                                <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                            </HStack>
+                                        </VStack>
+                                    ) : (
+                                        <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
+                                            Tickets are not yet available for purchase.
+                                        </Text>
+                                    )}
+                                </VStack>
+                            </Flex>
 
-                                {!(cookState === CookState.PRE_LAUNCH) ? (
-                                    <VStack hidden={MINTED_OUT || MINT_FAILED}>
-                                        <HStack>
-                                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                Platform fee per ticket: 0.01
-                                            </Text>
-                                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                                        </HStack>
-                                    </VStack>
-                                ) : (
-                                    <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
-                                        Tickets are not yet available for purchase.
+                            <VStack w={xs ? "100%" : "85%"}>
+                                <Flex direction={md ? "column" : "row"}>
+                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                        Guaranteed Liquidity:
+                                    </Text>
+                                    <HStack justify="center">
+                                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            &nbsp;
+                                            {(Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
+                                                LAMPORTS_PER_SOL}{" "}
+                                            of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                        </Text>
+                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                    </HStack>
+                                </Flex>
+
+                                <Progress
+                                    hasStripe={MINTED_OUT}
+                                    mb={3}
+                                    w="100%"
+                                    h={25}
+                                    borderRadius={12}
+                                    colorScheme={
+                                        cookState === CookState.PRE_LAUNCH
+                                            ? "none"
+                                            : ACTIVE
+                                            ? "whatsapp"
+                                            : MINTED_OUT
+                                                ? "linkedin"
+                                                : MINT_FAILED
+                                                ? "red"
+                                                : "none"
+                                    }
+                                    size="sm"
+                                    max={(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                    min={0}
+                                    value={
+                                        (Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) / LAMPORTS_PER_SOL
+                                    }
+                                    boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
+                                />
+                                {(join_data === null || join_data.num_claimed_tickets === 0) && (
+                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                        You own {join_data !== null ? join_data.num_tickets : 0} {ticketLabel}{" "}
+                                        {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
+                                            ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
+                                            : ""}
+                                    </Text>
+                                )}
+                                {join_data !== null && join_data.num_claimed_tickets > 0 && (
+                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                        You Have {join_data.num_winning_tickets} Winning Tickets{" "}
+                                        {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
+                                            ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
+                                            : ""}
                                     </Text>
                                 )}
                             </VStack>
-                        </Flex>
-
-                        <VStack w={xs ? "100%" : "85%"}>
-                            <Flex direction={md ? "column" : "row"}>
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    Guaranteed Liquidity:
-                                </Text>
-                                <HStack justify="center">
-                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        &nbsp;
-                                        {(Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
-                                            LAMPORTS_PER_SOL}{" "}
-                                        of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
-                                    </Text>
-                                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                                </HStack>
-                            </Flex>
-
-                            <Progress
-                                hasStripe={MINTED_OUT}
-                                mb={3}
-                                w="100%"
-                                h={25}
-                                borderRadius={12}
-                                colorScheme={
-                                    cookState === CookState.PRE_LAUNCH
-                                        ? "none"
-                                        : ACTIVE
-                                          ? "whatsapp"
-                                          : MINTED_OUT
-                                            ? "linkedin"
-                                            : MINT_FAILED
-                                              ? "red"
-                                              : "none"
-                                }
-                                size="sm"
-                                max={(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
-                                min={0}
-                                value={
-                                    (Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) / LAMPORTS_PER_SOL
-                                }
-                                boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
-                            />
-                            {(join_data === null || join_data.num_claimed_tickets === 0) && (
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    You own {join_data !== null ? join_data.num_tickets : 0} {ticketLabel}{" "}
-                                    {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
-                                        ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
-                                        : ""}
-                                </Text>
-                            )}
-                            {join_data !== null && join_data.num_claimed_tickets > 0 && (
-                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    You Have {join_data.num_winning_tickets} Winning Tickets{" "}
-                                    {join_data !== null && join_data.num_claimed_tickets < join_data.num_tickets
-                                        ? "(" + (join_data.num_tickets - join_data.num_claimed_tickets) + " to check)"
-                                        : ""}
-                                </Text>
-                            )}
                         </VStack>
-                    </VStack>
 
-                    <TokenDistribution launchData={launchData} />
-                </VStack>
-            </Center>
-            <WarningModal
-                launchData={launchData}
-                value={value}
-                isWarningOpened={isWarningOpened}
-                closeWarning={closeWarning}
-                BuyTickets={BuyTickets}
-            />
-        </main>
+                        <TokenDistribution launchData={launchData} />
+                    </VStack>
+                </Center>
+                <WarningModal
+                    launchData={launchData}
+                    value={value}
+                    isWarningOpened={isWarningOpened}
+                    closeWarning={closeWarning}
+                    BuyTickets={BuyTickets}
+                />
+            </main>
+        </>
+       
     );
 };
 

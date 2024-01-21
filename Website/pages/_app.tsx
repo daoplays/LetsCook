@@ -14,44 +14,39 @@ import "bootstrap/dist/css/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/fonts.css";
 import "../styles/table.css";
-import SEO from "../next-seo.config";
-import { DefaultSeo } from "next-seo";
 
 function MyApp({ Component, pageProps }) {
     const wallets = useMemo(() => [], []);
 
     return (
-        <>
-            <DefaultSeo {...SEO} />
-            <NoSSR>
-                <ToastContainer
-                    position="bottom-right"
-                    autoClose={4000}
-                    hideProgressBar={false}
-                    newestOnTop={false}
-                    closeOnClick
-                    pauseOnFocusLoss={false}
-                    pauseOnHover={false}
-                    rtl={false}
-                    draggable
-                    theme="light"
-                />
-                <ChakraProvider theme={theme}>
-                    <NextTopLoader />
-                    <WalletProvider wallets={wallets} autoConnect>
-                        <WalletModalProvider>
-                            <ContextProviders>
-                                <Navigation />
-                                <div style={{ minHeight: "90vh" }}>
-                                    <Component {...pageProps} />
-                                </div>
-                                <Footer />
-                            </ContextProviders>
-                        </WalletModalProvider>
-                    </WalletProvider>
-                </ChakraProvider>
-            </NoSSR>
-        </>
+        <NoSSR>
+            <ToastContainer
+                position="bottom-right"
+                autoClose={4000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                pauseOnFocusLoss={false}
+                pauseOnHover={false}
+                rtl={false}
+                draggable
+                theme="light"
+            />
+            <ChakraProvider theme={theme}>
+                <NextTopLoader />
+                <WalletProvider wallets={wallets} autoConnect>
+                    <WalletModalProvider>
+                        <ContextProviders>
+                            <Navigation />
+                            <div style={{ minHeight: "90vh" }}>
+                                <Component {...pageProps} />
+                            </div>
+                            <Footer />
+                        </ContextProviders>
+                    </WalletModalProvider>
+                </WalletProvider>
+            </ChakraProvider>
+        </NoSSR>
     );
 }
 
