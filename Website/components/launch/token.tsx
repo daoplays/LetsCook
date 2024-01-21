@@ -29,6 +29,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
     const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
+    const [tokenStart, setTokenStart] = useState<string>("");
     const [totalSupply, setTotalSupply] = useState<string>(newLaunchData.current.total_supply.toString());
     const [decimal, setDecimal] = useState<string>(newLaunchData.current.decimals.toString());
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
@@ -125,15 +126,15 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         newLaunchData.current.token_keypair = Keypair.generate();
-        let desired_start = "ABC";
-        let attempts = 0
-        while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, desired_start.length) !== desired_start) {
-            attempts += 1
-            newLaunchData.current.token_keypair = Keypair.generate();
+        if (tokenStart !== "") {
+            let attempts = 0
+            while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, tokenStart.length) !== tokenStart) {
+                attempts += 1
+                newLaunchData.current.token_keypair = Keypair.generate();
+            }
+
+            console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString())
         }
-
-        console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString())
-
 
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;

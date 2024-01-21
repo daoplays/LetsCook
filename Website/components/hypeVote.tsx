@@ -9,11 +9,13 @@ import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
 import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
+import useResponsive from "../hooks/useResponsive";
 
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
     const { checkLaunchData } = useAppRoot();
+    const { lg } = useResponsive();
     const hype_vote_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(
@@ -119,11 +121,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     if (total_votes > 0) {
         vote_ratio = launch_data.positive_votes - launch_data.negative_votes;
         if (vote_ratio > 0) {
-            vote_color = "green";
+            vote_color = "#83FF81";
         } else if (vote_ratio == 0) {
-            vote_color = "yellow";
+            vote_color = "#FFEE59";
         } else {
-            vote_color = "red";
+            vote_color = "#FF6E6E";
         }
     }
 
@@ -131,12 +133,12 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
         return (
             <>
                 {total_votes > 0 && (
-                    <Text m="0" fontSize="large" color={vote_color}>
+                    <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
                         {vote_ratio}
                     </Text>
                 )}
                 {total_votes === 0 && (
-                    <Text m="0" fontSize="large" color="white">
+                    <Text m="0" fontSize={lg ? "large" : "x-large"} color="white">
                         --
                     </Text>
                 )}
@@ -147,7 +149,7 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     if (has_voted) {
         return (
             <>
-                <Text m="0" fontSize="large" color={vote_color}>
+                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
                     {vote_ratio}
                 </Text>
             </>
