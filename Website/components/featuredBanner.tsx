@@ -77,7 +77,10 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 >
                                     {featuredLaunch !== null ? "$" + featuredLaunch.symbol : ""}
                                 </Text>
-                                {!lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+
+                                <Box hidden={!lg && featuredLaunch !== null}>
+                                    <Links featuredLaunch={featuredLaunch} />
+                                </Box>
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
