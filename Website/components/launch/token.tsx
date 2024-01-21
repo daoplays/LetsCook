@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler
 import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text, HStack, Input, InputRightElement, InputGroup, InputLeftElement, Spacer, Box } from "@chakra-ui/react";
+import { Keypair, PublicKey} from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
@@ -13,6 +14,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
+import getImageDimensions from "../../hooks/useGetImageDimension";
 
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -45,13 +47,19 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         setSymbol(e.target.value);
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
         if (file) {
             if (file.size <= 1048576) {
-                newLaunchData.current.icon_file = file;
-                setDisplayImg(URL.createObjectURL(e.target.files[0]));
+                const dimensions = await getImageDimensions(file);
+
+                if (dimensions.width === dimensions.height) {
+                    newLaunchData.current.icon_file = file;
+                    setDisplayImg(URL.createObjectURL(e.target.files[0]));
+                } else {
+                    toast.error("Please upload an image with equal width and height.");
+                }
             } else {
                 toast.error("File size exceeds 1MB limit.");
             }
@@ -115,6 +123,17 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             toast.error("Total supply of tokens must be over 10");
             return;
         }
+
+        newLaunchData.current.token_keypair = Keypair.generate();
+        let desired_start = "ABC";
+        let attempts = 0
+        while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, desired_start.length) !== desired_start) {
+            attempts += 1
+            newLaunchData.current.token_keypair = Keypair.generate();
+        }
+
+        console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString())
+
 
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;

@@ -1,4 +1,4 @@
-import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { PublicKey, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
     FixableBeetStruct,
     BeetStruct,
@@ -388,6 +388,7 @@ export interface LaunchDataUserInput {
     opendate: Date;
     closedate: Date;
     team_wallet: string;
+    token_keypair : Keypair | null;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -416,6 +417,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     opendate: new Date(new Date().setHours(0, 0, 0, 0)),
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
+    token_keypair : null
 };
 
 export class myU64 {
@@ -611,6 +613,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         opendate: new Date(bignum_to_num(launch_data.launch_date)),
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
+        token_keypair: null
     };
 
     return data;

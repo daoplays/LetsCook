@@ -34,6 +34,8 @@ const useEditLaunch = () => {
         newLaunchData.current.banner_url = "";
         newLaunchData.current.uri = "";
         newLaunchData.current.edit_mode = false;
+        newLaunchData.current.token_keypair = null;
+        
         console.log(newLaunchData.current);
         await checkLaunchData();
     }, []);
