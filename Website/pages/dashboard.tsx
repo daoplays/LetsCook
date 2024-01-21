@@ -10,6 +10,7 @@ import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInp
 import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";
+import Head from "next/head";
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -32,38 +33,43 @@ const DashboardPage = () => {
     if (!creatorLaunches) return <Loader />;
 
     return (
-        <main>
-            <Flex
-                px={4}
-                py={18}
-                gap={2}
-                alignItems="center"
-                justifyContent="end"
-                style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-            >
-                <Text
-                    fontSize={sm ? 25 : 35}
-                    color="white"
-                    className="font-face-kg"
-                    style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                    align={"center"}
+        <>
+            <Head>
+                <title>Let&apos;s Cook | Dashboard</title>
+            </Head>
+            <main>
+                <Flex
+                    px={4}
+                    py={18}
+                    gap={2}
+                    alignItems="center"
+                    justifyContent="end"
+                    style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
                 >
-                    Creator Dashboard
-                </Text>
-                {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
-                <Button
-                    w={sm ? "100%" : "fit-content"}
-                    onClick={() => {
-                        newLaunchData.current = defaultUserInput;
-                        router.push("/launch");
-                    }}
-                >
-                    New Launch
-                </Button>
-                {/* </Link> */}
-            </Flex>
-            <CreatorDashboardTable creatorLaunches={creatorLaunches} />
-        </main>
+                    <Text
+                        fontSize={sm ? 25 : 35}
+                        color="white"
+                        className="font-face-kg"
+                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        Creator Dashboard
+                    </Text>
+                    {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
+                    <Button
+                        w={sm ? "100%" : "fit-content"}
+                        onClick={() => {
+                            newLaunchData.current = defaultUserInput;
+                            router.push("/launch");
+                        }}
+                    >
+                        New Launch
+                    </Button>
+                    {/* </Link> */}
+                </Flex>
+                <CreatorDashboardTable creatorLaunches={creatorLaunches} />
+            </main>
+        </>
     );
 };
 
