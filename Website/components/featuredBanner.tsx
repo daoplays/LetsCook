@@ -77,7 +77,10 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 >
                                     {featuredLaunch !== null ? "$" + featuredLaunch.symbol : ""}
                                 </Text>
-                                {!lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+
+                                <Box hidden={!lg && featuredLaunch !== null}>
+                                    <Links featuredLaunch={featuredLaunch} />
+                                </Box>
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
@@ -180,7 +183,10 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 size="sm"
                                 max={(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
                                 min={0}
-                                value={(100 * Math.min(featuredLaunch.tickets_sold, featuredLaunch.num_mints)) / featuredLaunch.num_mints}
+                                value={
+                                    (Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) * featuredLaunch.ticket_price) /
+                                    LAMPORTS_PER_SOL
+                                }
                                 boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                             />
                             <HStack style={{ position: "absolute", zIndex: 1 }}>

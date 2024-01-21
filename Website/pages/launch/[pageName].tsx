@@ -519,7 +519,9 @@ const MintPage = () => {
                                 size="sm"
                                 max={(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                 min={0}
-                                value={(100 * Math.min(launchData.tickets_sold, launchData.num_mints)) / launchData.num_mints}
+                                value={
+                                    (Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) / LAMPORTS_PER_SOL
+                                }
                                 boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                             />
                             {(join_data === null || join_data.num_claimed_tickets === 0) && (
