@@ -20,13 +20,13 @@ export const metadata: Metadata = {
     title: "Let's Cook",
     icons: "/favicon.ico",
     description:
-        "Your go-to platform for launching Solana Tokens / Memecoins. Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.",
+        "Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.",
     openGraph: {
-        title: "Let's Cook",
+        title: "Your go-to platform for launching Solana Tokens / Memecoins.",
         type: "website",
         url: "https://letscook.wtf/",
         description:
-            "Your go-to platform for launching Solana Tokens / Memecoins. Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.",
+            "Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.",
         siteName: "Let's Cook",
         images: [
             {
