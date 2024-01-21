@@ -59,7 +59,7 @@ export function ButtonString(cook_state: CookState, join_data: JoinData, launch_
 
     if (cook_state === CookState.MINT_FAILED_NOT_REFUNDED) {
         let refund_amount = (join_data.num_tickets * bignum_to_num(launch_data.ticket_price)) / LAMPORTS_PER_SOL;
-        return "Refund Tickets " + refund_amount.toFixed(2) + "SOL";
+        return "Refund Tickets " + refund_amount.toFixed(2) + " SOL";
     }
 
     return "";

@@ -354,8 +354,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        const token_mint_keypair = Keypair.generate();
-        var token_mint_pubkey = token_mint_keypair.publicKey;
+        var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
             METAPLEX_META,
@@ -418,7 +417,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }));
 
-        transaction.partialSign(token_mint_keypair);
+        transaction.partialSign(newLaunchData.current.token_keypair);
 
         const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
 
@@ -493,6 +492,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         </PopoverTrigger>
                                         <PopoverContent width="fit-content">
                                             <PopoverArrow />
+                                            <PopoverCloseButton />
+                                            <PopoverHeader h={34} />
                                             <PopoverBody>
                                                 <DatePicker
                                                     disabled={newLaunchData.current.edit_mode === true}
@@ -504,6 +505,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                         setOpenDate(date);
                                                         //onCloseStart();
                                                     }}
+                                                    onClickOutside={() => onCloseStart()}
                                                     inline
                                                 />
                                             </PopoverBody>
@@ -534,6 +536,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         <PopoverContent width="fit-content">
                                             <PopoverArrow />
                                             <PopoverCloseButton />
+                                            <PopoverHeader h={34} />
                                             <PopoverBody>
                                                 <DatePicker
                                                     disabled={newLaunchData.current.edit_mode === true}
@@ -546,6 +549,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                         setcloseDate(date);
                                                         //OnCloseEnd();
                                                     }}
+                                                    onClickOutside={() => OnCloseEnd()}
                                                     inline
                                                 />
                                             </PopoverBody>

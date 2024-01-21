@@ -113,7 +113,7 @@ const EmptyLaunch = () => {
                         </VStack>
 
                         <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
-                            Upfront Costs
+                            Upfront Fees
                         </Text>
                     </VStack>
 

@@ -1,7 +1,7 @@
 const { TwitterApi } = require('twitter-api-v2');
-import { request_raw_account_data, LaunchData } from "../../components/Solana/state";
-import { PROGRAM } from "../../components/Solana/constants";
-import { PublicKey } from "@solana/web3.js";
+import { request_raw_account_data, LaunchData, bignum_to_num } from "../../components/Solana/state";
+import { PROGRAM, LaunchKeys } from "../../components/Solana/constants";
+import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface Result {
     statusCode: number;
@@ -32,7 +32,10 @@ exports.handler = async function (event, context) {
 
         console.log(new_launch_data);
 
-        let tweet_string = "$" + new_launch_data.symbol+ " is warming up on Let's Cook! See how its looking at https://letscook.wtf/launch/"+new_launch_data.page_name
+        let liquidity = new_launch_data.num_mints * bignum_to_num(new_launch_data.ticket_price) / LAMPORTS_PER_SOL;
+        let raydium_link = "https://raydium.io/swap/?inputCurrency=" + new_launch_data.keys[LaunchKeys.MintAddress].toString() + "&outputCurrency=sol&fixed=in"
+
+        let tweet_string = "🔥 COOK OUT: $" + new_launch_data.symbol + " LP is now Live with " + liquidity.toFixed(2) + " SOL of liquidity on @RaydiumProtocol " +raydium_link+ " Find more upcoming memecoins at https://letscook.wtf";
     
         console.log(tweet_string);
         let response = await client.v2.tweet(tweet_string);

@@ -11,7 +11,6 @@ import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
-import { make_tweet } from "../components/launch/twitter";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -30,13 +29,13 @@ const useEditLaunch = () => {
             return;
         }
 
-        let response = await make_tweet(newLaunchData.current.pagename);
-
         // reset the urls so we know these have been submitted
         newLaunchData.current.icon_url = "";
         newLaunchData.current.banner_url = "";
         newLaunchData.current.uri = "";
         newLaunchData.current.edit_mode = false;
+        newLaunchData.current.token_keypair = null;
+        
         console.log(newLaunchData.current);
         await checkLaunchData();
     }, []);
