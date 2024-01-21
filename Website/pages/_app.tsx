@@ -14,63 +14,45 @@ import "bootstrap/dist/css/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/fonts.css";
 import "../styles/table.css";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-    title: "Let's Cook",
-    icons: "/favicon.ico",
-    description:
-        "Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.",
-    openGraph: {
-        title: "Your go-to platform for launching Solana Tokens / Memecoins.",
-        type: "website",
-        url: "https://letscook.wtf/",
-        description:
-            "Our fully-automated and permissionless platform provides the lowest cost and best user experience for both degens and meme creators.",
-        siteName: "Let's Cook",
-        images: [
-            {
-                url: "https://letscook.wtf/letscook-seo-image.png",
-                width: 1500,
-                height: 750,
-                alt: "Let's Cook SEO Image",
-            },
-        ],
-    },
-};
+import Head from "next/head";
 
 function MyApp({ Component, pageProps }) {
     const wallets = useMemo(() => [], []);
 
     return (
-        <NoSSR>
-            <ToastContainer
-                position="bottom-right"
-                autoClose={4000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                pauseOnFocusLoss={false}
-                pauseOnHover={false}
-                rtl={false}
-                draggable
-                theme="light"
-            />
-            <ChakraProvider theme={theme}>
-                <NextTopLoader />
-                <WalletProvider wallets={wallets} autoConnect>
-                    <WalletModalProvider>
-                        <ContextProviders>
-                            <Navigation />
-                            <div style={{ minHeight: "90vh" }}>
-                                <Component {...pageProps} />
-                            </div>
-                            <Footer />
-                        </ContextProviders>
-                    </WalletModalProvider>
-                </WalletProvider>
-            </ChakraProvider>
-        </NoSSR>
+        <>
+            <Head>
+                <title>Let&apos;s Cook</title>
+            </Head>
+            <NoSSR>
+                <ToastContainer
+                    position="bottom-right"
+                    autoClose={4000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    pauseOnFocusLoss={false}
+                    pauseOnHover={false}
+                    rtl={false}
+                    draggable
+                    theme="light"
+                />
+                <ChakraProvider theme={theme}>
+                    <NextTopLoader />
+                    <WalletProvider wallets={wallets} autoConnect>
+                        <WalletModalProvider>
+                            <ContextProviders>
+                                <Navigation />
+                                <div style={{ minHeight: "90vh" }}>
+                                    <Component {...pageProps} />
+                                </div>
+                                <Footer />
+                            </ContextProviders>
+                        </WalletModalProvider>
+                    </WalletProvider>
+                </ChakraProvider>
+            </NoSSR>
+        </>
     );
 }
 
