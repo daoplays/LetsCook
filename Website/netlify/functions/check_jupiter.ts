@@ -59,7 +59,7 @@ export default async (req: Request) => {
         console.log("have ", additions.length, " new additions")
         for (let i = 0; i < additions.length; i++) {
             console.log(additions[i]);
-            let response = await client.v2.tweet(additions[i]);
+            //let response = await client.v2.tweet(additions[i]);
         }
 
         await store.set("list", JSON.stringify(new_list));
