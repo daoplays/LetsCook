@@ -50,8 +50,8 @@ const FAQ = () => {
 
                                 <Text>
                                     The Solana network is the next-gen L1 blockchain with the highest marketcap, lowest transaction fees,
-                                    fastest settlement, and best capital efficiency in the market. It also has a fanatical user base and strong
-                                    developer ecosystem.
+                                    fastest settlement, and best capital efficiency in the market. It also has a fanatical user base and
+                                    strong developer ecosystem.
                                 </Text>
                             </HStack>
 
@@ -62,9 +62,9 @@ const FAQ = () => {
 
                             <HStack>
                                 <Text>
-                                    Each launch, or &quot;Cook&quot;, bootstraps memecoin liquidity fairly by raffling a portion of the total
-                                    token supply. Users may buy Tickets to a Cook while it is open and claim their winning Tickets once it
-                                    closes. Non-winning Tickets are refunded their Ticket Price.
+                                    Each launch, or &quot;Cook&quot;, bootstraps memecoin liquidity fairly by raffling a portion of the
+                                    total token supply. Users may buy Tickets to a Cook while it is open and claim their winning Tickets
+                                    once it closes. Non-winning Tickets are refunded their Ticket Price.
                                 </Text>
 
                                 <Image src={pasta.src} width={150} height={150} alt={"Hotdog"} />
@@ -96,9 +96,9 @@ const FAQ = () => {
 
                             <HStack>
                                 <Text>
-                                    Our on-chain program creates Liquidity Pools on Raydium, pairing a portion of the memecoin supply with the
-                                    SOL raised during the Cook. The program then burns the Liquidity Provider tokens, permanently locking the
-                                    liquidity in the pool. It also revokes all update authorities automatically.
+                                    Our on-chain program creates Liquidity Pools on Raydium, pairing a portion of the memecoin supply with
+                                    the SOL raised during the Cook. The program then burns the Liquidity Provider tokens, permanently
+                                    locking the liquidity in the pool. It also revokes all update authorities automatically.
                                 </Text>
 
                                 <Image src={sauce.src} width={150} height={150} alt={"Hotdog"} />
@@ -112,8 +112,8 @@ const FAQ = () => {
                             <HStack>
                                 <Image src={tomato.src} width={150} height={150} alt={"Salad"} />
                                 <Text>
-                                    Users can vote up or down on an upcoming token launch to express their sentiment on it. The Hype rating is
-                                    calculated based on the net number of positive votes from all users.
+                                    Users can vote up or down on an upcoming token launch to express their sentiment on it. The Hype rating
+                                    is calculated based on the net number of positive votes from all users.
                                 </Text>
                             </HStack>
 
@@ -140,8 +140,8 @@ const FAQ = () => {
                                 <Image src={salad1.src} width={150} height={150} alt={"Salad"} />
                                 <Text>
                                     Users can view the full schedule of Cooks through the Calendar page. This page displays all scheduled
-                                    launches, complete with their hype ratings, minimum liquidity requirements, and launch times, allowing users
-                                    to plan their participation.
+                                    launches, complete with their hype ratings, minimum liquidity requirements, and launch times, allowing
+                                    users to plan their participation.
                                 </Text>
                             </HStack>
 
@@ -152,8 +152,8 @@ const FAQ = () => {
 
                             <HStack>
                                 <Text>
-                                    LET&apos;S COOK charges a non-refundable platform fee of 0.01 SOL per ticket purchased. There are no fees to
-                                    set up a Cook. This fee supports additional feature development and marketing.
+                                    LET&apos;S COOK charges a non-refundable platform fee of 0.01 SOL per ticket purchased. There are no
+                                    fees to set up a Cook. This fee supports additional feature development and marketing.
                                 </Text>
 
                                 <Image src={fries.src} width={150} height={150} alt={"Hotdog"} />

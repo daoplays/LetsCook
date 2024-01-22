@@ -24,7 +24,6 @@ const Home = () => {
                 <GameTable launchList={homePageList} filters={defaultLaunchTableFilters} />
             </main>
         </>
-   
     );
 };
 

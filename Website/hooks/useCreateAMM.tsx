@@ -62,7 +62,7 @@ const useCreateAMM = (launchData: LaunchData) => {
         }
 
         let response = await make_tweet(launchData.page_name);
-        console.log(response)
+        console.log(response);
         signature_ws_id.current = null;
     }, []);
 
@@ -88,7 +88,6 @@ const useCreateAMM = (launchData: LaunchData) => {
         }
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
 
         const createAMMToast = toast.loading("(4/4) Creating the AMM");
 
@@ -240,7 +239,6 @@ const useCreateAMM = (launchData: LaunchData) => {
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-
 
             toast.update(createAMMToast, {
                 render: "AMM created",

@@ -1,5 +1,4 @@
-export const make_tweet = async (page_name : string) => {
-    
+export const make_tweet = async (page_name: string) => {
     // #2 Make a post request to our API. Obviously, update the URL to your own deployment.
     const response = await fetch("/.netlify/functions/twitter", {
         method: "POST",
@@ -12,6 +11,6 @@ export const make_tweet = async (page_name : string) => {
     });
 
     const result = await response.json();
-    console.log(result)
+    console.log(result);
     return result.body;
 };

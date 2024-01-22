@@ -9,7 +9,7 @@ const Custom404 = () => {
             </Head>
             <PageNotFound />
         </>
-    )
+    );
 };
 
 export default Custom404;

@@ -29,7 +29,6 @@ const Launch = () => {
                 {screen === "book" && <BookPage setScreen={setScreen} />}
             </main>
         </>
-
     );
 };
 

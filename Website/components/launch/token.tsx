@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler
 import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text, HStack, Input, InputRightElement, InputGroup, InputLeftElement, Spacer, Box } from "@chakra-ui/react";
-import { Keypair, PublicKey} from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
@@ -127,13 +127,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
         newLaunchData.current.token_keypair = Keypair.generate();
         if (tokenStart !== "") {
-            let attempts = 0
+            let attempts = 0;
             while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, tokenStart.length) !== tokenStart) {
-                attempts += 1
+                attempts += 1;
                 newLaunchData.current.token_keypair = Keypair.generate();
             }
 
-            console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString())
+            console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
         }
 
         newLaunchData.current.name = name;

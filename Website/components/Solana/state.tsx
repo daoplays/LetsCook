@@ -388,7 +388,7 @@ export interface LaunchDataUserInput {
     opendate: Date;
     closedate: Date;
     team_wallet: string;
-    token_keypair : Keypair | null;
+    token_keypair: Keypair | null;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -417,7 +417,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     opendate: new Date(new Date().setHours(0, 0, 0, 0)),
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
-    token_keypair : null
+    token_keypair: null,
 };
 
 export class myU64 {
@@ -613,7 +613,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         opendate: new Date(bignum_to_num(launch_data.launch_date)),
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
-        token_keypair: null
+        token_keypair: null,
     };
 
     return data;
@@ -681,7 +681,7 @@ export class UserData {
         readonly user_name: string,
         readonly total_points: number,
         readonly votes: number[],
-        readonly stats : UserStats
+        readonly stats: UserStats,
     ) {}
 
     static readonly struct = new FixableBeetStruct<UserData>(
@@ -691,7 +691,7 @@ export class UserData {
             ["user_name", utf8String],
             ["total_points", u32],
             ["votes", array(u64)],
-            ["stats", UserStats.struct]
+            ["stats", UserStats.struct],
         ],
         (args) => new UserData(args.account_type!, args.user_key!, args.user_name!, args.total_points!, args.votes!, args.stats!),
         "UserData",

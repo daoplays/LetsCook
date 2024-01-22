@@ -121,7 +121,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
 
-
         return true;
     }
 
