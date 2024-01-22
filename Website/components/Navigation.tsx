@@ -48,7 +48,7 @@ function Navigation() {
                     </Tooltip>
 
                     <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Mint Calendar" hasArrow fontSize="large" offset={[0, 15]}>
+                        <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href="/calendar">
                                 <Image src="/images/calendar.png" width={35} height={35} alt={"Calendar"} />
                             </Link>

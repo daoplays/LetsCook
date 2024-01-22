@@ -70,7 +70,7 @@ const CalenderPage = () => {
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >
-                        Mint Calendar
+                        Calendar
                     </Text>
                     <Popover initialFocusRef={initialFocusRef} placement="bottom" closeOnBlur={false}>
                         <PopoverTrigger>
