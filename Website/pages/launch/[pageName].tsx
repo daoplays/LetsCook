@@ -24,7 +24,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
 import UseWalletConnection from "../../hooks/useWallet";
-import trimAddress from "../../hooks/trimAddress";
+import trimAddress from "../../utils/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import PageNotFound from "../../components/pageNotFound";
 import useCheckTickets from "../../hooks/useCheckTickets";
@@ -385,12 +385,12 @@ const MintPage = () => {
                                             {cookState === CookState.PRE_LAUNCH
                                                 ? "Warming Up"
                                                 : ACTIVE
-                                                ? `Total: ${totalCost.toFixed(2)}`
-                                                : MINTED_OUT
+                                                  ? `Total: ${totalCost.toFixed(2)}`
+                                                  : MINTED_OUT
                                                     ? "Cook Out!"
                                                     : MINT_FAILED
-                                                    ? "Cook Failed"
-                                                    : "none"}
+                                                      ? "Cook Failed"
+                                                      : "none"}
                                         </Text>
                                         {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
                                     </HStack>
@@ -432,11 +432,13 @@ const MintPage = () => {
                                                     </Box>
                                                 )}
 
-                                                {MINTED_OUT && join_data !== null && join_data.num_tickets > join_data.num_claimed_tickets && (
-                                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                        {(100 * win_prob).toFixed(3)}% chance per ticket
-                                                    </Text>
-                                                )}
+                                                {MINTED_OUT &&
+                                                    join_data !== null &&
+                                                    join_data.num_tickets > join_data.num_claimed_tickets && (
+                                                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                                            {(100 * win_prob).toFixed(3)}% chance per ticket
+                                                        </Text>
+                                                    )}
                                             </VStack>
                                         )}
                                     </Box>
@@ -477,7 +479,13 @@ const MintPage = () => {
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                                     Platform fee per ticket: 0.01
                                                 </Text>
-                                                <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                                <Image
+                                                    src="/images/sol.png"
+                                                    width={30}
+                                                    height={30}
+                                                    alt="SOL Icon"
+                                                    style={{ marginLeft: -3 }}
+                                                />
                                             </HStack>
                                         </VStack>
                                     ) : (
@@ -514,18 +522,19 @@ const MintPage = () => {
                                         cookState === CookState.PRE_LAUNCH
                                             ? "none"
                                             : ACTIVE
-                                            ? "whatsapp"
-                                            : MINTED_OUT
+                                              ? "whatsapp"
+                                              : MINTED_OUT
                                                 ? "linkedin"
                                                 : MINT_FAILED
-                                                ? "red"
-                                                : "none"
+                                                  ? "red"
+                                                  : "none"
                                     }
                                     size="sm"
                                     max={(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                     min={0}
                                     value={
-                                        (Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) / LAMPORTS_PER_SOL
+                                        (Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
+                                        LAMPORTS_PER_SOL
                                     }
                                     boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                                 />
@@ -560,7 +569,6 @@ const MintPage = () => {
                 />
             </main>
         </>
-       
     );
 };
 

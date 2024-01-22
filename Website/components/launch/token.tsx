@@ -13,7 +13,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
-import getImageDimensions from "../../hooks/useGetImageDimension";
+import getImageDimensions from "../../utils/getImageDimension";
 
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -209,14 +209,15 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         Symbol:
                                     </div>
 
-                                    <InputGroup style={{ position: "relative" }}>
-                                        <InputLeftElement>
+                                    {/* <InputGroup style={{ position: "relative" }}> */}
+                                    {/* <InputLeftElement>
                                             <FaDollarSign size={22} style={{ opacity: 0.5, marginTop: lg ? 0 : 8 }} />
-                                        </InputLeftElement>
+                                        </InputLeftElement> */}
+                                    <div className={styles.textLabelInput}>
                                         <Input
-                                            pl={9}
+                                            // pl={9}
                                             bg="#494949"
-                                            placeholder="Enter Token Ticker. (Ex. SOL)"
+                                            placeholder="Enter Token Ticker. (Ex. $SOL)"
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
@@ -226,7 +227,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             value={symbol}
                                             onChange={handleSymbolChange}
                                         />
-                                    </InputGroup>
+                                    </div>
+                                    {/* </InputGroup> */}
                                 </HStack>
 
                                 {!lg && <Browse />}

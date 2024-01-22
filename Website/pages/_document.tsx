@@ -5,6 +5,8 @@ export default class _Document extends Document {
         return (
             <Html lang="en">
                 <Head>
+                    <link rel="icon" href="/favicon.ico" />
+
                     <meta name="referrer" content="no-referrer" />
                     <meta
                         name="description"
