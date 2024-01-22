@@ -1,6 +1,6 @@
 const { TwitterApi } = require("twitter-api-v2");
 import { request_raw_account_data, LaunchData, bignum_to_num } from "../../components/Solana/state";
-import { PROGRAM, LaunchKeys } from "../../components/Solana/constants";
+import { PROGRAM, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface Result {
@@ -28,6 +28,12 @@ exports.handler = async function (event, context) {
         const [new_launch_data] = LaunchData.struct.deserialize(launch_account_data);
 
         console.log(new_launch_data);
+
+        if (new_launch_data.flags[LaunchFlags.LPState] !== 2) {
+            var result: Result = { statusCode: 404, body: "launch not yet created LP" };
+            var Jresult = { statusCode: 404, body: JSON.stringify(result) };
+            return Jresult;
+        }
 
         let liquidity = (new_launch_data.num_mints * bignum_to_num(new_launch_data.ticket_price)) / LAMPORTS_PER_SOL;
         let raydium_link =

@@ -52,11 +52,11 @@ export default async (req: Request) => {
         }
 
         if (additions.length === 0) {
-            var result: Result = { statusCode: 200, body: "no new additions" };
-            var Jresult = { statusCode: 200, body: JSON.stringify(result) };
-            return Jresult;
+            console.log("no new additions")
+            return;
         }
 
+        console.log("have ", additions.length, " new additions")
         for (let i = 0; i < additions.length; i++) {
             console.log(additions[i]);
             let response = await client.v2.tweet(additions[i]);
@@ -64,17 +64,10 @@ export default async (req: Request) => {
 
         await store.set("list", JSON.stringify(new_list));
 
-        //let response = await client.v2.tweet(tweet_string);
-        //console.log(`Completed transaction ${response.data}`);
-
-        var result: Result = { statusCode: 200, body: "sent tweets" };
-        var Jresult = { statusCode: 200, body: JSON.stringify(result) };
-        return Jresult;
+        return;
     } catch (err) {
         console.log("TWITTER ERROR: ", err);
-        var result: Result = { statusCode: 404, body: err };
-        var Jresult = { statusCode: 404, body: JSON.stringify(result) };
-        return Jresult;
+        return;
     }
 };
 
