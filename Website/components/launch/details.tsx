@@ -11,7 +11,6 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
-import { make_tweet } from "./twitter";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -122,7 +121,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
 
-        let response = await make_tweet("XYZ");
 
         return true;
     }

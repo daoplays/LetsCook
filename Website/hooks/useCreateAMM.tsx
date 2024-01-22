@@ -58,7 +58,11 @@ const useCreateAMM = (launchData: LaunchData) => {
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
             alert("Transaction failed, please try again");
+            return;
         }
+
+        let response = await make_tweet(launchData.page_name);
+        console.log(response)
         signature_ws_id.current = null;
     }, []);
 
@@ -82,6 +86,9 @@ const useCreateAMM = (launchData: LaunchData) => {
             console.log("AMM already exists");
             return;
         }
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
 
         const createAMMToast = toast.loading("(4/4) Creating the AMM");
 
@@ -229,6 +236,11 @@ const useCreateAMM = (launchData: LaunchData) => {
             var transaction_response = await send_transaction("", encoded_transaction);
 
             console.log("amm", transaction_response);
+
+            let signature = transaction_response.result;
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+
 
             toast.update(createAMMToast, {
                 render: "AMM created",
