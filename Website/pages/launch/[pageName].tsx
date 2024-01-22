@@ -24,7 +24,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
 import UseWalletConnection from "../../hooks/useWallet";
-import trimAddress from "../../hooks/trimAddress";
+import trimAddress from "../../utils/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import PageNotFound from "../../components/pageNotFound";
 import useCheckTickets from "../../hooks/useCheckTickets";
