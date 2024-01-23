@@ -181,7 +181,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             </td>
             <td style={{ minWidth: "175px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {name}
+                    {launch.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>

@@ -6,7 +6,7 @@ import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
 import WoodenButton from "../components/Buttons/woodenButton";
 import "react-datepicker/dist/react-datepicker.css";
-import trimAddress from "../hooks/trimAddress";
+import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
 import { LaunchKeys } from "./Solana/constants";
@@ -75,7 +75,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? "$" + featuredLaunch.symbol : ""}
+                                    {featuredLaunch !== null ? featuredLaunch.symbol : ""}
                                 </Text>
 
                                 <Box hidden={!lg && featuredLaunch !== null}>

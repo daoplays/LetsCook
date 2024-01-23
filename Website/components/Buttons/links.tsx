@@ -8,6 +8,7 @@ import discord from "../../public/socialIcons/new/discordIcon.png";
 import website from "../../public/socialIcons/new/websiteIcon.png";
 import { Socials } from "../Solana/constants";
 import { LaunchData } from "../Solana/state";
+import addHttpsIfMissing from "../../utils/addHttpsIfMissing";
 
 interface LinksProps {
     featuredLaunch: LaunchData;
@@ -15,14 +16,6 @@ interface LinksProps {
 
 const Links = ({ featuredLaunch }: LinksProps) => {
     const { lg } = useResponsive();
-
-    function addHttpsIfMissing(url) {
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            return url;
-        } else {
-            return `https://${url}`;
-        }
-    }
 
     return (
         <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>

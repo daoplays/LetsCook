@@ -11,9 +11,10 @@ import useAppRoot from "../context/useAppRoot";
 import useDetermineCookState, { CookState } from "../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
 import useCreateMarket from "../hooks/useCreateMarket";
-import convertToBlob from "../hooks/useConvertToBlob";
-import convertImageURLToFile from "../hooks/useConvertToBlob";
+import convertToBlob from "../utils/convertImageToBlob";
+import convertImageURLToFile from "../utils/convertImageToBlob";
 import { LaunchFlags } from "./Solana/constants";
+
 interface Header {
     text: string;
     field: string | null;
@@ -28,7 +29,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
-        { text: "TICKER", field: "symbol" },
+        { text: "SYMBOL", field: "symbol" },
         { text: "STATUS", field: null },
         { text: "LIQUIDITY", field: "liquidity" },
         { text: "DATE", field: "date" },
@@ -107,7 +108,6 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const [isEditing, setIsEditing] = useState(false);
 
     let launchData = launch;
-    let name = launch.symbol;
 
     let splitDate = new Date(bignum_to_num(launch.launch_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
@@ -181,7 +181,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {name}
+                    {launch.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
