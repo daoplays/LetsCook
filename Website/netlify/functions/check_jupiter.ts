@@ -43,8 +43,7 @@ export default async (req: Request) => {
                 }
             }
             if (found === false) {
-                let has_dollar: boolean = new_list[i]["symbol"][0] === "$";
-                let symbol: string = has_dollar ? new_list[i]["symbol"] : "$" + new_list[i]["symbol"];
+                let symbol: string = new_list[i]["symbol"]
                 let tweet: string =
                     symbol + " is now validated at @JupiterExchange CA: " + address + ". Find upcoming memecoins at https://letscook.wtf";
                 additions.push(tweet);
@@ -53,7 +52,7 @@ export default async (req: Request) => {
 
         if (additions.length === 0) {
             console.log("no new additions")
-            return {statusCode: 200};
+            return  new Response("Ok"); 
         }
 
         console.log("have ", additions.length, " new additions")
@@ -64,10 +63,10 @@ export default async (req: Request) => {
 
         await store.set("list", JSON.stringify(new_list));
 
-        return {statusCode: 200};
+        return  new Response("Ok"); 
     } catch (err) {
         console.log("TWITTER ERROR: ", err);
-        return;
+        return  new Response("Error"); 
     }
 };
 
