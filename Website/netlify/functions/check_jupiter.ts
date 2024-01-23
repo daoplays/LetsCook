@@ -45,7 +45,7 @@ export default async (req: Request) => {
             if (found === false) {
                 let symbol: string = new_list[i]["symbol"]
                 let tweet: string =
-                    symbol + " is now validated at @JupiterExchange CA: " + address + ". Find upcoming memecoins at https://letscook.wtf";
+                    symbol + " is now validated at @JupiterExchange CA: " + address + ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
                 additions.push(tweet);
             }
         }
