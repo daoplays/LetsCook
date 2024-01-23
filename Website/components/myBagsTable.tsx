@@ -116,8 +116,6 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, true);
     const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(launch.launch_data, true);
 
-    let name = launch.launch_data.symbol;
-
     let current_time = new Date().getTime();
 
     let splitDate = new Date(bignum_to_num(launch.launch_data.end_date)).toUTCString().split(" ");
@@ -181,7 +179,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             </td>
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {name}
+                    {launch.launch_data.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
