@@ -12,7 +12,6 @@ import { useEffect } from "react";
 import { LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
-import addDollarSignIfMissing from "../utils/addDollarSignIfMissing";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -76,7 +75,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? addDollarSignIfMissing(featuredLaunch.symbol) : ""}
+                                    {featuredLaunch !== null ? featuredLaunch.symbol : ""}
                                 </Text>
 
                                 <Box hidden={!lg && featuredLaunch !== null}>

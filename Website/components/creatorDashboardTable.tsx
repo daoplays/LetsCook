@@ -14,7 +14,7 @@ import useCreateMarket from "../hooks/useCreateMarket";
 import convertToBlob from "../utils/convertImageToBlob";
 import convertImageURLToFile from "../utils/convertImageToBlob";
 import { LaunchFlags } from "./Solana/constants";
-import addDollarSignIfMissing from "../utils/addDollarSignIfMissing";
+
 interface Header {
     text: string;
     field: string | null;
@@ -181,7 +181,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {addDollarSignIfMissing(launch.symbol)}
+                    {launch.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>

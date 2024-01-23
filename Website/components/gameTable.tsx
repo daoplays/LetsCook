@@ -11,7 +11,6 @@ import useAppRoot from "../context/useAppRoot";
 import Links from "./Buttons/links";
 import { FaSort } from "react-icons/fa";
 import { useRouter } from "next/router";
-import addDollarSignIfMissing from "../utils/addDollarSignIfMissing";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -182,7 +181,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             </td>
             <td style={{ minWidth: "175px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {addDollarSignIfMissing(launch.symbol)}
+                    {launch.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>

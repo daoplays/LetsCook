@@ -14,7 +14,6 @@ import useRefundTickets from "../hooks/useRefundTickets";
 import useClaimTokens from "../hooks/useClaimTokens";
 import { LaunchFlags } from "./Solana/constants";
 import { WinLoss, ButtonString } from "./user_status";
-import addDollarSignIfMissing from "../utils/addDollarSignIfMissing";
 
 interface Header {
     text: string;
@@ -180,7 +179,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             </td>
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {addDollarSignIfMissing(launch.launch_data.symbol)}
+                    {launch.launch_data.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
