@@ -53,7 +53,7 @@ export default async (req: Request) => {
 
         if (additions.length === 0) {
             console.log("no new additions")
-            return;
+            return {statusCode: 200};
         }
 
         console.log("have ", additions.length, " new additions")
@@ -64,7 +64,7 @@ export default async (req: Request) => {
 
         await store.set("list", JSON.stringify(new_list));
 
-        return;
+        return {statusCode: 200};
     } catch (err) {
         console.log("TWITTER ERROR: ", err);
         return;
