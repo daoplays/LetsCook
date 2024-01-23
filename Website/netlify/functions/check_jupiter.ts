@@ -31,8 +31,11 @@ export default async (req: Request) => {
         const oldList = await store.get("list");
         let old_list = JSON.parse(oldList);
 
+       
+
         // we only care about additions compared to the old list
-        let additions: string[] = [];
+        let tweets: string[] = [];
+        let additions : string[] = [];
         for (let i = 0; i < new_list.length; i++) {
             let address = new_list[i]["address"];
             let found: boolean = false;
@@ -42,26 +45,47 @@ export default async (req: Request) => {
                     break;
                 }
             }
+
+            // we also need to check for duplicate additions :|
+            for (let j = 0; j < additions.length; j++) {
+                if (additions[j]["address"] === address) {
+                    found = true;
+                    break;
+                }
+            }
             if (found === false) {
+                
                 let symbol: string = new_list[i]["symbol"]
                 let tweet: string =
                     symbol + " is now validated at @JupiterExchange CA: " + address + ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
-                additions.push(tweet);
+                tweets.push(tweet);
+                additions.push(new_list[i])
+                
             }
         }
 
-        if (additions.length === 0) {
+        if (tweets.length === 0) {
             console.log("no new additions")
             return  new Response("Ok"); 
         }
 
-        console.log("have ", additions.length, " new additions")
-        for (let i = 0; i < additions.length; i++) {
-            console.log(additions[i]);
-            let response = await client.v2.tweet(additions[i]);
+
+        console.log("have ", tweets.length, " new additions")
+
+         // if we have an unreasonable number of additions something has probably gone wrong
+         if (tweets.length > 20) {
+            console.log("list lengths very different, saving new list and exiting");
+            await store.set("list", JSON.stringify(new_list));
+            return  new Response("Ok"); 
         }
 
-        await store.set("list", JSON.stringify(new_list));
+        for (let i = 0; i < tweets.length; i++) {
+            console.log(tweets[i]);
+            let response = await client.v2.tweet(tweets[i]);
+            old_list.push(additions[i]);
+        }
+
+        await store.set("list", JSON.stringify(old_list));
 
         return  new Response("Ok"); 
     } catch (err) {
