@@ -193,6 +193,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         CheckJoinedData();
     }, [CheckJoinedData]);
 
+    const RecheckUserhData = useCallback(async () => {
+        check_user_data.current = true;
+        CheckUserData();
+        check_user_data.current = true;
+    }, [CheckUserData]);
+
     useEffect(() => {
         CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
     }, []);
@@ -218,6 +224,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             isUserDataLoading={isUserDataLoading}
             isHomePageDataLoading={isHomePageDataLoading}
             checkLaunchData={RecheckLaunchData}
+            checkUserData={RecheckUserhData}
             newLaunchData={newLaunchData}
         >
             {children}

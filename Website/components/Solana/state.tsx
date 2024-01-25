@@ -360,6 +360,7 @@ export const enum LaunchInstruction {
     claim_refund = 7,
     edit_launch = 8,
     claim_tokens = 9,
+    edit_user = 10,
 }
 
 export interface LaunchDataUserInput {
@@ -986,6 +987,37 @@ export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUser
         new_launch_data.disc_url,
     );
     const [buf] = EditLaunch_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+
+class EditUser_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly name: string
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<EditUser_Instruction>(
+        [
+            ["instruction", u8],
+            ["name", utf8String]
+        ],
+        (args) =>
+            new EditUser_Instruction(
+                args.instruction!,
+                args.name!
+            ),
+        "EditUser_Instruction",
+    );
+}
+
+export function serialise_EditUser_instruction(name: string): Buffer {
+    const data = new EditUser_Instruction(
+        LaunchInstruction.edit_user,
+        name
+    );
+    const [buf] = EditUser_Instruction.struct.serialize(data);
 
     return buf;
 }
