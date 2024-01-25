@@ -26,7 +26,7 @@ const LeaderboardPage = () => {
         setName(e.target.value);
     };
 
-    const UserCard = ({ user }: { user: UserData}) => {
+    const UserCard = ({ user }: { user: UserData }) => {
         return (
             <tr>
                 <td>{user.user_name !== "" ? user.user_name : user.user_key.toString()}</td>
@@ -34,7 +34,6 @@ const LeaderboardPage = () => {
             </tr>
         );
     };
-
 
     const MyBagsTable = ({ user_data }: { user_data: UserData[] }) => {
         const { sm } = useResponsive();
@@ -45,7 +44,7 @@ const LeaderboardPage = () => {
 
         const tableHeaders: Header[] = [
             { text: "NAME", field: "name" },
-            { text: "SAUCE", field: "sauce" }
+            { text: "SAUCE", field: "sauce" },
         ];
 
         const handleHeaderClick = (field: string | null) => {
@@ -59,15 +58,11 @@ const LeaderboardPage = () => {
 
         const sortedUsers = [...user_data].sort((a, b) => {
             if (sortedField === "name") {
-                let a_name = a.user_name !== "" ? a.user_name : a.user_key.toString()
-                let b_name = b.user_name !== "" ? b.user_name : b.user_key.toString()
-                return reverseSort
-                    ? b_name.localeCompare(a_name)
-                    : a_name.localeCompare(b_name);
+                let a_name = a.user_name !== "" ? a.user_name : a.user_key.toString();
+                let b_name = b.user_name !== "" ? b.user_name : b.user_key.toString();
+                return reverseSort ? b_name.localeCompare(a_name) : a_name.localeCompare(b_name);
             } else if (sortedField === "sauce") {
-                return reverseSort
-                    ? b.total_points - a.total_points
-                    : a.total_points - b.total_points;
+                return reverseSort ? b.total_points - a.total_points : a.total_points - b.total_points;
             }
 
             return 0;
@@ -116,62 +111,56 @@ const LeaderboardPage = () => {
         );
     };
 
-
-
-
-
-    return(
-
+    return (
         <>
-        <Head>
-            <title>Let&apos;s Cook | Leaderboard</title>
-        </Head>
-        <main>
-            <Flex
-                px={4}
-                py={sm ? 22 : 37}
-                gap={2}
-                alignItems="center"
-                justifyContent="end"
-                style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-            >
-                <Text
-                    fontSize={sm ? 25 : 35}
-                    color="white"
-                    className="font-face-kg"
-                    style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                    align={"center"}
+            <Head>
+                <title>Let&apos;s Cook | Leaderboard</title>
+            </Head>
+            <main>
+                <Flex
+                    px={4}
+                    py={sm ? 22 : 37}
+                    gap={2}
+                    alignItems="center"
+                    justifyContent="end"
+                    style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
                 >
-                    Leaderboard
-                </Text>
-            </Flex>
-            <HStack w="30%" spacing={10} className={styles.eachField} m="5">
-                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
-                    User Name:
-                </div>
+                    <Text
+                        fontSize={sm ? 25 : 35}
+                        color="white"
+                        className="font-face-kg"
+                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        Leaderboard
+                    </Text>
+                </Flex>
+                <HStack w="30%" spacing={10} className={styles.eachField} m="5">
+                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                        User Name:
+                    </div>
 
-                <div className={styles.textLabelInput}>
-                    <Input
-                        placeholder="Enter User Name. "
-                        size={lg ? "md" : "lg"}
-                        maxLength={25}
-                        required
-                        className={styles.inputBox}
-                        type="text"
-                        value={name}
-                        onChange={handleNameChange}
-                    />
-                </div>
+                    <div className={styles.textLabelInput}>
+                        <Input
+                            placeholder="Enter User Name. "
+                            size={lg ? "md" : "lg"}
+                            maxLength={25}
+                            required
+                            className={styles.inputBox}
+                            type="text"
+                            value={name}
+                            onChange={handleNameChange}
+                        />
+                    </div>
 
-                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => EditUser(name)}>
-                    SET
-                </button>
-            </HStack>
-            <MyBagsTable user_data={userList} />
-        </main>
-    </>
+                    <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => EditUser(name)}>
+                        SET
+                    </button>
+                </HStack>
+                <MyBagsTable user_data={userList} />
+            </main>
+        </>
     );
-
 };
 
 export default LeaderboardPage;

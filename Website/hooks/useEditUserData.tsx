@@ -26,10 +26,9 @@ const useEditUser = () => {
             toast.error("Transaction failed, please try again");
             return;
         }
-        
     }, []);
 
-    const EditUser = async (name : string) => {
+    const EditUser = async (name: string) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
@@ -41,8 +40,6 @@ const useEditUser = () => {
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-
-        
         const instruction_data = serialise_EditUser_instruction(name);
 
         var account_vector = [
@@ -90,7 +87,6 @@ const useEditUser = () => {
                 isLoading: false,
                 autoClose: 3000,
             });
-
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {

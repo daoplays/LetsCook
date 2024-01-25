@@ -991,32 +991,24 @@ export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUser
     return buf;
 }
 
-
 class EditUser_Instruction {
     constructor(
         readonly instruction: number,
-        readonly name: string
+        readonly name: string,
     ) {}
 
     static readonly struct = new FixableBeetStruct<EditUser_Instruction>(
         [
             ["instruction", u8],
-            ["name", utf8String]
+            ["name", utf8String],
         ],
-        (args) =>
-            new EditUser_Instruction(
-                args.instruction!,
-                args.name!
-            ),
+        (args) => new EditUser_Instruction(args.instruction!, args.name!),
         "EditUser_Instruction",
     );
 }
 
 export function serialise_EditUser_instruction(name: string): Buffer {
-    const data = new EditUser_Instruction(
-        LaunchInstruction.edit_user,
-        name
-    );
+    const data = new EditUser_Instruction(LaunchInstruction.edit_user, name);
     const [buf] = EditUser_Instruction.struct.serialize(data);
 
     return buf;
