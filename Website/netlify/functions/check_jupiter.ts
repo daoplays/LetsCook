@@ -2,11 +2,7 @@ const { TwitterApi } = require("twitter-api-v2");
 import { getStore } from "@netlify/blobs";
 import type { Context } from "@netlify/functions";
 import type { Config } from "@netlify/functions";
-
-interface Result {
-    statusCode: number;
-    body: string;
-}
+import {JupCSVToList} from "../../utils/JupCSVToList"
 
 export default async (req: Request) => {
     const { next_run } = await req.json();
@@ -21,7 +17,11 @@ export default async (req: Request) => {
     });
 
     try {
-        let new_list = await fetch("https://token.jup.ag/strict").then((res) => res.json());
+       
+        let new_list_string = await JupCSVToList();
+
+        let new_list = JSON.parse(new_list_string)
+        
 
         const store = getStore({
             name: "strictList",
@@ -53,13 +53,14 @@ export default async (req: Request) => {
                     break;
                 }
             }
+
             if (found === false) {
                 
                 let symbol: string = new_list[i]["symbol"]
                 let tweet: string =
                     symbol + " is now validated at @JupiterExchange CA: " + address + ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
                 tweets.push(tweet);
-                additions.push(new_list[i])
+                additions.push(JSON.stringify(new_list[i]))
                 
             }
         }
