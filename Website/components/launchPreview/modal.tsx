@@ -77,11 +77,23 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                 />
                                             </HStack>
 
-                                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            <Text
+                                                m="0"
+                                                color="white"
+                                                fontSize="x-large"
+                                                fontFamily="ReemKufiRegular"
+                                                align={md ? "center" : "start"}
+                                            >
                                                 Total Winning Tickets: {launchData.mints_won}
                                             </Text>
 
-                                            <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            <Text
+                                                m="0"
+                                                color="white"
+                                                fontSize="x-large"
+                                                fontFamily="ReemKufiRegular"
+                                                align={md ? "center" : "start"}
+                                            >
                                                 Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
                                             </Text>
 

@@ -66,7 +66,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                             />
                         )}
                         <VStack gap={lg ? 2 : 3} alignItems={lg ? "center" : "left"}>
-                            <Flex gap={lg ? 2 : 6} alignItems="center">
+                            <Flex gap={lg ? 2 : 5} alignItems="center">
                                 <Text
                                     m={0}
                                     fontSize={lg ? 30 : 60}
@@ -78,9 +78,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     {featuredLaunch !== null ? featuredLaunch.symbol : ""}
                                 </Text>
 
-                                <Box hidden={!lg && featuredLaunch !== null}>
-                                    <Links featuredLaunch={featuredLaunch} />
-                                </Box>
+                                {!lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
