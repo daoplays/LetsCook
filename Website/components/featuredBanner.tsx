@@ -36,8 +36,8 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                 bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)"
                 w="100%"
                 h="100%"
-                onClick={() => router.push(`/launch/${featuredLaunch?.page_name}`)}
-                style={{ cursor: "pointer" }}
+                onClick={() => isHomePage && router.push(`/launch/${featuredLaunch?.page_name}`)}
+                style={{ cursor: isHomePage ? "pointer" : "default" }}
             >
                 <Flex
                     gap={lg ? 5 : 8}
@@ -152,7 +152,8 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                     {lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
 
                     {!isHomePage && (
-                        <Link href={`/launch/${featuredLaunch?.page_name}`}>
+                        // <Link href={`/launch/${featuredLaunch?.page_name}`} >
+                        <>
                             {featuredLaunch !== null &&
                                 new Date().getTime() > featuredLaunch.launch_date &&
                                 new Date().getTime() < featuredLaunch.end_date && <WoodenButton label="Mint Live" size={35} />}
@@ -164,7 +165,8 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                             {featuredLaunch !== null && new Date().getTime() > featuredLaunch.end_date && (
                                 <WoodenButton label="Mint Closed" size={35} />
                             )}
-                        </Link>
+                        </>
+                        // </Link>
                     )}
 
                     {isHomePage && (

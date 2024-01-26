@@ -48,7 +48,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
 
                 <ModalBody m={0} p={0}>
                     <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-                        <FeaturedBanner featuredLaunch={launchData} />
+                        <FeaturedBanner featuredLaunch={launchData} isHomePage={false} />
                         <Center>
                             <VStack spacing={5} my={3} px={5} width={sm ? "100%" : "80%"}>
                                 <Timespan launchData={launchData} />
