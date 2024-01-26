@@ -344,15 +344,33 @@ const MintPage = () => {
                                         <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                                     </HStack>
 
-                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    <Text
+                                        m="0"
+                                        color="white"
+                                        fontSize="x-large"
+                                        fontFamily="ReemKufiRegular"
+                                        align={md ? "center" : "start"}
+                                    >
                                         Tickets Sold: {launchData.tickets_sold}
                                     </Text>
 
-                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    <Text
+                                        m="0"
+                                        color="white"
+                                        fontSize="x-large"
+                                        fontFamily="ReemKufiRegular"
+                                        align={md ? "center" : "start"}
+                                    >
                                         Total Winning Tickets: {launchData.num_mints}
                                     </Text>
 
-                                    <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                    <Text
+                                        m="0"
+                                        color="white"
+                                        fontSize="x-large"
+                                        fontFamily="ReemKufiRegular"
+                                        align={md ? "center" : "start"}
+                                    >
                                         Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
                                     </Text>
 

@@ -189,8 +189,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <Image
                                 src={displayImg ? displayImg : "/images/upload-image.png"}
-                                width={lg ? 180 : 250}
-                                height={lg ? 180 : 250}
+                                width={lg ? 180 : 235}
+                                height={lg ? 180 : 235}
                                 alt="Image Frame"
                                 style={{ backgroundSize: "cover" }}
                             />
@@ -274,7 +274,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
                                         Decimals:
                                     </div>
 
@@ -321,7 +321,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
                                         Ticket Price:
                                     </div>
 
@@ -382,7 +382,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             >
                                 <VStack spacing={5} align="start" w={md ? "100%" : "fit-content"} className={styles.distributionBoxFields}>
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={50} h={30} bg="white" />
+                                        <Box w={35} h={30} bg="white" />
                                         <div className={`${styles.textLabel} ${styles.textLabel2} `}>Liquidity Pool</div>
                                     </HStack>
 
@@ -390,12 +390,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         pl={md ? 0 : 55}
                                         spacing={5}
                                         align="start"
-                                        w={md ? "100%" : "460px"}
+                                        w={md ? "100%" : "530px"}
                                         className={styles.distributionBoxFields}
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={50} h={30} bg="#ff5151" />
+                                                <Box w={35} h={30} bg="#FF6651" />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>Raffle (SOL)</div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -423,7 +423,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={50} h={30} bg="#489cff" />
+                                                <Box w={35} h={30} bg="#FF9548" />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2}`}>$TOKEN</div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -451,21 +451,21 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
 
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={50} h={30} bg="gray" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Creator</div>
+                                        <Box w={35} h={30} bg="#a3a3a3" />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Liquidity Rewards</div>
                                     </HStack>
 
                                     <VStack
                                         pl={md ? 0 : 55}
                                         spacing={5}
                                         align="start"
-                                        w={md ? "100%" : "460px"}
+                                        w={md ? "100%" : "530px"}
                                         className={styles.distributionBoxFields}
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={50} h={30} bg="#74dd5a" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>LP Rewards</div>
+                                                <Box w={35} h={30} bg="#C6FE7D" />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Provider Rewards</div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
@@ -491,21 +491,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={50} h={30} bg="#ffef5e" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops / Marketing</div>
+                                                <Box w={35} h={30} bg="#66FFB6" />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Market Maker Rewards</div>
                                             </HStack>
                                             <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    value={parseInt(distribution4).toFixed(0)}
-                                                    onChange={(e) => {
-                                                        setDistribution4(e.target.value);
-                                                    }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution4) === 0 ? true : false}
-                                                />
+                                                {/* integrate MM Rewards  */}
+                                                <Input size="lg" value={0} type="number" min="0" max="100" disabled={true} />
                                                 <Image
                                                     className={styles.percentage}
                                                     width={lg ? 15 : 20}
@@ -515,10 +506,23 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 />
                                             </div>
                                         </HStack>
+                                    </VStack>
 
+                                    <HStack spacing={5} mt={md ? 0 : 5}>
+                                        <Box w={35} h={30} bg="#666666" />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Creator Control</div>
+                                    </HStack>
+
+                                    <VStack
+                                        pl={md ? 0 : 55}
+                                        spacing={5}
+                                        align="start"
+                                        w={md ? "100%" : "530px"}
+                                        className={styles.distributionBoxFields}
+                                    >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={50} h={30} bg="#b96cf6" />
+                                                <Box w={35} h={30} bg="#8CB3FF" />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -545,8 +549,35 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={50} h={30} bg="#ff994e" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Other (See Links)</div>
+                                                <Box w={35} h={30} bg="#988FFF" />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops / Marketing</div>
+                                            </HStack>
+                                            <div className={styles.distributionField}>
+                                                <Input
+                                                    size="lg"
+                                                    value={parseInt(distribution4).toFixed(0)}
+                                                    onChange={(e) => {
+                                                        setDistribution4(e.target.value);
+                                                    }}
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    disabled={totalPercentage === 100 && parseInt(distribution4) === 0 ? true : false}
+                                                />
+                                                <Image
+                                                    className={styles.percentage}
+                                                    width={lg ? 15 : 20}
+                                                    height={lg ? 15 : 20}
+                                                    src="/images/perc.png"
+                                                    alt="Percentage"
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                            <HStack spacing={5}>
+                                                <Box w={35} h={30} bg="#FD98FE" />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Others</div>
                                             </HStack>
 
                                             <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
@@ -573,62 +604,70 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
                                 </VStack>
 
-                                {(distribution1 || distribution2 || distribution3 || distribution4 || distribution5 || distribution6) !==
-                                    "0" && (
-                                    <VStack
-                                        spacing={6}
-                                        flexGrow={1}
-                                        justify="center"
-                                        align="center"
-                                        py={8}
-                                        h="fit-content"
-                                        style={{ position: "relative" }}
-                                    >
-                                        <PieChart
-                                            animate={true}
-                                            totalValue={100}
-                                            data={[
-                                                {
-                                                    title: "LetsCookRaffle",
-                                                    value: percentage1,
-                                                    color: "#FF5151",
-                                                },
-                                                { title: "Liquidity Pool", value: percentage2, color: "#489CFF" },
-                                                { title: "LP Rewards", value: percentage3, color: "#74DD5A" },
-                                                { title: "Airdrops", value: percentage4, color: "#FFEF5E" },
-                                                { title: "Team", value: percentage5, color: "#B96CF6" },
-                                                { title: "Other", value: percentage6, color: "#FF994E" },
-                                                { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
-                                            ]}
-                                            style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
-                                        />
+                                {/* Pie Chart  */}
+                                <VStack
+                                    spacing={6}
+                                    flexGrow={1}
+                                    justify="center"
+                                    align="center"
+                                    py={8}
+                                    h="fit-content"
+                                    style={{ position: "relative" }}
+                                >
+                                    <PieChart
+                                        animate={true}
+                                        totalValue={100}
+                                        data={[
+                                            {
+                                                title: "Raffle (SOL)",
+                                                value: percentage1,
+                                                color: "#FF6651",
+                                            },
+                                            { title: "$TOKEN", value: percentage2, color: "#FF9548" },
+                                            { title: "Liquidity Provider Rewards", value: percentage3, color: "#C6FE7D" },
+                                            // integrate MM Rewards
+                                            { title: "Market Maker Rewards", value: 0, color: "#66FFB6" },
+                                            { title: "Team", value: percentage5, color: "#8CB3FF" },
+                                            { title: "Airdrops / Marketing", value: percentage4, color: "#988FFF" },
+                                            { title: "Others", value: percentage6, color: "#FD98FE" },
+                                            { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
+                                        ]}
+                                        style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
+                                    />
 
-                                        <PieChart
-                                            animate={true}
-                                            totalValue={100}
-                                            data={[
-                                                {
-                                                    title: "LetsCookRaffle",
-                                                    value: parseInt(distribution1) + parseInt(distribution2),
-                                                    color: "white",
-                                                },
-                                                {
-                                                    title: "Liquidity Pool",
-                                                    value:
-                                                        parseInt(distribution3) +
-                                                        parseInt(distribution4) +
-                                                        parseInt(distribution5) +
-                                                        parseInt(distribution6),
-                                                    color: "gray",
-                                                },
-                                            ]}
-                                            style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
-                                        />
-                                    </VStack>
-                                )}
+                                    <PieChart
+                                        animate={true}
+                                        totalValue={100}
+                                        data={[
+                                            {
+                                                title: "Liquidity Pool",
+                                                value:
+                                                    parseInt(distribution1 ? distribution1 : "0") +
+                                                    parseInt(distribution2 ? distribution2 : "0"),
+                                                color: "white",
+                                            },
+                                            {
+                                                title: "Liquidity Rewards",
+                                                // integrate MM Rewards
+                                                value: parseInt(distribution3 ? distribution3 : "0") + 0,
+                                                color: "#a3a3a3",
+                                            },
+
+                                            {
+                                                title: "Creator Control",
+                                                value:
+                                                    parseInt(distribution4 ? distribution4 : "0") +
+                                                    parseInt(distribution5 ? distribution5 : "0") +
+                                                    parseInt(distribution6 ? distribution6 : "0"),
+                                                color: "#666666",
+                                            },
+                                        ]}
+                                        style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
+                                    />
+                                </VStack>
                             </HStack>
                         </VStack>
-                        <HStack mt={md ? 0 : 15}>
+                        <HStack mt={md ? 0 : 30}>
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
