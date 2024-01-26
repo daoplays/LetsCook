@@ -49,9 +49,9 @@ function Navigation() {
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/calendar">
-                                <Image src="/images/calendar.png" width={35} height={35} alt={"Calendar"} />
-                            </Link>
+                            {/* <Link href="/calendar"> */}
+                            <Image src="/images/calendar.png" width={35} height={35} alt={"Calendar"} style={{ cursor: "not-allowed" }} />
+                            {/* </Link> */}
                         </Tooltip>
                     </Show>
 
@@ -70,14 +70,14 @@ function Navigation() {
                                 width={35}
                                 height={35}
                                 alt={"Money Bag"}
-                                onClick={() => {
-                                    if (!wallet.connected) {
-                                        alert("Please connect your wallet to access your bags");
-                                    } else {
-                                        router.push(`/bags`);
-                                    }
-                                }}
-                                style={{ cursor: "pointer" }}
+                                // onClick={() => {
+                                //     if (!wallet.connected) {
+                                //         alert("Please connect your wallet to access your bags");
+                                //     } else {
+                                //         router.push(`/bags`);
+                                //     }
+                                // }}
+                                style={{ cursor: "not-allowed" }}
                             />
                         </Tooltip>
                     </Show>
@@ -89,14 +89,14 @@ function Navigation() {
                                 width={35}
                                 height={35}
                                 alt={"Question Mark"}
-                                onClick={() => {
-                                    if (!wallet.connected) {
-                                        alert("Please connect your wallet to access creator dashboard");
-                                    } else {
-                                        router.push(`/dashboard`);
-                                    }
-                                }}
-                                style={{ cursor: "pointer" }}
+                                // onClick={() => {
+                                //     if (!wallet.connected) {
+                                //         alert("Please connect your wallet to access creator dashboard");
+                                //     } else {
+                                //         router.push(`/dashboard`);
+                                //     }
+                                // }}
+                                style={{ cursor: "not-allowed" }}
                             />
                         </Tooltip>
                     </Show>
@@ -168,23 +168,24 @@ function Navigation() {
                     color="#683309"
                     fontSize={30}
                     fontWeight="bold"
-                    onClick={() => {
-                        if (!wallet.connected) {
-                            alert("Please connect your wallet to access creator dashboard");
-                        } else {
-                            onToggle();
-                            router.push("/dashboard");
-                        }
-                    }}
+                    // onClick={() => {
+                    //     if (!wallet.connected) {
+                    //         alert("Please connect your wallet to access creator dashboard");
+                    //     } else {
+                    //         onToggle();
+                    //         router.push("/dashboard");
+                    //     }
+                    // }}
+                    style={{ opacity: 0.5 }}
                 >
                     Creator Dashboard
                 </Text>
 
-                <Link href="/calendar" onClick={onToggle}>
-                    <Text color="#683309" fontSize={30} fontWeight="bold">
-                        Calendar
-                    </Text>
-                </Link>
+                {/* <Link href="/calendar" onClick={onToggle}> */}
+                <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: 0.5 }}>
+                    Calendar
+                </Text>
+                {/* </Link> */}
 
                 {/* <Link href="/leaderboard" onClick={onToggle}>
                     <Text className={styles.connect}>LEADERBOARD</Text>
@@ -194,14 +195,15 @@ function Navigation() {
                     color="#683309"
                     fontSize={30}
                     fontWeight="bold"
-                    onClick={() => {
-                        if (!wallet.connected) {
-                            alert("Please connect your wallet to access creator dashboard");
-                        } else {
-                            onToggle();
-                            router.push("/bags");
-                        }
-                    }}
+                    // onClick={() => {
+                    //     if (!wallet.connected) {
+                    //         alert("Please connect your wallet to access creator dashboard");
+                    //     } else {
+                    //         onToggle();
+                    //         router.push("/bags");
+                    //     }
+                    // }}
+                    style={{ opacity: 0.5 }}
                 >
                     My Bags
                 </Text>

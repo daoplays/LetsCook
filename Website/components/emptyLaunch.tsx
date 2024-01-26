@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, GridItem, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Grid, GridItem, HStack, Text, Tooltip, VStack } from "@chakra-ui/react";
 import EmptyLaunches from "../public/images/healthy-food-rafiki-empty.svg";
 import Image from "next/image";
 import useResponsive from "../hooks/useResponsive";
@@ -10,6 +10,7 @@ import raydium from "../public/images/raydium.png";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
 
 const EmptyLaunch = () => {
     const wallet = useWallet();
@@ -72,17 +73,20 @@ const EmptyLaunch = () => {
                             Have a killer meme idea?
                         </Text>
 
-                        <div
-                            onClick={() => {
-                                if (!wallet.connected) {
-                                    handleConnectWallet();
-                                } else {
-                                    router.push("/launch");
-                                }
-                            }}
-                        >
-                            <WoodenButton label="Start Cooking" size={28} />
-                        </div>
+                        <Tooltip label="Coming Soon" hasArrow fontSize="large" offset={[0, 10]}>
+                            <div
+                                onClick={() => {
+                                    //     if (!wallet.connected) {
+                                    //         handleConnectWallet();
+                                    //     } else {
+                                    //         router.push("/launch");
+                                    //     }
+                                    toast.info("Coming Soon");
+                                }}
+                            >
+                                <WoodenButton label="Start Cooking" size={28} />
+                            </div>
+                        </Tooltip>
                     </VStack>
                 </Box>
             </Box>
