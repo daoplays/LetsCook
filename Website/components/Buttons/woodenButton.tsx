@@ -1,6 +1,7 @@
 import { Box, Text, VStack } from "@chakra-ui/react";
 import styles from "../header.module.css";
 import useResponsive from "../../hooks/useResponsive";
+import { isHomePageOnly } from "../../constant/root";
 
 interface WoodenButtonProps {
     action?: () => void;
@@ -18,7 +19,10 @@ const WoodenButton = ({ action, label, size, width }: WoodenButtonProps) => {
             borderRadius={10}
             px={5}
             onClick={action}
-            style={{ cursor: label === "Waiting for LP" || "Start Cooking" ? "not-allowed" : "pointer" }}
+            style={{
+                cursor:
+                    label === "Start Cooking" && isHomePageOnly ? "not-allowed" : label === "Waiting for LP" ? "not-allowed" : "pointer",
+            }}
         >
             <VStack h="100%" align="center" justify="center">
                 <Text

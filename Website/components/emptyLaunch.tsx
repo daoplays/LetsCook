@@ -11,6 +11,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
+import { isHomePageOnly } from "../constant/root";
 
 const EmptyLaunch = () => {
     const wallet = useWallet();
@@ -73,20 +74,17 @@ const EmptyLaunch = () => {
                             Have a killer meme idea?
                         </Text>
 
-                        <Tooltip label="Coming Soon" hasArrow fontSize="large" offset={[0, 10]}>
-                            <div
-                                onClick={() => {
-                                    //     if (!wallet.connected) {
-                                    //         handleConnectWallet();
-                                    //     } else {
-                                    //         router.push("/launch");
-                                    //     }
-                                    toast.info("Coming Soon");
-                                }}
-                            >
-                                <WoodenButton label="Start Cooking" size={28} />
-                            </div>
-                        </Tooltip>
+                        <div
+                            onClick={() => {
+                                if (!wallet.connected) {
+                                    handleConnectWallet();
+                                } else {
+                                    isHomePageOnly ? toast.info("Coming Soon") : router.push("/launch");
+                                }
+                            }}
+                        >
+                            <WoodenButton label="Start Cooking" size={28} />
+                        </div>
                     </VStack>
                 </Box>
             </Box>
