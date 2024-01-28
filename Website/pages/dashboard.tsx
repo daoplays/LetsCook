@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import useResponsive from "../hooks/useResponsive";
-import CreatorDashboardTable from "../components/creatorDashboardTable";
+import CreatorDashboardTable from "../components/tables/creatorDashboardTable";
 import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
 import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";

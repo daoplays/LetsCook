@@ -1,5 +1,5 @@
-import { defaultLaunchTableFilters } from "../components/gameTable";
-import GameTable from "../components/gameTable";
+import { defaultLaunchTableFilters } from "../components/tables/gameTable";
+import GameTable from "../components/tables/gameTable";
 import FeaturedBanner from "../components/featuredBanner";
 import useAppRoot from "../context/useAppRoot";
 import EmptyLaunch from "../components/emptyLaunch";
