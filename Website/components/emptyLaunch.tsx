@@ -1,4 +1,4 @@
-import { Box, Flex, Grid, GridItem, HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Grid, GridItem, HStack, Text, Tooltip, VStack } from "@chakra-ui/react";
 import EmptyLaunches from "../public/images/healthy-food-rafiki-empty.svg";
 import Image from "next/image";
 import useResponsive from "../hooks/useResponsive";
@@ -10,6 +10,8 @@ import raydium from "../public/images/raydium.png";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import { useRouter } from "next/router";
+import { toast } from "react-toastify";
+import { isHomePageOnly } from "../constant/root";
 
 const EmptyLaunch = () => {
     const wallet = useWallet();
@@ -77,7 +79,7 @@ const EmptyLaunch = () => {
                                 if (!wallet.connected) {
                                     handleConnectWallet();
                                 } else {
-                                    router.push("/launch");
+                                    isHomePageOnly ? toast.info("Coming Soon") : router.push("/launch");
                                 }
                             }}
                         >

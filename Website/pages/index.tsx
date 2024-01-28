@@ -6,6 +6,7 @@ import EmptyLaunch from "../components/emptyLaunch";
 import "react-datepicker/dist/react-datepicker.css";
 import Loader from "../components/loader";
 import Head from "next/head";
+import { isHomePageOnly } from "../constant/root";
 
 const Home = () => {
     const { homePageList } = useAppRoot();
@@ -19,10 +20,14 @@ const Home = () => {
             <Head>
                 <title>Let&apos;s Cook</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-                <FeaturedBanner featuredLaunch={homePageList[0]} isHomePage={true} />
-                <GameTable launchList={homePageList} filters={defaultLaunchTableFilters} />
-            </main>
+            {isHomePageOnly ? (
+                <EmptyLaunch />
+            ) : (
+                <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
+                    <FeaturedBanner featuredLaunch={homePageList[0]} isHomePage={true} />
+                    <GameTable launchList={homePageList} filters={defaultLaunchTableFilters} />
+                </main>
+            )}
         </>
     );
 };
