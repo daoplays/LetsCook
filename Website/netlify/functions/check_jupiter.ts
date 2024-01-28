@@ -29,6 +29,10 @@ export default async (req: Request) => {
         const oldList = await store.get("list");
         let old_list = JSON.parse(oldList);
 
+        for (let i = 0; i < old_list.length; i++) {
+            console.log(old_list[i])
+        }
+
         // we only care about additions compared to the old list
         let tweets: string[] = [];
         let additions: string[] = [];

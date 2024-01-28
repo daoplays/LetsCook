@@ -13,9 +13,10 @@ import {
     RunJoinDataGPA,
 } from "../components/Solana/state";
 import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
-import { PublicKey, Connection } from "@solana/web3.js";
+import { PublicKey, Connection, Keypair } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
+
 
 import "bootstrap/dist/css/bootstrap.css";
 
@@ -28,6 +29,7 @@ const CheckLaunchData = async (
     setHomePageData,
 ) => {
     if (!check_launch_data.current) return;
+
 
     setIsLaunchDataLoading(true);
     setIsHomePageDataLoading(true);

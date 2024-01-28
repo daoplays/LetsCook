@@ -1,3 +1,5 @@
+import { getStore } from "@netlify/blobs";
+
 interface Entry {
     validated: boolean;
     address: string;
