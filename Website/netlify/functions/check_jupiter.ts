@@ -30,7 +30,7 @@ export default async (req: Request) => {
         let old_list = JSON.parse(oldList);
 
         for (let i = 0; i < old_list.length; i++) {
-            console.log(old_list[i])
+            console.log(old_list[i]);
         }
 
         // we only care about additions compared to the old list
