@@ -29,6 +29,10 @@ export default async (req: Request) => {
         const oldList = await store.get("list");
         let old_list = JSON.parse(oldList);
 
+        for (let i = 0; i < old_list.length; i++) {
+            console.log(old_list[i])
+        }
+
         // we only care about additions compared to the old list
         let tweets: string[] = [];
         let additions: string[] = [];
@@ -58,7 +62,7 @@ export default async (req: Request) => {
                     address +
                     ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
                 tweets.push(tweet);
-                additions.push(JSON.stringify(new_list[i]));
+                additions.push(new_list[i]);
             }
         }
 
