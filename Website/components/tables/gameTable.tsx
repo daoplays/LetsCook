@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { LaunchData, UserData, bignum_to_num } from "./Solana/state";
+import { LaunchData, UserData, bignum_to_num } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
-import { HypeVote } from "./hypeVote";
-import useResponsive from "../hooks/useResponsive";
+import { HypeVote } from "../hypeVote";
+import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
-import useAppRoot from "../context/useAppRoot";
-import Links from "./Buttons/links";
+import useAppRoot from "../../context/useAppRoot";
+import Links from "../Buttons/links";
 import { FaSort } from "react-icons/fa";
 import { useRouter } from "next/router";
 
@@ -31,7 +31,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
     //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
-        { text: "ICON", field: null },
+        { text: "LOGO", field: null },
         { text: "SYMBOL", field: "symbol" },
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },

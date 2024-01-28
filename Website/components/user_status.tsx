@@ -25,9 +25,9 @@ export function WinLoss({ join_data }: { join_data: JoinData }) {
     return (
         <>
             <Text fontSize={lg ? "large" : "x-large"} m={0} align="center">
-                <span style={{ color: "green" }}>{w}</span>
+                <span style={{ color: "#83FF81" }}>{w}</span>
                 <span style={{ color: "white" }}> / </span>
-                <span style={{ color: "red" }}>{l}</span>
+                <span style={{ color: "#FF6E6E" }}>{l}</span>
                 {join_data.num_claimed_tickets !== join_data.num_tickets && (
                     <span style={{ color: "white" }}>
                         {" "}
