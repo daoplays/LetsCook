@@ -4,8 +4,8 @@ import { PublicKey } from "@solana/web3.js";
 const DEV_RPC_NODE = "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2";
 const DEV_WSS_NODE = "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/";
 
-const PROD_RPC_NODE = "https://practical-fragrant-wind.solana-mainnet.quiknode.pro/99ae430d9ebfdeba7c6dc64be19e93e2a5210e7a";
-const PROD_WSS_NODE = "wss://practical-fragrant-wind.solana-mainnet.quiknode.pro/99ae430d9ebfdeba7c6dc64be19e93e2a5210e7a";
+const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
+const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
 
 //pyth oracles
 const PYTH_BTC_DEV = new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
@@ -37,8 +37,7 @@ if (isMobile) {
     EMOJI_SIZE = 20;
 }
 
-export const PROD = false;
-export const TEST = true;
+export const PROD = true;
 export const DEBUG = true;
 
 export const PYTH_BTC = PROD ? PYTH_BTC_PROD : PYTH_BTC_DEV;

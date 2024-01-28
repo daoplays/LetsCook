@@ -10,9 +10,6 @@ import UseWalletConnection from "../hooks/useWallet";
 import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
-import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
-import BN from "bn.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 
 export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {

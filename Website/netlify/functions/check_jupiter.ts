@@ -62,7 +62,7 @@ export default async (req: Request) => {
                     address +
                     ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
                 tweets.push(tweet);
-                additions.push(JSON.stringify(new_list[i]));
+                additions.push(new_list[i]);
             }
         }
 
