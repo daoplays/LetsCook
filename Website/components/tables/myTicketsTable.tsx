@@ -1,26 +1,26 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num, JoinData, JoinedLaunch } from "./Solana/state";
+import { LaunchData, UserData, bignum_to_num, JoinData, JoinedLaunch } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { FaSort } from "react-icons/fa";
-import useResponsive from "../hooks/useResponsive";
+import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
-import useAppRoot from "../context/useAppRoot";
-import useDetermineCookState, { CookState } from "../hooks/useDetermineCookState";
+import useAppRoot from "../../context/useAppRoot";
+import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
-import useCheckTickets from "../hooks/useCheckTickets";
-import useRefundTickets from "../hooks/useRefundTickets";
-import useClaimTokens from "../hooks/useClaimTokens";
-import { LaunchFlags } from "./Solana/constants";
-import { WinLoss, ButtonString } from "./user_status";
+import useCheckTickets from "../../hooks/useCheckTickets";
+import useRefundTickets from "../../hooks/useRefundTickets";
+import useClaimTokens from "../../hooks/useClaimTokens";
+import { LaunchFlags } from "../Solana/constants";
+import { WinLoss, ButtonString } from "../user_status";
 
 interface Header {
     text: string;
     field: string | null;
 }
 
-const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
+const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
@@ -28,11 +28,11 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
     const tableHeaders: Header[] = [
-        { text: "ICON", field: null },
+        { text: "LOGO", field: null },
         { text: "SYMBOL", field: "symbol" },
         { text: "STATUS", field: null },
         { text: "TICKETS", field: "tickets" },
-        { text: "LIQUIDITY", field: "liquidity" },
+        { text: "WIN RATE", field: "winRate" },
         { text: "ENDS", field: "date" },
     ];
 
@@ -50,10 +50,6 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
             return reverseSort
                 ? b.launch_data.symbol.localeCompare(a.launch_data.symbol)
                 : a.launch_data.symbol.localeCompare(b.launch_data.symbol);
-        } else if (sortedField === "liquidity") {
-            return reverseSort
-                ? b.launch_data.minimum_liquidity - a.launch_data.minimum_liquidity
-                : a.launch_data.minimum_liquidity - b.launch_data.minimum_liquidity;
         } else if (sortedField === "date") {
             return reverseSort
                 ? b.launch_data.launch_date - a.launch_data.launch_date
@@ -85,7 +81,7 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
                                     </Text>
-                                    {i.text === "LOGO" ? <></> : <FaSort />}
+                                    {i.text === "LOGO" || i.text === "WIN RATE" ? <></> : <FaSort />}
                                 </HStack>
                             </th>
                         ))}
@@ -99,8 +95,8 @@ const MyBagsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                 </thead>
 
                 <tbody>
-                    {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.launch_data.name} launch={launch} />
+                    {sortedLaunches.map((launch, i) => (
+                        <LaunchCard key={i} launch={launch} />
                     ))}
                 </tbody>
             </table>
@@ -123,15 +119,19 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
     const cook_state = useDetermineCookState({ current_time, launchData: launch.launch_data, join_data: launch.join_data });
 
-    const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
-    const MINTED_OUT = [
-        CookState.MINT_SUCCEEDED_NO_TICKETS,
-        CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
-    ].includes(cook_state);
-    const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
+    // const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
+    // const MINTED_OUT = [
+    //     CookState.MINT_SUCCEEDED_NO_TICKETS,
+    //     CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
+    //     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
+    //     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
+    //     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
+    // ].includes(cook_state);
+    // const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
+
+    const ACTIVE = false;
+    const MINTED_OUT = true;
+    const MINT_FAILED = false;
 
     const handleButtonClick = (e) => {
         e.stopPropagation();
@@ -148,7 +148,15 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
         }
     };
 
-    //console.log("cook state", cook_state);
+    let w: number = launch.join_data.num_winning_tickets;
+    let l: number = launch.join_data.num_tickets - launch.join_data.num_winning_tickets;
+
+    // Calculate win rate
+    const winRate = (w / (w + l)) * 100;
+
+    // Round to two decimal places and remove trailing zeros
+    const formattedWinRate = parseFloat(winRate.toFixed(2));
+
     return (
         <tr
             style={{
@@ -177,7 +185,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                     </Box>
                 </Center>
             </td>
-            <td style={{ minWidth: "150px" }}>
+            <td style={{ minWidth: "180px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {launch.launch_data.symbol}
                 </Text>
@@ -225,12 +233,10 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                 )}
             </td>
 
-            <td style={{ minWidth: "170px" }}>
+            <td style={{ minWidth: "50px" }}>
                 <VStack>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {(Math.min(launch.launch_data.tickets_sold, launch.launch_data.num_mints) * launch.launch_data.ticket_price) /
-                            LAMPORTS_PER_SOL}
-                        /{(launch.launch_data.num_mints * launch.launch_data.ticket_price) / LAMPORTS_PER_SOL} SOL
+                        {ACTIVE || MINT_FAILED || cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK ? "--" : `${formattedWinRate}%`}
                     </Text>
                 </VStack>
             </td>
@@ -241,7 +247,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             </td>
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "65px" }}>
-                    {(MINTED_OUT || MINT_FAILED) && (
+                    {MINTED_OUT || MINT_FAILED ? (
                         <Button
                             onClick={(e) => handleButtonClick(e)}
                             isLoading={CheckingTickets || ClaimingTokens || RefundingTickets}
@@ -251,6 +257,8 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                         >
                             {ButtonString(cook_state, launch.join_data, launch.launch_data)}
                         </Button>
+                    ) : (
+                        <Button>View</Button>
                     )}
                 </HStack>
             </td>
@@ -258,4 +266,4 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     );
 };
 
-export default MyBagsTable;
+export default MyTicketsTable;
