@@ -95,8 +95,8 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                 </thead>
 
                 <tbody>
-                    {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.launch_data.name} launch={launch} />
+                    {sortedLaunches.map((launch, i) => (
+                        <LaunchCard key={i} launch={launch} />
                     ))}
                 </tbody>
             </table>

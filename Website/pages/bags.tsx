@@ -54,13 +54,14 @@ const BagsPage = () => {
             <main>
                 <Flex
                     px={4}
-                    py={18}
+                    // py={18}
+                    py={sm ? 22 : 37}
                     gap={2}
                     alignItems="center"
                     justifyContent={"start"}
                     style={{ position: "relative", flexDirection: sm ? "column-reverse" : "row" }}
                 >
-                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : 0}>
+                    {/* <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : 0}>
                         {["My Tickets", "My Rewards"].map((name, i) => {
                             const isActive = selected === name;
 
@@ -95,7 +96,7 @@ const BagsPage = () => {
                                 </Box>
                             );
                         })}
-                    </HStack>
+                    </HStack> */}
 
                     <Text
                         fontSize={sm ? 25 : 35}
@@ -111,7 +112,7 @@ const BagsPage = () => {
 
                 {selected === "My Tickets" && <MyTicketsTable bags={joinedLaunches} />}
 
-                {selected === "My Rewards" && <MyRewardsTable bags={joinedLaunches} />}
+                {/* {selected === "My Rewards" && <MyRewardsTable bags={joinedLaunches} />} */}
             </main>
         </>
     );
