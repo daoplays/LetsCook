@@ -9,11 +9,12 @@ import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import useAppRoot from "../context/useAppRoot";
 
 const useEditUser = () => {
     const wallet = useWallet();
+    const router = useRouter();
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -30,6 +31,11 @@ const useEditUser = () => {
 
     const EditUser = async (name: string) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
+
+        if (!name) {
+            toast.error("Failed to edit username, please try again.");
+            return;
+        }
 
         if (signature_ws_id.current !== null) {
             toast.success("Transaction pending, please wait");
@@ -87,6 +93,8 @@ const useEditUser = () => {
                 isLoading: false,
                 autoClose: 3000,
             });
+
+            router.refresh();
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {

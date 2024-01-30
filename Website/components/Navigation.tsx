@@ -41,12 +41,12 @@ function Navigation() {
                     </Text>
                 </Link>
                 <HStack gap={3}>
-                    <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
+                    {/* <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
                             <Image height={20} width={20} src="/images/sauce.png" alt="Sauce" />
                             <div>{currentUserData === null ? 0 : currentUserData.total_points}</div>
                         </div>
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
