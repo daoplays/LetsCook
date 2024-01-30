@@ -37,7 +37,7 @@ if (isMobile) {
     EMOJI_SIZE = 20;
 }
 
-export const PROD = false;
+export const PROD = true;
 export const DEBUG = true;
 
 export const PYTH_BTC = PROD ? PYTH_BTC_PROD : PYTH_BTC_DEV;
