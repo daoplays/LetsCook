@@ -1,9 +1,6 @@
 import { Box, Button, Center, HStack, TableContainer, Text } from "@chakra-ui/react";
-import { TfiReload } from "react-icons/tfi";
-import { FaSort } from "react-icons/fa";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
-import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import { JoinedLaunch } from "../Solana/state";
 
@@ -14,7 +11,6 @@ interface Header {
 
 const OrdersTable = () => {
     const { sm } = useResponsive();
-    const { checkLaunchData } = useAppRoot();
 
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
@@ -47,7 +43,13 @@ const OrdersTable = () => {
                 style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 120%)" }}
             >
                 <thead>
-                    <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
+                    <tr
+                        style={{
+                            height: "50px",
+                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
+                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
+                        }}
+                    >
                         {tableHeaders.map((i) => (
                             <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
                                 <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>

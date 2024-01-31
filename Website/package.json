@@ -36,6 +36,7 @@
         "date-fns": "^3.1.0",
         "font-awesome": "^4.7.0",
         "framer-motion": "^10.16.4",
+        "lightweight-charts": "^4.1.2",
         "next": "^13.5.4",
         "next-seo": "^6.4.0",
         "nextjs-toploader": "^1.6.4",

@@ -37,7 +37,7 @@ const Timespan = ({ launchData }: TimespanProps) => {
                 <br />
                 {launchTime}
             </Text>
-            <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="#868E96" />
+            <Divider orientation="vertical" height={md ? 50 : lg ? 75 : 50} color="rgba(134, 142, 150, 0.5)" />
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" align={"center"} fontSize={md ? "large" : "x-large"}>
                 Closes: {endDate}
                 <br />
