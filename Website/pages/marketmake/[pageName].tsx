@@ -1,56 +1,19 @@
-import {
-    Center,
-    VStack,
-    Text,
-    Box,
-    HStack,
-    Flex,
-    Tooltip,
-    Checkbox,
-    Input,
-    Button,
-    useNumberInput,
-    Progress,
-    Divider,
-} from "@chakra-ui/react";
-import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../components/Solana/state";
-import { PROGRAM, RPC_NODE, WSS_NODE } from "../components/Solana/constants";
-import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, LAMPORTS_PER_SOL, Connection, Keypair, Transaction } from "@solana/web3.js";
-import { MdOutlineContentCopy } from "react-icons/md";
-import { PieChart } from "react-minimal-pie-chart";
 import { useRouter } from "next/router";
-import Image from "next/image";
-import useResponsive from "../hooks/useResponsive";
-import UseWalletConnection from "../hooks/useWallet";
-import trimAddress from "../utils/trimAddress";
-import WoodenButton from "../components/Buttons/woodenButton";
-import PageNotFound from "../components/pageNotFound";
-import useCheckTickets from "../hooks/useCheckTickets";
-import useBuyTickets from "../hooks/useBuyTickets";
-import useClaimTickets from "../hooks/useClaimTokens";
-import useRefundTickets from "../hooks/useRefundTickets";
-import FeaturedBanner from "../components/featuredBanner";
-import Timespan from "../components/launchPreview/timespan";
-import TokenDistribution from "../components/launchPreview/tokenDistribution";
-import useDetermineCookState, { CookState } from "../hooks/useDetermineCookState";
-import Loader from "../components/loader";
-import { WarningModal } from "../components/Solana/modals";
-import { ButtonString } from "../components/user_status";
 import Head from "next/head";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 import BN from "bn.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "../components/Solana/state";
+import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "../../components/Solana/state";
 import bs58 from "bs58";
 import { ownerFilter } from "@jup-ag/limit-order-sdk";
 import { OrderHistoryItem, TradeHistoryItem, Order } from "@jup-ag/limit-order-sdk";
-
-interface OpenOrder {
-    publicKey: PublicKey;
-    account: Order;
-}
+import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../../components/Solana/state";
+import { PROGRAM, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import { useCallback, useEffect, useState, useRef } from "react";
+import { PublicKey, LAMPORTS_PER_SOL, Connection, Keypair, Transaction } from "@solana/web3.js";
+import { HStack, VStack } from "@chakra-ui/react";
+import OrdersTable from "../../components/tables/ordersTable";
 
 async function getMarketData() {
     // Default options are marked with *
@@ -72,8 +35,15 @@ async function getMarketData() {
         .catch((err) => console.error(err));
 }
 
-const MarketMaker = () => {
+interface OpenOrder {
+    publicKey: PublicKey;
+    account: Order;
+}
+
+const TradePage = () => {
     const wallet = useWallet();
+    const router = useRouter();
+    const { pageName } = router.query;
     const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
 
     async function getUserOrders() {
@@ -172,6 +142,7 @@ const MarketMaker = () => {
             console.log(error);
         }
     }, [wallet]);
+
     const CancelOrder = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
         if (openOrders.length == 0) return;
@@ -213,38 +184,15 @@ const MarketMaker = () => {
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | Test</title>
+                <title>Let&apos;s Cook | Trade</title>
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-                <Center>
-                    <Button
-                        size="lg"
-                        onClick={() => {
-                            getUserOrders();
-                        }}
-                    >
-                        Check Orders
-                    </Button>
-                    <Button
-                        size="lg"
-                        onClick={() => {
-                            CancelOrder();
-                        }}
-                    >
-                        Cancel Order
-                    </Button>
-                    <Button
-                        size="lg"
-                        onClick={() => {
-                            SubmitOrder();
-                        }}
-                    >
-                        Submit Order
-                    </Button>
-                </Center>
+                <VStack>
+                    <OrdersTable />
+                </VStack>
             </main>
         </>
     );
 };
 
-export default MarketMaker;
+export default TradePage;
