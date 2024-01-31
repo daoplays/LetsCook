@@ -12,7 +12,22 @@ import { bignum_to_num } from "../../components/Solana/state";
 import { RPC_NODE } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection, Keypair, Transaction } from "@solana/web3.js";
-import { HStack, VStack, Text, Box, Tooltip, Link, Divider, Input, InputGroup, InputRightElement } from "@chakra-ui/react";
+import {
+    HStack,
+    VStack,
+    Text,
+    Box,
+    Tooltip,
+    Link,
+    Divider,
+    Input,
+    InputGroup,
+    InputRightElement,
+    Button,
+    Select,
+    Card,
+    CardBody,
+} from "@chakra-ui/react";
 import OrdersTable from "../../components/tables/ordersTable";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
@@ -60,7 +75,7 @@ const TradePage = () => {
 
     const [leftPanel, setLeftPanel] = useState("Info");
 
-    const [chartHeight, setChartHeight] = useState("55vh");
+    const [chartHeight, setChartHeight] = useState("60vh");
     const [additionalPixels, setAdditionalPixels] = useState(0);
 
     const handleMouseDown = () => {
@@ -223,6 +238,7 @@ const TradePage = () => {
                         w={320}
                         style={{
                             minWidth: "350px",
+                            borderRight: "0.5px solid rgba(134, 142, 150, 0.5)",
                         }}
                         spacing={8}
                     >
@@ -301,14 +317,15 @@ const TradePage = () => {
                         w="100%"
                         spacing={0}
                         style={{
-                            minHeight: "95vh",
-                            borderLeft: "1px solid rgba(134, 142, 150, 0.5)",
+                            minHeight: "100vh",
+                            borderLeft: "0.5px solid rgba(134, 142, 150, 0.5)",
                             overflow: "auto",
                         }}
                     >
-                        <Box
+                        <HStack
+                            justify="center"
                             id="chartContainer"
-                            bg="green"
+                            bg="darkgray"
                             w="100%"
                             style={{
                                 height: `calc(${chartHeight} + ${additionalPixels}px)`,
@@ -316,7 +333,9 @@ const TradePage = () => {
                                 borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
                                 position: "relative",
                             }}
-                        />
+                        >
+                            <Text>Chart Container</Text>
+                        </HStack>
 
                         <div
                             style={{
@@ -422,39 +441,74 @@ const BuyAndSell = () => {
 
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Price:
+                    Amount:
                 </Text>
                 <InputGroup size="md">
                     <Input color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" />
                     <InputRightElement h="100%" w={50}>
-                        <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" />
+                        <Image src={"https://snipboard.io/HZ789p.jpg"} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
 
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Quantity:
+                    Price Per Token:
                 </Text>
                 <InputGroup size="md">
                     <Input color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" />
                     <InputRightElement h="100%" w={50}>
-                        <Image
-                            src={"https://snipboard.io/HZ789p.jpg"}
-                            width={30}
-                            height={30}
-                            alt="SOL Icon"
-                            style={{ borderRadius: "100%" }}
-                        />
+                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
+
+            <VStack align="start" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    You will {selected === "Buy" ? "Pay" : "Receive"}:
+                </Text>
+                <InputGroup size="md">
+                    <Input color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" />
+                    <InputRightElement h="100%" w={50}>
+                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+                    </InputRightElement>
+                </InputGroup>
+            </VStack>
+
+            <VStack align="start" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    Expiry:
+                </Text>
+                <Select placeholder="Never" color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)">
+                    <option value="option1">15 Minutes</option>
+                    <option value="option2">1 Hour</option>
+                    <option value="option3">1 Day</option>
+                    <option value="option2">3 Days</option>
+                    <option value="option3">7 Days</option>
+                    <option value="option2">30 Days</option>
+                </Select>
+            </VStack>
+
+            <Button mt={2} size="lg" w="100%" px={4} py={2} bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}>
+                <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                    Place Order
+                </Text>
+            </Button>
+
+            <Card bg="transparent">
+                <CardBody>
+                    <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        Limit Orders are placed via Jupiter Aggregator. <br />
+                        <br /> MM Rewards are only granted on Buys through Let&apos;s Cook.
+                    </Text>
+                </CardBody>
+            </Card>
         </VStack>
     );
 };
 
 const InfoContent = () => (
-    <VStack spacing={8} w="100%">
+    <VStack spacing={8} w="100%" mb={3}>
         <HStack mt={-2} px={5} justify="space-between" w="100%">
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 MM VOLUME (24h):
