@@ -1,1 +1,1 @@
-export const isHomePageOnly = true;
+export const isHomePageOnly = false;
