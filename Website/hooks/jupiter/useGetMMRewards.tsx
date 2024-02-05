@@ -7,7 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
 } from "../../components/Solana/state";
-import {serialise_PlaceCancel_instruction} from "../../components/Solana/jupiter_state";
+import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -34,7 +34,6 @@ import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 
-
 const useGetMMRewards = () => {
     const wallet = useWallet();
 
@@ -53,10 +52,7 @@ const useGetMMRewards = () => {
         signature_ws_id.current = null;
     }, []);
 
-
-    const GetMMRewards = async (order_key : PublicKey) => {
-        
-
+    const GetMMRewards = async (order_key: PublicKey) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Placing Limit Order..");
@@ -75,17 +71,22 @@ const useGetMMRewards = () => {
             orderPubKey: order_key,
         });
 
-        let n_instructions = tx.instructions.length
+        let n_instructions = tx.instructions.length;
 
         let jup_account_keys = tx.instructions[n_instructions - 1].keys;
         let jup_data = Array.from(tx.instructions[n_instructions - 1].data);
-        console.log(jup_data)
+        console.log(jup_data);
         console.log(tx.instructions);
-        console.log(tx.instructions[n_instructions-1].programId.toString());
-
+        console.log(tx.instructions[n_instructions - 1].programId.toString());
 
         for (let i = 0; i < jup_account_keys.length; i++) {
-            console.log("accounts: ", i, jup_account_keys[i].isSigner, jup_account_keys[i].isWritable, jup_account_keys[i].pubkey.toString());
+            console.log(
+                "accounts: ",
+                i,
+                jup_account_keys[i].isSigner,
+                jup_account_keys[i].isWritable,
+                jup_account_keys[i].pubkey.toString(),
+            );
         }
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
@@ -96,12 +97,7 @@ const useGetMMRewards = () => {
             true, // allow owner off curve
         );
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("test"), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
-
-         
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
 
         const instruction_data = serialise_PlaceCancel_instruction(0, 1, jup_data);
 
@@ -129,7 +125,6 @@ const useGetMMRewards = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(instruction);
-
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

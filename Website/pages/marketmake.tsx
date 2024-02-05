@@ -18,31 +18,11 @@ import { PROGRAM, RPC_NODE, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, LAMPORTS_PER_SOL, Connection, Keypair, Transaction } from "@solana/web3.js";
-import { MdOutlineContentCopy } from "react-icons/md";
-import { PieChart } from "react-minimal-pie-chart";
-import { useRouter } from "next/router";
-import Image from "next/image";
-import useResponsive from "../hooks/useResponsive";
-import UseWalletConnection from "../hooks/useWallet";
-import trimAddress from "../utils/trimAddress";
-import WoodenButton from "../components/Buttons/woodenButton";
-import PageNotFound from "../components/pageNotFound";
-import useCheckTickets from "../hooks/useCheckTickets";
-import useBuyTickets from "../hooks/useBuyTickets";
-import useClaimTickets from "../hooks/useClaimTokens";
-import useRefundTickets from "../hooks/useRefundTickets";
-import FeaturedBanner from "../components/featuredBanner";
-import Timespan from "../components/launchPreview/timespan";
-import TokenDistribution from "../components/launchPreview/tokenDistribution";
-import useDetermineCookState, { CookState } from "../hooks/useDetermineCookState";
-import Loader from "../components/loader";
-import { WarningModal } from "../components/Solana/modals";
-import { ButtonString } from "../components/user_status";
 import Head from "next/head";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 import BN from "bn.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "../components/Solana/state";
+import { MMLaunchData, MMUserData, RunMMLaunchDataGPA, RunMMUserDataGPA } from "../components/Solana/jupiter_state";
 import bs58 from "bs58";
 import { ownerFilter } from "@jup-ag/limit-order-sdk";
 import { OrderHistoryItem, TradeHistoryItem, Order } from "@jup-ag/limit-order-sdk";
@@ -78,11 +58,42 @@ async function getMarketData() {
 const MarketMaker = () => {
     const wallet = useWallet();
     const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
+    const [mmUserData, setMMUserData] = useState<MMUserData[]>([]);
+    const [mmLaunchData, setMMLaunchData] = useState<MMLaunchData[]>([]);
 
     const { PlaceLimitOrder } = usePlaceLimitOrder();
     const { CancelLimitOrder } = useCancelLimitOrder();
     const { GetMMTokens } = useGetMMTokens();
 
+    const check_mm_data = useRef<boolean>(true);
+
+    const CheckMMData = useCallback(async () => {
+        if (!check_mm_data.current) return;
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+        console.log("check mm data", wallet.connected, wallet.connecting, wallet.disconnecting);
+
+        let user_list = await RunMMUserDataGPA(wallet);
+        setMMUserData(user_list);
+        let launch_list = await RunMMLaunchDataGPA();
+        setMMLaunchData(launch_list);
+
+        console.log("User", user_list);
+        console.log("Launch", launch_list);
+
+        check_mm_data.current = false;
+    }, [wallet]);
+
+    useEffect(() => {
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+        CheckMMData();
+    }, [wallet, CheckMMData]);
+
+    const RecheckMMData = useCallback(async () => {
+        check_mm_data.current = true;
+        CheckMMData();
+    }, [CheckMMData]);
 
     async function getUserOrders() {
         const connection = new Connection(RPC_NODE);
@@ -108,7 +119,6 @@ const MarketMaker = () => {
         setOpenOrders(openOrder);
     }
 
-
     return (
         <>
             <Head>
@@ -127,7 +137,7 @@ const MarketMaker = () => {
                     <Button
                         size="lg"
                         onClick={() => {
-                            CancelLimitOrder( openOrders[0]);
+                            CancelLimitOrder(openOrders[0]);
                         }}
                     >
                         Cancel Order
@@ -147,6 +157,14 @@ const MarketMaker = () => {
                         }}
                     >
                         Get MM Tokens
+                    </Button>
+                    <Button
+                        size="lg"
+                        onClick={() => {
+                            RecheckMMData();
+                        }}
+                    >
+                        Get MM Data
                     </Button>
                 </Center>
             </main>

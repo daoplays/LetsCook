@@ -7,7 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
 } from "../../components/Solana/state";
-import {serialise_PlaceCancel_instruction} from "../../components/Solana/jupiter_state";
+import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -33,7 +33,7 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
-import {OpenOrder} from "../../pages/marketmake"
+import { OpenOrder } from "../../pages/marketmake";
 
 const useCancelLimitOrder = () => {
     const wallet = useWallet();
@@ -53,10 +53,7 @@ const useCancelLimitOrder = () => {
         signature_ws_id.current = null;
     }, []);
 
-
-    const CancelLimitOrder = async (order : OpenOrder) => {
-        
-
+    const CancelLimitOrder = async (order: OpenOrder) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Placing Limit Order..");
@@ -77,7 +74,7 @@ const useCancelLimitOrder = () => {
             orderPubKey: order.publicKey,
         });
 
-        let n_instructions = tx.instructions.length
+        let n_instructions = tx.instructions.length;
 
         let jup_account_keys = tx.instructions[n_instructions - 1].keys;
         let jup_data = Array.from(tx.instructions[n_instructions - 1].data);
@@ -88,12 +85,8 @@ const useCancelLimitOrder = () => {
             true, // allow owner off curve
         );
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("test"), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
 
-         
         let order_type = order.account.inputMint.toString() === wsol_mint.toString();
         let order_amount = order.account.makingAmount;
         const instruction_data = serialise_PlaceCancel_instruction(order_type ? 0 : 1, order_amount, jup_data);
@@ -123,7 +116,6 @@ const useCancelLimitOrder = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(instruction);
-
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

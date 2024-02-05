@@ -8,7 +8,7 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import {serialise_PlaceCancel_instruction} from "../../components/Solana/jupiter_state";
+import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -35,7 +35,6 @@ import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 
-
 const useGetMMTokens = () => {
     const wallet = useWallet();
 
@@ -54,10 +53,7 @@ const useGetMMTokens = () => {
         signature_ws_id.current = null;
     }, []);
 
-
     const GetMMTokens = async () => {
-        
-
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Placing Limit Order..");
@@ -65,7 +61,7 @@ const useGetMMTokens = () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         const usdc_mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-    
+
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
         let user_token_account_key = await getAssociatedTokenAddress(
@@ -80,26 +76,18 @@ const useGetMMTokens = () => {
             true, // allow owner off curve
         );
 
-        let current_date = Math.floor((new Date().getTime()) / 24 / 60 / 60 / 1000);
+        let current_date = Math.floor(new Date().getTime() / 24 / 60 / 60 / 1000);
         console.log(current_date);
         let date_bytes = uInt32ToLEBytes(current_date);
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("test"), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
 
         let launch_date_account = PublicKey.findProgramAddressSync(
             [usdc_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
             PROGRAM,
         )[0];
 
-        let user_date_account = PublicKey.findProgramAddressSync(
-            [usdc_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes],
-            PROGRAM,
-        )[0];
-
-         
+        let user_date_account = PublicKey.findProgramAddressSync([usdc_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.get_mm_tokens);
 
@@ -116,8 +104,6 @@ const useGetMMTokens = () => {
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 
-
-
         const instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
@@ -130,7 +116,6 @@ const useGetMMTokens = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(instruction);
-
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

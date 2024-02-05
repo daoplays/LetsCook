@@ -6,9 +6,9 @@ import {
     send_transaction,
     serialise_basic_instruction,
     request_current_balance,
-    uInt32ToLEBytes
+    uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import {serialise_PlaceLimit_instruction} from "../../components/Solana/jupiter_state";
+import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -35,7 +35,6 @@ import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 
-
 const usePlaceLimitOrder = () => {
     const wallet = useWallet();
 
@@ -54,10 +53,7 @@ const usePlaceLimitOrder = () => {
         signature_ws_id.current = null;
     }, []);
 
-
     const PlaceLimitOrder = async () => {
-        
-
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Placing Limit Order..");
@@ -75,10 +71,10 @@ const usePlaceLimitOrder = () => {
 
         let token_amount = new BN(1000000);
         let sol_amount = new BN(100);
-        let order_type : number = 1;
+        let order_type: number = 1;
         const { tx, orderPubKey } = await limitOrder.createOrder({
             owner: user_pda_account,
-            inAmount:  order_type === 0 ? sol_amount : token_amount, // 1000000 => 1 USDC if inputToken.address is USDC mint
+            inAmount: order_type === 0 ? sol_amount : token_amount, // 1000000 => 1 USDC if inputToken.address is USDC mint
             outAmount: order_type === 0 ? token_amount : sol_amount,
             inputMint: order_type === 0 ? wsol_mint : token_mint,
             outputMint: order_type === 0 ? token_mint : wsol_mint,
@@ -86,7 +82,7 @@ const usePlaceLimitOrder = () => {
             base: base.publicKey,
         });
 
-        let n_instructions = tx.instructions.length
+        let n_instructions = tx.instructions.length;
 
         let jup_account_keys = tx.instructions[n_instructions - 1].keys;
         let jup_data = Array.from(tx.instructions[n_instructions - 1].data);
@@ -97,12 +93,7 @@ const usePlaceLimitOrder = () => {
             true, // allow owner off curve
         );
 
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("test"), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
-
-         
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
 
         const instruction_data = serialise_PlaceLimit_instruction(order_type, order_type === 0 ? sol_amount : token_amount, jup_data);
 
@@ -128,7 +119,6 @@ const usePlaceLimitOrder = () => {
             data: instruction_data,
         });
 
-    
         let txArgs = await get_current_blockhash("");
 
         let transaction = new Transaction(txArgs);
@@ -137,11 +127,11 @@ const usePlaceLimitOrder = () => {
         transaction.add(instruction);
 
         transaction.partialSign(base);
-        console.log("sending transaction")
+        console.log("sending transaction");
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            console.log(signed_transaction)
+            console.log(signed_transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
             var transaction_response = await send_transaction("", encoded_transaction);

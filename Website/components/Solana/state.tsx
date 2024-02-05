@@ -364,7 +364,7 @@ export const enum LaunchInstruction {
     place_limit_order = 11,
     cancel_limit_order = 12,
     get_mm_tokens = 13,
-    get_mm_rewards = 14
+    get_mm_rewards = 14,
 }
 
 export interface LaunchDataUserInput {
@@ -460,8 +460,8 @@ export class LaunchData {
         readonly positive_votes: number,
         readonly negative_votes: number,
 
-        readonly total_mm_buy_amount : bignum,
-        readonly total_mm_sell_amount : bignum,
+        readonly total_mm_buy_amount: bignum,
+        readonly total_mm_sell_amount: bignum,
 
         readonly socials: string[],
         readonly distribution: number[],
