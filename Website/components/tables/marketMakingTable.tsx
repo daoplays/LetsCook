@@ -141,17 +141,16 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch | any }) => {
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
                         {launch.vol}
                     </Text>
-                    <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.rewards} {launch.symbol}
+                        {launch.rewards} {launch.symbol} /
                     </Text>
-                    /
-                    <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
