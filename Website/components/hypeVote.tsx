@@ -1,6 +1,6 @@
 import { useCallback, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
 import { PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE, LaunchKeys } from "./Solana/constants";
 import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";

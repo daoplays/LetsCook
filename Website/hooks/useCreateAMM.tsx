@@ -224,7 +224,7 @@ const useCreateAMM = (launchData: LaunchData) => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
         transaction.add(list_instruction);
 

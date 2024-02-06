@@ -360,6 +360,11 @@ export const enum LaunchInstruction {
     claim_refund = 7,
     edit_launch = 8,
     claim_tokens = 9,
+    edit_user = 10,
+    place_limit_order = 11,
+    cancel_limit_order = 12,
+    get_mm_tokens = 13,
+    get_mm_rewards = 14,
 }
 
 export interface LaunchDataUserInput {
@@ -455,6 +460,9 @@ export class LaunchData {
         readonly positive_votes: number,
         readonly negative_votes: number,
 
+        readonly total_mm_buy_amount: bignum,
+        readonly total_mm_sell_amount: bignum,
+
         readonly socials: string[],
         readonly distribution: number[],
         readonly flags: number[],
@@ -491,6 +499,9 @@ export class LaunchData {
             ["positive_votes", u32],
             ["negative_votes", u32],
 
+            ["total_mm_buy_amount", u64],
+            ["total_mm_sell_amount", u64],
+
             ["socials", array(utf8String)],
             ["distribution", array(u8)],
             ["flags", array(u8)],
@@ -525,6 +536,9 @@ export class LaunchData {
                 args.mints_won!,
                 args.positive_votes!,
                 args.negative_votes!,
+
+                args.total_mm_buy_amount!,
+                args.total_mm_sell_amount!,
 
                 args.socials!,
                 args.distribution!,
@@ -571,6 +585,9 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         0,
         0,
         0,
+
+        new BN(0),
+        new BN(0),
 
         [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url],
         new_launch_data.distribution,
@@ -986,6 +1003,29 @@ export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUser
         new_launch_data.disc_url,
     );
     const [buf] = EditLaunch_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+class EditUser_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly name: string,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<EditUser_Instruction>(
+        [
+            ["instruction", u8],
+            ["name", utf8String],
+        ],
+        (args) => new EditUser_Instruction(args.instruction!, args.name!),
+        "EditUser_Instruction",
+    );
+}
+
+export function serialise_EditUser_instruction(name: string): Buffer {
+    const data = new EditUser_Instruction(LaunchInstruction.edit_user, name);
+    const [buf] = EditUser_Instruction.struct.serialize(data);
 
     return buf;
 }

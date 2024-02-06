@@ -2,11 +2,7 @@ const { TwitterApi } = require("twitter-api-v2");
 import { getStore } from "@netlify/blobs";
 import type { Context } from "@netlify/functions";
 import type { Config } from "@netlify/functions";
-
-interface Result {
-    statusCode: number;
-    body: string;
-}
+import { JupCSVToList } from "../../utils/JupCSVToList";
 
 export default async (req: Request) => {
     const { next_run } = await req.json();
@@ -21,7 +17,9 @@ export default async (req: Request) => {
     });
 
     try {
-        let new_list = await fetch("https://token.jup.ag/strict").then((res) => res.json());
+        let new_list_string = await JupCSVToList();
+
+        let new_list = JSON.parse(new_list_string);
 
         const store = getStore({
             name: "strictList",
@@ -31,7 +29,12 @@ export default async (req: Request) => {
         const oldList = await store.get("list");
         let old_list = JSON.parse(oldList);
 
+        for (let i = 0; i < old_list.length; i++) {
+            console.log(old_list[i]);
+        }
+
         // we only care about additions compared to the old list
+        let tweets: string[] = [];
         let additions: string[] = [];
         for (let i = 0; i < new_list.length; i++) {
             let address = new_list[i]["address"];
@@ -42,31 +45,53 @@ export default async (req: Request) => {
                     break;
                 }
             }
+
+            // we also need to check for duplicate additions :|
+            for (let j = 0; j < additions.length; j++) {
+                if (additions[j]["address"] === address) {
+                    found = true;
+                    break;
+                }
+            }
+
             if (found === false) {
-                let symbol: string = new_list[i]["symbol"]
+                let symbol: string = new_list[i]["symbol"];
                 let tweet: string =
-                    symbol + " is now validated at @JupiterExchange CA: " + address + ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
-                additions.push(tweet);
+                    symbol +
+                    " is now validated at @JupiterExchange CA: " +
+                    address +
+                    ". Find upcoming memecoins at Let's Cook! https://letscook.wtf";
+                tweets.push(tweet);
+                additions.push(new_list[i]);
             }
         }
 
-        if (additions.length === 0) {
-            console.log("no new additions")
-            return  new Response("Ok"); 
+        if (tweets.length === 0) {
+            console.log("no new additions");
+            return new Response("Ok");
         }
 
-        console.log("have ", additions.length, " new additions")
-        for (let i = 0; i < additions.length; i++) {
-            console.log(additions[i]);
-            let response = await client.v2.tweet(additions[i]);
+        console.log("have ", tweets.length, " new additions");
+
+        // if we have an unreasonable number of additions something has probably gone wrong
+        if (tweets.length > 20) {
+            console.log("list lengths very different, saving new list and exiting");
+            await store.set("list", JSON.stringify(new_list));
+            return new Response("Ok");
         }
 
-        await store.set("list", JSON.stringify(new_list));
+        for (let i = 0; i < tweets.length; i++) {
+            console.log(tweets[i]);
+            let response = await client.v2.tweet(tweets[i]);
+            old_list.push(additions[i]);
+        }
 
-        return  new Response("Ok"); 
+        await store.set("list", JSON.stringify(old_list));
+
+        return new Response("Ok");
     } catch (err) {
         console.log("TWITTER ERROR: ", err);
-        return  new Response("Error"); 
+        return new Response("Error");
     }
 };
 

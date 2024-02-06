@@ -12,6 +12,7 @@ interface AppRootTypes {
     isUserDataLoading: boolean;
     isHomePageDataLoading: boolean;
     checkLaunchData: () => Promise<void>;
+    checkUserData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
     joinData: JoinData[];
 }
@@ -28,6 +29,7 @@ export const AppRootContextProvider = ({
     isUserDataLoading,
     isHomePageDataLoading,
     checkLaunchData,
+    checkUserData,
     newLaunchData,
     joinData,
 }: PropsWithChildren<AppRootTypes>) => {
@@ -42,6 +44,7 @@ export const AppRootContextProvider = ({
                 isUserDataLoading,
                 isHomePageDataLoading,
                 checkLaunchData,
+                checkUserData,
                 newLaunchData,
                 joinData,
             }}

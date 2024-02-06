@@ -9,6 +9,7 @@ import MainButton from "./Buttons/mainButton";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
+import { isHomePageOnly } from "../constant/root";
 
 function Navigation() {
     const router = useRouter();
@@ -40,17 +41,23 @@ function Navigation() {
                     </Text>
                 </Link>
                 <HStack gap={3}>
-                    <Tooltip label="Points" hasArrow fontSize="large" offset={[0, 15]}>
+                    {/* <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
                             <Image height={20} width={20} src="/images/sauce.png" alt="Sauce" />
                             <div>{currentUserData === null ? 0 : currentUserData.total_points}</div>
                         </div>
-                    </Tooltip>
+                    </Tooltip> */}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/calendar">
-                                <Image src="/images/calendar.png" width={35} height={35} alt={"Calendar"} />
+                            <Link href={isHomePageOnly ? "#" : "/calendar"}>
+                                <Image
+                                    src="/images/calendar.png"
+                                    width={35}
+                                    height={35}
+                                    alt={"Calendar"}
+                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                />
                             </Link>
                         </Tooltip>
                     </Show>
@@ -74,10 +81,10 @@ function Navigation() {
                                     if (!wallet.connected) {
                                         alert("Please connect your wallet to access your bags");
                                     } else {
-                                        router.push(`/bags`);
+                                        !isHomePageOnly && router.push(`/bags`);
                                     }
                                 }}
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
                             />
                         </Tooltip>
                     </Show>
@@ -93,10 +100,10 @@ function Navigation() {
                                     if (!wallet.connected) {
                                         alert("Please connect your wallet to access creator dashboard");
                                     } else {
-                                        router.push(`/dashboard`);
+                                        !isHomePageOnly && router.push(`/dashboard`);
                                     }
                                 }}
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
                             />
                         </Tooltip>
                     </Show>
@@ -173,15 +180,16 @@ function Navigation() {
                             alert("Please connect your wallet to access creator dashboard");
                         } else {
                             onToggle();
-                            router.push("/dashboard");
+                            !isHomePageOnly && router.push(`/dashboard`);
                         }
                     }}
+                    style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
                 >
                     Creator Dashboard
                 </Text>
 
-                <Link href="/calendar" onClick={onToggle}>
-                    <Text color="#683309" fontSize={30} fontWeight="bold">
+                <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
+                    <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
                         Calendar
                     </Text>
                 </Link>
@@ -199,9 +207,10 @@ function Navigation() {
                             alert("Please connect your wallet to access creator dashboard");
                         } else {
                             onToggle();
-                            router.push("/bags");
+                            !isHomePageOnly && router.push(`/bags`);
                         }
                     }}
+                    style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
                 >
                     My Bags
                 </Text>
