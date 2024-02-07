@@ -48,7 +48,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                     </HStack>
                                 )}
 
-                                {i.title === "Market Making Rewards" && (
+                                {i.title === "Market Maker Rewards" && (
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#a3a3a3" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
@@ -96,7 +96,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                             },
                             {
                                 title: distributionLabels.headers[1].title,
-                                value: (distribution[Distribution.MMRewards]?.value ? distribution[Distribution.MMRewards]?.value : 0),
+                                value: distribution[Distribution.MMRewards]?.value ? distribution[Distribution.MMRewards]?.value : 0,
                                 color: distributionLabels.headers[1].color,
                             },
                             {
