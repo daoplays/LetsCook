@@ -15,6 +15,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
 import getImageDimensions from "../../utils/getImageDimension";
+import { distributionLabels } from "../../constant/root";
 
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -382,8 +383,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             >
                                 <VStack spacing={5} align="start" w={md ? "100%" : "fit-content"} className={styles.distributionBoxFields}>
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg="white" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Liquidity Pool</div>
+                                        <Box w={35} h={30} bg={distributionLabels.headers[0].color} />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                            {distributionLabels.headers[0].title}
+                                        </div>
                                     </HStack>
 
                                     <VStack
@@ -395,8 +398,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#FF6651" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>Raffle (SOL)</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[0].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[0].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
@@ -423,8 +428,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#FF9548" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>$TOKEN</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[1].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[1].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
@@ -451,8 +458,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
 
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg="#a3a3a3" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Let&apos;s Cook Rewards</div>
+                                        <Box w={35} h={30} bg={distributionLabels.headers[1].color} />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                            {distributionLabels.headers[1].title}
+                                        </div>
                                     </HStack>
 
                                     <VStack
@@ -464,8 +473,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#66FFB6" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Market Maker Rewards</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[2].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[2].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 {/* integrate MM Rewards  */}
@@ -482,8 +493,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
 
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg="#666666" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Creator Control</div>
+                                        <Box w={35} h={30} bg={distributionLabels.headers[2].color} />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                            {distributionLabels.headers[2].title}
+                                        </div>
                                     </HStack>
 
                                     <VStack
@@ -495,8 +508,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#86f1fc" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Provider Rewards</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[3].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[3].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
@@ -522,8 +537,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#8CB3FF" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[4].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[4].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
@@ -549,8 +566,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#988FFF" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops / Marketing</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[5].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[5].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
@@ -576,8 +595,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#FD98FE" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Others</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[6].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[6].title}
+                                                </div>
                                             </HStack>
 
                                             <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
@@ -624,11 +645,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 color: "#FF6651",
                                             },
                                             { title: "$TOKEN", value: percentage2, color: "#FF9548" },
-                                            // integrate MM Rewards
-                                            { title: "Market Maker Rewards", value: 0, color: "#66FFB6" },
+
+                                            { title: "Market Maker Rewards", value: 0, color: "#66FFB6" }, // integrate MM Rewards
                                             { title: "Liquidity Provider Rewards", value: percentage3, color: "#61efff" },
-                                            { title: "Team", value: percentage5, color: "#8CB3FF" },
                                             { title: "Airdrops / Marketing", value: percentage4, color: "#988FFF" },
+                                            { title: "Team", value: percentage5, color: "#8CB3FF" },
                                             { title: "Others", value: percentage6, color: "#FD98FE" },
                                             { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                                         ]}
@@ -640,26 +661,26 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         totalValue={100}
                                         data={[
                                             {
-                                                title: "Liquidity Pool",
+                                                title: distributionLabels.headers[0].title,
                                                 value:
                                                     parseInt(distribution1 ? distribution1 : "0") +
                                                     parseInt(distribution2 ? distribution2 : "0"),
-                                                color: "white",
+                                                color: distributionLabels.headers[0].color,
                                             },
                                             {
-                                                title: "Liquidity Rewards",
+                                                title: distributionLabels.headers[1].title,
                                                 // integrate MM Rewards here
                                                 value: 0,
-                                                color: "#a3a3a3",
+                                                color: distributionLabels.headers[1].color,
                                             },
                                             {
-                                                title: "Creator Control",
+                                                title: distributionLabels.headers[2].title,
                                                 value:
                                                     parseInt(distribution3 ? distribution3 : "0") +
                                                     parseInt(distribution4 ? distribution4 : "0") +
                                                     parseInt(distribution5 ? distribution5 : "0") +
                                                     parseInt(distribution6 ? distribution6 : "0"),
-                                                color: "#666666",
+                                                color: distributionLabels.headers[2].color,
                                             },
                                         ]}
                                         style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
