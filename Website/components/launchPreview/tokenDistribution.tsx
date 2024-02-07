@@ -1,8 +1,9 @@
 import { VStack, HStack, Flex, Box, Text } from "@chakra-ui/react";
 import { PieChart } from "react-minimal-pie-chart";
 import useResponsive from "../../hooks/useResponsive";
-import { LaunchData, bignum_to_num } from "../Solana/state";
+import { Distribution, LaunchData, bignum_to_num } from "../Solana/state";
 import styles from "../../styles/Launch.module.css";
+import { distributionLabels } from "../../constant/root";
 interface TokenDistributionProps {
     launchData?: LaunchData;
 }
@@ -13,9 +14,9 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
     const distribution = launchData.distribution
         ? launchData.distribution
               .map((value, index) => ({
-                  title: ["Raffle (SOL)", "$TOKEN", "Liquidity Provider Rewards", "Team", "Airdrops / Marketing", "Others"][index],
+                  title: distributionLabels.fields[index].title,
                   value,
-                  color: ["#FF6651", "#FF9548", "#86f1fc", "#8CB3FF", "#988FFF", "#FD98FE"][index],
+                  color: distributionLabels.fields[index].color,
               }))
               .filter((item) => item.value > 0)
         : [];
@@ -42,7 +43,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                     <HStack gap={4} ml={sm ? -12 : -14}>
                                         <Box bg="white" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                                            Liquidity Pool
+                                            {distributionLabels.headers[0].title}
                                         </Text>
                                     </HStack>
                                 )}
@@ -51,7 +52,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#a3a3a3" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                                            Let&apos;s Cook Rewards
+                                            {distributionLabels.headers[1].title}
                                         </Text>
                                     </HStack>
                                 )}
@@ -59,7 +60,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#666666" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                                            Creator Control
+                                            {distributionLabels.headers[2].title}
                                         </Text>
                                     </HStack>
                                 )}
@@ -87,25 +88,25 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                         totalValue={100}
                         data={[
                             {
-                                title: "Liquidity Pool",
+                                title: distributionLabels.headers[0].title,
                                 value:
-                                    (distribution[0]?.value ? distribution[0]?.value : 0) +
-                                    (distribution[1]?.value ? distribution[1]?.value : 0),
-                                color: "white",
+                                    (distribution[Distribution.Raffle]?.value ? distribution[Distribution.Raffle]?.value : 0) +
+                                    (distribution[Distribution.LP]?.value ? distribution[Distribution.LP]?.value : 0),
+                                color: distributionLabels.headers[0].color,
                             },
                             {
-                                title: "Let's Cook Rewards",
-                                value: 0,
-                                color: "#a3a3a3",
+                                title: distributionLabels.headers[1].title,
+                                value: (distribution[Distribution.MMRewards]?.value ? distribution[Distribution.MMRewards]?.value : 0),
+                                color: distributionLabels.headers[1].color,
                             },
                             {
-                                title: "Creator Control",
+                                title: distributionLabels.headers[2].title,
                                 value:
-                                    (distribution[2]?.value ? distribution[2]?.value : 0) +
-                                    (distribution[3]?.value ? distribution[3]?.value : 0) +
-                                    (distribution[4]?.value ? distribution[4]?.value : 0) +
-                                    (distribution[5]?.value ? distribution[5]?.value : 0),
-                                color: "#666666",
+                                    (distribution[Distribution.LPRewards]?.value ? distribution[Distribution.LPRewards]?.value : 0) +
+                                    (distribution[Distribution.Team]?.value ? distribution[Distribution.Team]?.value : 0) +
+                                    (distribution[Distribution.Airdrops]?.value ? distribution[Distribution.Airdrops]?.value : 0) +
+                                    (distribution[Distribution.Other]?.value ? distribution[Distribution.Other]?.value : 0),
+                                color: distributionLabels.headers[2].color,
                             },
                         ]}
                         style={{ width: md ? "110%" : "440px", position: "absolute", zIndex: 1 }}

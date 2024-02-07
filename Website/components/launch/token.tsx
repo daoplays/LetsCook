@@ -3,7 +3,7 @@ import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
 import { Center, VStack, Text, HStack, Input, InputRightElement, InputGroup, InputLeftElement, Spacer, Box } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { LaunchData, LaunchDataUserInput, bignum_to_num } from "../../components/Solana/state";
+import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -15,6 +15,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
 import getImageDimensions from "../../utils/getImageDimension";
+import { distributionLabels } from "../../constant/root";
 
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -34,12 +35,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [decimal, setDecimal] = useState<string>(newLaunchData.current.decimals.toString());
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
-    const [distribution1, setDistribution1] = useState(newLaunchData.current.distribution[0].toString());
-    const [distribution2, setDistribution2] = useState(newLaunchData.current.distribution[1].toString());
-    const [distribution3, setDistribution3] = useState(newLaunchData.current.distribution[2].toString());
-    const [distribution4, setDistribution4] = useState(newLaunchData.current.distribution[3].toString());
-    const [distribution5, setDistribution5] = useState(newLaunchData.current.distribution[4].toString());
-    const [distribution6, setDistribution6] = useState(newLaunchData.current.distribution[5].toString());
+    const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -67,15 +63,22 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
     };
 
-    const percentage1 = isNaN(parseInt(distribution1)) ? 0 : parseInt(distribution1);
-    const percentage2 = isNaN(parseInt(distribution2)) ? 0 : parseInt(distribution2);
-    const percentage3 = isNaN(parseInt(distribution3)) ? 0 : parseInt(distribution3);
-    const percentage4 = isNaN(parseInt(distribution4)) ? 0 : parseInt(distribution4);
-    const percentage5 = isNaN(parseInt(distribution5)) ? 0 : parseInt(distribution5);
-    const percentage6 = isNaN(parseInt(distribution6)) ? 0 : parseInt(distribution6);
+    const handleDistributionChange = (e, idx) => {
+        let new_dist = [...distribution]
+        new_dist[idx] = isNaN(parseInt(e.target.value)) ? 0 : parseInt(e.target.value)
+        console.log(new_dist)
+        setDistribution(new_dist);
+    }
 
+    function getTotalPercentage(distribution : number[]) {
+        let total = 0;
+        for (let i = 0; i < distribution.length; i++) {
+            total += distribution[i]
+        }
+        return total;
+    }
     // Calculate the total sum of all percentages
-    const totalPercentage = percentage1 + percentage2 + percentage3 + percentage4 + percentage5 + percentage6;
+    const totalPercentage = getTotalPercentage(distribution)
 
     function setLaunchData(e) {
         e.preventDefault();
@@ -105,17 +108,17 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return;
         }
 
-        if (parseFloat(distribution2) === 0) {
+        if (distribution[Distribution.LP] === 0) {
             toast.error("Liquidity pool allocation must be greater than zero");
             return;
         }
 
-        if (parseFloat(distribution1) === 0) {
+        if (distribution[Distribution.Raffle] === 0) {
             toast.error("Raffle allocation must be greater than zero");
             return;
         }
 
-        if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (percentage1 / 100) < parseInt(mints)) {
+        if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (distribution[Distribution.Raffle] / 100) < parseInt(mints)) {
             toast.error("Not enough tokens to support the raffle");
             return;
         }
@@ -146,12 +149,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         newLaunchData.current.num_mints = parseInt(mints);
         newLaunchData.current.ticket_price = parseFloat(ticketPrice);
         newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
-        newLaunchData.current.distribution[0] = parseFloat(distribution1);
-        newLaunchData.current.distribution[1] = parseFloat(distribution2);
-        newLaunchData.current.distribution[2] = parseFloat(distribution3);
-        newLaunchData.current.distribution[3] = parseFloat(distribution4);
-        newLaunchData.current.distribution[4] = parseFloat(distribution5);
-        newLaunchData.current.distribution[5] = parseFloat(distribution6);
+        newLaunchData.current.distribution = distribution;
 
         setScreen("details");
     }
@@ -382,8 +380,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             >
                                 <VStack spacing={5} align="start" w={md ? "100%" : "fit-content"} className={styles.distributionBoxFields}>
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg="white" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Liquidity Pool</div>
+                                        <Box w={35} h={30} bg={distributionLabels.headers[0].color} />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                            {distributionLabels.headers[0].title}
+                                        </div>
                                     </HStack>
 
                                     <VStack
@@ -395,21 +395,23 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#FF6651" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>Raffle (SOL)</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[0].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[0].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size={"lg"}
                                                     required
-                                                    value={distribution1 === "" ? "" : parseInt(distribution1).toFixed(0)}
+                                                    value={distribution[Distribution.Raffle].toFixed(0)}
                                                     onChange={(e) => {
-                                                        setDistribution1(e.target.value);
+                                                        handleDistributionChange(e, Distribution.Raffle);
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution1) === 0 ? true : false}
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.Raffle] === 0 ? true : false}
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -423,21 +425,24 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#FF9548" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>$TOKEN</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[1].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[1].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size="lg"
                                                     required
-                                                    value={distribution2 === "" ? "" : parseInt(distribution2).toFixed(0)}
+                                                    value={distribution[Distribution.LP].toFixed(0)}
                                                     onChange={(e) => {
-                                                        setDistribution2(e.target.value);
+                                                        handleDistributionChange(e, Distribution.LP);
+
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution2) === 0 ? true : false}
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.LP] === 0 ? true : false}
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -451,8 +456,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
 
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg="#a3a3a3" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Let&apos;s Cook Rewards</div>
+                                        <Box w={35} h={30} bg={distributionLabels.headers[1].color} />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                            {distributionLabels.headers[1].title}
+                                        </div>
                                     </HStack>
 
                                     <VStack
@@ -464,12 +471,26 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#66FFB6" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Market Maker Rewards</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[2].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[2].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 {/* integrate MM Rewards  */}
-                                                <Input size="lg" value={0} type="number" min="0" max="100" disabled={true} />
+                                                <Input
+                                                    size="lg"
+                                                    required
+                                                    value={distribution[Distribution.MMRewards].toFixed(0)}
+                                                    onChange={(e) => {
+                                                        handleDistributionChange(e, Distribution.MMRewards);
+
+                                                    }}
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.MMRewards] === 0 ? true : false}
+                                                />                                                
                                                 <Image
                                                     className={styles.percentage}
                                                     width={lg ? 15 : 20}
@@ -482,8 +503,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
 
                                     <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg="#666666" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Creator Control</div>
+                                        <Box w={35} h={30} bg={distributionLabels.headers[2].color} />
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                            {distributionLabels.headers[2].title}
+                                        </div>
                                     </HStack>
 
                                     <VStack
@@ -495,20 +518,23 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#86f1fc" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Provider Rewards</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[3].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[3].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size="lg"
-                                                    value={distribution3 === "" ? "" : parseInt(distribution3).toFixed(0)}
+                                                    value={distribution[Distribution.LPRewards].toFixed(0)}
                                                     onChange={(e) => {
-                                                        setDistribution3(e.target.value);
+                                                        handleDistributionChange(e, Distribution.LPRewards);
+
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution3) === 0 ? true : false}
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.LPRewards] === 0 ? true : false}
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -522,20 +548,23 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#8CB3FF" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[4].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[4].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size="lg"
-                                                    value={distribution5 === "" ? "" : parseInt(distribution5).toFixed(0)}
+                                                    value={distribution[Distribution.Team].toFixed(0)}
                                                     onChange={(e) => {
-                                                        setDistribution5(e.target.value);
+                                                        handleDistributionChange(e, Distribution.Team);
+
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution5) === 0 ? true : false}
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.Team] === 0 ? true : false}
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -549,20 +578,23 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#988FFF" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Airdrops / Marketing</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[5].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[5].title}
+                                                </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size="lg"
-                                                    value={distribution4 === "" ? "" : parseInt(distribution4).toFixed(0)}
+                                                    value={distribution[Distribution.Airdrops].toFixed(0)}
                                                     onChange={(e) => {
-                                                        setDistribution4(e.target.value);
+                                                        handleDistributionChange(e, Distribution.Airdrops);
+
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution4) === 0 ? true : false}
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.Airdrops] === 0 ? true : false}
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -576,21 +608,24 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#FD98FE" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Others</div>
+                                                <Box w={35} h={30} bg={distributionLabels.fields[6].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.fields[6].title}
+                                                </div>
                                             </HStack>
 
                                             <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
                                                 <Input
                                                     size="lg"
-                                                    value={distribution6 === "" ? "" : parseInt(distribution6).toFixed(0)}
+                                                    value={distribution[Distribution.Other].toFixed(0)}
                                                     onChange={(e) => {
-                                                        setDistribution6(e.target.value);
+                                                        handleDistributionChange(e, Distribution.Other);
+
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution6) === 0 ? true : false}
+                                                    disabled={totalPercentage === 100 && distribution[Distribution.Other] === 0 ? true : false}
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -620,16 +655,16 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         data={[
                                             {
                                                 title: "Raffle (SOL)",
-                                                value: percentage1,
+                                                value: distribution[Distribution.Raffle],
                                                 color: "#FF6651",
                                             },
-                                            { title: "$TOKEN", value: percentage2, color: "#FF9548" },
-                                            // integrate MM Rewards
-                                            { title: "Market Maker Rewards", value: 0, color: "#66FFB6" },
-                                            { title: "Liquidity Provider Rewards", value: percentage3, color: "#61efff" },
-                                            { title: "Team", value: percentage5, color: "#8CB3FF" },
-                                            { title: "Airdrops / Marketing", value: percentage4, color: "#988FFF" },
-                                            { title: "Others", value: percentage6, color: "#FD98FE" },
+                                            { title: "$TOKEN", value: distribution[Distribution.LP], color: "#FF9548" },
+
+                                            { title: "Market Maker Rewards", value: distribution[Distribution.MMRewards], color: "#66FFB6" }, // integrate MM Rewards
+                                            { title: "Liquidity Provider Rewards", value: distribution[Distribution.LPRewards], color: "#61efff" },
+                                            { title: "Airdrops / Marketing", value: distribution[Distribution.Airdrops], color: "#988FFF" },
+                                            { title: "Team", value: distribution[Distribution.Team], color: "#8CB3FF" },
+                                            { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
                                             { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                                         ]}
                                         style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
@@ -640,26 +675,23 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         totalValue={100}
                                         data={[
                                             {
-                                                title: "Liquidity Pool",
+                                                title: distributionLabels.headers[0].title,
                                                 value:
-                                                    parseInt(distribution1 ? distribution1 : "0") +
-                                                    parseInt(distribution2 ? distribution2 : "0"),
-                                                color: "white",
+                                                distribution[Distribution.Raffle] + distribution[Distribution.LP],
+                                                color: distributionLabels.headers[0].color,
                                             },
                                             {
-                                                title: "Liquidity Rewards",
+                                                title: distributionLabels.headers[1].title,
                                                 // integrate MM Rewards here
-                                                value: 0,
-                                                color: "#a3a3a3",
+                                                value: distribution[Distribution.MMRewards],
+                                                color: distributionLabels.headers[1].color,
                                             },
                                             {
-                                                title: "Creator Control",
+                                                title: distributionLabels.headers[2].title,
                                                 value:
-                                                    parseInt(distribution3 ? distribution3 : "0") +
-                                                    parseInt(distribution4 ? distribution4 : "0") +
-                                                    parseInt(distribution5 ? distribution5 : "0") +
-                                                    parseInt(distribution6 ? distribution6 : "0"),
-                                                color: "#666666",
+                                                    distribution[Distribution.LPRewards] + distribution[Distribution.Team] +
+                                                    distribution[Distribution.Airdrops] + distribution[Distribution.Other],
+                                                color: distributionLabels.headers[2].color,
                                             },
                                         ]}
                                         style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}

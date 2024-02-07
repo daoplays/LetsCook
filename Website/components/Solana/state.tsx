@@ -349,6 +349,18 @@ export interface JoinedLaunch {
     launch_data: LaunchData;
 }
 
+export const enum Distribution {
+    Raffle,
+    LP,
+    MMRewards,
+    LPRewards,
+    Airdrops,
+    Team,
+    Other,
+    LENGTH,
+    
+}
+
 export const enum LaunchInstruction {
     init = 0,
     create_game = 1,
@@ -411,7 +423,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
-    distribution: [0, 0, 0, 0, 0, 0],
+    distribution: (new Array(Distribution.LENGTH)).fill(0),
     uri: "",
     pagename: "",
     description: "",
