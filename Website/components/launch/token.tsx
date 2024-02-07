@@ -402,7 +402,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 <Input
                                                     size={"lg"}
                                                     required
-                                                    value={parseInt(distribution1).toFixed(0)}
+                                                    value={distribution1 === "" ? "" : parseInt(distribution1).toFixed(0)}
                                                     onChange={(e) => {
                                                         setDistribution1(e.target.value);
                                                     }}
@@ -430,7 +430,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 <Input
                                                     size="lg"
                                                     required
-                                                    value={parseInt(distribution2).toFixed(0)}
+                                                    value={distribution2 === "" ? "" : parseInt(distribution2).toFixed(0)}
                                                     onChange={(e) => {
                                                         setDistribution2(e.target.value);
                                                     }}
@@ -452,7 +452,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                     <HStack spacing={5} mt={md ? 0 : 5}>
                                         <Box w={35} h={30} bg="#a3a3a3" />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Liquidity Rewards</div>
+                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>Let&apos;s Cook Rewards</div>
                                     </HStack>
 
                                     <VStack
@@ -462,33 +462,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         w={md ? "100%" : "530px"}
                                         className={styles.distributionBoxFields}
                                     >
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg="#C6FE7D" />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Provider Rewards</div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    value={parseInt(distribution3).toFixed(0)}
-                                                    onChange={(e) => {
-                                                        setDistribution3(e.target.value);
-                                                    }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
-                                                    disabled={totalPercentage === 100 && parseInt(distribution3) === 0 ? true : false}
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
                                                 <Box w={35} h={30} bg="#66FFB6" />
@@ -522,13 +495,40 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
+                                                <Box w={35} h={30} bg="#86f1fc" />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2}`}>Liquidity Provider Rewards</div>
+                                            </HStack>
+                                            <div className={styles.distributionField}>
+                                                <Input
+                                                    size="lg"
+                                                    value={distribution3 === "" ? "" : parseInt(distribution3).toFixed(0)}
+                                                    onChange={(e) => {
+                                                        setDistribution3(e.target.value);
+                                                    }}
+                                                    type="number"
+                                                    min="0"
+                                                    max="100"
+                                                    disabled={totalPercentage === 100 && parseInt(distribution3) === 0 ? true : false}
+                                                />
+                                                <Image
+                                                    className={styles.percentage}
+                                                    width={lg ? 15 : 20}
+                                                    height={lg ? 15 : 20}
+                                                    src="/images/perc.png"
+                                                    alt="Percentage"
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                            <HStack spacing={5}>
                                                 <Box w={35} h={30} bg="#8CB3FF" />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>Team</div>
                                             </HStack>
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size="lg"
-                                                    value={parseInt(distribution5).toFixed(0)}
+                                                    value={distribution5 === "" ? "" : parseInt(distribution5).toFixed(0)}
                                                     onChange={(e) => {
                                                         setDistribution5(e.target.value);
                                                     }}
@@ -555,7 +555,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <div className={styles.distributionField}>
                                                 <Input
                                                     size="lg"
-                                                    value={parseInt(distribution4).toFixed(0)}
+                                                    value={distribution4 === "" ? "" : parseInt(distribution4).toFixed(0)}
                                                     onChange={(e) => {
                                                         setDistribution4(e.target.value);
                                                     }}
@@ -583,7 +583,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
                                                 <Input
                                                     size="lg"
-                                                    value={parseInt(distribution6).toFixed(0)}
+                                                    value={distribution6 === "" ? "" : parseInt(distribution6).toFixed(0)}
                                                     onChange={(e) => {
                                                         setDistribution6(e.target.value);
                                                     }}
@@ -624,9 +624,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 color: "#FF6651",
                                             },
                                             { title: "$TOKEN", value: percentage2, color: "#FF9548" },
-                                            { title: "Liquidity Provider Rewards", value: percentage3, color: "#C6FE7D" },
                                             // integrate MM Rewards
                                             { title: "Market Maker Rewards", value: 0, color: "#66FFB6" },
+                                            { title: "Liquidity Provider Rewards", value: percentage3, color: "#61efff" },
                                             { title: "Team", value: percentage5, color: "#8CB3FF" },
                                             { title: "Airdrops / Marketing", value: percentage4, color: "#988FFF" },
                                             { title: "Others", value: percentage6, color: "#FD98FE" },
@@ -648,14 +648,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             },
                                             {
                                                 title: "Liquidity Rewards",
-                                                // integrate MM Rewards
-                                                value: parseInt(distribution3 ? distribution3 : "0") + 0,
+                                                // integrate MM Rewards here
+                                                value: 0,
                                                 color: "#a3a3a3",
                                             },
-
                                             {
                                                 title: "Creator Control",
                                                 value:
+                                                    parseInt(distribution3 ? distribution3 : "0") +
                                                     parseInt(distribution4 ? distribution4 : "0") +
                                                     parseInt(distribution5 ? distribution5 : "0") +
                                                     parseInt(distribution6 ? distribution6 : "0"),

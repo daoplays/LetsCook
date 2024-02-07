@@ -15,7 +15,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
               .map((value, index) => ({
                   title: ["Raffle (SOL)", "$TOKEN", "Liquidity Provider Rewards", "Team", "Airdrops / Marketing", "Others"][index],
                   value,
-                  color: ["#FF6651", "#FF9548", "#C6FE7D", "#8CB3FF", "#988FFF", "#FD98FE"][index],
+                  color: ["#FF6651", "#FF9548", "#86f1fc", "#8CB3FF", "#988FFF", "#FD98FE"][index],
               }))
               .filter((item) => item.value > 0)
         : [];
@@ -47,16 +47,15 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                     </HStack>
                                 )}
 
-                                {i.title === "Liquidity Provider Rewards" && (
+                                {i.title === "Market Making Rewards" && (
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#a3a3a3" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                                            Liquidity Rewards
+                                            Let&apos;s Cook Rewards
                                         </Text>
                                     </HStack>
                                 )}
-
-                                {i.title === "Team" && (
+                                {i.title === "Liquidity Provider Rewards" && (
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#666666" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
@@ -95,13 +94,14 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                 color: "white",
                             },
                             {
-                                title: "Liquidity Rewards",
-                                value: distribution[2]?.value ? distribution[2]?.value : 0,
+                                title: "Let's Cook Rewards",
+                                value: 0,
                                 color: "#a3a3a3",
                             },
                             {
                                 title: "Creator Control",
                                 value:
+                                    (distribution[2]?.value ? distribution[2]?.value : 0) +
                                     (distribution[3]?.value ? distribution[3]?.value : 0) +
                                     (distribution[4]?.value ? distribution[4]?.value : 0) +
                                     (distribution[5]?.value ? distribution[5]?.value : 0),
