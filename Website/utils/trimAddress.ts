@@ -1,5 +1,5 @@
 const trimAddress = (address: string) => {
-    return `${address.substring(0, 6)}...${address.substring(address.length - 6)}`;
+    return `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
 };
 
 export default trimAddress;
