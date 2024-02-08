@@ -86,11 +86,14 @@ const ChartComponent = (props) => {
         } = {},
     } = props;
 
-    const chartContainerRef = useRef();
+    const chartContainerRef = useRef(null);
 
     useEffect(() => {
+
+        
+
         const handleResize = () => {
-            if (chartContainerRef.current !== undefined) chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+            chart.applyOptions({ width: chartContainerRef.current.clientWidth });
         };
 
         const chart = createChart(chartContainerRef.current, {
