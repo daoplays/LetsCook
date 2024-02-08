@@ -8,6 +8,8 @@ import {
     WSS_NODE,
     LaunchKeys,
     PROD,
+    SOL_ACCOUNT_SEED,
+    DATA_ACCOUNT_SEED,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -18,6 +20,7 @@ import {
     LaunchData,
     bignum_to_num,
     request_current_balance,
+    uInt32ToLEBytes,
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
@@ -344,8 +347,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             newLaunchData.current.uri = "https://gateway.irys.xyz/" + json_receipt.id;
         }
 
-        let program_data_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
-        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+        let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
+        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],

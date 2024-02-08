@@ -1,4 +1,4 @@
-export const isHomePageOnly = false;
+export const isHomePageOnly = true;
 
 export const distributionLabels = {
     headers: [
@@ -13,6 +13,6 @@ export const distributionLabels = {
         { title: "Liquidity Provider Rewards", color: "#61efff" },
         { title: "Team", color: "#8CB3FF" },
         { title: "Airdrops / Marketing", color: "#988FFF" },
-        { title: "Others", color: "#FD98FE" }
+        { title: "Others", color: "#FD98FE" },
     ],
 };

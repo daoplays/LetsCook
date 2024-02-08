@@ -5,11 +5,12 @@ import {
     myU64,
     send_transaction,
     serialise_basic_instruction,
+    uInt32ToLEBytes,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
@@ -66,7 +67,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
             PROGRAM,
         )[0];
 
-        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         const game_id = new myU64(launchData.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);

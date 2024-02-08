@@ -7,6 +7,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 const nextConfig = withBundleAnalyzer({
     reactStrictMode: true,
     swcMinify: true,
+
     images: {
         domains: [`www.arweave.net`, "gateway.irys.xyz"],
     },

@@ -29,9 +29,9 @@ import { OrderHistoryItem, TradeHistoryItem, Order } from "@jup-ag/limit-order-s
 import usePlaceLimitOrder from "../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../hooks/jupiter/useCancelLimitOrder";
 import useGetMMTokens from "../hooks/jupiter/useGetMMTokens";
-import { Orderbook, Market } from '@openbook-dex/openbook';
+import { Orderbook, Market } from "@openbook-dex/openbook";
 import { MarketV2 } from "@raydium-io/raydium-sdk";
-import {ColorType, createChart, UTCTimestamp} from "lightweight-charts"
+import { ColorType, createChart, UTCTimestamp } from "lightweight-charts";
 
 export interface OpenOrder {
     publicKey: PublicKey;
@@ -51,11 +51,11 @@ interface Level {
 async function getMarketData() {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-    let today = Math.floor((new Date()).getTime() / 1000 /24 / 60 / 60);
+    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
     let today_seconds = today * 24 * 60 * 60;
 
-    let start_time = (new Date(2024, 0, 1)).getTime()/1000;
-    let end_time =  (new Date(2024, 1, 1)).getTime()/1000;
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+    let end_time = new Date(2024, 1, 1).getTime() / 1000;
 
     let url =
         "https://public-api.birdeye.so/public/history_price?address=8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6&address_type=pair&time_from=" +
@@ -63,68 +63,59 @@ async function getMarketData() {
         "&time_to=" +
         today_seconds;
 
-    let result = await fetch(url, options)
-        .then((response) => response.json())
-        
+    let result = await fetch(url, options).then((response) => response.json());
+
     console.log(result);
-    let data = []
+    let data = [];
     for (let i = 0; i < result["data"]["items"].length; i++) {
-        let item = result["data"]["items"][i]
-        data.push({ time: item.unixTime as UTCTimestamp, value: item.value })
+        let item = result["data"]["items"][i];
+        data.push({ time: item.unixTime as UTCTimestamp, value: item.value });
     }
 
-    return data
+    return data;
 }
-const ChartComponent = props => {
+const ChartComponent = (props) => {
     const {
         data,
         colors: {
-            backgroundColor = 'white',
-            lineColor = '#2962FF',
-            textColor = 'black',
-            areaTopColor = '#2962FF',
-            areaBottomColor = 'rgba(41, 98, 255, 0.28)',
+            backgroundColor = "white",
+            lineColor = "#2962FF",
+            textColor = "black",
+            areaTopColor = "#2962FF",
+            areaBottomColor = "rgba(41, 98, 255, 0.28)",
         } = {},
     } = props;
 
     const chartContainerRef = useRef();
 
-    useEffect(
-        () => {
-            const handleResize = () => {
-                if (chartContainerRef.current !== undefined)
-                    chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-            };
+    useEffect(() => {
+        const handleResize = () => {
+            if (chartContainerRef.current !== undefined) chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        };
 
-            const chart = createChart(chartContainerRef.current, {
-                layout: {
-                    background: { type: ColorType.Solid, color: backgroundColor },
-                    textColor,
-                },
-                width: chartContainerRef.current.clientWidth,
-                height: 300,
-            });
-            chart.timeScale().fitContent();
+        const chart = createChart(chartContainerRef.current, {
+            layout: {
+                background: { type: ColorType.Solid, color: backgroundColor },
+                textColor,
+            },
+            width: chartContainerRef.current.clientWidth,
+            height: 300,
+        });
+        chart.timeScale().fitContent();
 
-            const newSeries = chart.addAreaSeries({ lineColor, topColor: areaTopColor, bottomColor: areaBottomColor });
-            newSeries.setData(data);
+        const newSeries = chart.addAreaSeries({ lineColor, topColor: areaTopColor, bottomColor: areaBottomColor });
+        newSeries.setData(data);
 
-            window.addEventListener('resize', handleResize);
+        window.addEventListener("resize", handleResize);
 
-            return () => {
-                window.removeEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener("resize", handleResize);
 
-                chart.remove();
-            };
-        },
-        [data, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor]
-    );
+            chart.remove();
+        };
+    }, [data, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor]);
 
-    return (
-        <div
-            ref={chartContainerRef}
-        />
-    );
+    return <div ref={chartContainerRef} />;
 };
 
 const MarketMaker = () => {
@@ -134,12 +125,12 @@ const MarketMaker = () => {
     const [mmLaunchData, setMMLaunchData] = useState<MMLaunchData[]>([]);
     const [market_data, setMarketData] = useState<MarketData[]>([]);
 
-    const [market, setMarket] = useState<Market | null>(null)
+    const [market, setMarket] = useState<Market | null>(null);
     const [bid_address, setBidAddress] = useState<PublicKey | null>(null);
     const [ask_address, setAskAddress] = useState<PublicKey | null>(null);
 
-    const [best_bid, setBestBid] = useState<Level | null>(null)
-    const [best_ask, setBestAsk] = useState<Level | null>(null)
+    const [best_bid, setBestBid] = useState<Level | null>(null);
+    const [best_ask, setBestAsk] = useState<Level | null>(null);
 
     const { PlaceLimitOrder } = usePlaceLimitOrder();
     const { CancelLimitOrder } = useCancelLimitOrder();
@@ -150,7 +141,6 @@ const MarketMaker = () => {
 
     const last_bid = useRef<number>(0);
     const last_ask = useRef<number>(0);
-
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
@@ -174,7 +164,6 @@ const MarketMaker = () => {
     }, []);
 
     useEffect(() => {
-
         if (best_bid === null || best_ask === null) {
             return;
         }
@@ -185,22 +174,18 @@ const MarketMaker = () => {
 
         let new_mid = 0.5 * (best_bid.price + best_ask.price);
         //console.log("new mid", best_bid.price, best_ask.price, new_mid);
-        let today = Math.floor((new Date()).getTime() / 1000 /24 / 60 / 60);
+        let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
         let today_seconds = today * 24 * 60 * 60;
-        let new_market_data : MarketData = { time: today_seconds as UTCTimestamp, value: new_mid }
+        let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: new_mid };
         const updated_price_data = [...market_data];
         //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
         updated_price_data[updated_price_data.length - 1] = new_market_data;
-        setMarketData(updated_price_data)
+        setMarketData(updated_price_data);
 
         last_bid.current = best_bid.price;
         last_ask.current = best_ask.price;
-
-        
-
     }, [best_bid, best_ask, market_data]);
 
-    
     const check_bid_update = useCallback(
         async (result: any) => {
             //console.log(result);
@@ -208,13 +193,12 @@ const MarketMaker = () => {
 
             let event_data = result.data;
 
-            let bids = Orderbook.decode(market, event_data)
+            let bids = Orderbook.decode(market, event_data);
 
             let l2 = bids.getL2(1);
 
-            let best_bid : Level = {price: l2[0][0], quantity: l2[0][1]}
-            setBestBid(best_bid)
-            
+            let best_bid: Level = { price: l2[0][0], quantity: l2[0][1] };
+            setBestBid(best_bid);
         },
         [market],
     );
@@ -226,77 +210,61 @@ const MarketMaker = () => {
 
             let event_data = result.data;
 
-            let asks = Orderbook.decode(market, event_data)
+            let asks = Orderbook.decode(market, event_data);
 
             let l2 = asks.getL2(1);
             //console.log("have ask data", l2[0][0], l2[0][1]);
 
-            let best_ask : Level = {price: l2[0][0], quantity: l2[0][1]}
-            setBestAsk(best_ask)
-
+            let best_ask: Level = { price: l2[0][0], quantity: l2[0][1] };
+            setBestAsk(best_ask);
         },
         [market],
     );
 
     // launch account subscription handler
     useEffect(() => {
-
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (bids_ws_id.current === null && bid_address !== null) {
             console.log("subscribe 1");
-        
+
             bids_ws_id.current = connection.onAccountChange(bid_address, check_bid_update, "confirmed");
         }
 
         if (asks_ws_id.current === null && ask_address !== null) {
             console.log("subscribe 2");
-        
+
             asks_ws_id.current = connection.onAccountChange(ask_address, check_ask_update, "confirmed");
         }
-
     }, [bid_address, ask_address, check_bid_update, check_ask_update]);
 
     const CheckMarketData = useCallback(async () => {
-
-        let marketAddress = new PublicKey('8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6');
-        let programAddress = new PublicKey('srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX');
-
- 
+        let marketAddress = new PublicKey("8BnEgHoWFysVcuFFX7QztDmzuH8r5ZFvyP3sYwn1XTh6");
+        let programAddress = new PublicKey("srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX");
 
         if (check_market_data.current === true) {
-
-                   
-
             let account_data = await request_raw_account_data("", marketAddress);
             const [market_data] = MarketStateLayoutV2.struct.deserialize(account_data);
             let bid_address = market_data.bids;
             let ask_address = market_data.asks;
-    
+
             const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
             let market = await Market.load(connection, marketAddress, {}, programAddress);
-    
-    
-            setBidAddress(bid_address)
-            setAskAddress(ask_address)
-            setMarket(market)
+
+            setBidAddress(bid_address);
+            setAskAddress(ask_address);
+            setMarket(market);
 
             let data = await getMarketData();
             //console.log(data)
-            setMarketData(data);    
+            setMarketData(data);
             check_market_data.current = false;
         }
-        
     }, []);
 
     useEffect(() => {
         CheckMarketData();
     }, [CheckMarketData]);
-
- 
-
-
-    
 
     const CheckMMData = useCallback(async () => {
         if (!check_mm_data.current) return;
@@ -326,8 +294,6 @@ const MarketMaker = () => {
         CheckMMData();
     }, [CheckMMData]);
 
-    
-
     async function getUserOrders() {
         const connection = new Connection(RPC_NODE);
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
@@ -350,7 +316,6 @@ const MarketMaker = () => {
         console.log(openOrder);
         console.log(orderHistory);
         setOpenOrders(openOrder);
-
     }
 
     return (
@@ -401,7 +366,7 @@ const MarketMaker = () => {
                         Get MM Data
                     </Button>
                 </Center>
-                
+
                 <ChartComponent data={market_data}></ChartComponent>
             </main>
         </>

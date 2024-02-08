@@ -371,7 +371,7 @@ const MintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
+                                        Tokens Per Winning Ticket: {one_mint.toFixed(3)} <br />({one_mint_frac.toFixed(5)}% of total supply)
                                     </Text>
 
                                     <HStack align="center" gap={3}>

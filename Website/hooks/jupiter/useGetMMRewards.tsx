@@ -6,7 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     request_current_balance,
-    uInt32ToLEBytes
+    uInt32ToLEBytes,
 } from "../../components/Solana/state";
 import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 

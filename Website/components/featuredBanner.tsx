@@ -118,7 +118,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                                 featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
                                                     ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
                                                     : ""
-                                            }?cluster=devnet`}
+                                            }`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >

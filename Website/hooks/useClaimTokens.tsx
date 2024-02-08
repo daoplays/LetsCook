@@ -5,11 +5,12 @@ import {
     myU64,
     send_transaction,
     serialise_basic_instruction,
+    uInt32ToLEBytes,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
@@ -81,7 +82,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_raffle_account_key = await getAssociatedTokenAddress(
             launchData.keys[LaunchKeys.MintAddress], // mint

@@ -6,10 +6,11 @@ import {
     send_transaction,
     serialise_basic_instruction,
     request_current_balance,
+    uInt32ToLEBytes,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -113,7 +114,7 @@ const useCreateAMM = (launchData: LaunchData) => {
         });
 
         //console.log(poolInfo);
-        let sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+        let sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 

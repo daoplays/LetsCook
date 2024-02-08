@@ -22,19 +22,14 @@ import BN from "bn.js";
 import bs58 from "bs58";
 import { LaunchInstruction, uInt8ToLEBytes, postData } from "./state";
 
-export function MM_reward_schedule(date: number, total_rewards: number) : number {
-    
-    if (date < 0 || date >= 30)
-        return 0;
+export function MM_reward_schedule(date: number, total_rewards: number): number {
+    if (date < 0 || date >= 30) return 0;
 
-    if (date < 10)
-        return 0.05 * total_rewards;
+    if (date < 10) return 0.05 * total_rewards;
 
-    if (date >= 10 && date < 20)
-        return 0.03 * total_rewards;
+    if (date >= 10 && date < 20) return 0.03 * total_rewards;
 
-    if (date >= 20 && date < 30)
-        return 0.02 * total_rewards;
+    if (date >= 20 && date < 30) return 0.02 * total_rewards;
 }
 
 export class MMUserData {

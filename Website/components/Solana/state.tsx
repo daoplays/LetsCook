@@ -358,7 +358,6 @@ export const enum Distribution {
     Team,
     Other,
     LENGTH,
-    
 }
 
 export const enum LaunchInstruction {
@@ -423,7 +422,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
-    distribution: (new Array(Distribution.LENGTH)).fill(0),
+    distribution: new Array(Distribution.LENGTH).fill(0),
     uri: "",
     pagename: "",
     description: "",
@@ -905,7 +904,7 @@ class CreateLaunch_Instruction {
             ["decimals", u8],
             ["launch_date", u64],
             ["close_date", u64],
-            ["distribution", uniformFixedSizeArray(u8, 6)],
+            ["distribution", array(u8)],
             ["num_mints", u32],
             ["ticket_price", u64],
             ["page_name", utf8String],
@@ -984,7 +983,7 @@ class EditLaunch_Instruction {
         [
             ["instruction", u8],
             ["description", utf8String],
-            ["distribution", uniformFixedSizeArray(u8, 6)],
+            ["distribution", array(u8)],
             ["website", utf8String],
             ["twitter", utf8String],
             ["telegram", utf8String],

@@ -64,21 +64,21 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     };
 
     const handleDistributionChange = (e, idx) => {
-        let new_dist = [...distribution]
-        new_dist[idx] = isNaN(parseInt(e.target.value)) ? 0 : parseInt(e.target.value)
-        console.log(new_dist)
+        let new_dist = [...distribution];
+        new_dist[idx] = isNaN(parseInt(e.target.value)) ? 0 : parseInt(e.target.value);
+        console.log(new_dist);
         setDistribution(new_dist);
-    }
+    };
 
-    function getTotalPercentage(distribution : number[]) {
+    function getTotalPercentage(distribution: number[]) {
         let total = 0;
         for (let i = 0; i < distribution.length; i++) {
-            total += distribution[i]
+            total += distribution[i];
         }
         return total;
     }
     // Calculate the total sum of all percentages
-    const totalPercentage = getTotalPercentage(distribution)
+    const totalPercentage = getTotalPercentage(distribution);
 
     function setLaunchData(e) {
         e.preventDefault();
@@ -411,7 +411,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.Raffle] === 0 ? true : false}
+                                                    disabled={
+                                                        totalPercentage === 100 && distribution[Distribution.Raffle] === 0 ? true : false
+                                                    }
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -437,7 +439,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     value={distribution[Distribution.LP].toFixed(0)}
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.LP);
-
                                                     }}
                                                     type="number"
                                                     min="0"
@@ -484,13 +485,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     value={distribution[Distribution.MMRewards].toFixed(0)}
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.MMRewards);
-
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.MMRewards] === 0 ? true : false}
-                                                />                                                
+                                                    disabled={
+                                                        totalPercentage === 100 && distribution[Distribution.MMRewards] === 0 ? true : false
+                                                    }
+                                                />
                                                 <Image
                                                     className={styles.percentage}
                                                     width={lg ? 15 : 20}
@@ -529,12 +531,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     value={distribution[Distribution.LPRewards].toFixed(0)}
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.LPRewards);
-
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.LPRewards] === 0 ? true : false}
+                                                    disabled={
+                                                        totalPercentage === 100 && distribution[Distribution.LPRewards] === 0 ? true : false
+                                                    }
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -559,12 +562,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     value={distribution[Distribution.Team].toFixed(0)}
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Team);
-
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.Team] === 0 ? true : false}
+                                                    disabled={
+                                                        totalPercentage === 100 && distribution[Distribution.Team] === 0 ? true : false
+                                                    }
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -589,12 +593,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     value={distribution[Distribution.Airdrops].toFixed(0)}
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Airdrops);
-
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.Airdrops] === 0 ? true : false}
+                                                    disabled={
+                                                        totalPercentage === 100 && distribution[Distribution.Airdrops] === 0 ? true : false
+                                                    }
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -620,12 +625,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     value={distribution[Distribution.Other].toFixed(0)}
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Other);
-
                                                     }}
                                                     type="number"
                                                     min="0"
                                                     max="100"
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.Other] === 0 ? true : false}
+                                                    disabled={
+                                                        totalPercentage === 100 && distribution[Distribution.Other] === 0 ? true : false
+                                                    }
                                                 />
                                                 <Image
                                                     className={styles.percentage}
@@ -660,8 +666,16 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             },
                                             { title: "$TOKEN", value: distribution[Distribution.LP], color: "#FF9548" },
 
-                                            { title: "Market Maker Rewards", value: distribution[Distribution.MMRewards], color: "#66FFB6" }, // integrate MM Rewards
-                                            { title: "Liquidity Provider Rewards", value: distribution[Distribution.LPRewards], color: "#61efff" },
+                                            {
+                                                title: "Market Maker Rewards",
+                                                value: distribution[Distribution.MMRewards],
+                                                color: "#66FFB6",
+                                            }, // integrate MM Rewards
+                                            {
+                                                title: "Liquidity Provider Rewards",
+                                                value: distribution[Distribution.LPRewards],
+                                                color: "#61efff",
+                                            },
                                             { title: "Airdrops / Marketing", value: distribution[Distribution.Airdrops], color: "#988FFF" },
                                             { title: "Team", value: distribution[Distribution.Team], color: "#8CB3FF" },
                                             { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
@@ -676,8 +690,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         data={[
                                             {
                                                 title: distributionLabels.headers[0].title,
-                                                value:
-                                                distribution[Distribution.Raffle] + distribution[Distribution.LP],
+                                                value: distribution[Distribution.Raffle] + distribution[Distribution.LP],
                                                 color: distributionLabels.headers[0].color,
                                             },
                                             {
@@ -689,8 +702,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             {
                                                 title: distributionLabels.headers[2].title,
                                                 value:
-                                                    distribution[Distribution.LPRewards] + distribution[Distribution.Team] +
-                                                    distribution[Distribution.Airdrops] + distribution[Distribution.Other],
+                                                    distribution[Distribution.LPRewards] +
+                                                    distribution[Distribution.Team] +
+                                                    distribution[Distribution.Airdrops] +
+                                                    distribution[Distribution.Other],
                                                 color: distributionLabels.headers[2].color,
                                             },
                                         ]}

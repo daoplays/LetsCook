@@ -1,13 +1,10 @@
 import { isMobile } from "react-device-detect";
 import { PublicKey } from "@solana/web3.js";
-import { uInt32ToLEBytes } from "./state";
 
 const DEV_RPC_NODE = "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2";
 const DEV_WSS_NODE = "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/";
-//const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
-//const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
-const PROD_RPC_NODE = "https://black-shy-flower.solana-mainnet.quiknode.pro/0e33f02ab684b325f78c2ed2b9a48d9366412ab8";
-const PROD_WSS_NODE = "wss://black-shy-flower.solana-mainnet.quiknode.pro/0e33f02ab684b325f78c2ed2b9a48d9366412ab8/";
+const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
+const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
 
 //pyth oracles
 const PYTH_BTC_DEV = new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
@@ -22,12 +19,12 @@ const DEV_FEES = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
 const PROD_FEES = new PublicKey("8T5LPmj4fghsUGdGZo6VTHS5w5mUWYwFxLYrgdBg5mXA");
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
-export const PROGRAM = new PublicKey("9ug9UELN1KWscDGGfD4ZmpkPWjQp25jmKHPjX1JLKSjj");
+export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
-export const PROGRAM2 = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 
 // account seeds
-//export const MAIN_ACCOUNT_SEED = uInt32ToLEBytes(59957379);
+export const SOL_ACCOUNT_SEED = 59957379;
+export const DATA_ACCOUNT_SEED = 7571427;
 
 // set font size
 export var DEFAULT_FONT_SIZE = "30px";
