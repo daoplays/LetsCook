@@ -6,7 +6,8 @@ import WoodenButton from "./Buttons/woodenButton";
 import Link from "next/link";
 import botProof from "../public/images/no-bot.svg";
 import mintInsurance from "../public/images/mint-insurance.png";
-import raydium from "../public/images/raydium.png";
+import coins from "../public/images/coins-svgrepo-com.svg";
+import stock from "../public/images/stock-ticker-svgrepo-com.svg";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import { useRouter } from "next/router";
@@ -95,7 +96,7 @@ const EmptyLaunch = () => {
                 justify="center"
                 w="100%"
                 style={{ flexGrow: 1, flexDirection: sm ? "column" : "row" }}
-                mt={xxl ? 50 : 0}
+                mt={50}
                 pb={75}
                 wrap="wrap"
             >
@@ -129,9 +130,15 @@ const EmptyLaunch = () => {
 
                 <HStack justify="center" spacing={sm ? 75 : 125} style={{ flexDirection: sm ? "column" : "row" }}>
                     <VStack spacing={15}>
-                        <Image src={raydium} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Bot Proof Vector" />
+                        <Image src={coins} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Bot Proof Vector" />
                         <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
-                            1-Click Raydium LP
+                            1-Click Safe LP Deployment
+                        </Text>
+                    </VStack>
+                    <VStack spacing={15}>
+                        <Image src={stock} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Bot Proof Vector" />
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                            Market Making Rewards
                         </Text>
                     </VStack>
                     <VStack spacing={15}>
