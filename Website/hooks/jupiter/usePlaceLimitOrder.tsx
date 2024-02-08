@@ -12,7 +12,7 @@ import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupite
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, PROGRAM2, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../../components/Solana/constants";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
