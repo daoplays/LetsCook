@@ -46,7 +46,7 @@ function Footer() {
                 />
             </Link>
 
-            <Image
+            {/* <Image
                 src={telegram.src}
                 width={30}
                 height={30}
@@ -57,7 +57,7 @@ function Footer() {
                     padding: 5,
                     cursor: "not-allowed",
                 }}
-            />
+            /> */}
         </HStack>
     );
 }
