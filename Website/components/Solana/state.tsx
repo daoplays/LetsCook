@@ -473,6 +473,7 @@ export class LaunchData {
 
         readonly total_mm_buy_amount: bignum,
         readonly total_mm_sell_amount: bignum,
+        readonly last_mm_reward_date: number,
 
         readonly socials: string[],
         readonly distribution: number[],
@@ -512,6 +513,7 @@ export class LaunchData {
 
             ["total_mm_buy_amount", u64],
             ["total_mm_sell_amount", u64],
+            ["last_mm_reward_date", u32],
 
             ["socials", array(utf8String)],
             ["distribution", array(u8)],
@@ -550,6 +552,7 @@ export class LaunchData {
 
                 args.total_mm_buy_amount!,
                 args.total_mm_sell_amount!,
+                args.last_mm_reward_date!,
 
                 args.socials!,
                 args.distribution!,
@@ -599,6 +602,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
 
         new BN(0),
         new BN(0),
+        0,
 
         [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url],
         new_launch_data.distribution,
