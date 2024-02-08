@@ -170,40 +170,19 @@ function Navigation() {
                 <VStack spacing={8} pb={6} py={20} bg="rgba(0,0,0,0.25) " w="100%" h="100%">
                     <VStack className="font-face-kg">
                         {wallet.publicKey && (
-                            <Text
-                                mb={0}
-                                fontSize={26}
-                                color="white"
-                                className="font-face-kg"
-                                style={{ WebkitTextStroke: "1px black" }}
-                                align="center"
-                            >
+                            <Text mb={0} fontSize={26} color="white" className="font-face-kg" align="center">
                                 {trimAddress(wallet.publicKey.toString())}
                             </Text>
                         )}
 
                         {wallet.publicKey === null && (
-                            <Text
-                                mb={0}
-                                fontSize={26}
-                                color="white"
-                                className="font-face-kg"
-                                onClick={() => handleConnectWallet()}
-                                style={{ WebkitTextStroke: "1px black" }}
-                            >
+                            <Text mb={0} fontSize={26} color="white" className="font-face-kg" onClick={() => handleConnectWallet()}>
                                 Connect Wallet
                             </Text>
                         )}
 
                         {wallet.connected && (
-                            <Text
-                                mb={0}
-                                fontSize={26}
-                                color="white"
-                                className="font-face-kg"
-                                onClick={() => handleDisconnectWallet()}
-                                style={{ WebkitTextStroke: "1px black" }}
-                            >
+                            <Text mb={0} fontSize={26} color="white" className="font-face-kg" onClick={() => handleDisconnectWallet()}>
                                 Disconnect Wallet
                             </Text>
                         )}
@@ -225,19 +204,14 @@ function Navigation() {
                                     !isHomePageOnly && router.push(`/dashboard`);
                                 }
                             }}
-                            style={{ opacity: isHomePageOnly ? 0.5 : 1, WebkitTextStroke: "1px black" }}
+                            style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
                         >
                             Creator Dashboard
                         </Text>
                     </div>
 
                     <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
-                        <Text
-                            color="white"
-                            className="font-face-kg"
-                            fontSize={24}
-                            style={{ opacity: isHomePageOnly ? 0.5 : 1, WebkitTextStroke: "1px black" }}
-                        >
+                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
                             Calendar
                         </Text>
                     </Link>
@@ -254,13 +228,13 @@ function Navigation() {
                                 !isHomePageOnly && router.push(`/bags`);
                             }
                         }}
-                        style={{ opacity: isHomePageOnly ? 0.5 : 1, WebkitTextStroke: "1px black" }}
+                        style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
                     >
                         My Bags
                     </Text>
 
                     <Link href="/faq" onClick={onToggle}>
-                        <Text color="white" className="font-face-kg" fontSize={24} style={{ WebkitTextStroke: "1px black" }}>
+                        <Text color="white" className="font-face-kg" fontSize={24}>
                             FAQs
                         </Text>
                     </Link>
