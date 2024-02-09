@@ -89,9 +89,6 @@ const ChartComponent = (props) => {
     const chartContainerRef = useRef(null);
 
     useEffect(() => {
-
-        
-
         const handleResize = () => {
             chart.applyOptions({ width: chartContainerRef.current.clientWidth });
         };
