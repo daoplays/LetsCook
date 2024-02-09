@@ -1,4 +1,4 @@
-import { Button, Flex, Link, Text } from "@chakra-ui/react";
+import { Button, Flex, HStack, Link, Text } from "@chakra-ui/react";
 import React, { useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -15,7 +15,7 @@ import Head from "next/head";
 const DashboardPage = () => {
     const router = useRouter();
     const wallet = useWallet();
-    const { sm } = useResponsive();
+    const { sm, lg } = useResponsive();
     const { launchList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
 
@@ -68,6 +68,13 @@ const DashboardPage = () => {
                     {/* </Link> */}
                 </Flex>
                 <CreatorDashboardTable creatorLaunches={creatorLaunches} />
+                {creatorLaunches.length <= 0 && (
+                    <HStack w="100%" align="center" justify="center" mt={25}>
+                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
+                            You don&apos;t have any launches yet
+                        </Text>
+                    </HStack>
+                )}
             </main>
         </>
     );

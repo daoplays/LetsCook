@@ -12,7 +12,7 @@ import MyRewards from "../components/tables/myRewards";
 import MyRewardsTable from "../components/tables/myRewards";
 
 const BagsPage = () => {
-    const { xs, sm } = useResponsive();
+    const { xs, sm, lg } = useResponsive();
 
     const [selected, setSelected] = useState("My Tickets");
 
@@ -113,6 +113,14 @@ const BagsPage = () => {
                 {selected === "My Tickets" && <MyTicketsTable bags={joinedLaunches} />}
 
                 {/* {selected === "My Rewards" && <MyRewardsTable bags={joinedLaunches} />} */}
+
+                {joinedLaunches.length <= 0 && (
+                    <HStack w="100%" align="center" justify="center" mt={25}>
+                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
+                            Your bag is empty
+                        </Text>
+                    </HStack>
+                )}
             </main>
         </>
     );
