@@ -16,14 +16,6 @@ import useResponsive from "../hooks/useResponsive";
 const FAQ = () => {
     const { sm, lg } = useResponsive();
 
-    const content = [
-        {
-            title: "WHAT IS LET'S COOK?",
-            description:
-                "LET’S COOK is a decentralized tool available for anybody to create and launch their own memecoins on the Solana blockchain network.",
-        },
-    ];
-
     return (
         <>
             <Head>
