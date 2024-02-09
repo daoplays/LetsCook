@@ -1,6 +1,7 @@
 import {
     Button,
     Flex,
+    HStack,
     Popover,
     PopoverArrow,
     PopoverBody,
@@ -29,7 +30,7 @@ const defaultCalendarFilters: LaunchTableFilters = {
 };
 
 const CalenderPage = () => {
-    const { sm } = useResponsive();
+    const { sm, lg } = useResponsive();
     const initialFocusRef = React.useRef();
     const [startDate, setStartDate] = useState(new Date(new Date().setHours(0, 0, 0, 0)));
     const [endDate, setEndDate] = useState(addDays(new Date(new Date().setHours(0, 0, 0, 0)), 1));
@@ -45,9 +46,11 @@ const CalenderPage = () => {
         setFilters((previous) => ({ ...previous, end_date: end !== null ? addDays(end, 1) : null }));
     };
 
+    console.log(launchList);
+
     if (!launchList) return <Loader />;
 
-    if (launchList.length <= 0) return <EmptyLaunch />;
+    // if (launchList.length <= 0) return <EmptyLaunch />;
 
     return (
         <>
@@ -95,6 +98,14 @@ const CalenderPage = () => {
                     </Popover>
                 </Flex>
                 <GameTable launchList={launchList} filters={filters} />
+
+                {launchList.length <= 0 && (
+                    <HStack w="100%" align="center" justify="center" mt={25}>
+                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
+                            No launches yet
+                        </Text>
+                    </HStack>
+                )}
             </main>
         </>
     );
