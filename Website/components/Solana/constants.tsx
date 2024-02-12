@@ -83,4 +83,7 @@ export enum LaunchFlags {
     MintedToUser = 0,
     LaunchFailed = 1,
     LPState = 2,
+    TokenProgramVersion = 3,
+    BookProvider = 4,
+    AMMProvider = 5
 }
