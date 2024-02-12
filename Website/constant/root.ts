@@ -1,4 +1,4 @@
-export const isHomePageOnly = true;
+export const isHomePageOnly = false;
 
 export const distributionLabels = {
     headers: [
