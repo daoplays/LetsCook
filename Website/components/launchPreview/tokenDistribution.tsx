@@ -21,6 +21,14 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
               .filter((item) => item.value > 0)
         : [];
 
+    let first_creator_title = "";
+    for (let i = 0; i < distribution.length; i++) {
+        if (distribution[i].title === distributionLabels.fields[3].title || distribution[i].title === distributionLabels.fields[4].title || distribution[i].title === distributionLabels.fields[5].title || distribution[i].title === distributionLabels.fields[6].title) {
+            first_creator_title = distribution[i].title;
+            break;
+        }
+    }
+
     return (
         <VStack w="100%" my={10}>
             <Text m={0} fontSize={md ? "xl" : 30} color="white" className="font-face-kg">
@@ -36,7 +44,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                 <VStack gap={6} align="start" ml={12}>
                     {distribution.map((i, index) => {
                         if (i.value <= 0) return;
-
+                        console.log(i.title, i.value)
                         return (
                             <VStack gap={6} align="start" key={i.title}>
                                 {i.title === "Raffle (SOL)" && (
@@ -56,7 +64,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                         </Text>
                                     </HStack>
                                 )}
-                                {i.title === "Liquidity Provider Rewards" && (
+                                {i.title === first_creator_title && (
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#666666" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
