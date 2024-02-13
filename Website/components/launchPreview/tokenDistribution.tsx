@@ -39,7 +39,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
 
                         return (
                             <VStack gap={6} align="start" key={i.title}>
-                                {i.title === "Raffle (SOL)" && (
+                                {i.title === "Raffle (SOL)" || i.title === "$TOKEN" && (
                                     <HStack gap={4} ml={sm ? -12 : -14}>
                                         <Box bg="white" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
@@ -56,7 +56,8 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                                         </Text>
                                     </HStack>
                                 )}
-                                {i.title === "Liquidity Provider Rewards" && (
+
+                                {i.title === "Liquidity Provider Rewards" || i.title === "Team" || i.title === "Airdrops / Marketing" || i.title === "Others" && (
                                     <HStack gap={4} ml={sm ? -12 : -14} mt={6}>
                                         <Box bg="#666666" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
