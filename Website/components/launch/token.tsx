@@ -395,9 +395,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[0].color} />
+                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Raffle].color} />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[0].title}
+                                                    {distributionLabels.fields[Distribution.Raffle].title}
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -427,9 +427,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[1].color} />
+                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LP].color} />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[1].title}
+                                                    {distributionLabels.fields[Distribution.LP].title}
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -472,9 +472,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[2].color} />
+                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.MMRewards].color} />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[2].title}
+                                                    {distributionLabels.fields[Distribution.MMRewards].title}
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -520,9 +520,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[3].color} />
+                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LPRewards].color} />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[3].title}
+                                                    {distributionLabels.fields[Distribution.LPRewards].title}
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -551,9 +551,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[4].color} />
+                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Team].color} />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[4].title}
+                                                    {distributionLabels.fields[Distribution.Team].title}
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
@@ -582,9 +582,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} align="center" justify="space-between" w="100%">
                                             <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[5].color} />
+                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Airdrops].color} />
                                                 <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[5].title}
+                                                    {distributionLabels.fields[Distribution.Airdrops].title}
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>

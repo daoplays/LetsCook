@@ -84,7 +84,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                 fontFamily="ReemKufiRegular"
                                                 align={md ? "center" : "start"}
                                             >
-                                                Total Winning Tickets: {launchData.mints_won}
+                                                Total Winning Tickets: {launchData.num_mints}
                                             </Text>
 
                                             <Text

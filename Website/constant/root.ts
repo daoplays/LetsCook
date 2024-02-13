@@ -11,8 +11,8 @@ export const distributionLabels = {
         { title: "$TOKEN", color: "#FF9548" },
         { title: "Market Maker Rewards", color: "#66FFB6" },
         { title: "Liquidity Provider Rewards", color: "#61efff" },
-        { title: "Team", color: "#8CB3FF" },
         { title: "Airdrops / Marketing", color: "#988FFF" },
+        { title: "Team", color: "#8CB3FF" },
         { title: "Others", color: "#FD98FE" },
     ],
 };
