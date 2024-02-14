@@ -119,20 +119,18 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
     const cook_state = useDetermineCookState({ current_time, launchData: launch.launch_data, join_data: launch.join_data });
 
-    // const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
-    // const MINTED_OUT = [
-    //     CookState.MINT_SUCCEEDED_NO_TICKETS,
-    //     CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
-    //     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
-    //     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-    //     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
-    // ].includes(cook_state);
-    // const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
+    console.log("cook state", cook_state)
+    const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
+    const MINTED_OUT = [
+         CookState.MINT_SUCCEEDED_NO_TICKETS,
+         CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
+         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
+         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
+         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
+     ].includes(cook_state);
+     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
 
-    const ACTIVE = false;
-    const MINTED_OUT = true;
-    const MINT_FAILED = false;
-
+    
     const handleButtonClick = (e) => {
         e.stopPropagation();
 
