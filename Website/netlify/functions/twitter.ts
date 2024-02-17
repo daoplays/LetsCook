@@ -28,7 +28,7 @@ exports.handler = async function (event, context) {
         const [new_launch_data] = LaunchData.struct.deserialize(launch_account_data);
 
         let current_time = new Date().getTime();
-        if (current_time - bignum_to_num(new_launch_data.last_interaction) > 5 * 60 * 1000) {
+        if (current_time/1000 - bignum_to_num(new_launch_data.last_interaction) > 5 * 60) {
             var result: Result = { statusCode: 404, body: "Launch occured too long ago to tweet" };
             var Jresult = { statusCode: 404, body: JSON.stringify(result) };
             return Jresult;

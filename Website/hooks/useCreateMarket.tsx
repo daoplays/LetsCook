@@ -383,7 +383,7 @@ const useCreateMarket = (launchData: LaunchData) => {
         }
         try {
             let base_balance = await request_current_balance("", baseVault.publicKey);
-
+            console.log("base balance", base_balance);
             if (base_balance == 0) {
                 let signed_transaction = await wallet.signTransaction(transaction);
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -535,6 +535,7 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         try {
             let market_balance = await request_current_balance("", market.publicKey);
+            console.log("market balance", market_balance)
             if (market_balance == 0) {
                 for (let i = 0; i < market_tx.length; i++) {
                     let market_transaction = await wallet.signTransaction(market_tx[i]);

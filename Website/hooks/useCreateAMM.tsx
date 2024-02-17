@@ -173,6 +173,7 @@ const useCreateAMM = (launchData: LaunchData) => {
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: team_base_account, isSigner: false, isWritable: true },
+            {pubkey: launchData.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: false},
 
             { pubkey: poolInfo.id, isSigner: false, isWritable: true },
             { pubkey: poolInfo.authority, isSigner: false, isWritable: true },
