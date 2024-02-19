@@ -12,7 +12,7 @@ import {
     utf8String,
     array,
     coption,
-    COption
+    COption,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -206,7 +206,6 @@ export class TokenAccount {
         readonly is_native: COption<bignum>,
         readonly delegated_amount: bignum,
         readonly close_authority: COption<PublicKey>,
-
     ) {}
 
     static readonly struct = new FixableBeetStruct<TokenAccount>(
@@ -218,7 +217,7 @@ export class TokenAccount {
             ["state", u8],
             ["is_native", coption(u64)],
             ["delegated_amount", u64],
-            ["close_authority", coption(publicKey)]
+            ["close_authority", coption(publicKey)],
         ],
         (args) =>
             new TokenAccount(

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { request_raw_account_data } from "../../components/Solana/state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, LaunchData, MarketStateLayoutV2 } from "../../components/Solana/state";
+import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
@@ -36,6 +36,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { Orderbook, Market } from "@openbook-dex/openbook";
 import { ColorType, createChart, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
+import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 
@@ -156,7 +157,6 @@ const TradePage = () => {
         }
 
         let new_mid = quote_amount / base_amount;
-
         //console.log("new mid", best_bid.price, best_ask.price, new_mid);
         let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
         let today_seconds = today * 24 * 60 * 60;
