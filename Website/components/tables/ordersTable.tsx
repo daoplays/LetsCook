@@ -3,14 +3,55 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { JoinedLaunch } from "../Solana/state";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { PROGRAM, RPC_NODE } from "../Solana/constants";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
+import { useEffect, useState } from "react";
 
 interface Header {
     text: string;
     field: string | null;
 }
 
+export interface OpenOrder {
+    publicKey: PublicKey;
+}
+
 const OrdersTable = () => {
+    const wallet = useWallet();
     const { sm } = useResponsive();
+
+    const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
+
+    async function getUserOrders() {
+        const connection = new Connection(RPC_NODE);
+        let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
+
+        const limitOrder = new LimitOrderProvider(connection, null);
+        const openOrder: OpenOrder[] = await limitOrder.getOrders([ownerFilter(user_pda_account)]);
+
+        const orderHistory: OrderHistoryItem[] = await limitOrder.getOrderHistory({
+            wallet: user_pda_account.toBase58(),
+            take: 20, // optional, default is 20, maximum is 100
+            // lastCursor: order.id // optional, for pagination
+        });
+
+        const tradeHistory: TradeHistoryItem[] = await limitOrder.getTradeHistory({
+            wallet: user_pda_account.toBase58(),
+            take: 20, // optional, default is 20, maximum is 100
+            // lastCursor: order.id // optional, for pagination
+        });
+
+        console.log(openOrder);
+        console.log(orderHistory);
+        setOpenOrders(openOrder);
+    }
+
+    useEffect(() => {
+        console.log(openOrders);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [openOrders]);
 
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },

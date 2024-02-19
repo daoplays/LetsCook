@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Center, HStack, TableContainer, Text } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { JoinedLaunch, LaunchData } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, PROD } from "../Solana/constants";
+import { MMLaunchData, MMUserData, RunMMLaunchDataGPA, RunMMUserDataGPA } from "../Solana/jupiter_state";
+import { useWallet } from "@solana/wallet-adapter-react";
+import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 
 interface Header {
     text: string;
@@ -12,8 +15,7 @@ interface Header {
 }
 
 function filterTable(list: LaunchData[]) {
-    if (list === null || list === undefined)
-        return [];
+    if (list === null || list === undefined) return [];
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
@@ -22,7 +24,11 @@ function filterTable(list: LaunchData[]) {
 }
 
 const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
+    const wallet = useWallet();
     const { sm } = useResponsive();
+
+    const [mmUserData, setMMUserData] = useState<MMUserData[]>([]);
+    const [mmLaunchData, setMMLaunchData] = useState<MMLaunchData[]>([]);
 
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
@@ -38,8 +44,6 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         }
     };
 
-
-
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
         { text: "SYMBOL", field: "symbol" },
@@ -50,7 +54,37 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         { text: "END", field: "end" },
     ];
 
-    launchList
+    const { GetMMTokens } = useGetMMTokens();
+
+    const check_mm_data = useRef<boolean>(true);
+
+    const CheckMMData = useCallback(async () => {
+        if (!check_mm_data.current) return;
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+        console.log("check mm data", wallet.connected, wallet.connecting, wallet.disconnecting);
+
+        let user_list = await RunMMUserDataGPA(wallet);
+        setMMUserData(user_list);
+        let launch_list = await RunMMLaunchDataGPA();
+        setMMLaunchData(launch_list);
+
+        console.log("User", user_list);
+        console.log("Launch", launch_list);
+
+        check_mm_data.current = false;
+    }, [wallet]);
+
+    useEffect(() => {
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+        CheckMMData();
+    }, [wallet, CheckMMData]);
+
+    const RecheckMMData = useCallback(async () => {
+        check_mm_data.current = true;
+        CheckMMData();
+    }, [CheckMMData]);
 
     return (
         <TableContainer>
@@ -155,15 +189,11 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    
-                </Text>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}></Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    
-                </Text>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}></Text>
             </td>
         </tr>
     );
