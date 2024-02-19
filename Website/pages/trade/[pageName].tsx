@@ -4,12 +4,12 @@ import Head from "next/head";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 import BN from "bn.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "../../components/Solana/state";
+import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, request_raw_account_data } from "../../components/Solana/state";
 import bs58 from "bs58";
 import { ownerFilter } from "@jup-ag/limit-order-sdk";
 import { OrderHistoryItem, TradeHistoryItem, Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, LaunchData } from "../../components/Solana/state";
-import { RPC_NODE } from "../../components/Solana/constants";
+import { bignum_to_num, LaunchData, MarketStateLayoutV2 } from "../../components/Solana/state";
+import { RPC_NODE, WSS_NODE, LaunchKeys } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection, Keypair, Transaction } from "@solana/web3.js";
 import {
@@ -39,30 +39,93 @@ import website from "../../public/socialIcons/new/websiteIcon.png";
 import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
+import { Orderbook, Market } from "@openbook-dex/openbook";
+import { ColorType, createChart, UTCTimestamp } from "lightweight-charts";
+import trimAddress from "../../utils/trimAddress";
 
-async function getMarketData() {
+async function getMarketData(market_address: string) {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let today_seconds = today * 24 * 60 * 60;
 
-    let start_time = new Date(2024, 1, 1, 0, 0, 0, 0).getTime();
-    let end_time = new Date(2024, 1, 27, 0, 0, 0, 0).getTime();
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
 
     let url =
-        "https://public-api.birdeye.so/public/history_price?address=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&address_type=token&type=15m&time_from=" +
+        "https://public-api.birdeye.so/public/history_price?address="+market_address+"&address_type=pair&time_from=" +
         start_time +
         "&time_to=" +
-        end_time;
-    console.log(url);
+        today_seconds;
 
-    fetch(url, options)
-        .then((response) => response.json())
-        .then((response) => console.log(response))
-        .catch((err) => console.error(err));
+    let result = await fetch(url, options).then((response) => response.json());
+
+    console.log(result);
+    let data = [];
+    for (let i = 0; i < result["data"]["items"].length; i++) {
+        let item = result["data"]["items"][i];
+        data.push({ time: item.unixTime as UTCTimestamp, value: item.value });
+    }
+
+    return data;
 }
+
+const ChartComponent = (props) => {
+    const {
+        data,
+        colors: {
+            backgroundColor = "white",
+            lineColor = "#2962FF",
+            textColor = "black",
+            areaTopColor = "#2962FF",
+            areaBottomColor = "rgba(41, 98, 255, 0.28)",
+        } = {},
+    } = props;
+
+    const chartContainerRef = useRef(null);
+
+    useEffect(() => {
+        const handleResize = () => {
+            chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        };
+
+        const chart = createChart(chartContainerRef.current, {
+            layout: {
+                background: { type: ColorType.Solid, color: backgroundColor },
+                textColor,
+            },
+            width: chartContainerRef.current.clientWidth,
+            height: 300,
+        });
+        chart.timeScale().fitContent();
+
+        const newSeries = chart.addAreaSeries({ lineColor, topColor: areaTopColor, bottomColor: areaBottomColor });
+        newSeries.setData(data);
+
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            window.removeEventListener("resize", handleResize);
+
+            chart.remove();
+        };
+    }, [data, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor]);
+
+    return <div ref={chartContainerRef} />;
+};
 
 interface OpenOrder {
     publicKey: PublicKey;
     account: Order;
+}
+
+interface MarketData {
+    time: UTCTimestamp;
+    value: number;
+}
+
+interface Level {
+    price: number;
+    quantity: number;
 }
 
 function findLaunch(list: LaunchData[], page_name : string | string[]) {
@@ -107,6 +170,169 @@ const TradePage = () => {
     const handleMouseMove = (event) => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
+
+    const [market_data, setMarketData] = useState<MarketData[]>([]);
+
+    const [market, setMarket] = useState<Market | null>(null);
+    const [bid_address, setBidAddress] = useState<PublicKey | null>(null);
+    const [ask_address, setAskAddress] = useState<PublicKey | null>(null);
+    const [lot_size, setLotSize] = useState<number | null>(null);
+
+    const [best_bid, setBestBid] = useState<Level | null>(null);
+    const [best_ask, setBestAsk] = useState<Level | null>(null);
+
+    const bids_ws_id = useRef<number | null>(null);
+    const asks_ws_id = useRef<number | null>(null);
+
+    const last_bid = useRef<number>(0);
+    const last_ask = useRef<number>(0);
+
+    const check_mm_data = useRef<boolean>(true);
+    const check_market_data = useRef<boolean>(true);
+    // when page unloads unsub from any active websocket listeners
+    useEffect(() => {
+        return () => {
+            console.log("in use effect return");
+            const unsub = async () => {
+                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                if (bids_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(bids_ws_id.current);
+                    bids_ws_id.current = null;
+                }
+                if (asks_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(asks_ws_id.current);
+                    asks_ws_id.current = null;
+                }
+            };
+            unsub();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (best_bid === null || best_ask === null) {
+            return;
+        }
+
+        if (best_bid.price === last_bid.current && best_ask.price === last_ask.current) {
+            return;
+        }
+
+        let new_mid = 0.5 * (best_bid.price + best_ask.price);
+        //console.log("new mid", best_bid.price, best_ask.price, new_mid);
+        let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+        let today_seconds = today * 24 * 60 * 60;
+        let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: new_mid };
+        const updated_price_data = [...market_data];
+        //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
+        updated_price_data[updated_price_data.length - 1] = new_market_data;
+        setMarketData(updated_price_data);
+
+        last_bid.current = best_bid.price;
+        last_ask.current = best_ask.price;
+    }, [best_bid, best_ask, market_data]);
+
+    const check_bid_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+
+            let bids = Orderbook.decode(market, event_data);
+
+            let l2 = bids.getL2(1);
+            console.log("have bid data", l2[0][0], l2[0][1]);
+
+            let best_bid: Level = { price: l2[0][0], quantity: l2[0][1] };
+            setBestBid(best_bid);
+        },
+        [market],
+    );
+
+    const check_ask_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+
+            let asks = Orderbook.decode(market, event_data);
+
+            let l2 = asks.getL2(1);
+            console.log("have ask data", l2[0][0], l2[0][1]);
+
+            let best_ask: Level = { price: l2[0][0], quantity: l2[0][1] };
+            setBestAsk(best_ask);
+        },
+        [market],
+    );
+
+    // launch account subscription handler
+    useEffect(() => {
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+        if (bids_ws_id.current === null && bid_address !== null) {
+            console.log("subscribe 1");
+
+            bids_ws_id.current = connection.onAccountChange(bid_address, check_bid_update, "confirmed");
+        }
+
+        if (asks_ws_id.current === null && ask_address !== null) {
+            console.log("subscribe 2");
+
+            asks_ws_id.current = connection.onAccountChange(ask_address, check_ask_update, "confirmed");
+        }
+    }, [bid_address, ask_address, check_bid_update, check_ask_update]);
+
+    const CheckMarketData = useCallback(async () => {
+
+        if (launch === null)
+            return
+
+        let programAddress = new PublicKey("srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX");
+        let amm_program = new PublicKey("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
+
+        const seed_base = launch.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
+        const marketAddress =  await PublicKey.createWithSeed(launch.keys[LaunchKeys.Seller],  seed_base + "1", programAddress);
+
+        
+        const ammAddress =   PublicKey.findProgramAddressSync([amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("amm_associated_seed")], amm_program)[0];
+        if (check_market_data.current === true) {
+            let account_data = await request_raw_account_data("", marketAddress);
+            const [market_data] = MarketStateLayoutV2.struct.deserialize(account_data);
+            let bid_address = market_data.bids;
+            let ask_address = market_data.asks;
+
+            const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+            let market = await Market.load(connection, marketAddress, {}, programAddress);
+            console.log(bignum_to_num(market.decoded.baseLotSize));
+
+            setBidAddress(bid_address);
+            setAskAddress(ask_address);
+            setMarket(market);
+
+            // get the current state of the bid and ask
+            let bid_account_data = await request_raw_account_data("", bid_address);
+            let ask_account_data = await request_raw_account_data("", ask_address);
+
+            let asks = Orderbook.decode(market, ask_account_data);
+            let bids = Orderbook.decode(market, bid_account_data);
+
+            let ask_l2 = asks.getL2(1);
+            let bid_l2 = bids.getL2(1);
+
+            console.log("current bid/ask", ask_l2, bid_l2)
+
+            let data = await getMarketData(ammAddress.toString());
+            //console.log(data)
+            setMarketData(data);
+            check_market_data.current = false;
+        }
+    }, [launch]);
+
+    useEffect(() => {
+        CheckMarketData();
+    }, [CheckMarketData]);
 
     async function getUserOrders() {
         const connection = new Connection(RPC_NODE);
@@ -285,11 +511,11 @@ const TradePage = () => {
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    $Dummy
+                                    {launch.symbol}
                                 </Text>
                                 <HStack spacing={3} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                        Adn6...5269f
+                                        {trimAddress(launch.keys[LaunchKeys.MintAddress].toString())}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -297,7 +523,7 @@ const TradePage = () => {
                                             style={{ cursor: "pointer" }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigator.clipboard.writeText("Adn6...5269f");
+                                                navigator.clipboard.writeText(launch.keys[LaunchKeys.MintAddress].toString());
                                             }}
                                         >
                                             <MdOutlineContentCopy color="white" size={25} />
@@ -306,7 +532,7 @@ const TradePage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={`https://solscan.io/account/Adn6...5269f?cluster=devnet`}
+                                            href={`https://solscan.io/account/`+launch.keys[LaunchKeys.MintAddress].toString()}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -360,7 +586,7 @@ const TradePage = () => {
                                 position: "relative",
                             }}
                         >
-                            <Text>Chart Container</Text>
+                            <ChartComponent data={market_data}></ChartComponent>
                         </HStack>
 
                         <div
