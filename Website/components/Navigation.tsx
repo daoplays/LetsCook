@@ -60,6 +60,20 @@ function Navigation() {
                     </Tooltip>
 
                     <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={isHomePageOnly ? "#" : "/trade"}>
+                                <Image
+                                    src="/images/market.png"
+                                    width={35}
+                                    height={35}
+                                    alt={"Trade"}
+                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                />
+                            </Link>
+                        </Tooltip>
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={isHomePageOnly ? "#" : "/calendar"}>
                                 <Image
@@ -239,6 +253,66 @@ function Navigation() {
                         </Text>
                     </Link>
                 </VStack>
+
+                <Text
+                    color="#683309"
+                    fontSize={30}
+                    fontWeight="bold"
+                    onClick={() => {
+                        if (!wallet.connected) {
+                            alert("Please connect your wallet to access creator dashboard");
+                        } else {
+                            onToggle();
+                            !isHomePageOnly && router.push(`/dashboard`);
+                        }
+                    }}
+                    style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
+                >
+                    Creator Dashboard
+                </Text>
+
+                <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
+                    <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                        Calendar
+                    </Text>
+                </Link>
+
+                <Link href={isHomePageOnly ? "#" : "/marketmake"} onClick={onToggle}>
+                    <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                        Market Make
+                    </Text>
+                </Link>
+
+                {/* <Link href="/leaderboard" onClick={onToggle}>
+                    <Text className={styles.connect}>LEADERBOARD</Text>
+                </Link> */}
+
+                <Text
+                    color="#683309"
+                    fontSize={30}
+                    fontWeight="bold"
+                    onClick={() => {
+                        if (!wallet.connected) {
+                            alert("Please connect your wallet to access creator dashboard");
+                        } else {
+                            onToggle();
+                            !isHomePageOnly && router.push(`/bags`);
+                        }
+                    }}
+                    style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
+                >
+                    My Bags
+                </Text>
+
+                {/* <Text className={styles.connect} style={{ opacity: 0.5 }}>
+                    HISTORY
+                </Text> */}
+
+                <Link href="/faq" onClick={onToggle}>
+                    <Text color="#683309" fontSize={30} fontWeight="bold">
+                        FAQs
+                    </Text>
+                </Link>
             </VStack>
         </>
     );

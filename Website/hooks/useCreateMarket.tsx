@@ -285,10 +285,33 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         const createMarketToast = toast.loading("(1/4) Creating the market token accounts");
 
+
+        // simple heuristic for calculating min order size
+        let total_liquidity = (launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL
+        let LP_tokens = bignum_to_num(launchData.total_supply) * (launchData.distribution[1] / 100)
+        let initial_size = 1;
+        let initial_tick_size = 1e-6;
+        let ticks_per_token = initial_size * total_liquidity / LP_tokens / initial_tick_size;
+
+        console.log("total liquidity: " + total_liquidity)
+        console.log("LP tokens: ", LP_tokens)
+        console.log("ticks per token", ticks_per_token)
+
+        while(ticks_per_token < 100) {
+            initial_size *= 10;
+            initial_tick_size /= 10
+            if (initial_tick_size < 1e-9)
+                initial_tick_size = 1e-9
+
+            ticks_per_token = initial_size * total_liquidity / LP_tokens / initial_tick_size;
+            console.log("ticks per token", initial_size, initial_tick_size, ticks_per_token)
+            
+        }
+
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
         const makeTxVersion = TxVersion.V0;
-        let min_order_size = 1;
-        let tick_size = 0.000001;
+        let min_order_size = initial_size;
+        let tick_size = initial_tick_size;
 
         const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
 

@@ -9,7 +9,7 @@ const nextConfig = withBundleAnalyzer({
     swcMinify: true,
 
     images: {
-        domains: [`www.arweave.net`, "gateway.irys.xyz"],
+        domains: [`www.arweave.net`, "gateway.irys.xyz", "snipboard.io"],
     },
 });
 

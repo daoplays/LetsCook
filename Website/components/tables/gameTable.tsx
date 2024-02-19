@@ -105,7 +105,13 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
                 style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
             >
                 <thead>
-                    <tr style={{ height: "50px", borderTop: "1px solid #868E96", borderBottom: "1px solid #868E96" }}>
+                    <tr
+                        style={{
+                            height: "50px",
+                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
+                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
+                        }}
+                    >
                         {tableHeaders.map((i) => (
                             <th key={i.text}>
                                 <HStack justify="center" style={{ cursor: i.text === "LOGO" || i.text === "SOCIALS" ? "" : "pointer" }}>
