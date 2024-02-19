@@ -4,7 +4,7 @@ import Head from "next/head";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
 import BN from "bn.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, request_raw_account_data } from "../../components/Solana/state";
+import { get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, request_raw_account_data, request_token_amount, TokenAccount } from "../../components/Solana/state";
 import bs58 from "bs58";
 import { ownerFilter } from "@jup-ag/limit-order-sdk";
 import { OrderHistoryItem, TradeHistoryItem, Order } from "@jup-ag/limit-order-sdk";
@@ -42,6 +42,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { Orderbook, Market } from "@openbook-dex/openbook";
 import { ColorType, createChart, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
+import { FaPowerOff } from "react-icons/fa";
 
 async function getMarketData(market_address: string) {
     // Default options are marked with *
@@ -174,34 +175,35 @@ const TradePage = () => {
     const [market_data, setMarketData] = useState<MarketData[]>([]);
 
     const [market, setMarket] = useState<Market | null>(null);
-    const [bid_address, setBidAddress] = useState<PublicKey | null>(null);
-    const [ask_address, setAskAddress] = useState<PublicKey | null>(null);
+    const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
+    const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
     const [lot_size, setLotSize] = useState<number | null>(null);
 
-    const [best_bid, setBestBid] = useState<Level | null>(null);
-    const [best_ask, setBestAsk] = useState<Level | null>(null);
+    const [base_amount, setBaseAmount] = useState<number | null>(null);
+    const [quote_amount, setQuoteAmount] = useState<number | null>(null);
 
-    const bids_ws_id = useRef<number | null>(null);
-    const asks_ws_id = useRef<number | null>(null);
+    const base_ws_id = useRef<number | null>(null);
+    const quote_ws_id = useRef<number | null>(null);
 
-    const last_bid = useRef<number>(0);
-    const last_ask = useRef<number>(0);
+    const last_base_amount = useRef<number>(0);
+    const last_quote_amount = useRef<number>(0);
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
+
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
         return () => {
             console.log("in use effect return");
             const unsub = async () => {
                 const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-                if (bids_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(bids_ws_id.current);
-                    bids_ws_id.current = null;
+                if (base_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(base_ws_id.current);
+                    base_ws_id.current = null;
                 }
-                if (asks_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(asks_ws_id.current);
-                    asks_ws_id.current = null;
+                if (quote_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(quote_ws_id.current);
+                    quote_ws_id.current = null;
                 }
             };
             unsub();
@@ -209,15 +211,16 @@ const TradePage = () => {
     }, []);
 
     useEffect(() => {
-        if (best_bid === null || best_ask === null) {
+        if (base_amount === null || quote_amount === null) {
             return;
         }
 
-        if (best_bid.price === last_bid.current && best_ask.price === last_ask.current) {
+        if (base_amount === last_base_amount.current && quote_amount === last_quote_amount.current) {
             return;
         }
 
-        let new_mid = 0.5 * (best_bid.price + best_ask.price);
+        let new_mid = quote_amount / base_amount
+
         //console.log("new mid", best_bid.price, best_ask.price, new_mid);
         let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
         let today_seconds = today * 24 * 60 * 60;
@@ -227,42 +230,35 @@ const TradePage = () => {
         updated_price_data[updated_price_data.length - 1] = new_market_data;
         setMarketData(updated_price_data);
 
-        last_bid.current = best_bid.price;
-        last_ask.current = best_ask.price;
-    }, [best_bid, best_ask, market_data]);
+        last_base_amount.current = base_amount;
+        last_quote_amount.current = quote_amount;
 
-    const check_bid_update = useCallback(
+    }, [base_amount, quote_amount, market_data]);
+
+    const check_base_update = useCallback(
         async (result: any) => {
             //console.log(result);
             // if we have a subscription field check against ws_id
 
             let event_data = result.data;
+            const [token_account] = TokenAccount.struct.deserialize(event_data);
+            let amount = token_account.amount /  Math.pow(10, launch.decimals)
 
-            let bids = Orderbook.decode(market, event_data);
-
-            let l2 = bids.getL2(1);
-            console.log("have bid data", l2[0][0], l2[0][1]);
-
-            let best_bid: Level = { price: l2[0][0], quantity: l2[0][1] };
-            setBestBid(best_bid);
+            setBaseAmount(amount);
         },
         [market],
     );
 
-    const check_ask_update = useCallback(
+    const check_quote_update = useCallback(
         async (result: any) => {
             //console.log(result);
             // if we have a subscription field check against ws_id
 
             let event_data = result.data;
-
-            let asks = Orderbook.decode(market, event_data);
-
-            let l2 = asks.getL2(1);
-            console.log("have ask data", l2[0][0], l2[0][1]);
-
-            let best_ask: Level = { price: l2[0][0], quantity: l2[0][1] };
-            setBestAsk(best_ask);
+            const [token_account] = TokenAccount.struct.deserialize(event_data);
+            let amount = token_account.amount /  Math.pow(10, 9)
+           
+            setQuoteAmount(amount);
         },
         [market],
     );
@@ -271,18 +267,18 @@ const TradePage = () => {
     useEffect(() => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        if (bids_ws_id.current === null && bid_address !== null) {
+        if (base_ws_id.current === null && base_address !== null) {
             console.log("subscribe 1");
 
-            bids_ws_id.current = connection.onAccountChange(bid_address, check_bid_update, "confirmed");
+            base_ws_id.current = connection.onAccountChange(base_address, check_base_update, "confirmed");
         }
 
-        if (asks_ws_id.current === null && ask_address !== null) {
+        if (quote_ws_id.current === null && quote_address !== null) {
             console.log("subscribe 2");
 
-            asks_ws_id.current = connection.onAccountChange(ask_address, check_ask_update, "confirmed");
+            quote_ws_id.current = connection.onAccountChange(quote_address, check_quote_update, "confirmed");
         }
-    }, [bid_address, ask_address, check_bid_update, check_ask_update]);
+    }, [base_address, quote_address, check_base_update, check_quote_update]);
 
     const CheckMarketData = useCallback(async () => {
 
@@ -297,31 +293,49 @@ const TradePage = () => {
 
         
         const ammAddress =   PublicKey.findProgramAddressSync([amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("amm_associated_seed")], amm_program)[0];
+        
+        const base_vault =   PublicKey.findProgramAddressSync([amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("coin_vault_associated_seed")], amm_program)[0];
+        const quote_vault =   PublicKey.findProgramAddressSync([amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("pc_vault_associated_seed")], amm_program)[0];
+
+        console.log(base_vault.toString(), quote_vault.toString())
+
         if (check_market_data.current === true) {
-            let account_data = await request_raw_account_data("", marketAddress);
-            const [market_data] = MarketStateLayoutV2.struct.deserialize(account_data);
-            let bid_address = market_data.bids;
-            let ask_address = market_data.asks;
+            //let account_data = await request_raw_account_data("", marketAddress);
+            //const [market_data] = MarketStateLayoutV2.struct.deserialize(account_data);
+            //let bid_address = market_data.bids;
+            //let ask_address = market_data.asks;
 
             const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
             let market = await Market.load(connection, marketAddress, {}, programAddress);
-            console.log(bignum_to_num(market.decoded.baseLotSize));
+            //console.log(bignum_to_num(market.decoded.baseLotSize));
 
-            setBidAddress(bid_address);
-            setAskAddress(ask_address);
+            setBaseAddress(base_vault);
+            setQuoteAddress(quote_vault);
             setMarket(market);
+            setLotSize(bignum_to_num(market.decoded.baseLotSize));
+
+
+            let base_amount = await request_token_amount("", base_vault);
+            let quote_amount = await request_token_amount("", quote_vault);
+
+            setBaseAmount(base_amount / Math.pow(10, launch.decimals));
+            setQuoteAmount(quote_amount / Math.pow(10, 9));
+
+            let current_price = (quote_amount / Math.pow(10, 9)) / (base_amount / Math.pow(10, launch.decimals))
+
+            console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price)
 
             // get the current state of the bid and ask
-            let bid_account_data = await request_raw_account_data("", bid_address);
-            let ask_account_data = await request_raw_account_data("", ask_address);
+            //let bid_account_data = await request_raw_account_data("", bid_address);
+           // let ask_account_data = await request_raw_account_data("", ask_address);
 
-            let asks = Orderbook.decode(market, ask_account_data);
-            let bids = Orderbook.decode(market, bid_account_data);
+            //let asks = Orderbook.decode(market, ask_account_data);
+            //let bids = Orderbook.decode(market, bid_account_data);
+//
+           // let ask_l2 = asks.getL2(1);
+           // let bid_l2 = bids.getL2(1);
 
-            let ask_l2 = asks.getL2(1);
-            let bid_l2 = bids.getL2(1);
-
-            console.log("current bid/ask", ask_l2, bid_l2)
+            //console.log("current bid/ask", ask_l2, bid_l2)
 
             let data = await getMarketData(ammAddress.toString());
             //console.log(data)

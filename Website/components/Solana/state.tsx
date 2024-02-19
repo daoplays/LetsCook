@@ -11,6 +11,8 @@ import {
     bignum,
     utf8String,
     array,
+    coption,
+    COption
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -192,6 +194,45 @@ interface AccountData {
         };
     };
     error: string;
+}
+
+export class TokenAccount {
+    constructor(
+        readonly mint: PublicKey,
+        readonly owner: PublicKey,
+        readonly amount: bignum,
+        readonly delegate: COption<PublicKey>,
+        readonly state: number,
+        readonly is_native: COption<bignum>,
+        readonly delegated_amount: bignum,
+        readonly close_authority: COption<PublicKey>,
+
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<TokenAccount>(
+        [
+            ["mint", publicKey],
+            ["owner", publicKey],
+            ["amount", u64],
+            ["delegate", coption(publicKey)],
+            ["state", u8],
+            ["is_native", coption(u64)],
+            ["delegated_amount", u64],
+            ["close_authority", coption(publicKey)]
+        ],
+        (args) =>
+            new TokenAccount(
+                args.mint!,
+                args.owner!,
+                args.amount!,
+                args.delegate!,
+                args.state!,
+                args.is_native!,
+                args.delegated_amount!,
+                args.close_authority!,
+            ),
+        "TokenAccount",
+    );
 }
 
 interface TokenBalanceData {
