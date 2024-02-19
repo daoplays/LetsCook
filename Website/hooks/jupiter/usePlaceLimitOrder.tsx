@@ -53,14 +53,14 @@ const usePlaceLimitOrder = () => {
         signature_ws_id.current = null;
     }, []);
 
-    const PlaceLimitOrder = async () => {
+    const PlaceLimitOrder = async (launch: LaunchData, token_amount : number, sol_amount: number, order_type : number) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Placing Limit Order..");
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const token_mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+        const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         const jupiter_program_key = new PublicKey("jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu");
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
@@ -69,9 +69,8 @@ const usePlaceLimitOrder = () => {
         // Base key are used to generate a unique order id
         const base = Keypair.generate();
 
-        let token_amount = new BN(1000000);
-        let sol_amount = new BN(100);
-        let order_type: number = 1;
+        token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
+        sol_amount = new BN(sol_amount  * Math.pow(10, 9));
         const { tx, orderPubKey } = await limitOrder.createOrder({
             owner: user_pda_account,
             inAmount: order_type === 0 ? sol_amount : token_amount, // 1000000 => 1 USDC if inputToken.address is USDC mint
@@ -93,7 +92,7 @@ const usePlaceLimitOrder = () => {
             true, // allow owner off curve
         );
 
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         const instruction_data = serialise_PlaceLimit_instruction(order_type, order_type === 0 ? sol_amount : token_amount, jup_data);
 

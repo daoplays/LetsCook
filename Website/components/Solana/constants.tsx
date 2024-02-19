@@ -3,6 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 
 const DEV_RPC_NODE = "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2";
 const DEV_WSS_NODE = "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/";
+
 const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
 const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
 
@@ -85,5 +86,5 @@ export enum LaunchFlags {
     LPState = 2,
     TokenProgramVersion = 3,
     BookProvider = 4,
-    AMMProvider = 5
+    AMMProvider = 5,
 }

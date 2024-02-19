@@ -32,8 +32,12 @@ import { ComputeBudgetProgram } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
-import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
-import { OpenOrder } from "../../pages/marketmake";
+import { LimitOrderProvider, Order } from "@jup-ag/limit-order-sdk";
+
+interface OpenOrder {
+    publicKey: PublicKey;
+    account: Order;
+}
 
 const useCancelLimitOrder = () => {
     const wallet = useWallet();
