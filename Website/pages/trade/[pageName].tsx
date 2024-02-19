@@ -246,7 +246,7 @@ const TradePage = () => {
 
             setBaseAmount(amount);
         },
-        [market],
+        [launch],
     );
 
     const check_quote_update = useCallback(
@@ -260,7 +260,7 @@ const TradePage = () => {
            
             setQuoteAmount(amount);
         },
-        [market],
+        [],
     );
 
     // launch account subscription handler
