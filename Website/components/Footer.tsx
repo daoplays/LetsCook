@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { HStack, Text, Box, useDisclosure } from "@chakra-ui/react";
 
 import twitter from "../public/images/Twitter.png";
-import discord from "../public/images/Discord.png";
+import discord from "../public/images/discord.png";
 
 import styles from "./header.module.css";
 import MainButton from "./Buttons/mainButton";
