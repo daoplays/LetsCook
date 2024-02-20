@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { HStack, Text, Box, useDisclosure } from "@chakra-ui/react";
 
 import twitter from "../public/images/Twitter.png";
-import telegram from "../public/images/Telegram.png";
+import discord from "../public/images/Discord.png";
 
 import styles from "./header.module.css";
 import MainButton from "./Buttons/mainButton";
@@ -38,6 +38,20 @@ function Footer() {
                     width={30}
                     height={30}
                     alt={"Twitter"}
+                    style={{
+                        backgroundColor: "#683309",
+                        borderRadius: "50%",
+                        padding: 5,
+                    }}
+                />
+            </Link>
+
+            <Link href="https://discord.gg/Pkg2ZyMc" target="_blank">
+                <Image
+                    src={discord}
+                    width={30}
+                    height={30}
+                    alt={"Discord"}
                     style={{
                         backgroundColor: "#683309",
                         borderRadius: "50%",

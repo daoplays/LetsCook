@@ -39,6 +39,7 @@ import trimAddress from "../../utils/trimAddress";
 import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
+import { formatCurrency } from "@coingecko/cryptoformat";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -388,7 +389,7 @@ const TradePage = () => {
 
                         {leftPanel === "Info" && <InfoContent />}
 
-                        {leftPanel === "Trade" && <BuyAndSell launch={launch}/>}
+                        {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
                     </VStack>
 
                     <VStack
@@ -449,7 +450,7 @@ const TradePage = () => {
     );
 };
 
-const BuyAndSell = ({launch} : {launch :LaunchData}) => {
+const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     const { xs } = useResponsive();
     const [selected, setSelected] = useState("Buy");
     const [token_amount, setTokenAmount] = useState<number>(0);
@@ -457,14 +458,11 @@ const BuyAndSell = ({launch} : {launch :LaunchData}) => {
     const [order_type, setOrderType] = useState<number>(0);
     const { PlaceLimitOrder } = usePlaceLimitOrder();
 
-
     const handleClick = (tab: string) => {
         setSelected(tab);
 
-        if (tab == "Buy")
-            setOrderType(0);
-        if (tab == "Sell")
-            setOrderType(1);
+        if (tab == "Buy") setOrderType(0);
+        if (tab == "Sell") setOrderType(1);
     };
 
     return (
@@ -522,13 +520,16 @@ const BuyAndSell = ({launch} : {launch :LaunchData}) => {
                     Amount:
                 </Text>
                 <InputGroup size="md">
-                    <Input color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" 
-                     value={token_amount}
-                     onChange={(e) => {
-                         setTokenAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
-                     }}
-                     type="number"
-                     min="0"
+                    <Input
+                        color="white"
+                        size="lg"
+                        borderColor="rgba(134, 142, 150, 0.5)"
+                        value={token_amount}
+                        onChange={(e) => {
+                            setTokenAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
+                        }}
+                        type="number"
+                        min="0"
                     />
                     <InputRightElement h="100%" w={50}>
                         <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
@@ -541,13 +542,16 @@ const BuyAndSell = ({launch} : {launch :LaunchData}) => {
                     Price Per Token:
                 </Text>
                 <InputGroup size="md">
-                    <Input color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" 
-                    value={sol_amount}
-                    onChange={(e) => {
-                        setSOLAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
-                    }}
-                    type="number"
-                    min="0"
+                    <Input
+                        color="white"
+                        size="lg"
+                        borderColor="rgba(134, 142, 150, 0.5)"
+                        value={sol_amount}
+                        onChange={(e) => {
+                            setSOLAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
+                        }}
+                        type="number"
+                        min="0"
                     />
                     <InputRightElement h="100%" w={50}>
                         <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
@@ -560,8 +564,12 @@ const BuyAndSell = ({launch} : {launch :LaunchData}) => {
                     You will {selected === "Buy" ? "Pay" : "Receive"}:
                 </Text>
                 <InputGroup size="md">
-                    <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" 
-                    value={sol_amount * token_amount}
+                    <Input
+                        readOnly={true}
+                        color="white"
+                        size="lg"
+                        borderColor="rgba(134, 142, 150, 0.5)"
+                        value={sol_amount * token_amount}
                     />
                     <InputRightElement h="100%" w={50}>
                         <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
@@ -573,7 +581,7 @@ const BuyAndSell = ({launch} : {launch :LaunchData}) => {
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Expiry:
                 </Text>
-                <Select placeholder="Never"color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)">
+                <Select placeholder="Never" color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)">
                     <option value="option1">15 Minutes</option>
                     <option value="option2">1 Hour</option>
                     <option value="option3">1 Day</option>
@@ -583,7 +591,15 @@ const BuyAndSell = ({launch} : {launch :LaunchData}) => {
                 </Select>
             </VStack>
 
-            <Button mt={2} size="lg" w="100%" px={4} py={2} bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"} onClick={()=>PlaceLimitOrder(launch, token_amount, sol_amount, order_type)}>
+            <Button
+                mt={2}
+                size="lg"
+                w="100%"
+                px={4}
+                py={2}
+                bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
+                onClick={() => PlaceLimitOrder(launch, token_amount, sol_amount, order_type)}
+            >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
                     Place Order
                 </Text>
@@ -734,7 +750,16 @@ const ChartComponent = (props) => {
 
         chart.timeScale().fitContent();
 
-        const newSeries = chart.addAreaSeries({ lineColor, topColor: areaTopColor, bottomColor: areaBottomColor });
+        const newSeries = chart.addAreaSeries({
+            lineColor,
+            topColor: areaTopColor,
+            bottomColor: areaBottomColor,
+            priceFormat: {
+                type: "custom",
+                formatter: (price) => formatCurrency(price, "USD", "en", true),
+            },
+        });
+
         newSeries.setData(data);
 
         window.addEventListener("resize", handleResize);

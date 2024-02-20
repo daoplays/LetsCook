@@ -23,7 +23,12 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
 
     let first_creator_title = "";
     for (let i = 0; i < distribution.length; i++) {
-        if (distribution[i].title === distributionLabels.fields[3].title || distribution[i].title === distributionLabels.fields[4].title || distribution[i].title === distributionLabels.fields[5].title || distribution[i].title === distributionLabels.fields[6].title) {
+        if (
+            distribution[i].title === distributionLabels.fields[3].title ||
+            distribution[i].title === distributionLabels.fields[4].title ||
+            distribution[i].title === distributionLabels.fields[5].title ||
+            distribution[i].title === distributionLabels.fields[6].title
+        ) {
             first_creator_title = distribution[i].title;
             break;
         }
@@ -36,7 +41,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
             </Text>
             <HStack align="center" justify="center" style={{ cursor: "pointer" }}>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>
-                    Total Supply: {bignum_to_num(launchData.total_supply)}
+                    Total Supply: {bignum_to_num(launchData.total_supply).toLocaleString()}
                 </Text>
             </HStack>
 
@@ -44,7 +49,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                 <VStack gap={6} align="start" ml={12}>
                     {distribution.map((i, index) => {
                         if (i.value <= 0) return;
-                        console.log(i.title, i.value)
+                        console.log(i.title, i.value);
                         return (
                             <VStack gap={6} align="start" key={i.title}>
                                 {i.title === "Raffle (SOL)" && (
