@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Center, HStack, TableContainer, Text } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -8,6 +8,7 @@ import { LaunchKeys, LaunchFlags, PROD } from "../Solana/constants";
 import { MMLaunchData, MMUserData, RunMMLaunchDataGPA, RunMMUserDataGPA } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
+import { TfiReload } from "react-icons/tfi";
 
 interface Header {
     text: string;
@@ -111,6 +112,12 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
                                 </HStack>
                             </th>
                         ))}
+
+                        <th>
+                            <Box mt={1} as="button">
+                                <TfiReload size={sm ? 18 : 20} />
+                            </Box>
+                        </th>
                     </tr>
                 </thead>
 
@@ -194,6 +201,19 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
 
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}></Text>
+            </td>
+
+            <td style={{ minWidth: md ? "150px" : "" }}>
+                <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
+                    <Link
+                        href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
+                            LaunchKeys.MintAddress
+                        ].toString()}&inputSymbol=6ztz5k&outputCurrency=sol&fixed=in`}
+                        target="_blank"
+                    >
+                        <Button onClick={(e) => e.stopPropagation()}>AMM</Button>
+                    </Link>
+                </HStack>
             </td>
         </tr>
     );

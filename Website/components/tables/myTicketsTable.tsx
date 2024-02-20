@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import useCheckTickets from "../../hooks/useCheckTickets";
 import useRefundTickets from "../../hooks/useRefundTickets";
 import useClaimTokens from "../../hooks/useClaimTokens";
-import { LaunchFlags } from "../Solana/constants";
+import { LaunchFlags, LaunchKeys } from "../Solana/constants";
 import { WinLoss, ButtonString } from "../user_status";
 
 interface Header {
@@ -125,18 +125,17 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
     const cook_state = useDetermineCookState({ current_time, launchData: launch.launch_data, join_data: launch.join_data });
 
-    console.log("cook state", cook_state)
+    console.log("cook state", cook_state);
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
     const MINTED_OUT = [
-         CookState.MINT_SUCCEEDED_NO_TICKETS,
-         CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
-         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
-         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
-         CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
-     ].includes(cook_state);
-     const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
+        CookState.MINT_SUCCEEDED_NO_TICKETS,
+        CookState.MINT_SUCCEDED_TICKETS_TO_CHECK,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP,
+        CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT,
+    ].includes(cook_state);
+    const MINT_FAILED = [CookState.MINT_FAILED_NOT_REFUNDED, CookState.MINT_FAILED_REFUNDED].includes(cook_state);
 
-    
     const handleButtonClick = (e) => {
         e.stopPropagation();
 
@@ -250,7 +249,15 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                 </Text>
             </td>
             <td style={{ minWidth: md ? "150px" : "" }}>
-                <HStack justify="center" style={{ minWidth: "65px" }}>
+                <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
+                    <Link
+                        href={`https://raydium.io/swap/?inputCurrency=${launch.launch_data.keys[
+                            LaunchKeys.MintAddress
+                        ].toString()}&inputSymbol=6ztz5k&outputCurrency=sol&fixed=in`}
+                        target="_blank"
+                    >
+                        <Button onClick={(e) => e.stopPropagation()}>AMM</Button>
+                    </Link>
                     {MINTED_OUT || MINT_FAILED ? (
                         <Button
                             onClick={(e) => handleButtonClick(e)}

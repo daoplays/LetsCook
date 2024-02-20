@@ -31,6 +31,8 @@ function Navigation() {
                 w="100%"
                 alignItems="center"
                 justify="space-between"
+                position={"relative"}
+                zIndex={1000}
             >
                 <Link href="/">
                     <HStack>
@@ -168,7 +170,7 @@ function Navigation() {
             {/* Mobile Menu */}
             <VStack
                 position="absolute"
-                top={50}
+                top={!isOpen || !md ? 0 : 50}
                 justify="center"
                 left={0}
                 right={0}
@@ -176,10 +178,14 @@ function Navigation() {
                 bg="url(/images/drawer.jpg)"
                 backgroundSize="cover"
                 borderBottomRadius={12}
-                hidden={!md || !isOpen}
+                // hidden={!md || !isOpen}
                 boxShadow="0px 3px 13px 0px rgba(0,0,0,0.75) inset"
                 zIndex={999}
                 justifyContent="start"
+                style={{
+                    transition: "transform 0.3s ease",
+                    transform: isOpen ? "translateY(0)" : "translateY(-100%)",
+                }}
             >
                 <VStack spacing={8} pb={6} py={20} bg="rgba(0,0,0,0.25) " w="100%" h="100%">
                     <VStack className="font-face-kg">
@@ -230,6 +236,12 @@ function Navigation() {
                         </Text>
                     </Link>
 
+                    <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
+                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                            Trade
+                        </Text>
+                    </Link>
+
                     <Text
                         color="white"
                         className="font-face-kg"
@@ -253,66 +265,6 @@ function Navigation() {
                         </Text>
                     </Link>
                 </VStack>
-
-                <Text
-                    color="#683309"
-                    fontSize={30}
-                    fontWeight="bold"
-                    onClick={() => {
-                        if (!wallet.connected) {
-                            alert("Please connect your wallet to access creator dashboard");
-                        } else {
-                            onToggle();
-                            !isHomePageOnly && router.push(`/dashboard`);
-                        }
-                    }}
-                    style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
-                >
-                    Creator Dashboard
-                </Text>
-
-                <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
-                    <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                        Calendar
-                    </Text>
-                </Link>
-
-                <Link href={isHomePageOnly ? "#" : "/marketmake"} onClick={onToggle}>
-                    <Text color="#683309" fontSize={30} fontWeight="bold" style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                        Market Make
-                    </Text>
-                </Link>
-
-                {/* <Link href="/leaderboard" onClick={onToggle}>
-                    <Text className={styles.connect}>LEADERBOARD</Text>
-                </Link> */}
-
-                <Text
-                    color="#683309"
-                    fontSize={30}
-                    fontWeight="bold"
-                    onClick={() => {
-                        if (!wallet.connected) {
-                            alert("Please connect your wallet to access creator dashboard");
-                        } else {
-                            onToggle();
-                            !isHomePageOnly && router.push(`/bags`);
-                        }
-                    }}
-                    style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
-                >
-                    My Bags
-                </Text>
-
-                {/* <Text className={styles.connect} style={{ opacity: 0.5 }}>
-                    HISTORY
-                </Text> */}
-
-                <Link href="/faq" onClick={onToggle}>
-                    <Text color="#683309" fontSize={30} fontWeight="bold">
-                        FAQs
-                    </Text>
-                </Link>
             </VStack>
         </>
     );
