@@ -2,7 +2,7 @@ import { Box, Button, Center, HStack, TableContainer, Text } from "@chakra-ui/re
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { JoinedLaunch, LaunchData } from "../Solana/state";
+import { JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
 import { OpenOrder } from "../Solana/jupiter_state";
 
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -26,7 +26,7 @@ function filterTable(list: OpenOrder[], launch_data : LaunchData) {
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.account.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString();
+        return (item.account.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString() || item.account.outputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString());
     });
 }
 
@@ -49,6 +49,7 @@ const OrdersTable = ({launch_data} : {launch_data : LaunchData | null}) => {
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
         { text: "SYMBOL", field: "symbol" },
+        { text: "SIDE", field: "side" },
         { text: "COST", field: "cost" },
         { text: "PRICE", field: "price" },
         { text: "SIZE", field: "size" },
@@ -103,7 +104,16 @@ const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { CancelLimitOrder } = useCancelLimitOrder();
+    let is_buy = order.account.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString()
 
+    let cost = is_buy ? bignum_to_num(order.account.makingAmount) : bignum_to_num(order.account.takingAmount);
+    let token_amount = is_buy ? bignum_to_num(order.account.takingAmount) : bignum_to_num(order.account.makingAmount);
+
+    cost /= Math.pow(10, 9);
+    token_amount /= Math.pow(10, launch.decimals);
+
+
+    let sol_amount = (cost / token_amount).toPrecision(2);
 
     return (
         <tr
@@ -137,29 +147,35 @@ const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }
                     {launch.symbol}
                 </Text>
             </td>
+            <td style={{ minWidth: "180px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {is_buy ? "BUY" : "SELL"}
+                </Text>
+            </td>
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        --
+                    {cost}
                     </Text>
-                    <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        --
+                    {sol_amount}
                     </Text>
-                    <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                       --
+                        {token_amount}
                     </Text>
+                    <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 

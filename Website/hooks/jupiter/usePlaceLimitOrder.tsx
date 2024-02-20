@@ -34,9 +34,11 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
+import useAppRoot from "../../context/useAppRoot";
 
 const usePlaceLimitOrder = () => {
     const wallet = useWallet();
+    const {checkUserOrders } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -49,6 +51,8 @@ const usePlaceLimitOrder = () => {
             alert("Transaction failed, please try again");
             return;
         }
+
+        await checkUserOrders();
 
         signature_ws_id.current = null;
     }, []);
@@ -139,7 +143,7 @@ const usePlaceLimitOrder = () => {
 
             let signature = transaction_response.result;
 
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "finalized");
 
             toast.update(placeLimitToast, {
                 render: "Limit Order Placed",

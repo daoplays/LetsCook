@@ -134,7 +134,7 @@ const useCancelLimitOrder = () => {
 
             let signature = transaction_response.result;
 
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "finalized");
 
             toast.update(placeLimitToast, {
                 render: "Limit Order Cancelled",

@@ -33,7 +33,7 @@ async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>
     const limitOrder = new LimitOrderProvider(connection, null);
     const openOrder: OpenOrder[] = await limitOrder.getOrders([ownerFilter(user_pda_account)]);
 
-    /*const orderHistory: OrderHistoryItem[] = await limitOrder.getOrderHistory({
+    const orderHistory: OrderHistoryItem[] = await limitOrder.getOrderHistory({
         wallet: user_pda_account.toBase58(),
         take: 20, // optional, default is 20, maximum is 100
         // lastCursor: order.id // optional, for pagination
@@ -43,9 +43,19 @@ async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>
         wallet: user_pda_account.toBase58(),
         take: 20, // optional, default is 20, maximum is 100
         // lastCursor: order.id // optional, for pagination
-    });*/
+    });
 
+
+    console.log("open:")
     console.log(openOrder);
+
+    console.log("past:")
+    console.log(orderHistory);
+
+
+    console.log("trade:")
+    console.log(tradeHistory);
+
 
     return openOrder
 }

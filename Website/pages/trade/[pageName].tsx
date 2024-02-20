@@ -179,7 +179,7 @@ const TradePage = () => {
             let event_data = result.data;
             const [token_account] = TokenAccount.struct.deserialize(event_data);
             let amount = token_account.amount / Math.pow(10, launch.decimals);
-
+            console.log("update base amount", amount)
             setBaseAmount(amount);
         },
         [launch],
@@ -192,6 +192,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = token_account.amount / Math.pow(10, 9);
+        console.log("update quote amount", amount)
 
         setQuoteAmount(amount);
     }, []);
@@ -276,8 +277,15 @@ const TradePage = () => {
             //console.log("current bid/ask", ask_l2, bid_l2)
 
             let data = await getMarketData(ammAddress.toString());
+
+            let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+            let today_seconds = today * 24 * 60 * 60;
+            let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: current_price };
+            const updated_price_data = [...data];
+            //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
+            updated_price_data[updated_price_data.length - 1] = new_market_data;
             //console.log(data)
-            setMarketData(data);
+            setMarketData(updated_price_data);
             check_market_data.current = false;
         }
     }, [launch]);
@@ -428,21 +436,7 @@ const TradePage = () => {
                                 }}
                             />
                         </div>
-
-                        <VStack w="100%">
-                            <HStack
-                                align="center"
-                                w="100%"
-                                px={4}
-                                style={{ height: "45px", borderTop: "1px solid rgba(134, 142, 150, 0.5)" }}
-                            >
-                                <Text color="white" fontSize={sm ? "medium" : "large"} m={0}>
-                                    Open Orders(1)
-                                </Text>
-                            </HStack>
-
-                            <OrdersTable launch_data={launch}/>
-                        </VStack>
+                        <OrdersTable launch_data={launch}/>
                     </VStack>
                 </HStack>
             </main>
@@ -598,7 +592,7 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
                 px={4}
                 py={2}
                 bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
-                onClick={() => PlaceLimitOrder(launch, token_amount, sol_amount, order_type)}
+                onClick={() => PlaceLimitOrder(launch, token_amount, token_amount * sol_amount, order_type)}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
                     Place Order
