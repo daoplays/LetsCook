@@ -1,6 +1,7 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
+import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import {
     RunLaunchDataGPA,
     LaunchData,
@@ -12,12 +13,43 @@ import {
     JoinData,
     RunJoinDataGPA,
 } from "../components/Solana/state";
+import {    OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
 import { PublicKey, Connection, Keypair } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 
 import "bootstrap/dist/css/bootstrap.css";
+
+async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>{
+
+
+    if (wallet === null || wallet.publicKey === null)
+        return [];
+
+    const connection = new Connection(RPC_NODE);
+    let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
+
+    const limitOrder = new LimitOrderProvider(connection, null);
+    const openOrder: OpenOrder[] = await limitOrder.getOrders([ownerFilter(user_pda_account)]);
+
+    /*const orderHistory: OrderHistoryItem[] = await limitOrder.getOrderHistory({
+        wallet: user_pda_account.toBase58(),
+        take: 20, // optional, default is 20, maximum is 100
+        // lastCursor: order.id // optional, for pagination
+    });
+
+    const tradeHistory: TradeHistoryItem[] = await limitOrder.getTradeHistory({
+        wallet: user_pda_account.toBase58(),
+        take: 20, // optional, default is 20, maximum is 100
+        // lastCursor: order.id // optional, for pagination
+    });*/
+
+    console.log(openOrder);
+
+    return openOrder
+}
+
 
 const CheckLaunchData = async (
     check_launch_data,
@@ -90,6 +122,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
 
     const [join_data, setJoinData] = useState<JoinData[]>([]);
+
+    const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
+
 
     const check_launch_data = useRef<boolean>(true);
     const check_user_data = useRef<boolean>(true);
@@ -213,6 +248,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         CheckJoinedData();
     }, [wallet, CheckUserData, CheckJoinedData]);
 
+    const checkUserOrders = useCallback(async () => {
+        let userOrders : OpenOrder[] = await getUserOrders(wallet);
+        setUserOrders(userOrders);
+    }, [wallet]);
+
     return (
         <AppRootContextProvider
             launchList={launch_data}
@@ -226,6 +266,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             checkLaunchData={RecheckLaunchData}
             checkUserData={RecheckUserhData}
             newLaunchData={newLaunchData}
+            checkUserOrders={checkUserOrders}
+            userOrders={userOrders}
         >
             {children}
         </AppRootContextProvider>

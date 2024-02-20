@@ -2,6 +2,7 @@
 
 import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
+import { OpenOrder } from "../components/Solana/jupiter_state";
 
 interface AppRootTypes {
     launchList: LaunchData[];
@@ -15,6 +16,8 @@ interface AppRootTypes {
     checkUserData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
     joinData: JoinData[];
+    checkUserOrders: () => Promise<void>;
+    userOrders: OpenOrder[];
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -32,6 +35,8 @@ export const AppRootContextProvider = ({
     checkUserData,
     newLaunchData,
     joinData,
+    checkUserOrders,
+    userOrders
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -47,6 +52,8 @@ export const AppRootContextProvider = ({
                 checkUserData,
                 newLaunchData,
                 joinData,
+                checkUserOrders,
+                userOrders
             }}
         >
             {children}

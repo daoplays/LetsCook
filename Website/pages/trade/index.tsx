@@ -79,7 +79,7 @@ const MarketMaker = () => {
 
                 {selected === "Markets" && <MarketMakingTable launchList={launchList}/>}
 
-                {selected === "Orders" && <OrdersTable />}
+                {selected === "Orders" && <OrdersTable launch_data={null}/>}
             </main>
         </>
     );

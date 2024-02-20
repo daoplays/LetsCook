@@ -14,6 +14,7 @@ import {
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
+import { Order } from "@jup-ag/limit-order-sdk";
 
 import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials } from "./constants";
 import { Box } from "@chakra-ui/react";
@@ -21,6 +22,11 @@ import { Box } from "@chakra-ui/react";
 import BN from "bn.js";
 import bs58 from "bs58";
 import { LaunchInstruction, uInt8ToLEBytes, postData } from "./state";
+
+export interface OpenOrder {
+    publicKey: PublicKey;
+    account: Order;
+}
 
 export function MM_reward_schedule(date: number, total_rewards: number): number {
     if (date < 0 || date >= 30) return 0;

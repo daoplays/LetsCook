@@ -33,6 +33,7 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider, Order } from "@jup-ag/limit-order-sdk";
+import useAppRoot from "../../context/useAppRoot";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -41,6 +42,7 @@ interface OpenOrder {
 
 const useCancelLimitOrder = () => {
     const wallet = useWallet();
+    const {checkUserOrders } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -54,24 +56,25 @@ const useCancelLimitOrder = () => {
             return;
         }
 
+        checkUserOrders();
+
         signature_ws_id.current = null;
     }, []);
 
-    const CancelLimitOrder = async (order: OpenOrder) => {
+    const CancelLimitOrder = async (launch_data: LaunchData, order: OpenOrder) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        const placeLimitToast = toast.loading("Placing Limit Order..");
+        const placeLimitToast = toast.loading("Cancelling Limit Order..");
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const usdc_mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+        const token_mint = launch_data.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         const jupiter_program_key = new PublicKey("jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu");
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
         const limitOrder = new LimitOrderProvider(connection, null);
         // Base key are used to generate a unique order id
-        const base = Keypair.generate();
 
         const tx = await limitOrder.cancelOrder({
             owner: user_pda_account,
@@ -84,12 +87,12 @@ const useCancelLimitOrder = () => {
         let jup_data = Array.from(tx.instructions[n_instructions - 1].data);
 
         let user_token_account_key = await getAssociatedTokenAddress(
-            usdc_mint, // mint
+            token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
 
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch_data.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let order_type = order.account.inputMint.toString() === wsol_mint.toString();
         let order_amount = order.account.makingAmount;
@@ -127,21 +130,21 @@ const useCancelLimitOrder = () => {
 
             var transaction_response = await send_transaction("", encoded_transaction);
 
-            console.log("limit order", transaction_response);
+            console.log("cancel limit order", transaction_response);
 
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
 
             toast.update(placeLimitToast, {
-                render: "Limit Order Placed",
+                render: "Limit Order Cancelled",
                 type: "success",
                 isLoading: false,
                 autoClose: 3000,
             });
         } catch (error) {
             toast.update(placeLimitToast, {
-                render: "Limit Order Failed.  Please try again later.",
+                render: "Cancel Failed.  Please try again later.",
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,

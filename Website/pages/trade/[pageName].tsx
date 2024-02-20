@@ -441,7 +441,7 @@ const TradePage = () => {
                                 </Text>
                             </HStack>
 
-                            <OrdersTable />
+                            <OrdersTable launch_data={launch}/>
                         </VStack>
                     </VStack>
                 </HStack>

@@ -2,56 +2,49 @@ import { Box, Button, Center, HStack, TableContainer, Text } from "@chakra-ui/re
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { JoinedLaunch } from "../Solana/state";
+import { JoinedLaunch, LaunchData } from "../Solana/state";
+import { OpenOrder } from "../Solana/jupiter_state";
+
 import { Connection, PublicKey } from "@solana/web3.js";
-import { PROGRAM, RPC_NODE } from "../Solana/constants";
+import { PROGRAM, RPC_NODE, LaunchKeys } from "../Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
+import useAppRoot from "../../context/useAppRoot";
+import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 
 interface Header {
     text: string;
     field: string | null;
 }
 
-export interface OpenOrder {
-    publicKey: PublicKey;
+
+function filterTable(list: OpenOrder[], launch_data : LaunchData) {
+    if (list === null || list === undefined) return [];
+    if (launch_data === null)
+        return [];
+
+    return list.filter(function (item) {
+        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+        return item.account.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString();
+    });
 }
 
-const OrdersTable = () => {
+
+const OrdersTable = ({launch_data} : {launch_data : LaunchData | null}) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
+    const {userOrders, checkUserOrders } = useAppRoot();
+    const check_orders = useRef<boolean>(true);
 
-    const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
-
-    async function getUserOrders() {
-        const connection = new Connection(RPC_NODE);
-        let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
-
-        const limitOrder = new LimitOrderProvider(connection, null);
-        const openOrder: OpenOrder[] = await limitOrder.getOrders([ownerFilter(user_pda_account)]);
-
-        const orderHistory: OrderHistoryItem[] = await limitOrder.getOrderHistory({
-            wallet: user_pda_account.toBase58(),
-            take: 20, // optional, default is 20, maximum is 100
-            // lastCursor: order.id // optional, for pagination
-        });
-
-        const tradeHistory: TradeHistoryItem[] = await limitOrder.getTradeHistory({
-            wallet: user_pda_account.toBase58(),
-            take: 20, // optional, default is 20, maximum is 100
-            // lastCursor: order.id // optional, for pagination
-        });
-
-        console.log(openOrder);
-        console.log(orderHistory);
-        setOpenOrders(openOrder);
-    }
 
     useEffect(() => {
-        console.log(openOrders);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [openOrders]);
+        if (!check_orders.current)
+            return;
+
+        checkUserOrders()
+        check_orders.current = false;
+    }, [wallet, checkUserOrders]);
 
     const tableHeaders: Header[] = [
         { text: "LOGO", field: null },
@@ -64,17 +57,9 @@ const OrdersTable = () => {
         { text: "ACTION", field: "action" },
     ];
 
-    const sampleData = [
-        {
-            logo: "https://snipboard.io/HZ789p.jpg",
-            symbol: "$Dummy",
-            cost: "25",
-            price: "0.0045",
-            size: "5555.55",
-            fill: "50",
-            expiry: "13 Feb 2024",
-        },
-    ];
+    console.log(userOrders);
+
+    let filtered_list = filterTable(userOrders, launch_data);
 
     return (
         <TableContainer w="100%">
@@ -105,8 +90,8 @@ const OrdersTable = () => {
                 </thead>
 
                 <tbody>
-                    {sampleData.map((launch, i) => (
-                        <LaunchCard key={i} launch={launch} />
+                    {filtered_list.map((order, i) => (
+                        <LaunchCard key={i} order={order} launch={launch_data} />
                     ))}
                 </tbody>
             </table>
@@ -114,9 +99,11 @@ const OrdersTable = () => {
     );
 };
 
-const LaunchCard = ({ launch }: { launch: JoinedLaunch | any }) => {
+const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+    const { CancelLimitOrder } = useCancelLimitOrder();
+
 
     return (
         <tr
@@ -137,7 +124,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch | any }) => {
                     <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.logo}
+                            src={launch.icon}
                             width={md ? 45 : 75}
                             height={md ? 45 : 75}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
@@ -153,7 +140,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch | any }) => {
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.cost}
+                        --
                     </Text>
                     <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -162,7 +149,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch | any }) => {
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.price}
+                        --
                     </Text>
                     <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -171,25 +158,25 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch | any }) => {
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.size}
+                       --
                     </Text>
                 </HStack>
             </td>
 
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.fill}%
+                    --
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.expiry}
+                    --
                 </Text>
             </td>
 
             <td style={{ minWidth: md ? "120px" : "" }}>
-                <Button onClick={(e) => e.stopPropagation()}>Cancel</Button>
+                <Button onClick={() => CancelLimitOrder(launch, order)}>Cancel</Button>
             </td>
         </tr>
     );
