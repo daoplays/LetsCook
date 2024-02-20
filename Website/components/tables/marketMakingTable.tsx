@@ -208,7 +208,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
                     <Link
                         href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
                             LaunchKeys.MintAddress
-                        ].toString()}&inputSymbol=6ztz5k&outputCurrency=sol&fixed=in`}
+                        ].toString()}&outputCurrency=sol&fixed=in`}
                         target="_blank"
                     >
                         <Button onClick={(e) => e.stopPropagation()}>AMM</Button>
