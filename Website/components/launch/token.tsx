@@ -261,8 +261,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             required
                                             className={styles.inputBox}
                                             placeholder="Enter Token Total Supply"
-                                            type="number"
-                                            min="1"
                                             value={totalSupply !== "0" ? totalSupply : ""}
                                             onChange={(e) => {
                                                 setTotalSupply(e.target.value);
@@ -283,9 +281,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             required
                                             className={styles.inputBox}
                                             placeholder="1-9"
-                                            type="number"
-                                            min="1"
-                                            max="9"
                                             value={decimal !== "0" ? decimal : ""}
                                             onChange={(e) => {
                                                 setDecimal(e.target.value);
@@ -308,8 +303,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
-                                            type="number"
-                                            min="1"
                                             value={mints !== "0" ? mints : ""}
                                             onChange={(e) => {
                                                 setMints(e.target.value);
@@ -330,7 +323,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
-                                            type="number"
                                             value={ticketPrice !== "0" ? ticketPrice : ""}
                                             onChange={(e) => {
                                                 setTotalPrice(e.target.value);
@@ -352,7 +344,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         size={lg ? "md" : "lg"}
                                         required
                                         className={styles.inputBox}
-                                        type="number"
                                         value={
                                             !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
                                                 ? parseFloat(mints) * parseFloat(ticketPrice)
@@ -408,9 +399,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Raffle);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={
                                                         totalPercentage === 100 && distribution[Distribution.Raffle] === 0 ? true : false
                                                     }
@@ -440,9 +428,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.LP);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={totalPercentage === 100 && distribution[Distribution.LP] === 0 ? true : false}
                                                 />
                                                 <Image
@@ -486,9 +471,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.MMRewards);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={
                                                         totalPercentage === 100 && distribution[Distribution.MMRewards] === 0 ? true : false
                                                     }
@@ -532,9 +514,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.LPRewards);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={
                                                         totalPercentage === 100 && distribution[Distribution.LPRewards] === 0 ? true : false
                                                     }
@@ -563,9 +542,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Team);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={
                                                         totalPercentage === 100 && distribution[Distribution.Team] === 0 ? true : false
                                                     }
@@ -594,9 +570,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Airdrops);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={
                                                         totalPercentage === 100 && distribution[Distribution.Airdrops] === 0 ? true : false
                                                     }
@@ -626,9 +599,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     onChange={(e) => {
                                                         handleDistributionChange(e, Distribution.Other);
                                                     }}
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
                                                     disabled={
                                                         totalPercentage === 100 && distribution[Distribution.Other] === 0 ? true : false
                                                     }
