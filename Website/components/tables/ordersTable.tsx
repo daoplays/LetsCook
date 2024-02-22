@@ -32,7 +32,7 @@ function filterTable(list: OpenOrder[], launch_data: LaunchData) {
 }
 
 // The state prop is either "Open" or "Filled"
-const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; state: string }) => {
+const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; state?: string }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
     const { userOrders, checkUserOrders } = useAppRoot();
