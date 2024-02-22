@@ -1,7 +1,7 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data } from "../../components/Solana/state";
+import { request_raw_account_data, UserData } from "../../components/Solana/state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys } from "../../components/Solana/constants";
@@ -40,6 +40,8 @@ import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 import { formatCurrency } from "@coingecko/cryptoformat";
+import Links from "../../components/Buttons/links";
+import {HypeVote} from "../../components/hypeVote";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -101,7 +103,7 @@ const TradePage = () => {
     const router = useRouter();
     const { sm } = useResponsive();
 
-    const { launchList } = useAppRoot();
+    const { launchList, currentUserData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -395,7 +397,7 @@ const TradePage = () => {
                             />
                         </Box>
 
-                        {leftPanel === "Info" && <InfoContent />}
+                        {leftPanel === "Info" && <InfoContent launch={launch} user_data={currentUserData}/>}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
                     </VStack>
@@ -611,7 +613,7 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     );
 };
 
-const InfoContent = () => (
+const InfoContent = ({launch, user_data}: {launch : LaunchData, user_data : UserData}) => (
     <VStack spacing={8} w="100%" mb={3}>
         <HStack mt={-2} px={5} justify="space-between" w="100%">
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
@@ -680,34 +682,15 @@ const InfoContent = () => (
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 HYPE:
             </Text>
-            <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
-                    <Image src="/images/thumbs-up.svg" width={30} height={30} alt="Thumbs Up" />
-                </Tooltip>
-                <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
-                    <Image src="/images/thumbs-down.svg" width={30} height={30} alt="Thumbs Down" />
-                </Tooltip>
-            </HStack>
+            <HypeVote launch_data={launch} user_data={user_data} />
+
         </HStack>
 
         <HStack px={5} justify="space-between" w="100%">
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 SOCIALS:
             </Text>
-            <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
-                <Link href={"#"} target="_blank">
-                    <Image src={twitter.src} alt="Twitter Icon" width={30} height={30} />
-                </Link>
-                <Link href="#" target="_blank">
-                    <Image src={telegram.src} alt="Telegram Icon" width={30} height={30} />
-                </Link>
-                <Link href={"#"} target="_blank">
-                    <Image src={discord.src} alt="Discord Icon" width={30} height={30} />
-                </Link>
-                <Link href={"#"} target="_blank">
-                    <Image src={website.src} alt="Website Icon" width={30} height={30} />
-                </Link>
-            </HStack>
+            <Links featuredLaunch={launch}/>
         </HStack>
     </VStack>
 );
