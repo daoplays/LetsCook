@@ -40,6 +40,7 @@ import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 import { formatCurrency } from "@coingecko/cryptoformat";
+import MyRewardsTable from "../../components/tables/myRewards";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -99,7 +100,7 @@ function findLaunch(list: LaunchData[], page_name: string | string[]) {
 const TradePage = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { sm } = useResponsive();
+    const { xs, sm } = useResponsive();
 
     const { launchList } = useAppRoot();
     const { pageName } = router.query;
@@ -107,6 +108,12 @@ const TradePage = () => {
     const [leftPanel, setLeftPanel] = useState("Info");
 
     const [additionalPixels, setAdditionalPixels] = useState(0);
+
+    const [selectedTab, setSelectedTab] = useState("Open");
+
+    const handleClick = (tab: string) => {
+        setSelectedTab(tab);
+    };
 
     let launch = findLaunch(launchList, pageName);
 
@@ -179,7 +186,7 @@ const TradePage = () => {
             let event_data = result.data;
             const [token_account] = TokenAccount.struct.deserialize(event_data);
             let amount = token_account.amount / Math.pow(10, launch.decimals);
-            console.log("update base amount", amount)
+            console.log("update base amount", amount);
             setBaseAmount(amount);
         },
         [launch],
@@ -192,7 +199,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = token_account.amount / Math.pow(10, 9);
-        console.log("update quote amount", amount)
+        console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
     }, []);
@@ -436,7 +443,70 @@ const TradePage = () => {
                                 }}
                             />
                         </div>
-                        <OrdersTable launch_data={launch}/>
+
+                        <HStack
+                            justify="space-between"
+                            align="center"
+                            w="100%"
+                            px={4}
+                            style={{ height: "55px", borderTop: "1px solid rgba(134, 142, 150, 0.5)" }}
+                        >
+                            <Text color="white" fontSize={sm ? "medium" : "large"} m={0}>
+                                {selectedTab === "Open"
+                                    ? "Open Orders(0)"
+                                    : selectedTab === "Filled"
+                                      ? "Filled Orders(0)"
+                                      : selectedTab === "Rewards"
+                                        ? "My Rewards(1)"
+                                        : ""}
+                            </Text>
+
+                            <HStack spacing={3}>
+                                {["Open", "Filled", "Rewards"].map((name, i) => {
+                                    const isActive = selectedTab === name;
+
+                                    const baseStyle = {
+                                        display: "flex",
+                                        alignItems: "center",
+                                        cursor: "pointer",
+                                    };
+
+                                    const activeStyle = {
+                                        color: "white",
+                                        borderBottom: isActive ? "2px solid white" : "",
+                                        opacity: isActive ? 1 : 0.5,
+                                    };
+
+                                    return (
+                                        <HStack
+                                            key={i}
+                                            style={{
+                                                ...baseStyle,
+                                                ...activeStyle,
+                                            }}
+                                            onClick={() => {
+                                                handleClick(name);
+                                            }}
+                                            px={4}
+                                            py={2}
+                                            mt={-2}
+                                            w={"fit-content"}
+                                            justify="center"
+                                        >
+                                            <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
+                                                {name}
+                                            </Text>
+                                        </HStack>
+                                    );
+                                })}
+                            </HStack>
+                        </HStack>
+
+                        {selectedTab === "Rewards" ? (
+                            <MyRewardsTable launch_data={launch} />
+                        ) : (
+                            <OrdersTable state={selectedTab} launch_data={launch} />
+                        )}
                     </VStack>
                 </HStack>
             </main>
@@ -687,6 +757,17 @@ const InfoContent = () => (
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image src="/images/thumbs-down.svg" width={30} height={30} alt="Thumbs Down" />
                 </Tooltip>
+            </HStack>
+        </HStack>
+
+        <HStack px={5} justify="space-between" w="100%">
+            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                POOL:
+            </Text>
+            <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
+                <Link href={"#"} target="_blank">
+                    <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
+                </Link>
             </HStack>
         </HStack>
 

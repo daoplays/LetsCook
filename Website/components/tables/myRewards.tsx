@@ -5,14 +5,14 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
-import { JoinedLaunch } from "../Solana/state";
+import { JoinedLaunch, LaunchData } from "../Solana/state";
 
 interface Header {
     text: string;
     field: string | null;
 }
 
-const MyRewardsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
+const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => {
     const { sm } = useResponsive();
     const { checkLaunchData } = useAppRoot();
 
@@ -21,12 +21,11 @@ const MyRewardsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
         { text: "SYMBOL", field: "symbol" },
         { text: "MCAP", field: "mcap" },
         { text: "PRICE", field: "price" },
-        { text: "ORDER", field: "order" },
         { text: "VOL ($)", field: "vol" },
     ];
 
     return (
-        <TableContainer>
+        <TableContainer w={"100%"}>
             <table
                 width="100%"
                 className="custom-centered-table font-face-rk"
@@ -35,7 +34,7 @@ const MyRewardsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                 <thead>
                     <tr
                         style={{
-                            height: "50px",
+                            height: "60px",
                             borderTop: "1px solid rgba(134, 142, 150, 0.5)",
                             borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
                         }}
@@ -46,30 +45,29 @@ const MyRewardsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
                                     </Text>
-                                    {i.text === "LOGO" || i.text === "ORDER" ? <></> : <FaSort />}
+                                    {/* {i.text === "LOGO" || i.text === "ORDER" ? <></> : <FaSort />} */}
                                 </HStack>
                             </th>
                         ))}
 
-                        <th>
-                            <Box mt={1} as="button" onClick={checkLaunchData}>
-                                <TfiReload size={sm ? 18 : 20} />
-                            </Box>
+                        <th style={{ minWidth: sm ? "90px" : "120px" }}>
+                            <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: "pointer" }}>
+                                <Button onClick={(e) => e.stopPropagation()}>Claim All</Button>
+                                {/* {i.text === "LOGO" || i.text === "ORDER" ? <></> : <FaSort />} */}
+                            </HStack>
                         </th>
                     </tr>
                 </thead>
 
                 <tbody>
-                    {bags.map((launch) => (
-                        <LaunchCard key={launch.launch_data.name} launch={launch} />
-                    ))}
+                    <LaunchCard />
                 </tbody>
             </table>
         </TableContainer>
     );
 };
 
-const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
+const LaunchCard = () => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
@@ -86,14 +84,13 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <Center>
                     <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.launch_data.icon}
+                            src={"https://snipboard.io/U1lnLF.jpg"}
                             width={md ? 45 : 75}
                             height={md ? 45 : 75}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
@@ -103,7 +100,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             </td>
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.launch_data.symbol}
+                    Dummy
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
@@ -116,10 +113,6 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     0.00053
                 </Text>
-            </td>
-
-            <td style={{ minWidth: "120px" }}>
-                <Button onClick={(e) => e.stopPropagation()}>Order</Button>
             </td>
 
             <td style={{ minWidth: "150px" }}>

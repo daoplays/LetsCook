@@ -18,31 +18,30 @@ interface Header {
     field: string | null;
 }
 
-
-function filterTable(list: OpenOrder[], launch_data : LaunchData) {
+function filterTable(list: OpenOrder[], launch_data: LaunchData) {
     if (list === null || list === undefined) return [];
-    if (launch_data === null)
-        return [];
+    if (launch_data === null) return [];
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return (item.account.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString() || item.account.outputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString());
+        return (
+            item.account.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString() ||
+            item.account.outputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString()
+        );
     });
 }
 
-
-const OrdersTable = ({launch_data} : {launch_data : LaunchData | null}) => {
+// The state prop is either "Open" or "Filled"
+const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; state: string }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
-    const {userOrders, checkUserOrders } = useAppRoot();
+    const { userOrders, checkUserOrders } = useAppRoot();
     const check_orders = useRef<boolean>(true);
 
-
     useEffect(() => {
-        if (!check_orders.current)
-            return;
+        if (!check_orders.current) return;
 
-        checkUserOrders()
+        checkUserOrders();
         check_orders.current = false;
     }, [wallet, checkUserOrders]);
 
@@ -92,7 +91,7 @@ const OrdersTable = ({launch_data} : {launch_data : LaunchData | null}) => {
 
                 <tbody>
                     {filtered_list.map((order, i) => (
-                        <LaunchCard key={i} order={order} launch={launch_data} />
+                        <LaunchCard key={i} order={order} launch={launch_data} state={state} />
                     ))}
                 </tbody>
             </table>
@@ -100,18 +99,17 @@ const OrdersTable = ({launch_data} : {launch_data : LaunchData | null}) => {
     );
 };
 
-const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }) => {
+const LaunchCard = ({ order, launch, state }: { order: OpenOrder; launch: LaunchData; state: string }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { CancelLimitOrder } = useCancelLimitOrder();
-    let is_buy = order.account.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString()
+    let is_buy = order.account.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
 
     let cost = is_buy ? bignum_to_num(order.account.makingAmount) : bignum_to_num(order.account.takingAmount);
     let token_amount = is_buy ? bignum_to_num(order.account.takingAmount) : bignum_to_num(order.account.makingAmount);
 
     cost /= Math.pow(10, 9);
     token_amount /= Math.pow(10, launch.decimals);
-
 
     let sol_amount = (cost / token_amount).toPrecision(2);
 
@@ -155,7 +153,7 @@ const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {cost}
+                        {cost}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -164,7 +162,7 @@ const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {sol_amount}
+                        {sol_amount}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -192,7 +190,15 @@ const LaunchCard = ({ order, launch }: { order: OpenOrder, launch : LaunchData }
             </td>
 
             <td style={{ minWidth: md ? "120px" : "" }}>
-                <Button onClick={() => CancelLimitOrder(launch, order)}>Cancel</Button>
+                <Button
+                    onClick={() => {
+                        if (state === "Open") {
+                            CancelLimitOrder(launch, order);
+                        }
+                    }}
+                >
+                    {state === "Open" ? "Cancel" : state === "Filled" ? "Withdraw" : ""}
+                </Button>
             </td>
         </tr>
     );

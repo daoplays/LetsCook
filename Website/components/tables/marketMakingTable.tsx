@@ -205,14 +205,14 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
 
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
-                    <Link
+                    {/* <Link
                         href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
                             LaunchKeys.MintAddress
                         ].toString()}&outputCurrency=sol&fixed=in`}
                         target="_blank"
                     >
                         <Button onClick={(e) => e.stopPropagation()}>AMM</Button>
-                    </Link>
+                    </Link> */}
                 </HStack>
             </td>
         </tr>
