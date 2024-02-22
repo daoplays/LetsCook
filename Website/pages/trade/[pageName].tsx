@@ -1,12 +1,13 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data } from "../../components/Solana/state";
+import { request_raw_account_data, UserData } from "../../components/Solana/state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
-import { RPC_NODE, WSS_NODE, LaunchKeys } from "../../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
+import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import {
     HStack,
     VStack,
@@ -26,10 +27,6 @@ import OrdersTable from "../../components/tables/ordersTable";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
-import twitter from "../../public/socialIcons/new/XIcon.png";
-import telegram from "../../public/socialIcons/new/telegramIcon.png";
-import discord from "../../public/socialIcons/new/discordIcon.png";
-import website from "../../public/socialIcons/new/websiteIcon.png";
 import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
@@ -41,6 +38,8 @@ import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 import { formatCurrency } from "@coingecko/cryptoformat";
 import MyRewardsTable from "../../components/tables/myRewards";
+import Links from "../../components/Buttons/links";
+import {HypeVote} from "../../components/hypeVote";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -56,6 +55,9 @@ interface Level {
     price: number;
     quantity: number;
 }
+
+
+
 
 async function getMarketData(market_address: string) {
     // Default options are marked with *
@@ -102,7 +104,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm } = useResponsive();
 
-    const { launchList } = useAppRoot();
+    const { launchList, currentUserData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -118,6 +120,7 @@ const TradePage = () => {
     let launch = findLaunch(launchList, pageName);
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
+    const [trade_data, setTradeData] = useState<TradeHistoryItem[]>([]);
 
     const [market, setMarket] = useState<Market | null>(null);
     const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
@@ -135,6 +138,7 @@ const TradePage = () => {
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
+
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -402,7 +406,7 @@ const TradePage = () => {
                             />
                         </Box>
 
-                        {leftPanel === "Info" && <InfoContent />}
+                        {leftPanel === "Info" && <InfoContent launch={launch} user_data={currentUserData}/>}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
                     </VStack>
@@ -681,7 +685,7 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     );
 };
 
-const InfoContent = () => (
+const InfoContent = ({launch, user_data}: {launch : LaunchData, user_data : UserData}) => (
     <VStack spacing={8} w="100%" mb={3}>
         <HStack mt={-2} px={5} justify="space-between" w="100%">
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
@@ -750,14 +754,8 @@ const InfoContent = () => (
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 HYPE:
             </Text>
-            <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
-                    <Image src="/images/thumbs-up.svg" width={30} height={30} alt="Thumbs Up" />
-                </Tooltip>
-                <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
-                    <Image src="/images/thumbs-down.svg" width={30} height={30} alt="Thumbs Down" />
-                </Tooltip>
-            </HStack>
+            <HypeVote launch_data={launch} user_data={user_data} />
+
         </HStack>
 
         <HStack px={5} justify="space-between" w="100%">
@@ -775,20 +773,7 @@ const InfoContent = () => (
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 SOCIALS:
             </Text>
-            <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
-                <Link href={"#"} target="_blank">
-                    <Image src={twitter.src} alt="Twitter Icon" width={30} height={30} />
-                </Link>
-                <Link href="#" target="_blank">
-                    <Image src={telegram.src} alt="Telegram Icon" width={30} height={30} />
-                </Link>
-                <Link href={"#"} target="_blank">
-                    <Image src={discord.src} alt="Discord Icon" width={30} height={30} />
-                </Link>
-                <Link href={"#"} target="_blank">
-                    <Image src={website.src} alt="Website Icon" width={30} height={30} />
-                </Link>
-            </HStack>
+            <Links featuredLaunch={launch}/>
         </HStack>
     </VStack>
 );

@@ -21,6 +21,24 @@ import { AppRootContextProvider } from "../context/useAppRoot";
 
 import "bootstrap/dist/css/bootstrap.css";
 
+async function getUserTrades(wallet : WalletContextState) : Promise<TradeHistoryItem[]>{
+
+    if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
+
+    const connection = new Connection(RPC_NODE);
+    let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
+
+    const limitOrder = new LimitOrderProvider(connection, null);
+
+    const tradeHistory: TradeHistoryItem[] = await limitOrder.getTradeHistory({
+        wallet: user_pda_account.toBase58(),
+        take: 100, // optional, default is 20, maximum is 100
+        // lastCursor: order.id // optional, for pagination
+    });
+
+    return tradeHistory
+}
+
 async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>{
 
 
@@ -32,30 +50,6 @@ async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>
 
     const limitOrder = new LimitOrderProvider(connection, null);
     const openOrder: OpenOrder[] = await limitOrder.getOrders([ownerFilter(user_pda_account)]);
-
-    const orderHistory: OrderHistoryItem[] = await limitOrder.getOrderHistory({
-        wallet: user_pda_account.toBase58(),
-        take: 20, // optional, default is 20, maximum is 100
-        // lastCursor: order.id // optional, for pagination
-    });
-
-    const tradeHistory: TradeHistoryItem[] = await limitOrder.getTradeHistory({
-        wallet: user_pda_account.toBase58(),
-        take: 20, // optional, default is 20, maximum is 100
-        // lastCursor: order.id // optional, for pagination
-    });
-
-
-    console.log("open:")
-    console.log(openOrder);
-
-    console.log("past:")
-    console.log(orderHistory);
-
-
-    console.log("trade:")
-    console.log(tradeHistory);
-
 
     return openOrder
 }
@@ -134,6 +128,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [join_data, setJoinData] = useState<JoinData[]>([]);
 
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
+    const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
 
 
     const check_launch_data = useRef<boolean>(true);
@@ -260,7 +255,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const checkUserOrders = useCallback(async () => {
         let userOrders : OpenOrder[] = await getUserOrders(wallet);
+        let userTrades : TradeHistoryItem[] = await getUserTrades(wallet);
+
         setUserOrders(userOrders);
+        setUserTrades(userTrades);
     }, [wallet]);
 
     return (
@@ -278,6 +276,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             newLaunchData={newLaunchData}
             checkUserOrders={checkUserOrders}
             userOrders={userOrders}
+            userTrades={userTrades}
+
         >
             {children}
         </AppRootContextProvider>

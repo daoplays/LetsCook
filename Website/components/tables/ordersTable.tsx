@@ -18,7 +18,7 @@ interface Header {
     field: string | null;
 }
 
-function filterTable(list: OpenOrder[], launch_data: LaunchData) {
+function filterOrders(list: OpenOrder[], launch_data: LaunchData) {
     if (list === null || list === undefined) return [];
     if (launch_data === null) return [];
 
@@ -31,11 +31,24 @@ function filterTable(list: OpenOrder[], launch_data: LaunchData) {
     });
 }
 
+function filterTrades(list: TradeHistoryItem[], launch_data: LaunchData) {
+    if (list === null || list === undefined) return [];
+    if (launch_data === null) return [];
+
+    return list.filter(function (item) {
+        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+        return (
+            item.order.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString() ||
+            item.order.outputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString()
+        );
+    });
+}
+
 // The state prop is either "Open" or "Filled"
 const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; state?: string }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
-    const { userOrders, checkUserOrders } = useAppRoot();
+    const { userOrders, userTrades, checkUserOrders } = useAppRoot();
     const check_orders = useRef<boolean>(true);
 
     useEffect(() => {
@@ -57,9 +70,14 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
         { text: "ACTION", field: "action" },
     ];
 
-    console.log(userOrders);
 
-    let filtered_list = filterTable(userOrders, launch_data);
+    let filtered_orders = filterOrders(userOrders, launch_data);
+    let filtered_trades = filterTrades(userTrades, launch_data);
+
+
+    console.log(filtered_orders);
+    console.log(filtered_trades);
+
 
     return (
         <TableContainer w="100%">
@@ -90,17 +108,23 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
                 </thead>
 
                 <tbody>
-                    {filtered_list.map((order, i) => (
-                        <LaunchCard key={i} order={order} launch={launch_data} state={state} />
-                    ))}
+                    {state === "Open" &&
+                        filtered_orders.map((order, i) => (
+                            <OrderCard key={i} order={order} launch={launch_data} />
+                        ))
+                    }
+                    {state === "Filled" &&
+                        filtered_trades.map((order, i) => (
+                            <TradeCard key={i} order={order} launch={launch_data} />
+                        ))
+                    }
                 </tbody>
             </table>
         </TableContainer>
     );
 };
 
-const LaunchCard = ({ order, launch, state }: { order: OpenOrder; launch: LaunchData; state: string }) => {
-    const router = useRouter();
+const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData; }) => {
     const { sm, md, lg } = useResponsive();
     const { CancelLimitOrder } = useCancelLimitOrder();
     let is_buy = order.account.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
@@ -192,13 +216,104 @@ const LaunchCard = ({ order, launch, state }: { order: OpenOrder; launch: Launch
             <td style={{ minWidth: md ? "120px" : "" }}>
                 <Button
                     onClick={() => {
-                        if (state === "Open") {
                             CancelLimitOrder(launch, order);
-                        }
+                        
                     }}
                 >
-                    {state === "Open" ? "Cancel" : state === "Filled" ? "Withdraw" : ""}
+                    Cancel
                 </Button>
+            </td>
+        </tr>
+    );
+};
+
+const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchData; }) => {
+    const { sm, md, lg } = useResponsive();
+    let is_buy = order.order.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
+
+    let cost = is_buy ? order.inAmount : order.outAmount;
+    let token_amount : string = is_buy ? order.outAmount : order.inAmount;
+
+    console.log(cost, token_amount)
+    //cost /= Math.pow(10, 9);
+    //token_amount /= Math.pow(10, launch.decimals);
+
+    let sol_amount = 0;
+
+    return (
+        <tr
+            style={{
+                height: "60px",
+                transition: "background-color 0.3s",
+            }}
+            onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+            }}
+            onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+            }}
+            // onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
+        >
+            <td style={{ minWidth: sm ? "90px" : "120px" }}>
+                <Center>
+                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                        <Image
+                            alt="Launch icon"
+                            src={launch.icon}
+                            width={md ? 45 : 75}
+                            height={md ? 45 : 75}
+                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                        />
+                    </Box>
+                </Center>
+            </td>
+            <td style={{ minWidth: "180px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {launch.symbol}
+                </Text>
+            </td>
+            <td style={{ minWidth: "180px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {is_buy ? "BUY" : "SELL"}
+                </Text>
+            </td>
+            <td style={{ minWidth: "120px" }}>
+                <HStack justify="center">
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {cost}
+                    </Text>
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                </HStack>
+            </td>
+
+            <td style={{ minWidth: "150px" }}>
+                <HStack justify="center">
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {sol_amount}
+                    </Text>
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                </HStack>
+            </td>
+
+            <td style={{ minWidth: "150px" }}>
+                <HStack justify="center">
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {token_amount}
+                    </Text>
+                    <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                </HStack>
+            </td>
+
+            <td style={{ minWidth: "150px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    --
+                </Text>
+            </td>
+
+            <td style={{ minWidth: "150px" }}>
+                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    --
+                </Text>
             </td>
         </tr>
     );
