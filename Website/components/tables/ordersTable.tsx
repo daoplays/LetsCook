@@ -59,7 +59,6 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
     }, [wallet, checkUserOrders]);
 
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
         { text: "SYMBOL", field: "symbol" },
         { text: "SIDE", field: "side" },
         { text: "COST", field: "cost" },
@@ -151,19 +150,6 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData; })
             }}
             // onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
-            <td style={{ minWidth: sm ? "90px" : "120px" }}>
-                <Center>
-                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
-                        <Image
-                            alt="Launch icon"
-                            src={launch.icon}
-                            width={md ? 45 : 75}
-                            height={md ? 45 : 75}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                </Center>
-            </td>
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {launch.symbol}
@@ -231,14 +217,15 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
     const { sm, md, lg } = useResponsive();
     let is_buy = order.order.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
 
-    let cost = is_buy ? order.inAmount : order.outAmount;
-    let token_amount : string = is_buy ? order.outAmount : order.inAmount;
+    let cost : number = is_buy ? bignum_to_num(order.inAmount) : bignum_to_num(order.outAmount);
+    let token_amount : number = is_buy ? bignum_to_num(order.outAmount) : bignum_to_num(order.inAmount);
 
     console.log(cost, token_amount)
-    //cost /= Math.pow(10, 9);
-    //token_amount /= Math.pow(10, launch.decimals);
 
-    let sol_amount = 0;
+    cost /= Math.pow(10, 9);
+    token_amount /= Math.pow(10, launch.decimals);
+
+    let price = (cost / token_amount).toPrecision(2);
 
     return (
         <tr
@@ -254,19 +241,6 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
             }}
             // onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
-            <td style={{ minWidth: sm ? "90px" : "120px" }}>
-                <Center>
-                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
-                        <Image
-                            alt="Launch icon"
-                            src={launch.icon}
-                            width={md ? 45 : 75}
-                            height={md ? 45 : 75}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                </Center>
-            </td>
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {launch.symbol}
@@ -289,7 +263,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {sol_amount}
+                        {price}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>

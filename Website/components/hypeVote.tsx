@@ -11,10 +11,10 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 
-export function HypeVote({ launch_data, user_data }: { launch_data?: LaunchData; user_data?: UserData }) {
+export function HypeVote({ launch_data }: { launch_data?: LaunchData;}) {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
-    const { checkLaunchData } = useAppRoot();
+    const { checkLaunchData, currentUserData } = useAppRoot();
     const { lg } = useResponsive();
     const hype_vote_ws_id = useRef<number | null>(null);
 
@@ -106,9 +106,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data?: LaunchData;
     );
 
     let has_voted: boolean = false;
-    if (user_data !== null) {
-        for (let i = 0; i < user_data.votes.length; i++) {
-            if (user_data.votes[i].toString() == launch_data.game_id.toString()) {
+    console.log("check user vote", currentUserData === null)
+    if (currentUserData !== null) {
+        for (let i = 0; i < currentUserData.votes.length; i++) {
+            console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
+            if (currentUserData.votes[i].toString() == launch_data.game_id.toString()) {
                 has_voted = true;
                 break;
             }

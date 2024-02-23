@@ -762,7 +762,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 HYPE:
             </Text>
-            <HypeVote launch_data={launch} user_data={user_data} />
+            <HypeVote launch_data={launch} />
         </HStack>
 
         <HStack px={5} justify="space-between" w="100%">

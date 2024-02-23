@@ -200,7 +200,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 )}
             </td>
             <td style={{ minWidth: "150px" }}>
-                <HypeVote launch_data={launch} user_data={user_data} />
+                <HypeVote launch_data={launch} />
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>

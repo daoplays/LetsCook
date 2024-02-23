@@ -205,7 +205,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (wallet.publicKey !== null) {
             for (let i = 0; i < user_list.length; i++) {
                 if (user_list[i].user_key.toString() == wallet.publicKey.toString()) {
-                    //console.log("have current user", user_list[i]);
+                    console.log("have current user", user_list[i]);
                     setCurrentUserData(user_list[i]);
                     break;
                 }
