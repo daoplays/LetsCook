@@ -39,7 +39,7 @@ import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 import { formatCurrency } from "@coingecko/cryptoformat";
 import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
-import {HypeVote} from "../../components/hypeVote";
+import { HypeVote } from "../../components/hypeVote";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -55,9 +55,6 @@ interface Level {
     price: number;
     quantity: number;
 }
-
-
-
 
 async function getMarketData(market_address: string) {
     // Default options are marked with *
@@ -138,7 +135,6 @@ const TradePage = () => {
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
-
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -406,7 +402,7 @@ const TradePage = () => {
                             />
                         </Box>
 
-                        {leftPanel === "Info" && <InfoContent launch={launch} user_data={currentUserData}/>}
+                        {leftPanel === "Info" && <InfoContent launch={launch} user_data={currentUserData} />}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
                     </VStack>
@@ -685,8 +681,20 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     );
 };
 
-const InfoContent = ({launch, user_data}: {launch : LaunchData, user_data : UserData}) => (
+const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: UserData }) => (
     <VStack spacing={8} w="100%" mb={3}>
+        <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
+            <HStack justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    TOKEN ACCOUNT:
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    0.835 SOL
+                </Text>
+            </HStack>
+            <Button w="100%">Withdraw</Button>
+        </VStack>
+
         <HStack mt={-2} px={5} justify="space-between" w="100%">
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 MM VOLUME (24h):
@@ -755,7 +763,6 @@ const InfoContent = ({launch, user_data}: {launch : LaunchData, user_data : User
                 HYPE:
             </Text>
             <HypeVote launch_data={launch} user_data={user_data} />
-
         </HStack>
 
         <HStack px={5} justify="space-between" w="100%">
@@ -773,7 +780,7 @@ const InfoContent = ({launch, user_data}: {launch : LaunchData, user_data : User
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                 SOCIALS:
             </Text>
-            <Links featuredLaunch={launch}/>
+            <Links featuredLaunch={launch} />
         </HStack>
     </VStack>
 );
