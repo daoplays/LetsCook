@@ -15,7 +15,7 @@ import useAppRoot from "../context/useAppRoot";
 const useEditLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newLaunchData, checkLaunchData } = useAppRoot();
+    const { newLaunchData, checkProgramData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -37,7 +37,7 @@ const useEditLaunch = () => {
         newLaunchData.current.token_keypair = null;
 
         console.log(newLaunchData.current);
-        await checkLaunchData();
+        await checkProgramData();
     }, []);
 
     const EditLaunch = async () => {

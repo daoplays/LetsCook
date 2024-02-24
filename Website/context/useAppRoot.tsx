@@ -3,7 +3,7 @@
 import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
-import { OpenOrder } from "../components/Solana/jupiter_state";
+import { MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 
 interface AppRootTypes {
     launchList: LaunchData[];
@@ -11,12 +11,12 @@ interface AppRootTypes {
     userList: UserData[];
     currentUserData: UserData;
     isLaunchDataLoading: boolean;
-    isUserDataLoading: boolean;
     isHomePageDataLoading: boolean;
-    checkLaunchData: () => Promise<void>;
-    checkUserData: () => Promise<void>;
+    checkProgramData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
     joinData: JoinData[];
+    mmLaunchData : MMLaunchData[];
+    mmUserData : MMUserData[];
     checkUserOrders: () => Promise<void>;
     userOrders: OpenOrder[];
     userTrades : TradeHistoryItem[];
@@ -31,12 +31,12 @@ export const AppRootContextProvider = ({
     userList,
     currentUserData,
     isLaunchDataLoading,
-    isUserDataLoading,
     isHomePageDataLoading,
-    checkLaunchData,
-    checkUserData,
+    checkProgramData,
     newLaunchData,
     joinData,
+    mmLaunchData,
+    mmUserData,
     checkUserOrders,
     userOrders,
     userTrades
@@ -49,12 +49,12 @@ export const AppRootContextProvider = ({
                 userList,
                 currentUserData,
                 isLaunchDataLoading,
-                isUserDataLoading,
                 isHomePageDataLoading,
-                checkLaunchData,
-                checkUserData,
+                checkProgramData,
                 newLaunchData,
                 joinData,
+                mmLaunchData,
+                mmUserData,
                 checkUserOrders,
                 userOrders,
                 userTrades

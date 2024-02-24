@@ -39,7 +39,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         { text: "ENDS", field: "end_date" },
     ];
 
-    const { currentUserData, checkLaunchData, isLaunchDataLoading } = useAppRoot();
+    const { currentUserData, checkProgramData } = useAppRoot();
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
@@ -129,7 +129,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
 
                         <th>
                             <Box as="button">
-                                <TfiReload size={20} onClick={checkLaunchData} />
+                                <TfiReload size={20} onClick={checkProgramData} />
                             </Box>
                         </th>
                     </tr>

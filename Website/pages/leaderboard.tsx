@@ -87,7 +87,7 @@ const LeaderboardPage = () => {
 
     const LeaderboardTable = ({ user_data }: { user_data: UserData[] }) => {
         const { sm } = useResponsive();
-        const { checkUserData } = useAppRoot();
+        const { checkProgramData } = useAppRoot();
 
         const [sortedField, setSortedField] = useState<string | null>("sauce");
         const [reverseSort, setReverseSort] = useState<boolean>(true);
@@ -159,7 +159,7 @@ const LeaderboardPage = () => {
                                 ))}
 
                                 <th>
-                                    <Box mt={1} as="button" onClick={checkUserData}>
+                                    <Box mt={1} as="button" onClick={checkProgramData}>
                                         <TfiReload size={sm ? 18 : 20} />
                                     </Box>
                                 </th>

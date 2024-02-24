@@ -22,7 +22,7 @@ interface Header {
 
 const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const { sm } = useResponsive();
-    const { checkLaunchData } = useAppRoot();
+    const { checkProgramData } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string | null>("date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
@@ -93,7 +93,7 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                         ))}
 
                         <th>
-                            <Box mt={1} as="button" onClick={checkLaunchData}>
+                            <Box mt={1} as="button" onClick={checkProgramData}>
                                 <TfiReload size={sm ? 18 : 20} />
                             </Box>
                         </th>

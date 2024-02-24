@@ -22,7 +22,7 @@ interface Header {
 
 const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[] }) => {
     const { sm } = useResponsive();
-    const { checkLaunchData } = useAppRoot();
+    const { checkProgramData } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string | null>("date");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
@@ -88,7 +88,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                         ))}
 
                         <th>
-                            <Box mt={1} as="button" onClick={checkLaunchData}>
+                            <Box mt={1} as="button" onClick={checkProgramData}>
                                 <TfiReload size={sm ? 18 : 20} />
                             </Box>
                         </th>

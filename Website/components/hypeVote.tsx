@@ -14,7 +14,7 @@ import useResponsive from "../hooks/useResponsive";
 export function HypeVote({ launch_data }: { launch_data?: LaunchData;}) {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
-    const { checkLaunchData, currentUserData } = useAppRoot();
+    const { checkProgramData, currentUserData } = useAppRoot();
     const { lg } = useResponsive();
     const hype_vote_ws_id = useRef<number | null>(null);
 
@@ -28,7 +28,7 @@ export function HypeVote({ launch_data }: { launch_data?: LaunchData;}) {
                 alert("Hype vote transaction failed, please try again");
                 return;
             } else {
-                await checkLaunchData();
+                await checkProgramData();
             }
 
             /*toast.success("First Hype Vote!",
@@ -44,7 +44,7 @@ export function HypeVote({ launch_data }: { launch_data?: LaunchData;}) {
                 icon: ({theme, type}) =>  <img src="/images/thumbs-up.svg"/>
             });*/
         },
-        [checkLaunchData],
+        [checkProgramData],
     );
 
     const Vote = useCallback(
@@ -106,10 +106,10 @@ export function HypeVote({ launch_data }: { launch_data?: LaunchData;}) {
     );
 
     let has_voted: boolean = false;
-    console.log("check user vote", currentUserData === null)
+    //console.log("check user vote", currentUserData === null)
     if (currentUserData !== null) {
         for (let i = 0; i < currentUserData.votes.length; i++) {
-            console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
+            //console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
             if (currentUserData.votes[i].toString() == launch_data.game_id.toString()) {
                 has_voted = true;
                 break;

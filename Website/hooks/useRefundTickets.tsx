@@ -18,7 +18,7 @@ import useAppRoot from "../context/useAppRoot";
 
 const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkLaunchData } = useAppRoot();
+    const { checkProgramData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -33,7 +33,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         signature_ws_id.current = null;
 
         if (updateData) {
-            await checkLaunchData();
+            await checkProgramData();
         }
     }, []);
 

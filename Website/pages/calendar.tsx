@@ -46,7 +46,7 @@ const CalenderPage = () => {
         setFilters((previous) => ({ ...previous, end_date: end !== null ? addDays(end, 1) : null }));
     };
 
-    console.log(launchList);
+    //console.log(launchList);
 
     if (!launchList) return <Loader />;
 

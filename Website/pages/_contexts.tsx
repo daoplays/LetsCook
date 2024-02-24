@@ -3,17 +3,15 @@
 import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import {
-    RunLaunchDataGPA,
     LaunchData,
     UserData,
-    RunUserDataGPA,
     bignum_to_num,
     LaunchDataUserInput,
     defaultUserInput,
     JoinData,
-    RunJoinDataGPA,
+    RunGPA
 } from "../components/Solana/state";
-import {    OpenOrder } from "../components/Solana/jupiter_state";
+import {    MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
 import { PublicKey, Connection, Keypair } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
@@ -54,70 +52,39 @@ async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>
     return openOrder
 }
 
-
-const CheckLaunchData = async (
-    check_launch_data,
+const GetProgramData = async (
+    check_program_data,
+    setProgramData,
     setIsLaunchDataLoading,
-    setIsHomePageDataLoading,
-    setLaunchData,
-    filterTable,
-    setHomePageData,
+    setIsHomePageDataLoading
 ) => {
-    if (!check_launch_data.current) return;
+    if (!check_program_data.current) return;
 
     setIsLaunchDataLoading(true);
     setIsHomePageDataLoading(true);
 
-    let list = await RunLaunchDataGPA("");
 
-    console.log("check launch data");
-    setLaunchData(list);
+    let list = await RunGPA();
 
-    let close_filtered = filterTable({ list });
+    console.log("check program data");
+    //console.trace()
+    setProgramData(list);
 
-    let home_page_data: LaunchData[] = [];
-    let home_page_map = new Map<number, LaunchData>();
-    for (let i = 0; i < close_filtered.length; i++) {
-        let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-        //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
-        if (home_page_map.has(date)) {
-            let current_entry: LaunchData = home_page_map.get(date);
-            let current_hype = current_entry.positive_votes - current_entry.negative_votes;
-            let new_hype = close_filtered[i].positive_votes - close_filtered[i].negative_votes;
-            if (new_hype > current_hype) {
-                home_page_map.set(date, close_filtered[i]);
-            }
-        } else {
-            home_page_map.set(date, close_filtered[i]);
-        }
-    }
-
-    home_page_map.forEach((value, key) => {
-        home_page_data.push(value);
-    });
-
-    home_page_data.sort((a, b) => {
-        if (a.end_date < b.end_date) {
-            return -1;
-        }
-        if (a.end_date > b.end_date) {
-            return 1;
-        }
-        return 0;
-    });
-    //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
-    setHomePageData(home_page_data);
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
-    check_launch_data.current = false;
+
+    check_program_data.current = false;
 };
+
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
-    const [isUserDataLoading, setIsUserDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
+
+    const [program_data, setProgramData] = useState<Buffer[] | null>(null);
+
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
@@ -126,14 +93,16 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
 
     const [join_data, setJoinData] = useState<JoinData[]>([]);
+    const [mm_launch_data, setMMLaunchData] = useState<MMLaunchData[]>([]);
+    const [mm_user_data, setMMUserData] = useState<MMUserData[]>([]);
+
 
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
 
 
-    const check_launch_data = useRef<boolean>(true);
-    const check_user_data = useRef<boolean>(true);
-    const check_join_data = useRef<boolean>(true);
+    const check_program_data = useRef<boolean>(true);
+    const last_program_data_update = useRef<number>(0);
 
     const user_account_ws_id = useRef<number | null>(null);
 
@@ -191,66 +160,150 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
     }, [wallet, check_user_update]);
 
-    const CheckUserData = useCallback(async () => {
-        if (!check_user_data.current) return;
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
-
-        console.log("check user data", wallet.connected, wallet.connecting, wallet.disconnecting);
-
-        setIsUserDataLoading(true);
-
-        let user_list = await RunUserDataGPA("");
-        setUserData(user_list);
-
-        if (wallet.publicKey !== null) {
-            for (let i = 0; i < user_list.length; i++) {
-                if (user_list[i].user_key.toString() == wallet.publicKey.toString()) {
-                    console.log("have current user", user_list[i]);
-                    setCurrentUserData(user_list[i]);
-                    break;
-                }
-            }
-        }
-        setIsUserDataLoading(false);
-        check_user_data.current = false;
-    }, [wallet]);
-
-    const CheckJoinedData = useCallback(async () => {
-        if (!check_join_data.current) return;
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
-
-        console.log("check join data");
-
-        let join_data_list = await RunJoinDataGPA(wallet);
-        setJoinData(join_data_list);
-        check_join_data.current = false;
-    }, [wallet]);
-
-    const RecheckLaunchData = useCallback(async () => {
-        check_launch_data.current = true;
-        CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
-        check_join_data.current = true;
-        CheckJoinedData();
-    }, [CheckJoinedData]);
-
-    const RecheckUserData = useCallback(async () => {
-        check_user_data.current = true;
-        CheckUserData();
-    }, [CheckUserData]);
 
     useEffect(() => {
-        CheckLaunchData(check_launch_data, setIsLaunchDataLoading, setIsHomePageDataLoading, setLaunchData, filterTable, setHomePageData);
+      
+        if (program_data === null || program_data.length === 0)
+            return;
+
+
+        let wallet_bytes = PublicKey.default.toBytes();
+        let have_wallet = false;
+        // console.log("wallet", wallet !== null ? wallet.toString() : "null");
+        if (wallet !== null && wallet.publicKey !== null) {
+            wallet_bytes = wallet.publicKey.toBytes();
+            have_wallet = true;
+        }
+
+        let launch_data : LaunchData[] = [];
+        let user_data : UserData[] = []
+        let join_data : JoinData[] = [];
+        let mm_launch_data : MMLaunchData[] = []
+        let mm_user_data : MMUserData[] = []
+
+        for (let i = 0; i < program_data.length; i++) {
+            if (program_data[i][0] === 0) {
+                const [launch] = LaunchData.struct.deserialize(program_data[i]);
+                launch_data.push(launch);
+                continue;
+            }
+
+            if (program_data[i][0] === 2) {
+                const [user] = UserData.struct.deserialize(program_data[i]);
+                user_data.push(user);
+                continue;
+            }
+
+            if (program_data[i][0] === 5) {
+                const [mm] = MMLaunchData.struct.deserialize(program_data[i]);
+
+                mm_launch_data.push(mm);
+                continue;
+            }
+
+            // other data depends on a wallet
+            if (!have_wallet)
+                continue;
+
+            // both join and MM user data have the user key in the same place
+            let comp_wallet_bytes = new Uint8Array(program_data[i].slice(1, 33));
+
+            let isEqual = true;
+            for(let i = 0; i < wallet_bytes.length && isEqual; i++) {
+                isEqual = wallet_bytes[i] === comp_wallet_bytes[i]; 
+            }
+
+            if (!isEqual)
+                continue
+        
+
+            if (program_data[i][0] === 3) {
+                const [join] = JoinData.struct.deserialize(program_data[i]);
+
+                join_data.push(join);
+                continue;
+            }
+
+            if (program_data[i][0] === 4) {
+                const [mm_user] = MMUserData.struct.deserialize(program_data[i]);
+
+                mm_user_data.push(mm_user);
+                continue;
+            }
+
+            
+
+        }
+
+        setLaunchData(launch_data);
+        setUserData(user_data);
+        setJoinData(join_data);
+        setMMLaunchData(mm_launch_data);
+        setMMUserData(mm_user_data);
+
+
+        for (let i = 0; i < user_data.length; i++) {
+            if (user_data[i].user_key.equals(wallet.publicKey)) {
+                setCurrentUserData(user_data[i]);
+                break;
+            }
+        }
+
+        
+        let close_filtered = filterTable({ list: launch_data });
+
+        let home_page_data: LaunchData[] = [];
+        let home_page_map = new Map<number, LaunchData>();
+        for (let i = 0; i < close_filtered.length; i++) {
+            let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
+            //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
+            if (home_page_map.has(date)) {
+                let current_entry: LaunchData = home_page_map.get(date);
+                let current_hype = current_entry.positive_votes - current_entry.negative_votes;
+                let new_hype = close_filtered[i].positive_votes - close_filtered[i].negative_votes;
+                if (new_hype > current_hype) {
+                    home_page_map.set(date, close_filtered[i]);
+                }
+            } else {
+                home_page_map.set(date, close_filtered[i]);
+            }
+        }
+
+        home_page_map.forEach((value, key) => {
+            home_page_data.push(value);
+        });
+
+        home_page_data.sort((a, b) => {
+            if (a.end_date < b.end_date) {
+                return -1;
+            }
+            if (a.end_date > b.end_date) {
+                return 1;
+            }
+            return 0;
+        });
+        //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
+        setHomePageData(home_page_data);
+        
+    }, [program_data, wallet]);
+
+    const ReGetProgramData = useCallback(async () => {
+        check_program_data.current = true;
+        GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
+        
     }, []);
 
     useEffect(() => {
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
-        check_user_data.current = true;
-        check_join_data.current = true;
+        let current_time = (new Date()).getTime();
+        if (current_time - last_program_data_update.current < 1000)
+            return
+        
+        last_program_data_update.current = current_time;
 
-        CheckUserData();
-        CheckJoinedData();
-    }, [wallet, CheckUserData, CheckJoinedData]);
+        GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
+
+    }, []);
 
     const checkUserOrders = useCallback(async () => {
         let userOrders : OpenOrder[] = await getUserOrders(wallet);
@@ -267,11 +320,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             userList={user_data}
             currentUserData={current_user_data}
             joinData={join_data}
+            mmLaunchData={mm_launch_data}
+            mmUserData={mm_user_data}
             isLaunchDataLoading={isLaunchDataLoading}
-            isUserDataLoading={isUserDataLoading}
             isHomePageDataLoading={isHomePageDataLoading}
-            checkLaunchData={RecheckLaunchData}
-            checkUserData={RecheckUserData}
+            checkProgramData={ReGetProgramData}
             newLaunchData={newLaunchData}
             checkUserOrders={checkUserOrders}
             userOrders={userOrders}

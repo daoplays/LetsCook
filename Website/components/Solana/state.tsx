@@ -51,7 +51,7 @@ export function WalletConnected() {
 
 // Example POST method implementation:
 export async function postData(url = "", bearer = "", data = {}) {
-    console.log("in post data", data)
+    //console.log("in post data", data)
     // Default options are marked with *
     const response = await fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -404,7 +404,7 @@ export const enum LaunchInstruction {
     init = 0,
     create_game = 1,
     buy_tickets = 2,
-    claim_reward = 3,
+    chcek_tickets = 3,
     init_market = 4,
     init_amm = 5,
     hype_vote = 6,
@@ -782,9 +782,9 @@ export async function request_launch_data(bearer: string, pubkey: PublicKey): Pr
     return data;
 }
 
-export async function RunLaunchDataGPA(bearer: string): Promise<LaunchData[]> {
-    let index_buffer = uInt8ToLEBytes(0);
-    let account_bytes = bs58.encode(index_buffer);
+
+export async function RunGPA(): Promise<Buffer[]> {
+
 
     var body = {
         id: 1,
@@ -792,99 +792,7 @@ export async function RunLaunchDataGPA(bearer: string): Promise<LaunchData[]> {
         method: "getProgramAccounts",
         params: [
             PROGRAM.toString(),
-            { filters: [{ memcmp: { offset: 0, bytes: account_bytes } }], encoding: "base64", commitment: "confirmed" },
-        ],
-    };
-
-    var program_accounts_result;
-    try {
-        program_accounts_result = await postData(RPC_NODE, bearer, body);
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-
-    //console.log(program_accounts_result["result"]);
-
-    let result: LaunchData[] = [];
-    for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        //console.log(program_accounts_result["result"][i]);
-        let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
-        let decoded_data = Buffer.from(encoded_data, "base64");
-        try {
-            const [game] = LaunchData.struct.deserialize(decoded_data);
-            result.push(game);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    return result;
-}
-
-export async function RunUserDataGPA(bearer: string): Promise<UserData[]> {
-    let index_buffer = uInt8ToLEBytes(2);
-    let account_bytes = bs58.encode(index_buffer);
-
-    var body = {
-        id: 1,
-        jsonrpc: "2.0",
-        method: "getProgramAccounts",
-        params: [
-            PROGRAM.toString(),
-            { filters: [{ memcmp: { offset: 0, bytes: account_bytes } }], encoding: "base64", commitment: "confirmed" },
-        ],
-    };
-
-    var program_accounts_result;
-    try {
-        program_accounts_result = await postData(RPC_NODE, bearer, body);
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-
-    // console.log(program_accounts_result["result"]);
-
-    let result: UserData[] = [];
-    for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        // console.log(program_accounts_result["result"][i]);
-        let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
-        let decoded_data = Buffer.from(encoded_data, "base64");
-        try {
-            const [game] = UserData.struct.deserialize(decoded_data);
-            result.push(game);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    return result;
-}
-
-export async function RunJoinDataGPA(wallet: WalletContextState | null): Promise<JoinData[]> {
-    if (!wallet.publicKey) return;
-
-    let index_buffer = uInt8ToLEBytes(3);
-    let account_bytes = bs58.encode(index_buffer);
-    let wallet_bytes = PublicKey.default.toBase58();
-
-    // console.log("wallet", wallet !== null ? wallet.toString() : "null");
-    if (wallet !== null) {
-        wallet_bytes = wallet.publicKey.toBase58();
-    }
-
-    var body = {
-        id: 1,
-        jsonrpc: "2.0",
-        method: "getProgramAccounts",
-        params: [
-            PROGRAM.toString(),
-            {
-                filters: [{ memcmp: { offset: 0, bytes: account_bytes } }, { memcmp: { offset: 1, bytes: wallet_bytes } }],
-                encoding: "base64",
-                commitment: "confirmed",
-            },
+            {encoding: "base64", commitment: "confirmed" },
         ],
     };
 
@@ -896,23 +804,26 @@ export async function RunJoinDataGPA(wallet: WalletContextState | null): Promise
         return [];
     }
 
+
+
     //console.log(program_accounts_result["result"]);
 
-    let result: JoinData[] = [];
+    let result = [];
     for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
         //console.log(program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
-        try {
-            const [joiner] = JoinData.struct.deserialize(decoded_data);
-            result.push(joiner);
-        } catch (error) {
-            console.log(error);
-        }
+
+        // we dont want the program account
+        if (decoded_data[0] === 1)
+            continue;
+
+        result.push(decoded_data);
     }
 
     return result;
 }
+
 
 class CreateLaunch_Instruction {
     constructor(

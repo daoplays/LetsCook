@@ -5,10 +5,11 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { JoinedLaunch, LaunchData } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, PROD } from "../Solana/constants";
-import { MMLaunchData, MMUserData, RunMMLaunchDataGPA, RunMMUserDataGPA } from "../Solana/jupiter_state";
+import { MMLaunchData, MMUserData, RunMMUserDataGPA } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
+import useAppRoot from "../../context/useAppRoot";
 
 interface Header {
     text: string;
@@ -28,8 +29,10 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
+    const {mmLaunchData} = useAppRoot();
+
+
     const [mmUserData, setMMUserData] = useState<MMUserData[]>([]);
-    const [mmLaunchData, setMMLaunchData] = useState<MMLaunchData[]>([]);
 
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
@@ -55,37 +58,6 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         { text: "END", field: "end" },
     ];
 
-    const { GetMMTokens } = useGetMMTokens();
-
-    const check_mm_data = useRef<boolean>(true);
-
-    const CheckMMData = useCallback(async () => {
-        if (!check_mm_data.current) return;
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
-
-        console.log("check mm data", wallet.connected, wallet.connecting, wallet.disconnecting);
-
-        let user_list = await RunMMUserDataGPA(wallet);
-        setMMUserData(user_list);
-        let launch_list = await RunMMLaunchDataGPA();
-        setMMLaunchData(launch_list);
-
-        console.log("User", user_list);
-        console.log("Launch", launch_list);
-
-        check_mm_data.current = false;
-    }, [wallet]);
-
-    useEffect(() => {
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
-
-        CheckMMData();
-    }, [wallet, CheckMMData]);
-
-    const RecheckMMData = useCallback(async () => {
-        check_mm_data.current = true;
-        CheckMMData();
-    }, [CheckMMData]);
 
     return (
         <TableContainer>

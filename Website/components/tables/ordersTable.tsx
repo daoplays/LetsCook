@@ -74,8 +74,8 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
     let filtered_trades = filterTrades(userTrades, launch_data);
 
 
-    console.log(filtered_orders);
-    console.log(filtered_trades);
+    //console.log(filtered_orders);
+    //console.log(filtered_trades);
 
 
     return (

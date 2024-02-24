@@ -138,46 +138,6 @@ export async function RunMMUserDataGPA(wallet: WalletContextState | null): Promi
     return result;
 }
 
-export async function RunMMLaunchDataGPA(): Promise<MMLaunchData[]> {
-    let index_buffer = uInt8ToLEBytes(5);
-    let account_bytes = bs58.encode(index_buffer);
-
-    var body = {
-        id: 1,
-        jsonrpc: "2.0",
-        method: "getProgramAccounts",
-        params: [
-            PROGRAM.toString(),
-            { filters: [{ memcmp: { offset: 0, bytes: account_bytes } }], encoding: "base64", commitment: "confirmed" },
-        ],
-    };
-
-    var program_accounts_result;
-    try {
-        program_accounts_result = await postData(RPC_NODE, "", body);
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-
-    //console.log(program_accounts_result["result"]);
-
-    let result: MMLaunchData[] = [];
-    for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        // console.log(program_accounts_result["result"][i]);
-        let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
-        let decoded_data = Buffer.from(encoded_data, "base64");
-        try {
-            const [game] = MMLaunchData.struct.deserialize(decoded_data);
-            result.push(game);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    return result;
-}
-
 class PlaceLimit_Instruction {
     constructor(
         readonly instruction: number,
@@ -228,6 +188,30 @@ class PlaceCancel_Instruction {
 export function serialise_PlaceCancel_instruction(side: number, in_amount: bignum, jup_data: number[]): Buffer {
     const data = new PlaceCancel_Instruction(LaunchInstruction.cancel_limit_order, side, in_amount, jup_data);
     const [buf] = PlaceCancel_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+
+class ClaimReward_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly date : number
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(
+        [
+            ["instruction", u8],
+            ["date", u32]
+        ],
+        (args) => new ClaimReward_Instruction(args.instruction!, args.date!),
+        "ClaimReward_Instruction",
+    );
+}
+
+export function serialise_ClaimReward_instruction(date : number): Buffer {
+    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date);
+    const [buf] = ClaimReward_Instruction.struct.serialize(data);
 
     return buf;
 }

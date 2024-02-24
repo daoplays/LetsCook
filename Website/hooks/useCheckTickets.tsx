@@ -16,7 +16,7 @@ import useAppRoot from "../context/useAppRoot";
 
 const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkLaunchData } = useAppRoot();
+    const { checkProgramData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,7 +34,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         }
 
         if (updateData) {
-            await checkLaunchData();
+            await checkProgramData();
         }
     }, []);
 
@@ -74,7 +74,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             PROGRAM,
         )[0];
 
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_reward);
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.chcek_tickets);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

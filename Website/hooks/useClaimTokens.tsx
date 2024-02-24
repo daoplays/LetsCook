@@ -18,7 +18,7 @@ import useAppRoot from "../context/useAppRoot";
 
 const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkLaunchData } = useAppRoot();
+    const { checkProgramData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +35,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         }
 
         if (updateData) {
-            await checkLaunchData();
+            await checkProgramData();
         }
     }, []);
 
