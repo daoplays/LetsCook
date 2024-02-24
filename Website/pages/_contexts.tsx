@@ -209,10 +209,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMLaunchData(mm_launch_data);
         setMMUserData(mm_user_data);
 
-        for (let i = 0; i < user_data.length; i++) {
-            if (user_data[i].user_key.equals(wallet.publicKey)) {
-                setCurrentUserData(user_data[i]);
-                break;
+        if (have_wallet) {
+            for (let i = 0; i < user_data.length; i++) {
+                if (user_data[i].user_key.equals(wallet.publicKey)) {
+                    setCurrentUserData(user_data[i]);
+                    break;
+                }
             }
         }
 
