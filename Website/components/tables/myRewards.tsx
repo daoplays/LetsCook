@@ -16,8 +16,8 @@ interface Header {
 }
 
 interface MappedReward {
-    launch_reward : MMLaunchData;
-    user_reward : MMUserData;
+    launch_reward: MMLaunchData;
+    user_reward: MMUserData;
 }
 
 function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
@@ -26,7 +26,7 @@ function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return (item.mint_key.equals(launch_data.keys[LaunchKeys.MintAddress]));
+        return item.mint_key.equals(launch_data.keys[LaunchKeys.MintAddress]);
     });
 }
 
@@ -36,7 +36,7 @@ function filterUserRewards(list: MMUserData[], launch_data: LaunchData) {
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return (item.mint_key.equals(launch_data.keys[LaunchKeys.MintAddress]));
+        return item.mint_key.equals(launch_data.keys[LaunchKeys.MintAddress]);
     });
 }
 
@@ -51,7 +51,6 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
         { text: "USER BOUGHT", field: "user_bought" },
         { text: "USER %", field: "user_percent" },
         { text: "USER REWARDS", field: "user_rewards" },
-
     ];
 
     let filtered_user_rewards = filterUserRewards(mmUserData, launch_data);
@@ -77,17 +76,16 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
         return 0;
     });
 
-    let mapped_rewards : MappedReward[] = []
+    let mapped_rewards: MappedReward[] = [];
     for (let i = 0; i < filtered_user_rewards.length; i++) {
         for (let j = 0; j < filtered_launch_rewards.length; j++) {
             if (filtered_launch_rewards[j].date === filtered_user_rewards[j].date) {
-                let m: MappedReward = { launch_reward : filtered_launch_rewards[0], user_reward: filtered_user_rewards[i] };
+                let m: MappedReward = { launch_reward: filtered_launch_rewards[0], user_reward: filtered_user_rewards[i] };
                 mapped_rewards.push(m);
                 break;
             }
         }
     }
-
 
     return (
         <TableContainer w={"100%"}>
@@ -116,43 +114,39 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
                         ))}
 
                         <th style={{ minWidth: sm ? "90px" : "120px" }}>
-                            <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: "pointer" }}>
-                                
-                            </HStack>
+                            <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: "pointer" }}></HStack>
                         </th>
                     </tr>
                 </thead>
 
                 <tbody>
-                        {mapped_rewards.map((r, i) => (
-                            <RewardCard key={i} reward={r} launch={launch_data} />
-                        ))}
+                    {mapped_rewards.map((r, i) => (
+                        <RewardCard key={i} reward={r} launch={launch_data} />
+                    ))}
                 </tbody>
             </table>
         </TableContainer>
     );
 };
 
-const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchData; }) => {
+const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { GetMMRewards } = useGetMMRewards();
 
-
-    let days_rewards = bignum_to_num(reward.launch_reward.token_rewards)
+    let days_rewards = bignum_to_num(reward.launch_reward.token_rewards);
     days_rewards /= Math.pow(10, launch.decimals);
 
-    let total_traded = bignum_to_num(reward.launch_reward.buy_amount)
+    let total_traded = bignum_to_num(reward.launch_reward.buy_amount);
     total_traded /= Math.pow(10, launch.decimals);
 
-    let user_traded = bignum_to_num(reward.user_reward.buy_amount)
+    let user_traded = bignum_to_num(reward.user_reward.buy_amount);
     user_traded /= Math.pow(10, launch.decimals);
 
-    let user_percent = 100 * user_traded / total_traded;
-    let user_amount = days_rewards * user_percent / 100;
+    let user_percent = (100 * user_traded) / total_traded;
+    let user_amount = (days_rewards * user_percent) / 100;
 
-
-    console.log(days_rewards, total_traded, user_traded)
+    console.log(days_rewards, total_traded, user_traded);
 
     return (
         <tr

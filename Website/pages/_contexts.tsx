@@ -2,16 +2,8 @@
 
 import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
-import {
-    LaunchData,
-    UserData,
-    bignum_to_num,
-    LaunchDataUserInput,
-    defaultUserInput,
-    JoinData,
-    RunGPA
-} from "../components/Solana/state";
-import {    MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
+import { LaunchData, UserData, bignum_to_num, LaunchDataUserInput, defaultUserInput, JoinData, RunGPA } from "../components/Solana/state";
+import { MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
 import { PublicKey, Connection, Keypair } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
@@ -19,8 +11,7 @@ import { AppRootContextProvider } from "../context/useAppRoot";
 
 import "bootstrap/dist/css/bootstrap.css";
 
-async function getUserTrades(wallet : WalletContextState) : Promise<TradeHistoryItem[]>{
-
+async function getUserTrades(wallet: WalletContextState): Promise<TradeHistoryItem[]> {
     if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
     const connection = new Connection(RPC_NODE);
@@ -34,14 +25,11 @@ async function getUserTrades(wallet : WalletContextState) : Promise<TradeHistory
         // lastCursor: order.id // optional, for pagination
     });
 
-    return tradeHistory
+    return tradeHistory;
 }
 
-async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>{
-
-
-    if (wallet === null || wallet.publicKey === null)
-        return [];
+async function getUserOrders(wallet: WalletContextState): Promise<OpenOrder[]> {
+    if (wallet === null || wallet.publicKey === null) return [];
 
     const connection = new Connection(RPC_NODE);
     let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
@@ -49,20 +37,14 @@ async function getUserOrders(wallet : WalletContextState) : Promise<OpenOrder[]>
     const limitOrder = new LimitOrderProvider(connection, null);
     const openOrder: OpenOrder[] = await limitOrder.getOrders([ownerFilter(user_pda_account)]);
 
-    return openOrder
+    return openOrder;
 }
 
-const GetProgramData = async (
-    check_program_data,
-    setProgramData,
-    setIsLaunchDataLoading,
-    setIsHomePageDataLoading
-) => {
+const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading) => {
     if (!check_program_data.current) return;
 
     setIsLaunchDataLoading(true);
     setIsHomePageDataLoading(true);
-
 
     let list = await RunGPA();
 
@@ -76,7 +58,6 @@ const GetProgramData = async (
     check_program_data.current = false;
 };
 
-
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
 
@@ -84,7 +65,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
 
     const [program_data, setProgramData] = useState<Buffer[] | null>(null);
-
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
@@ -96,10 +76,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [mm_launch_data, setMMLaunchData] = useState<MMLaunchData[]>([]);
     const [mm_user_data, setMMUserData] = useState<MMUserData[]>([]);
 
-
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
-
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
@@ -160,12 +138,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
     }, [wallet, check_user_update]);
 
-
     useEffect(() => {
-      
-        if (program_data === null || program_data.length === 0)
-            return;
-
+        if (program_data === null || program_data.length === 0) return;
 
         let wallet_bytes = PublicKey.default.toBytes();
         let have_wallet = false;
@@ -175,11 +149,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             have_wallet = true;
         }
 
-        let launch_data : LaunchData[] = [];
-        let user_data : UserData[] = []
-        let join_data : JoinData[] = [];
-        let mm_launch_data : MMLaunchData[] = []
-        let mm_user_data : MMUserData[] = []
+        let launch_data: LaunchData[] = [];
+        let user_data: UserData[] = [];
+        let join_data: JoinData[] = [];
+        let mm_launch_data: MMLaunchData[] = [];
+        let mm_user_data: MMUserData[] = [];
 
         for (let i = 0; i < program_data.length; i++) {
             if (program_data[i][0] === 0) {
@@ -202,20 +176,17 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             // other data depends on a wallet
-            if (!have_wallet)
-                continue;
+            if (!have_wallet) continue;
 
             // both join and MM user data have the user key in the same place
             let comp_wallet_bytes = new Uint8Array(program_data[i].slice(1, 33));
 
             let isEqual = true;
-            for(let i = 0; i < wallet_bytes.length && isEqual; i++) {
-                isEqual = wallet_bytes[i] === comp_wallet_bytes[i]; 
+            for (let i = 0; i < wallet_bytes.length && isEqual; i++) {
+                isEqual = wallet_bytes[i] === comp_wallet_bytes[i];
             }
 
-            if (!isEqual)
-                continue
-        
+            if (!isEqual) continue;
 
             if (program_data[i][0] === 3) {
                 const [join] = JoinData.struct.deserialize(program_data[i]);
@@ -230,9 +201,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 mm_user_data.push(mm_user);
                 continue;
             }
-
-            
-
         }
 
         setLaunchData(launch_data);
@@ -241,7 +209,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMLaunchData(mm_launch_data);
         setMMUserData(mm_user_data);
 
-
         for (let i = 0; i < user_data.length; i++) {
             if (user_data[i].user_key.equals(wallet.publicKey)) {
                 setCurrentUserData(user_data[i]);
@@ -249,7 +216,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
-        
         let close_filtered = filterTable({ list: launch_data });
 
         let home_page_data: LaunchData[] = [];
@@ -284,30 +250,25 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
         //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
         setHomePageData(home_page_data);
-        
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {
         check_program_data.current = true;
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-        
     }, []);
 
     useEffect(() => {
+        let current_time = new Date().getTime();
+        if (current_time - last_program_data_update.current < 1000) return;
 
-        let current_time = (new Date()).getTime();
-        if (current_time - last_program_data_update.current < 1000)
-            return
-        
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-
     }, []);
 
     const checkUserOrders = useCallback(async () => {
-        let userOrders : OpenOrder[] = await getUserOrders(wallet);
-        let userTrades : TradeHistoryItem[] = await getUserTrades(wallet);
+        let userOrders: OpenOrder[] = await getUserOrders(wallet);
+        let userTrades: TradeHistoryItem[] = await getUserTrades(wallet);
 
         setUserOrders(userOrders);
         setUserTrades(userTrades);
@@ -329,7 +290,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             checkUserOrders={checkUserOrders}
             userOrders={userOrders}
             userTrades={userTrades}
-
         >
             {children}
         </AppRootContextProvider>

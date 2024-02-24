@@ -254,8 +254,6 @@ const TradePage = () => {
             [amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("pc_vault_associated_seed")],
             amm_program,
         )[0];
-        
-       
 
         console.log(base_vault.toString(), quote_vault.toString());
 
@@ -312,15 +310,11 @@ const TradePage = () => {
     }, [launch]);
 
     const CheckPDAData = useCallback(async () => {
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting)
-            return;
+        if (launch === null) return;
 
-        if (launch === null)
-            return;
-
-        if (!check_pda_data.current )
-            return
+        if (!check_pda_data.current) return;
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
         let pda_token_account_key = await getAssociatedTokenAddress(
@@ -337,15 +331,11 @@ const TradePage = () => {
         setPDATokenAmount(token_amount);
 
         check_pda_data.current = false;
-
-    
     }, [wallet, launch]);
 
     useEffect(() => {
         CheckPDAData();
     }, [wallet, CheckPDAData]);
-
-
 
     useEffect(() => {
         CheckMarketData();
@@ -452,7 +442,9 @@ const TradePage = () => {
                             />
                         </Box>
 
-                        {leftPanel === "Info" && <InfoContent launch={launch} pda_sol_amount={pda_sol_amount} pda_token_amount={pda_token_amount} />}
+                        {leftPanel === "Info" && (
+                            <InfoContent launch={launch} pda_sol_amount={pda_sol_amount} pda_token_amount={pda_token_amount} />
+                        )}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
                     </VStack>
@@ -731,13 +723,20 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     );
 };
 
-const InfoContent = ({ launch, pda_sol_amount, pda_token_amount }: { launch: LaunchData; pda_sol_amount: number, pda_token_amount : number }) => {
-
+const InfoContent = ({
+    launch,
+    pda_sol_amount,
+    pda_token_amount,
+}: {
+    launch: LaunchData;
+    pda_sol_amount: number;
+    pda_token_amount: number;
+}) => {
     const { GetMMTokens } = useGetMMTokens();
 
-    return(
-    <VStack spacing={8} w="100%" mb={3}>
-        <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
+    return (
+        <VStack spacing={8} w="100%" mb={3}>
+            <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Lets Cook Account:
                 </Text>
@@ -747,99 +746,101 @@ const InfoContent = ({ launch, pda_sol_amount, pda_token_amount }: { launch: Lau
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                     {pda_token_amount} {launch.symbol}
                 </Text>
-            <Button w="100%" onClick={() => GetMMTokens(launch)}>Withdraw</Button>
-        </VStack>
+                <Button w="100%" onClick={() => GetMMTokens(launch)}>
+                    Withdraw
+                </Button>
+            </VStack>
 
-        <HStack mt={-2} px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                MM VOLUME (24h):
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                -- SOL
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                REWARD EMMISION (24h):
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                -- {launch.symbol}
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                REWARD RATE (24h):
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                -- 
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                SUPPLY:
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                {bignum_to_num(launch.total_supply)}
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                FDMC:
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                -- USDC
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                TVL:
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                -- USDC
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                HOLDERS:
-            </Text>
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                --
-            </Text>
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                HYPE:
-            </Text>
-            <HypeVote launch_data={launch} />
-        </HStack>
-
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                POOL:
-            </Text>
-            <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                <Link href={"#"} target="_blank">
-                    <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
-                </Link>
+            <HStack mt={-2} px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    MM VOLUME (24h):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    -- SOL
+                </Text>
             </HStack>
-        </HStack>
 
-        <HStack px={5} justify="space-between" w="100%">
-            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                SOCIALS:
-            </Text>
-            <Links featuredLaunch={launch} />
-        </HStack>
-    </VStack>
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    REWARD EMMISION (24h):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    -- {launch.symbol}
+                </Text>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    REWARD RATE (24h):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    --
+                </Text>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    SUPPLY:
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    {bignum_to_num(launch.total_supply)}
+                </Text>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    FDMC:
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    -- USDC
+                </Text>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    TVL:
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    -- USDC
+                </Text>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    HOLDERS:
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    --
+                </Text>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    HYPE:
+                </Text>
+                <HypeVote launch_data={launch} />
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    POOL:
+                </Text>
+                <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
+                    <Link href={"#"} target="_blank">
+                        <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
+                    </Link>
+                </HStack>
+            </HStack>
+
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    SOCIALS:
+                </Text>
+                <Links featuredLaunch={launch} />
+            </HStack>
+        </VStack>
     );
-}
+};
 
 const ChartComponent = (props) => {
     const {

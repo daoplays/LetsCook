@@ -57,7 +57,7 @@ export async function postData(url = "", bearer = "", data = {}) {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
         headers: {
             Accept: "application/json",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(data), // body data type must match "Content-Type" header
     });
@@ -782,18 +782,12 @@ export async function request_launch_data(bearer: string, pubkey: PublicKey): Pr
     return data;
 }
 
-
 export async function RunGPA(): Promise<Buffer[]> {
-
-
     var body = {
         id: 1,
         jsonrpc: "2.0",
         method: "getProgramAccounts",
-        params: [
-            PROGRAM.toString(),
-            {encoding: "base64", commitment: "confirmed" },
-        ],
+        params: [PROGRAM.toString(), { encoding: "base64", commitment: "confirmed" }],
     };
 
     var program_accounts_result;
@@ -804,8 +798,6 @@ export async function RunGPA(): Promise<Buffer[]> {
         return [];
     }
 
-
-
     //console.log(program_accounts_result["result"]);
 
     let result = [];
@@ -815,15 +807,13 @@ export async function RunGPA(): Promise<Buffer[]> {
         let decoded_data = Buffer.from(encoded_data, "base64");
 
         // we dont want the program account
-        if (decoded_data[0] === 1)
-            continue;
+        if (decoded_data[0] === 1) continue;
 
         result.push(decoded_data);
     }
 
     return result;
 }
-
 
 class CreateLaunch_Instruction {
     constructor(

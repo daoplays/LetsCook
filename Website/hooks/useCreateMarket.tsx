@@ -285,27 +285,24 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         const createMarketToast = toast.loading("(1/4) Creating the market token accounts");
 
-
         // simple heuristic for calculating min order size
-        let total_liquidity = (launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL
-        let LP_tokens = bignum_to_num(launchData.total_supply) * (launchData.distribution[1] / 100)
+        let total_liquidity = (launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL;
+        let LP_tokens = bignum_to_num(launchData.total_supply) * (launchData.distribution[1] / 100);
         let initial_size = 1;
         let initial_tick_size = 1e-6;
-        let ticks_per_token = initial_size * total_liquidity / LP_tokens / initial_tick_size;
+        let ticks_per_token = (initial_size * total_liquidity) / LP_tokens / initial_tick_size;
 
-        console.log("total liquidity: " + total_liquidity)
-        console.log("LP tokens: ", LP_tokens)
-        console.log("ticks per token", ticks_per_token)
+        console.log("total liquidity: " + total_liquidity);
+        console.log("LP tokens: ", LP_tokens);
+        console.log("ticks per token", ticks_per_token);
 
-        while(ticks_per_token < 100) {
+        while (ticks_per_token < 100) {
             initial_size *= 10;
-            initial_tick_size /= 10
-            if (initial_tick_size < 1e-9)
-                initial_tick_size = 1e-9
+            initial_tick_size /= 10;
+            if (initial_tick_size < 1e-9) initial_tick_size = 1e-9;
 
-            ticks_per_token = initial_size * total_liquidity / LP_tokens / initial_tick_size;
-            console.log("ticks per token", initial_size, initial_tick_size, ticks_per_token)
-            
+            ticks_per_token = (initial_size * total_liquidity) / LP_tokens / initial_tick_size;
+            console.log("ticks per token", initial_size, initial_tick_size, ticks_per_token);
         }
 
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
@@ -558,7 +555,7 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         try {
             let market_balance = await request_current_balance("", market.publicKey);
-            console.log("market balance", market_balance)
+            console.log("market balance", market_balance);
             if (market_balance == 0) {
                 for (let i = 0; i < market_tx.length; i++) {
                     let market_transaction = await wallet.signTransaction(market_tx[i]);

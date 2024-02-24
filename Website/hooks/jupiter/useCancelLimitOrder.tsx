@@ -42,7 +42,7 @@ interface OpenOrder {
 
 const useCancelLimitOrder = () => {
     const wallet = useWallet();
-    const {checkUserOrders } = useAppRoot();
+    const { checkUserOrders } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 

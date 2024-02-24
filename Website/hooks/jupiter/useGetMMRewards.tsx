@@ -38,7 +38,7 @@ const useGetMMRewards = () => {
         signature_ws_id.current = null;
     }, []);
 
-    const GetMMRewards = async (date : number, launch : LaunchData) => {
+    const GetMMRewards = async (date: number, launch: LaunchData) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Claiming Reward..");
@@ -72,9 +72,10 @@ const useGetMMRewards = () => {
             PROGRAM,
         )[0];
 
-
-
-        let user_date_account = PublicKey.findProgramAddressSync([token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
+        let user_date_account = PublicKey.findProgramAddressSync(
+            [token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            PROGRAM,
+        )[0];
 
         const instruction_data = serialise_ClaimReward_instruction(date);
 

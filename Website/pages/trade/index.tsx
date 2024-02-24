@@ -77,9 +77,9 @@ const MarketMaker = () => {
                     </Text>
                 </Flex>
 
-                {selected === "Markets" && <MarketMakingTable launchList={launchList}/>}
+                {selected === "Markets" && <MarketMakingTable launchList={launchList} />}
 
-                {selected === "Orders" && <OrdersTable launch_data={null}/>}
+                {selected === "Orders" && <OrdersTable launch_data={null} />}
             </main>
         </>
     );

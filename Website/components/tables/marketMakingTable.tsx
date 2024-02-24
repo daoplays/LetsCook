@@ -29,8 +29,7 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
-    const {mmLaunchData} = useAppRoot();
-
+    const { mmLaunchData } = useAppRoot();
 
     const [mmUserData, setMMUserData] = useState<MMUserData[]>([]);
 
@@ -57,7 +56,6 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         { text: "START", field: "start" },
         { text: "END", field: "end" },
     ];
-
 
     return (
         <TableContainer>

@@ -300,7 +300,7 @@ const MintPage = () => {
     if (!launchData) return <PageNotFound />;
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
-    let one_mint_frac = 100 * one_mint / bignum_to_num(launchData.total_supply);
+    let one_mint_frac = (100 * one_mint) / bignum_to_num(launchData.total_supply);
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cookState);
     const MINTED_OUT = [

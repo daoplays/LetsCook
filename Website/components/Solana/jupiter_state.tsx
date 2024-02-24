@@ -192,24 +192,23 @@ export function serialise_PlaceCancel_instruction(side: number, in_amount: bignu
     return buf;
 }
 
-
 class ClaimReward_Instruction {
     constructor(
         readonly instruction: number,
-        readonly date : number
+        readonly date: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(
         [
             ["instruction", u8],
-            ["date", u32]
+            ["date", u32],
         ],
         (args) => new ClaimReward_Instruction(args.instruction!, args.date!),
         "ClaimReward_Instruction",
     );
 }
 
-export function serialise_ClaimReward_instruction(date : number): Buffer {
+export function serialise_ClaimReward_instruction(date: number): Buffer {
     const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date);
     const [buf] = ClaimReward_Instruction.struct.serialize(data);
 

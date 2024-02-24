@@ -33,7 +33,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
     const { xs, sm, md, lg } = useResponsive();
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
-    let one_mint_frac = 100 * one_mint / bignum_to_num(launchData.total_supply);
+    let one_mint_frac = (100 * one_mint) / bignum_to_num(launchData.total_supply);
 
     return (
         <Modal size="full" isOpen={isOpen} onClose={onClose}>

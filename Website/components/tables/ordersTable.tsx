@@ -69,14 +69,11 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
         { text: "ACTION", field: "action" },
     ];
 
-
     let filtered_orders = filterOrders(userOrders, launch_data);
     let filtered_trades = filterTrades(userTrades, launch_data);
 
-
     //console.log(filtered_orders);
     //console.log(filtered_trades);
-
 
     return (
         <TableContainer w="100%">
@@ -107,23 +104,15 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
                 </thead>
 
                 <tbody>
-                    {state === "Open" &&
-                        filtered_orders.map((order, i) => (
-                            <OrderCard key={i} order={order} launch={launch_data} />
-                        ))
-                    }
-                    {state === "Filled" &&
-                        filtered_trades.map((order, i) => (
-                            <TradeCard key={i} order={order} launch={launch_data} />
-                        ))
-                    }
+                    {state === "Open" && filtered_orders.map((order, i) => <OrderCard key={i} order={order} launch={launch_data} />)}
+                    {state === "Filled" && filtered_trades.map((order, i) => <TradeCard key={i} order={order} launch={launch_data} />)}
                 </tbody>
             </table>
         </TableContainer>
     );
 };
 
-const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData; }) => {
+const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     const { CancelLimitOrder } = useCancelLimitOrder();
     let is_buy = order.account.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
@@ -202,8 +191,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData; })
             <td style={{ minWidth: md ? "120px" : "" }}>
                 <Button
                     onClick={() => {
-                            CancelLimitOrder(launch, order);
-                        
+                        CancelLimitOrder(launch, order);
                     }}
                 >
                     Cancel
@@ -213,14 +201,14 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData; })
     );
 };
 
-const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchData; }) => {
+const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     let is_buy = order.order.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
 
-    let cost : number = is_buy ? bignum_to_num(order.inAmount) : bignum_to_num(order.outAmount);
-    let token_amount : number = is_buy ? bignum_to_num(order.outAmount) : bignum_to_num(order.inAmount);
+    let cost: number = is_buy ? bignum_to_num(order.inAmount) : bignum_to_num(order.outAmount);
+    let token_amount: number = is_buy ? bignum_to_num(order.outAmount) : bignum_to_num(order.inAmount);
 
-    console.log(cost, token_amount)
+    console.log(cost, token_amount);
 
     cost /= Math.pow(10, 9);
     token_amount /= Math.pow(10, launch.decimals);

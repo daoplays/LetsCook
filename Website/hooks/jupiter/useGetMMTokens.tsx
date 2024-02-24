@@ -7,7 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
-    bignum_to_num
+    bignum_to_num,
 } from "../../components/Solana/state";
 import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
@@ -77,9 +77,9 @@ const useGetMMTokens = () => {
             true, // allow owner off curve
         );
 
-        let current_date =  Math.floor(new Date().getTime()/1000 - bignum_to_num(launch.last_interaction))/24/60/60;
+        let current_date = Math.floor(new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60;
         console.log(current_date);
-        
+
         let date_bytes = uInt32ToLEBytes(current_date);
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
@@ -89,7 +89,10 @@ const useGetMMTokens = () => {
             PROGRAM,
         )[0];
 
-        let user_date_account = PublicKey.findProgramAddressSync([token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
+        let user_date_account = PublicKey.findProgramAddressSync(
+            [token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            PROGRAM,
+        )[0];
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.get_mm_tokens);
 

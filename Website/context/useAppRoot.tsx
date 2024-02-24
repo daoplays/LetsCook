@@ -15,11 +15,11 @@ interface AppRootTypes {
     checkProgramData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
     joinData: JoinData[];
-    mmLaunchData : MMLaunchData[];
-    mmUserData : MMUserData[];
+    mmLaunchData: MMLaunchData[];
+    mmUserData: MMUserData[];
     checkUserOrders: () => Promise<void>;
     userOrders: OpenOrder[];
-    userTrades : TradeHistoryItem[];
+    userTrades: TradeHistoryItem[];
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -39,7 +39,7 @@ export const AppRootContextProvider = ({
     mmUserData,
     checkUserOrders,
     userOrders,
-    userTrades
+    userTrades,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -57,7 +57,7 @@ export const AppRootContextProvider = ({
                 mmUserData,
                 checkUserOrders,
                 userOrders,
-                userTrades
+                userTrades,
             }}
         >
             {children}

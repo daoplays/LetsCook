@@ -38,7 +38,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const usePlaceLimitOrder = () => {
     const wallet = useWallet();
-    const {checkUserOrders } = useAppRoot();
+    const { checkUserOrders } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -57,7 +57,7 @@ const usePlaceLimitOrder = () => {
         signature_ws_id.current = null;
     }, []);
 
-    const PlaceLimitOrder = async (launch: LaunchData, token_amount : number, sol_amount: number, order_type : number) => {
+    const PlaceLimitOrder = async (launch: LaunchData, token_amount: number, sol_amount: number, order_type: number) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const placeLimitToast = toast.loading("Placing Limit Order..");
@@ -74,7 +74,7 @@ const usePlaceLimitOrder = () => {
         const base = Keypair.generate();
 
         token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
-        sol_amount = new BN(sol_amount  * Math.pow(10, 9));
+        sol_amount = new BN(sol_amount * Math.pow(10, 9));
         const { tx, orderPubKey } = await limitOrder.createOrder({
             owner: user_pda_account,
             inAmount: order_type === 0 ? sol_amount : token_amount, // 1000000 => 1 USDC if inputToken.address is USDC mint

@@ -11,7 +11,7 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 
-export function HypeVote({ launch_data }: { launch_data?: LaunchData;}) {
+export function HypeVote({ launch_data }: { launch_data?: LaunchData }) {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
     const { checkProgramData, currentUserData } = useAppRoot();
