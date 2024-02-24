@@ -1,13 +1,15 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data, UserData } from "../../components/Solana/state";
+import { request_raw_account_data, UserData, request_current_balance } from "../../components/Solana/state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+
 import {
     HStack,
     VStack,
@@ -36,6 +38,8 @@ import trimAddress from "../../utils/trimAddress";
 import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
+import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
+
 import { formatCurrency } from "@coingecko/cryptoformat";
 import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
@@ -130,11 +134,18 @@ const TradePage = () => {
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
 
+    const [pda_sol_amount, setPDASOLAmount] = useState<number | null>(null);
+    const [pda_token_amount, setPDATokenAmount] = useState<number | null>(null);
+
+    const pda_sol_ws_id = useRef<number | null>(null);
+    const pda_token_ws_id = useRef<number | null>(null);
+
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
+    const check_pda_data = useRef<boolean>(true);
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -243,6 +254,8 @@ const TradePage = () => {
             [amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("pc_vault_associated_seed")],
             amm_program,
         )[0];
+        
+       
 
         console.log(base_vault.toString(), quote_vault.toString());
 
@@ -293,9 +306,46 @@ const TradePage = () => {
             updated_price_data[updated_price_data.length - 1] = new_market_data;
             //console.log(data)
             setMarketData(updated_price_data);
+
             check_market_data.current = false;
         }
     }, [launch]);
+
+    const CheckPDAData = useCallback(async () => {
+
+        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting)
+            return;
+
+        if (launch === null)
+            return;
+
+        if (!check_pda_data.current )
+            return
+
+        let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
+        let pda_token_account_key = await getAssociatedTokenAddress(
+            launch.keys[LaunchKeys.MintAddress], // mint
+            user_pda_account, // owner
+            true, // allow owner off curve
+        );
+
+        let token_amount = await request_token_amount("", pda_token_account_key);
+        let pda_balance = await request_current_balance("", user_pda_account);
+
+        token_amount /= Math.pow(10, launch.decimals);
+        setPDASOLAmount(pda_balance);
+        setPDATokenAmount(token_amount);
+
+        check_pda_data.current = false;
+
+    
+    }, [wallet, launch]);
+
+    useEffect(() => {
+        CheckPDAData();
+    }, [wallet, CheckPDAData]);
+
+
 
     useEffect(() => {
         CheckMarketData();
@@ -402,7 +452,7 @@ const TradePage = () => {
                             />
                         </Box>
 
-                        {leftPanel === "Info" && <InfoContent launch={launch} user_data={currentUserData} />}
+                        {leftPanel === "Info" && <InfoContent launch={launch} pda_sol_amount={pda_sol_amount} pda_token_amount={pda_token_amount} />}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
                     </VStack>
@@ -681,18 +731,23 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     );
 };
 
-const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: UserData }) => (
+const InfoContent = ({ launch, pda_sol_amount, pda_token_amount }: { launch: LaunchData; pda_sol_amount: number, pda_token_amount : number }) => {
+
+    const { GetMMTokens } = useGetMMTokens();
+
+    return(
     <VStack spacing={8} w="100%" mb={3}>
         <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
-            <HStack justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    TOKEN ACCOUNT:
+                    Lets Cook Account:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    0.835 SOL
+                    {pda_sol_amount} SOL
                 </Text>
-            </HStack>
-            <Button w="100%">Withdraw</Button>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    {pda_token_amount} {launch.symbol}
+                </Text>
+            <Button w="100%" onClick={() => GetMMTokens(launch)}>Withdraw</Button>
         </VStack>
 
         <HStack mt={-2} px={5} justify="space-between" w="100%">
@@ -700,7 +755,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 MM VOLUME (24h):
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                1264 SOL
+                -- SOL
             </Text>
         </HStack>
 
@@ -709,7 +764,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 REWARD EMMISION (24h):
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                X Token
+                -- {launch.symbol}
             </Text>
         </HStack>
 
@@ -718,7 +773,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 REWARD RATE (24h):
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                X Token / SOL
+                -- 
             </Text>
         </HStack>
 
@@ -727,7 +782,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 SUPPLY:
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                4.269B
+                {bignum_to_num(launch.total_supply)}
             </Text>
         </HStack>
 
@@ -736,7 +791,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 FDMC:
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                252.14K USDC
+                -- USDC
             </Text>
         </HStack>
 
@@ -745,7 +800,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 TVL:
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                40.371K USDC
+                -- USDC
             </Text>
         </HStack>
 
@@ -754,7 +809,7 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
                 HOLDERS:
             </Text>
             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                1362
+                --
             </Text>
         </HStack>
 
@@ -783,7 +838,8 @@ const InfoContent = ({ launch, user_data }: { launch: LaunchData; user_data: Use
             <Links featuredLaunch={launch} />
         </HStack>
     </VStack>
-);
+    );
+}
 
 const ChartComponent = (props) => {
     const {

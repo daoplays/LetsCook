@@ -233,10 +233,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         CheckJoinedData();
     }, [CheckJoinedData]);
 
-    const RecheckUserhData = useCallback(async () => {
+    const RecheckUserData = useCallback(async () => {
         check_user_data.current = true;
         CheckUserData();
-        check_user_data.current = true;
     }, [CheckUserData]);
 
     useEffect(() => {
@@ -272,7 +271,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             isUserDataLoading={isUserDataLoading}
             isHomePageDataLoading={isHomePageDataLoading}
             checkLaunchData={RecheckLaunchData}
-            checkUserData={RecheckUserhData}
+            checkUserData={RecheckUserData}
             newLaunchData={newLaunchData}
             checkUserOrders={checkUserOrders}
             userOrders={userOrders}

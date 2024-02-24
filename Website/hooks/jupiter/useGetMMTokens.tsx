@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
+    bignum_to_num
 } from "../../components/Solana/state";
 import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
@@ -53,41 +54,42 @@ const useGetMMTokens = () => {
         signature_ws_id.current = null;
     }, []);
 
-    const GetMMTokens = async () => {
+    const GetMMTokens = async (launch: LaunchData) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        const placeLimitToast = toast.loading("Placing Limit Order..");
+        const placeLimitToast = toast.loading("Collecting Tokens..");
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const usdc_mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+        const token_mint = launch.keys[LaunchKeys.MintAddress];
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
         let user_token_account_key = await getAssociatedTokenAddress(
-            usdc_mint, // mint
+            token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
-            usdc_mint, // mint
+            token_mint, // mint
             user_pda_account, // owner
             true, // allow owner off curve
         );
 
-        let current_date = Math.floor(new Date().getTime() / 24 / 60 / 60 / 1000);
+        let current_date =  Math.floor(new Date().getTime()/1000 - bignum_to_num(launch.last_interaction))/24/60/60;
         console.log(current_date);
+        
         let date_bytes = uInt32ToLEBytes(current_date);
 
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from("test"), Buffer.from("Launch")], PROGRAM)[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let launch_date_account = PublicKey.findProgramAddressSync(
-            [usdc_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
+            [token_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
             PROGRAM,
         )[0];
 
-        let user_date_account = PublicKey.findProgramAddressSync([usdc_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
+        let user_date_account = PublicKey.findProgramAddressSync([token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.get_mm_tokens);
 
@@ -99,7 +101,7 @@ const useGetMMTokens = () => {
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
-            { pubkey: usdc_mint, isSigner: false, isWritable: true },
+            { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
@@ -123,21 +125,21 @@ const useGetMMTokens = () => {
 
             var transaction_response = await send_transaction("", encoded_transaction);
 
-            console.log("limit order", transaction_response);
+            console.log("get tokens", transaction_response);
 
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
 
             toast.update(placeLimitToast, {
-                render: "Limit Order Placed",
+                render: "Collected Tokens",
                 type: "success",
                 isLoading: false,
                 autoClose: 3000,
             });
         } catch (error) {
             toast.update(placeLimitToast, {
-                render: "Limit Order Failed.  Please try again later.",
+                render: "Collection Failed.  Please try again later.",
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,
