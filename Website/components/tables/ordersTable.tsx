@@ -277,6 +277,10 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
                     --
                 </Text>
             </td>
+
+            <td style={{ minWidth: md ? "120px" : "" }}>
+                <Button>Withdraw</Button>
+            </td>
         </tr>
     );
 };

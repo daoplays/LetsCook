@@ -4,8 +4,11 @@ import { PublicKey } from "@solana/web3.js";
 const DEV_RPC_NODE = "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2";
 const DEV_WSS_NODE = "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/";
 
-const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
-const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
+// const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
+// const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
+
+const PROD_RPC_NODE = "https://black-shy-flower.solana-mainnet.quiknode.pro/0e33f02ab684b325f78c2ed2b9a48d9366412ab8/";
+const PROD_WSS_NODE = "wss://black-shy-flower.solana-mainnet.quiknode.pro/0e33f02ab684b325f78c2ed2b9a48d9366412ab8/";
 
 //pyth oracles
 const PYTH_BTC_DEV = new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
