@@ -3,7 +3,7 @@ import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { JoinedLaunch, LaunchData } from "../Solana/state";
+import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, PROD } from "../Solana/constants";
 import { MMLaunchData, MMUserData, RunMMUserDataGPA } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -14,6 +14,25 @@ import useAppRoot from "../../context/useAppRoot";
 interface Header {
     text: string;
     field: string | null;
+}
+
+function reward_schedule(date: number, launch_data : LaunchData) : number {
+
+    let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
+    let total_supply = bignum_to_num(launch_data.total_supply);
+    let mm_amount = total_supply * reward_frac;
+    console.log(reward_frac, total_supply, mm_amount)
+    if (date < 10) {
+        return 0.05 * mm_amount;
+    }
+    if (date >= 10 && date < 20) {
+        return 0.03 * mm_amount;
+    }
+    if (date >= 20 && date < 30) {
+        return 0.02 * mm_amount;
+    }
+
+    return 0.0;
 }
 
 function filterTable(list: LaunchData[]) {
@@ -105,6 +124,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
+    let mm_rewards = reward_schedule(current_date, launch);
+
     return (
         <tr
             style={{
@@ -141,7 +163,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {0}
+                        --
                     </Text>
                     <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -150,7 +172,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {0}
+                        --
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -159,9 +181,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {0} {launch.symbol} /
+                        {mm_rewards}
                     </Text>
-                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 

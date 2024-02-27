@@ -190,13 +190,13 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
 
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {user_percent}
+                    {user_percent.toFixed(2)}
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {user_amount}
+                    {user_amount.toFixed(2)}
                 </Text>
             </td>
 
