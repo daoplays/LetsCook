@@ -8,6 +8,7 @@ import { MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupite
 interface AppRootTypes {
     launchList: LaunchData[];
     homePageList: LaunchData[];
+    tradePageList: Map<string, LaunchData>;
     userList: UserData[];
     currentUserData: UserData;
     isLaunchDataLoading: boolean;
@@ -28,6 +29,7 @@ export const AppRootContextProvider = ({
     children,
     launchList,
     homePageList,
+    tradePageList,
     userList,
     currentUserData,
     isLaunchDataLoading,
@@ -46,6 +48,7 @@ export const AppRootContextProvider = ({
             value={{
                 launchList,
                 homePageList,
+                tradePageList,
                 userList,
                 currentUserData,
                 isLaunchDataLoading,

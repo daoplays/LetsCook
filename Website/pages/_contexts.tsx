@@ -4,7 +4,7 @@ import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, bignum_to_num, LaunchDataUserInput, defaultUserInput, JoinData, RunGPA } from "../components/Solana/state";
 import { MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { RPC_NODE, WSS_NODE, PROGRAM } from "../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags } from "../components/Solana/constants";
 import { PublicKey, Connection, Keypair } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
@@ -68,6 +68,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
+    const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
 
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
@@ -86,11 +87,18 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
 
-    function filterTable({ list }: { list: LaunchData[] }) {
+    function closeFilterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
         return list.filter(function (item) {
             //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
             return bignum_to_num(item.end_date) >= current_time;
+        });
+    }
+
+    function tradeFilterTable({ list }: { list: LaunchData[] }) {
+        return list.filter(function (item) {
+            //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+            return item.flags[LaunchFlags.LPState] === 2
         });
     }
 
@@ -170,7 +178,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(program_data[i]);
-
                 mm_launch_data.push(mm);
                 continue;
             }
@@ -197,7 +204,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 4) {
                 const [mm_user] = MMUserData.struct.deserialize(program_data[i]);
-
                 mm_user_data.push(mm_user);
                 continue;
             }
@@ -218,7 +224,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
-        let close_filtered = filterTable({ list: launch_data });
+        // set up the home page data
+        let close_filtered = closeFilterTable({ list: launch_data });
 
         let home_page_data: LaunchData[] = [];
         let home_page_map = new Map<number, LaunchData>();
@@ -252,6 +259,17 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
         //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
         setHomePageData(home_page_data);
+
+
+        // set up the map for the trade page
+        let trade_filtered = tradeFilterTable({ list: launch_data });
+        let trade_page_map = new Map<string, LaunchData>();
+        for (let i = 0; i < trade_filtered.length; i++) {
+            trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
+        }
+        setTradePageData(trade_page_map);
+
+
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {
@@ -280,6 +298,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         <AppRootContextProvider
             launchList={launch_data}
             homePageList={home_page_data}
+            tradePageList={trade_page_data}
             userList={user_data}
             currentUserData={current_user_data}
             joinData={join_data}

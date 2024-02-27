@@ -69,7 +69,9 @@ export class MMLaunchData {
         readonly date: number,
         readonly token_rewards: bignum,
         readonly buy_amount: bignum,
-        readonly sell_amount: bignum,
+        readonly amount_distributed: bignum,
+        readonly fraction_distributed: bignum,
+
     ) {}
 
     static readonly struct = new FixableBeetStruct<MMLaunchData>(
@@ -79,10 +81,12 @@ export class MMLaunchData {
             ["date", u32],
             ["token_rewards", u64],
             ["buy_amount", u64],
-            ["sell_amount", u64],
+            ["amount_distributed", u64],
+            ["fraction_distributed", u64],
+
         ],
         (args) =>
-            new MMLaunchData(args.account_type!, args.mint_key!, args.date!, args.token_rewards!, args.buy_amount!, args.sell_amount!),
+            new MMLaunchData(args.account_type!, args.mint_key!, args.date!, args.token_rewards!, args.buy_amount!, args.amount_distributed!, args.fraction_distributed!),
         "MMLaunchData",
     );
 }
