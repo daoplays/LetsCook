@@ -79,8 +79,8 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
     let mapped_rewards: MappedReward[] = [];
     for (let i = 0; i < filtered_user_rewards.length; i++) {
         for (let j = 0; j < filtered_launch_rewards.length; j++) {
-            if (filtered_launch_rewards[j].date === filtered_user_rewards[j].date) {
-                let m: MappedReward = { launch_reward: filtered_launch_rewards[0], user_reward: filtered_user_rewards[i] };
+            if (filtered_launch_rewards[j].date === filtered_user_rewards[i].date) {
+                let m: MappedReward = { launch_reward: filtered_launch_rewards[j], user_reward: filtered_user_rewards[i] };
                 mapped_rewards.push(m);
                 break;
             }
@@ -146,7 +146,9 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
     let user_percent = (100 * user_traded) / total_traded;
     let user_amount = (days_rewards * user_percent) / 100;
 
-    console.log(days_rewards, total_traded, user_traded);
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
+
+    //console.log(current_date, days_rewards, total_traded, user_traded);
 
     return (
         <tr
@@ -198,7 +200,15 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
             </td>
 
             <td style={{ minWidth: md ? "120px" : "" }}>
-                <Button onClick={() => GetMMRewards(reward.launch_reward.date, launch)}>Claim</Button>
+                {
+                current_date === reward.launch_reward.date &&
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    Wait
+                    </Text>
+                }
+                {current_date > reward.launch_reward.date &&
+                    <Button onClick={() => GetMMRewards(reward.launch_reward.date, launch)}>Claim</Button>
+                }
                
             </td>
         </tr>

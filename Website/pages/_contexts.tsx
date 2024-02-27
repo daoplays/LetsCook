@@ -178,6 +178,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(program_data[i]);
+                console.log("launch mm", mm)
                 mm_launch_data.push(mm);
                 continue;
             }
@@ -204,6 +205,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 4) {
                 const [mm_user] = MMUserData.struct.deserialize(program_data[i]);
+                console.log("user mm", mm_user)
+
                 mm_user_data.push(mm_user);
                 continue;
             }
