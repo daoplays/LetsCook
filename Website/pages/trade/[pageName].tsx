@@ -855,7 +855,10 @@ const InfoContent = ({
                     POOL:
                 </Text>
                 <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                    <Link href={"#"} target="_blank">
+                    <Link href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
+                            LaunchKeys.MintAddress
+                        ].toString()}&outputCurrency=sol&fixed=in`}
+                        target="_blank">
                         <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
                     </Link>
                 </HStack>
