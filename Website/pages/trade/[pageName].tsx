@@ -24,6 +24,8 @@ import {
     Select,
     Card,
     CardBody,
+    Divider,
+    Center,
 } from "@chakra-ui/react";
 import OrdersTable from "../../components/tables/ordersTable";
 import useResponsive from "../../hooks/useResponsive";
@@ -44,6 +46,7 @@ import { formatCurrency } from "@coingecko/cryptoformat";
 import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
+import UseWalletConnection from "../../hooks/useWallet";
 
 interface OpenOrder {
     publicKey: PublicKey;
@@ -103,7 +106,7 @@ function findLaunch(list: LaunchData[], page_name: string | string[]) {
 const TradePage = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { xs, sm } = useResponsive();
+    const { xs, sm, lg } = useResponsive();
 
     const { launchList, currentUserData } = useAppRoot();
     const { pageName } = router.query;
@@ -491,7 +494,11 @@ const TradePage = () => {
                             align="center"
                             w="100%"
                             px={4}
-                            style={{ height: "55px", borderTop: "1px solid rgba(134, 142, 150, 0.5)" }}
+                            style={{
+                                height: "55px",
+                                borderTop: "1px solid rgba(134, 142, 150, 0.5)",
+                                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
+                            }}
                         >
                             <Text color="white" fontSize={sm ? "medium" : "large"} m={0}>
                                 {selectedTab === "Open"
@@ -544,10 +551,18 @@ const TradePage = () => {
                             </HStack>
                         </HStack>
 
-                        {selectedTab === "Rewards" ? (
-                            <MyRewardsTable launch_data={launch} />
-                        ) : (
+                        {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable launch_data={launch} />}
+
+                        {(selectedTab === "Open" || selectedTab === "Filled") && wallet.connected && (
                             <OrdersTable state={selectedTab} launch_data={launch} />
+                        )}
+
+                        {!wallet.connected && (
+                            <HStack w="100%" align="center" justify="center" mt={25}>
+                                <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ opacity: 0.5 }}>
+                                    Connect your wallet to see your orders
+                                </Text>
+                            </HStack>
                         )}
                     </VStack>
                 </HStack>
@@ -558,6 +573,8 @@ const TradePage = () => {
 
 const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     const { xs } = useResponsive();
+    const wallet = useWallet();
+    const { handleConnectWallet } = UseWalletConnection();
     const [selected, setSelected] = useState("Buy");
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [sol_amount, setSOLAmount] = useState<number>(0);
@@ -704,10 +721,14 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
                 px={4}
                 py={2}
                 bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
-                onClick={() => PlaceLimitOrder(launch, token_amount, token_amount * sol_amount, order_type)}
+                onClick={() => {
+                    !wallet.connected
+                        ? handleConnectWallet()
+                        : PlaceLimitOrder(launch, token_amount, token_amount * sol_amount, order_type);
+                }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                    Place Order
+                    {!wallet.connected ? "Connect Wallet" : "Place Order"}
                 </Text>
             </Button>
 
@@ -732,24 +753,32 @@ const InfoContent = ({
     pda_sol_amount: number;
     pda_token_amount: number;
 }) => {
+    const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
 
     return (
         <VStack spacing={8} w="100%" mb={3}>
-            <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Lets Cook Account:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {pda_sol_amount} SOL
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {pda_token_amount} {launch.symbol}
-                </Text>
-                <Button w="100%" onClick={() => GetMMTokens(launch)}>
-                    Withdraw
-                </Button>
-            </VStack>
+            {wallet.connected && (
+                <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        Let&apos;s Cook Account:
+                    </Text>
+                    <HStack>
+                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {pda_sol_amount} SOL
+                        </Text>
+                        <Center height="20px">
+                            <Divider orientation="vertical" color="rgba(134, 142, 150, 0.5)" />
+                        </Center>
+                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {pda_token_amount} {launch.symbol}
+                        </Text>
+                    </HStack>
+                    <Button w="100%" onClick={() => GetMMTokens(launch)}>
+                        Withdraw
+                    </Button>
+                </VStack>
+            )}
 
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
