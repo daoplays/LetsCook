@@ -147,8 +147,9 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
     let user_amount = (days_rewards * user_percent) / 100;
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
-
-    //console.log(current_date, days_rewards, total_traded, user_traded);
+    let time_left = (new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60 - current_date;
+    time_left *= 24
+    //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
 
     return (
         <tr
@@ -203,7 +204,7 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
                 {
                 current_date === reward.launch_reward.date &&
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    Wait
+                    Wait {time_left.toFixed(1)}h
                     </Text>
                 }
                 {current_date > reward.launch_reward.date &&
