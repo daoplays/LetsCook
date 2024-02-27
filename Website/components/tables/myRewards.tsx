@@ -198,9 +198,8 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
             </td>
 
             <td style={{ minWidth: md ? "120px" : "" }}>
-                {/*
                 <Button onClick={() => GetMMRewards(reward.launch_reward.date, launch)}>Claim</Button>
-               */}
+               
             </td>
         </tr>
     );
