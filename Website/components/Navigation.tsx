@@ -42,7 +42,7 @@ function Navigation() {
                             className="font-face-kg"
                             style={{ cursor: "pointer", margin: "auto 0" }}
                         >
-                            LET&apos;S COOK
+                            MARKET HUB
                         </Text>
                         {/* <Text fontSize={14} color={"#683309"} className="font-face-kg">
                             BETA
