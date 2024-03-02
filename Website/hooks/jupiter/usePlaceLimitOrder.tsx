@@ -30,7 +30,7 @@ import {
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
@@ -94,6 +94,7 @@ const usePlaceLimitOrder = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];

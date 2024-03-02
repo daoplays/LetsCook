@@ -44,7 +44,7 @@ import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
 import styles from "../../styles/LaunchBook.module.css";
 import bs58 from "bs58";
@@ -367,10 +367,11 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
-        let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
+        let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_2022_PROGRAM_ID);
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         if (DEBUG) {
@@ -401,7 +402,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: team_wallet, isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });

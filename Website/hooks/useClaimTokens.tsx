@@ -8,7 +8,7 @@ import {
     uInt32ToLEBytes,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -88,12 +88,14 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             launchData.keys[LaunchKeys.MintAddress], // mint
             program_sol_account, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
             launchData.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
@@ -114,7 +116,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];

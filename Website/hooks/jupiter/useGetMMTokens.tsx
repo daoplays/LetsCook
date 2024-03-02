@@ -31,7 +31,7 @@ import {
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
@@ -69,12 +69,14 @@ const useGetMMTokens = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             user_pda_account, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
@@ -105,7 +107,7 @@ const useGetMMTokens = () => {
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 

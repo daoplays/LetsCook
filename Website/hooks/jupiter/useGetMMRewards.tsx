@@ -18,7 +18,7 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 const useGetMMRewards = () => {
     const wallet = useWallet();
@@ -53,6 +53,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -61,6 +62,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let date_bytes = uInt32ToLEBytes(date);
@@ -91,7 +93,7 @@ const useGetMMRewards = () => {
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 

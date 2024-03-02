@@ -8,7 +8,7 @@ import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import {
     HStack,
@@ -324,6 +324,7 @@ const TradePage = () => {
             launch.keys[LaunchKeys.MintAddress], // mint
             user_pda_account, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
         );
 
         let token_amount = await request_token_amount("", pda_token_account_key);
