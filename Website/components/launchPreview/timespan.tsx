@@ -11,7 +11,7 @@ const Timespan = ({ launchData }: TimespanProps) => {
 
     const local_date = new Date();
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
-    console.log(zone);
+    //console.log(zone);
 
     let utc_launch_date = new Date(bignum_to_num(launchData.launch_date));
     let utc_end_date = new Date(bignum_to_num(launchData.end_date));
@@ -19,7 +19,7 @@ const Timespan = ({ launchData }: TimespanProps) => {
     let local_launch_date = new Date(utc_launch_date.setMinutes(utc_launch_date.getMinutes() - local_date.getTimezoneOffset()));
     let local_end_date = new Date(utc_end_date.setMinutes(utc_end_date.getMinutes() - local_date.getTimezoneOffset()));
 
-    console.log(local_launch_date.toString());
+    //console.log(local_launch_date.toString());
     let splitLaunchDate = local_launch_date.toUTCString().split(" ");
     let launchDate = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
     let splitLaunchTime = splitLaunchDate[4].split(":");

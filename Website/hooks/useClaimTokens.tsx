@@ -8,7 +8,7 @@ import {
     uInt32ToLEBytes,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -116,6 +116,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },

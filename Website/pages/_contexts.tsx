@@ -52,6 +52,8 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
     //console.trace()
     setProgramData(list);
 
+    console.log(list)
+
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
 
@@ -147,8 +149,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [wallet, check_user_update]);
 
     useEffect(() => {
-        if (program_data === null || program_data.length === 0) return;
+        if (program_data === null)return;
 
+        console.log("update data")
         let wallet_bytes = PublicKey.default.toBytes();
         let have_wallet = false;
         // console.log("wallet", wallet !== null ? wallet.toString() : "null");
@@ -164,6 +167,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
 
         for (let i = 0; i < program_data.length; i++) {
+            console.log("data ", i)
             if (program_data[i][0] === 0) {
                 const [launch] = LaunchData.struct.deserialize(program_data[i]);
                 launch_data.push(launch);
@@ -212,6 +216,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
+        console.log("launch data", launch_data)
         setLaunchData(launch_data);
         setUserData(user_data);
         setJoinData(join_data);

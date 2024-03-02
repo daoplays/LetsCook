@@ -49,7 +49,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                 <VStack gap={6} align="start" ml={12}>
                     {distribution.map((i, index) => {
                         if (i.value <= 0) return;
-                        console.log(i.title, i.value);
+                        //console.log(i.title, i.value);
                         return (
                             <VStack gap={6} align="start" key={i.title}>
                                 {i.title === "Raffle (SOL)" && (
