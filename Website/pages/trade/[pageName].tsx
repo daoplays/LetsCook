@@ -55,7 +55,10 @@ interface OpenOrder {
 
 interface MarketData {
     time: UTCTimestamp;
-    value: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
 }
 
 interface Level {
@@ -72,12 +75,12 @@ async function getMarketData(market_address: string) {
     let start_time = new Date(2024, 0, 1).getTime() / 1000;
 
     let url =
-        "https://public-api.birdeye.so/public/history_price?address=" +
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
         market_address +
-        "&address_type=pair&time_from=" +
-        start_time +
-        "&time_to=" +
-        today_seconds;
+        "&type=15m" +
+        "&time_from=" + start_time +
+        "&time_to=" + today_seconds
+    
 
     let result = await fetch(url, options).then((response) => response.json());
 
@@ -86,7 +89,36 @@ async function getMarketData(market_address: string) {
     let data = [];
     for (let i = 0; i < result["data"]["items"].length; i++) {
         let item = result["data"]["items"][i];
-        data.push({ time: item.unixTime as UTCTimestamp, value: item.value });
+        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c });
+    }
+
+    return data;
+}
+
+async function getTokenData(market_address: string) {
+    // Default options are marked with *
+    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let today_seconds = today * 24 * 60 * 60;
+
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+
+    let url =
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
+        market_address +
+        "&type=15m" +
+        "&time_from=" + start_time +
+        "&time_to=" + today_seconds
+    
+
+    let result = await fetch(url, options).then((response) => response.json());
+
+    console.log(result);
+
+    let data = [];
+    for (let i = 0; i < result["data"]["items"].length; i++) {
+        let item = result["data"]["items"][i];
+        data.push({ time: item.unixTime as UTCTimestamp, value: item.c });
     }
 
     return data;
@@ -182,7 +214,7 @@ const TradePage = () => {
         //console.log("new mid", best_bid.price, best_ask.price, new_mid);
         let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
         let today_seconds = today * 24 * 60 * 60;
-        let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: new_mid };
+        let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, open: new_mid, high: new_mid, low: new_mid, close: new_mid };
         const updated_price_data = [...market_data];
         //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
         updated_price_data[updated_price_data.length - 1] = new_market_data;
@@ -301,7 +333,7 @@ const TradePage = () => {
 
             let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
             let today_seconds = today * 24 * 60 * 60;
-            let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: current_price };
+            let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, open: current_price , high: current_price , low: current_price , close: current_price };
             const updated_price_data = [...data];
             //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
             updated_price_data[updated_price_data.length - 1] = new_market_data;
@@ -906,16 +938,19 @@ const ChartComponent = (props) => {
 
         chart.timeScale().fitContent();
 
-        const newSeries = chart.addAreaSeries({
-            lineColor,
-            topColor: areaTopColor,
-            bottomColor: areaBottomColor,
+        const newSeries = chart.addCandlestickSeries({
+            upColor: 'rgba(255, 144, 0, 1)',
+            downColor: '#000',
+            borderDownColor: 'rgba(255, 144, 0, 1)',
+            borderUpColor: 'rgba(255, 144, 0, 1)',
+            wickDownColor: 'rgba(255, 144, 0, 1)',
+            wickUpColor: 'rgba(255, 144, 0, 1)',
             priceFormat: {
                 type: "custom",
                 formatter: (price) => formatCurrency(price, "USD", "en", true),
             },
-        });
-
+          });
+          
         newSeries.setData(data);
 
         window.addEventListener("resize", handleResize);
