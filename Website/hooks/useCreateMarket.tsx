@@ -8,7 +8,7 @@ import {
     request_current_balance,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -337,7 +337,7 @@ const useCreateMarket = (launchData: LaunchData) => {
             seed: seed_base + "5",
             programId: PROGRAMIDS.OPENBOOK_MARKET,
         });
-        const baseVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "6", programId: TOKEN_PROGRAM_ID });
+        const baseVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "6", programId: TOKEN_2022_PROGRAM_ID });
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
 
         console.log("mint", launchData.keys[LaunchKeys.MintAddress].toString());
@@ -378,7 +378,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: baseVault.publicKey,
                 lamports: accountLamports,
                 space: 165,
-                programId: TOKEN_PROGRAM_ID,
+                programId: TOKEN_2022_PROGRAM_ID,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
