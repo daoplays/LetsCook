@@ -35,7 +35,7 @@ import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
 import { Orderbook, Market } from "@openbook-dex/openbook";
-import { ColorType, createChart, UTCTimestamp } from "lightweight-charts";
+import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
@@ -78,9 +78,10 @@ async function getMarketData(market_address: string) {
         "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
         market_address +
         "&type=15m" +
-        "&time_from=" + start_time +
-        "&time_to=" + today_seconds
-    
+        "&time_from=" +
+        start_time +
+        "&time_to=" +
+        today_seconds;
 
     let result = await fetch(url, options).then((response) => response.json());
 
@@ -107,9 +108,10 @@ async function getTokenData(market_address: string) {
         "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
         market_address +
         "&type=15m" +
-        "&time_from=" + start_time +
-        "&time_to=" + today_seconds
-    
+        "&time_from=" +
+        start_time +
+        "&time_to=" +
+        today_seconds;
 
     let result = await fetch(url, options).then((response) => response.json());
 
@@ -214,7 +216,13 @@ const TradePage = () => {
         //console.log("new mid", best_bid.price, best_ask.price, new_mid);
         let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
         let today_seconds = today * 24 * 60 * 60;
-        let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, open: new_mid, high: new_mid, low: new_mid, close: new_mid };
+        let new_market_data: MarketData = {
+            time: today_seconds as UTCTimestamp,
+            open: new_mid,
+            high: new_mid,
+            low: new_mid,
+            close: new_mid,
+        };
         const updated_price_data = [...market_data];
         //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
         updated_price_data[updated_price_data.length - 1] = new_market_data;
@@ -333,7 +341,13 @@ const TradePage = () => {
 
             let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
             let today_seconds = today * 24 * 60 * 60;
-            let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, open: current_price , high: current_price , low: current_price , close: current_price };
+            let new_market_data: MarketData = {
+                time: today_seconds as UTCTimestamp,
+                open: current_price,
+                high: current_price,
+                low: current_price,
+                close: current_price,
+            };
             const updated_price_data = [...data];
             //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
             updated_price_data[updated_price_data.length - 1] = new_market_data;
@@ -491,7 +505,6 @@ const TradePage = () => {
                         spacing={0}
                         style={{
                             minHeight: "100vh",
-                            borderLeft: "0.5px solid rgba(134, 142, 150, 0.5)",
                             overflow: "auto",
                         }}
                     >
@@ -517,6 +530,7 @@ const TradePage = () => {
                                     bottom: 0,
                                     right: 0,
                                     opacity: 0.75,
+                                    zIndex: 99,
                                 }}
                             />
                         </div>
@@ -887,10 +901,12 @@ const InfoContent = ({
                     POOL:
                 </Text>
                 <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                    <Link href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
+                    <Link
+                        href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
                             LaunchKeys.MintAddress
                         ].toString()}&outputCurrency=sol&fixed=in`}
-                        target="_blank">
+                        target="_blank"
+                    >
                         <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
                     </Link>
                 </HStack>
@@ -907,17 +923,7 @@ const InfoContent = ({
 };
 
 const ChartComponent = (props) => {
-    const {
-        data,
-        additionalPixels,
-        colors: {
-            backgroundColor = "white",
-            lineColor = "#2962FF",
-            textColor = "black",
-            areaTopColor = "#2962FF",
-            areaBottomColor = "rgba(41, 98, 255, 0.28)",
-        } = {},
-    } = props;
+    const { data, additionalPixels } = props;
 
     const chartContainerRef = useRef(null);
 
@@ -927,40 +933,46 @@ const ChartComponent = (props) => {
         };
 
         const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
-        const chart = createChart(chartContainerRef.current, {
+        const chart = createChart(chartContainerRef.current);
+
+        chart.applyOptions({
             layout: {
-                background: { type: ColorType.Solid, color: backgroundColor },
-                textColor,
+                background: { color: "#222" },
+                textColor: "#DDD",
+            },
+            grid: {
+                vertLines: { color: "#444" },
+                horzLines: { color: "#444" },
             },
             width: chartContainerRef.current.clientWidth,
-            height: totalHeight, // Use the calculated total height
+            height: totalHeight,
         });
 
         chart.timeScale().fitContent();
 
         const newSeries = chart.addCandlestickSeries({
-            upColor: 'rgba(255, 144, 0, 1)',
-            downColor: '#000',
-            borderDownColor: 'rgba(255, 144, 0, 1)',
-            borderUpColor: 'rgba(255, 144, 0, 1)',
-            wickDownColor: 'rgba(255, 144, 0, 1)',
-            wickUpColor: 'rgba(255, 144, 0, 1)',
+            upColor: "#26a69a",
+            downColor: "#ef5350",
+            borderVisible: false,
+            wickUpColor: "#26a69a",
+            wickDownColor: "#ef5350",
             priceFormat: {
                 type: "custom",
                 formatter: (price) => formatCurrency(price, "USD", "en", true),
             },
-          });
-          
+        });
+
         newSeries.setData(data);
+
+        chart.timeScale().fitContent();
 
         window.addEventListener("resize", handleResize);
 
         return () => {
             window.removeEventListener("resize", handleResize);
-
             chart.remove();
         };
-    }, [data, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor, additionalPixels]);
+    }, [data, additionalPixels]);
 
     return (
         <HStack
@@ -972,7 +984,7 @@ const ChartComponent = (props) => {
             style={{
                 height: `calc(60vh + ${additionalPixels}px)`,
                 overflow: "auto",
-                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
+                borderBottom: "1px solid rgba(134, 142, 150, 0.15)",
                 position: "relative",
             }}
         />

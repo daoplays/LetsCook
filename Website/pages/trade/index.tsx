@@ -83,7 +83,7 @@ const MarketMaker = () => {
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >
-                        {selected === "Markets" ? "Trade" : selected === "Rewards" ? "My Rewards" : "My Orders"}
+                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "My Rewards" : "My Orders"}
                     </Text>
 
                     {selected === "Orders" && (

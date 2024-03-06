@@ -21,6 +21,7 @@
         "@metaplex-foundation/beet-solana": "^0.4.0",
         "@metaplex-foundation/js": "^0.19.5",
         "@netlify/blobs": "^6.4.2",
+        "@netlify/esbuild-windows-64": "^0.14.39",
         "@netlify/functions": "^2.5.1",
         "@next/bundle-analyzer": "^14.0.4",
         "@openbook-dex/openbook": "^0.0.9",
