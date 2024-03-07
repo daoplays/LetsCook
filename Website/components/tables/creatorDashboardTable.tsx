@@ -28,8 +28,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     const [reverseSort, setReverseSort] = useState<boolean>(true);
 
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
-        { text: "SYMBOL", field: "symbol" },
+        { text: "TOKEN", field: null },
         { text: "STATUS", field: null },
         { text: "LIQUIDITY", field: "liquidity" },
         { text: "DATE", field: "date" },
@@ -173,22 +172,20 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             onClick={() => router.push(`/launch/${launch.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
-                <Center>
-                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                <HStack px={3} spacing={3} justify="center">
+                    <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
                             src={launch.icon}
-                            width={md ? 45 : 75}
-                            height={md ? 45 : 75}
+                            width={45}
+                            height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                </Center>
-            </td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.symbol}
-                </Text>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.symbol}
+                    </Text>
+                </HStack>
             </td>
             <td style={{ minWidth: "120px" }}>
                 <Badge

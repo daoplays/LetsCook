@@ -16,12 +16,11 @@ interface Header {
     field: string | null;
 }
 
-function reward_schedule(date: number, launch_data : LaunchData) : number {
-
+function reward_schedule(date: number, launch_data: LaunchData): number {
     let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
     let total_supply = bignum_to_num(launch_data.total_supply);
     let mm_amount = total_supply * reward_frac;
-    console.log(reward_frac, total_supply, mm_amount)
+    console.log(reward_frac, total_supply, mm_amount);
     if (date < 10) {
         return 0.05 * mm_amount;
     }
@@ -67,8 +66,7 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     };
 
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
-        { text: "SYMBOL", field: "symbol" },
+        { text: "TOKEN", field: null },
         { text: "FDMC", field: "fdmc" },
         { text: "VOL (24H)", field: "vol" },
         { text: "REWARDS (24H)", field: "rewards" },
@@ -143,23 +141,22 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             onClick={() => router.push(`/trade/` + launch.page_name)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
-                <Center>
-                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                <HStack px={3} spacing={3} justify="center">
+                    <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
                             src={launch.icon}
-                            width={md ? 45 : 75}
-                            height={md ? 45 : 75}
+                            width={45}
+                            height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                </Center>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.symbol}
+                    </Text>
+                </HStack>
             </td>
-            <td style={{ minWidth: "180px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.symbol}
-                </Text>
-            </td>
+
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>

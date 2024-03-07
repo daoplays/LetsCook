@@ -28,8 +28,7 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
     const tableHeaders: Header[] = [
-        { text: "LOGO", field: null },
-        { text: "SYMBOL", field: "symbol" },
+        { text: "TOKEN", field: null },
         { text: "STATUS", field: null },
         { text: "TICKETS", field: "tickets" },
         { text: "WIN RATE", field: "winRate" },
@@ -81,13 +80,13 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                                 <HStack
                                     gap={sm ? 1 : 2}
                                     justify="center"
-                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
+                                    style={{ cursor: i.text === "TOKEN" ? "" : "pointer" }}
                                     onClick={() => handleHeaderClick(i.field)}
                                 >
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
                                     </Text>
-                                    {i.text === "LOGO" || i.text === "WIN RATE" ? <></> : <FaSort />}
+                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort />}
                                 </HStack>
                             </th>
                         ))}
@@ -176,22 +175,20 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
-                <Center>
-                    <Box m={5} w={md ? 45 : 75} h={md ? 45 : 75} borderRadius={10}>
+                <HStack px={3} spacing={3} justify="center">
+                    <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
                             src={launch.launch_data.icon}
-                            width={md ? 45 : 75}
-                            height={md ? 45 : 75}
+                            width={45}
+                            height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                </Center>
-            </td>
-            <td style={{ minWidth: "180px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {launch.launch_data.symbol}
-                </Text>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.launch_data.symbol}
+                    </Text>
+                </HStack>
             </td>
             <td style={{ minWidth: "120px" }}>
                 <Badge
