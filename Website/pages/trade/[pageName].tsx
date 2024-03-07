@@ -543,7 +543,6 @@ const TradePage = () => {
                             style={{
                                 height: "55px",
                                 borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
                             }}
                         >
                             <Text color="white" fontSize={sm ? "medium" : "large"} m={0}>
@@ -944,6 +943,7 @@ const ChartComponent = (props) => {
                 vertLines: { color: "#444" },
                 horzLines: { color: "#444" },
             },
+
             width: chartContainerRef.current.clientWidth,
             height: totalHeight,
         });
@@ -958,7 +958,7 @@ const ChartComponent = (props) => {
             wickDownColor: "#ef5350",
             priceFormat: {
                 type: "custom",
-                formatter: (price) => formatCurrency(price, "USD", "en", true),
+                formatter: (price) => formatCurrency(price, "USD", "en"),
             },
         });
 
@@ -979,13 +979,12 @@ const ChartComponent = (props) => {
             ref={chartContainerRef}
             justify="center"
             id="chartContainer"
-            bg="darkgray"
             w="100%"
             style={{
                 height: `calc(60vh + ${additionalPixels}px)`,
                 overflow: "auto",
-                borderBottom: "1px solid rgba(134, 142, 150, 0.15)",
                 position: "relative",
+                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
             }}
         />
     );

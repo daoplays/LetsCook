@@ -49,18 +49,33 @@ const MarketMaker = () => {
                             };
 
                             const activeStyle = {
+                                color: "white",
+                                borderBottom: isActive ? "2px solid white" : "",
+                                opacity: isActive ? 1 : 0.5,
+                            };
+
+                            const mobileBaseStyle = {
+                                display: "flex",
+                                alignItems: "center",
+                                cursor: "pointer",
+                            };
+
+                            const mobileActiveStyle = {
                                 background: isActive ? "#edf2f7" : "transparent",
                                 color: isActive ? "black" : "white",
                                 borderRadius: isActive ? "6px" : "",
                                 border: isActive ? "none" : "",
                             };
 
+                            const base = sm ? mobileBaseStyle : baseStyle;
+                            const active = sm ? mobileActiveStyle : activeStyle;
+
                             return (
                                 <Box
                                     key={i}
                                     style={{
-                                        ...baseStyle,
-                                        ...activeStyle,
+                                        ...base,
+                                        ...active,
                                     }}
                                     onClick={() => {
                                         handleClick(name);
