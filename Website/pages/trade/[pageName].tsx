@@ -962,7 +962,7 @@ const ChartComponent = (props) => {
             wickDownColor: "#ef5350",
             priceFormat: {
                 type: "custom",
-                formatter: (price) => formatCurrency(price, ""),
+                formatter: (price) => price.toExponential(2),
             },
         });
 
