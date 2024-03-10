@@ -69,8 +69,7 @@ interface Level {
 async function getMarketData(market_address: string) {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-    let today_seconds = today * 24 * 60 * 60;
+    let today_seconds = Math.floor(new Date().getTime() / 1000);
 
     let start_time = new Date(2024, 0, 1).getTime() / 1000;
 
@@ -338,17 +337,16 @@ const TradePage = () => {
             //console.log("current bid/ask", ask_l2, bid_l2)
 
             let data = await getMarketData(ammAddress.toString());
-
-            let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-            let today_seconds = today * 24 * 60 * 60;
+            const updated_price_data = [...data];
+            let last_price_data : MarketData = updated_price_data[updated_price_data.length - 1];
             let new_market_data: MarketData = {
-                time: today_seconds as UTCTimestamp,
-                open: current_price,
-                high: current_price,
-                low: current_price,
+                time: last_price_data.time,
+                open: last_price_data.open,
+                high: Math.max(last_price_data.high, current_price),
+                low: Math.min(last_price_data.low, current_price),
                 close: current_price,
             };
-            const updated_price_data = [...data];
+            
             //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
             updated_price_data[updated_price_data.length - 1] = new_market_data;
             //console.log(data)
@@ -934,6 +932,8 @@ const ChartComponent = (props) => {
         const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
         const chart = createChart(chartContainerRef.current);
 
+        const myPriceFormatter = p => p.toExponential(2);
+
         chart.applyOptions({
             layout: {
                 background: { color: "#222" },
@@ -946,6 +946,9 @@ const ChartComponent = (props) => {
 
             width: chartContainerRef.current.clientWidth,
             height: totalHeight,
+            localization: {
+                priceFormatter: myPriceFormatter,
+            },
         });
 
         chart.timeScale().fitContent();
