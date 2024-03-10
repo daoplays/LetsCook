@@ -943,31 +943,30 @@ const ChartComponent = (props) => {
                 vertLines: { color: "#444" },
                 horzLines: { color: "#444" },
             },
-
-            width: chartContainerRef.current.clientWidth,
-            height: totalHeight,
-            localization: {
-                priceFormatter: myPriceFormatter,
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+            },
+            crosshair: {
+                mode: CrosshairMode.Normal,
             },
         });
 
         chart.timeScale().fitContent();
 
         const newSeries = chart.addCandlestickSeries({
-            upColor: "#26a69a",
+            upColor: "#4EFF3F",
             downColor: "#ef5350",
             borderVisible: false,
-            wickUpColor: "#26a69a",
+            wickUpColor: "#4EFF3F",
             wickDownColor: "#ef5350",
             priceFormat: {
                 type: "custom",
-                formatter: (price) => formatCurrency(price, "USD", "en"),
+                formatter: (price) => price.toExponential(2),
             },
         });
 
         newSeries.setData(data);
-
-        chart.timeScale().fitContent();
 
         window.addEventListener("resize", handleResize);
 
