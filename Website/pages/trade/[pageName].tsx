@@ -35,7 +35,7 @@ import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
 import { Orderbook, Market } from "@openbook-dex/openbook";
-import { ColorType, createChart, UTCTimestamp } from "lightweight-charts";
+import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaPowerOff } from "react-icons/fa";
 import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
@@ -55,7 +55,10 @@ interface OpenOrder {
 
 interface MarketData {
     time: UTCTimestamp;
-    value: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
 }
 
 interface Level {
@@ -66,15 +69,15 @@ interface Level {
 async function getMarketData(market_address: string) {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-    let today_seconds = today * 24 * 60 * 60;
+    let today_seconds = Math.floor(new Date().getTime() / 1000);
 
     let start_time = new Date(2024, 0, 1).getTime() / 1000;
 
     let url =
-        "https://public-api.birdeye.so/public/history_price?address=" +
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
         market_address +
-        "&address_type=pair&time_from=" +
+        "&type=15m" +
+        "&time_from=" +
         start_time +
         "&time_to=" +
         today_seconds;
@@ -86,7 +89,37 @@ async function getMarketData(market_address: string) {
     let data = [];
     for (let i = 0; i < result["data"]["items"].length; i++) {
         let item = result["data"]["items"][i];
-        data.push({ time: item.unixTime as UTCTimestamp, value: item.value });
+        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c });
+    }
+
+    return data;
+}
+
+async function getTokenData(market_address: string) {
+    // Default options are marked with *
+    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let today_seconds = today * 24 * 60 * 60;
+
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+
+    let url =
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
+        market_address +
+        "&type=15m" +
+        "&time_from=" +
+        start_time +
+        "&time_to=" +
+        today_seconds;
+
+    let result = await fetch(url, options).then((response) => response.json());
+
+    console.log(result);
+
+    let data = [];
+    for (let i = 0; i < result["data"]["items"].length; i++) {
+        let item = result["data"]["items"][i];
+        data.push({ time: item.unixTime as UTCTimestamp, value: item.c });
     }
 
     return data;
@@ -182,7 +215,13 @@ const TradePage = () => {
         //console.log("new mid", best_bid.price, best_ask.price, new_mid);
         let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
         let today_seconds = today * 24 * 60 * 60;
-        let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: new_mid };
+        let new_market_data: MarketData = {
+            time: today_seconds as UTCTimestamp,
+            open: new_mid,
+            high: new_mid,
+            low: new_mid,
+            close: new_mid,
+        };
         const updated_price_data = [...market_data];
         //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
         updated_price_data[updated_price_data.length - 1] = new_market_data;
@@ -298,11 +337,16 @@ const TradePage = () => {
             //console.log("current bid/ask", ask_l2, bid_l2)
 
             let data = await getMarketData(ammAddress.toString());
-
-            let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-            let today_seconds = today * 24 * 60 * 60;
-            let new_market_data: MarketData = { time: today_seconds as UTCTimestamp, value: current_price };
             const updated_price_data = [...data];
+            let last_price_data : MarketData = updated_price_data[updated_price_data.length - 1];
+            let new_market_data: MarketData = {
+                time: last_price_data.time,
+                open: last_price_data.open,
+                high: Math.max(last_price_data.high, current_price),
+                low: Math.min(last_price_data.low, current_price),
+                close: current_price,
+            };
+            
             //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
             updated_price_data[updated_price_data.length - 1] = new_market_data;
             //console.log(data)
@@ -460,7 +504,6 @@ const TradePage = () => {
                         spacing={0}
                         style={{
                             minHeight: "100vh",
-                            borderLeft: "0.5px solid rgba(134, 142, 150, 0.5)",
                             overflow: "auto",
                         }}
                     >
@@ -486,6 +529,7 @@ const TradePage = () => {
                                     bottom: 0,
                                     right: 0,
                                     opacity: 0.75,
+                                    zIndex: 99,
                                 }}
                             />
                         </div>
@@ -498,7 +542,6 @@ const TradePage = () => {
                             style={{
                                 height: "55px",
                                 borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
                             }}
                         >
                             <Text color="white" fontSize={sm ? "medium" : "large"} m={0}>
@@ -856,10 +899,12 @@ const InfoContent = ({
                     POOL:
                 </Text>
                 <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                    <Link href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
+                    <Link
+                        href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
                             LaunchKeys.MintAddress
                         ].toString()}&outputCurrency=sol&fixed=in`}
-                        target="_blank">
+                        target="_blank"
+                    >
                         <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
                     </Link>
                 </HStack>
@@ -876,17 +921,7 @@ const InfoContent = ({
 };
 
 const ChartComponent = (props) => {
-    const {
-        data,
-        additionalPixels,
-        colors: {
-            backgroundColor = "white",
-            lineColor = "#2962FF",
-            textColor = "black",
-            areaTopColor = "#2962FF",
-            areaBottomColor = "rgba(41, 98, 255, 0.28)",
-        } = {},
-    } = props;
+    const { data, additionalPixels } = props;
 
     const chartContainerRef = useRef(null);
 
@@ -896,24 +931,39 @@ const ChartComponent = (props) => {
         };
 
         const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
-        const chart = createChart(chartContainerRef.current, {
+        const chart = createChart(chartContainerRef.current);
+
+        const myPriceFormatter = p => p.toExponential(2);
+
+        chart.applyOptions({
             layout: {
-                background: { type: ColorType.Solid, color: backgroundColor },
-                textColor,
+                background: { color: "#222" },
+                textColor: "#DDD",
             },
-            width: chartContainerRef.current.clientWidth,
-            height: totalHeight, // Use the calculated total height
+            grid: {
+                vertLines: { color: "#444" },
+                horzLines: { color: "#444" },
+            },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+            },
+            crosshair: {
+                mode: CrosshairMode.Normal,
+            },
         });
 
         chart.timeScale().fitContent();
 
-        const newSeries = chart.addAreaSeries({
-            lineColor,
-            topColor: areaTopColor,
-            bottomColor: areaBottomColor,
+        const newSeries = chart.addCandlestickSeries({
+            upColor: "#4EFF3F",
+            downColor: "#ef5350",
+            borderVisible: false,
+            wickUpColor: "#4EFF3F",
+            wickDownColor: "#ef5350",
             priceFormat: {
                 type: "custom",
-                formatter: (price) => formatCurrency(price, "USD", "en", true),
+                formatter: (price) => price.toExponential(2),
             },
         });
 
@@ -923,23 +973,21 @@ const ChartComponent = (props) => {
 
         return () => {
             window.removeEventListener("resize", handleResize);
-
             chart.remove();
         };
-    }, [data, backgroundColor, lineColor, textColor, areaTopColor, areaBottomColor, additionalPixels]);
+    }, [data, additionalPixels]);
 
     return (
         <HStack
             ref={chartContainerRef}
             justify="center"
             id="chartContainer"
-            bg="darkgray"
             w="100%"
             style={{
                 height: `calc(60vh + ${additionalPixels}px)`,
                 overflow: "auto",
-                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
                 position: "relative",
+                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
             }}
         />
     );

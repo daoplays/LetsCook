@@ -169,8 +169,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < program_data.length; i++) {
             console.log("data ", i)
             if (program_data[i][0] === 0) {
+                try{
                 const [launch] = LaunchData.struct.deserialize(program_data[i]);
                 launch_data.push(launch);
+                }catch(error){}
                 continue;
             }
 

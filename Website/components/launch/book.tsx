@@ -355,9 +355,41 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             PROGRAM,
         )[0];
 
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
+
+        let amm_seed_keys = []
+        if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
+            amm_seed_keys.push(token_mint_pubkey)
+            amm_seed_keys.push(wrapped_sol_mint)
+        }
+        else{
+            amm_seed_keys.push(wrapped_sol_mint)
+            amm_seed_keys.push(token_mint_pubkey)
+        }
+
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            PROGRAM,
+        )[0];
+
+        let base_amm_account = await getAssociatedTokenAddress(
+            token_mint_pubkey, // mint
+            amm_data_account, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
+        );
+
+        let quote_amm_account = await getAssociatedTokenAddress(
+            wrapped_sol_mint, // mint
+            amm_data_account, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID
+        );
+
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
             METAPLEX_META,
@@ -372,7 +404,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
-        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         if (DEBUG) {
             console.log("arena: ", program_data_account.toString());
@@ -400,6 +431,11 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: false, isWritable: true },
+
+            { pubkey: amm_data_account, isSigner: false, isWritable: true },
+            { pubkey: quote_amm_account, isSigner: false, isWritable: true },
+            { pubkey: base_amm_account, isSigner: false, isWritable: true },
+
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
