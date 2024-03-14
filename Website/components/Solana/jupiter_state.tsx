@@ -11,6 +11,7 @@ import {
     bignum,
     utf8String,
     array,
+    fixedSizeArray,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -37,6 +38,49 @@ export function MM_reward_schedule(date: number, total_rewards: number): number 
 
     if (date >= 20 && date < 30) return 0.02 * total_rewards;
 }
+
+export class OHLCV {
+    constructor(
+        readonly timestamp: number,
+        readonly open: number[],
+        readonly high: number[],
+        readonly low: number[],
+        readonly close: number[],
+        readonly volume: number,
+
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<OHLCV>(
+        [
+            ["timestamp", i64],
+            ["open", uniformFixedSizeArray(u8, 8)],
+            ["high", uniformFixedSizeArray(u8, 8)],
+            ["low", uniformFixedSizeArray(u8, 8)],
+            ["close", uniformFixedSizeArray(u8, 8)],
+            ["volume", u64],
+        ],
+        (args) => new OHLCV(args.timestamp!, args.open!, args.high!, args.low!, args.close!, args.volume!),
+        "OHLCV",
+    );
+}
+
+export class TimeSeriesData {
+    constructor(
+        readonly account_type: number,
+        readonly data: OHLCV[],
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<TimeSeriesData>(
+        [
+            ["account_type", u8],
+            ["data", array(OHLCV.struct)],
+        ],
+        (args) => new TimeSeriesData(args.account_type!, args.data!),
+        "TimeSeriesData",
+    );
+}
+
+
 
 export class MMUserData {
     constructor(

@@ -39,7 +39,7 @@ const MarketMaker = () => {
                 >
                     <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : 0}>
                         {/* add rewards  */}
-                        {["Markets", "Orders"].map((name, i) => {
+                        {["Markets"].map((name, i) => {
                             const isActive = selected === name;
 
                             const baseStyle = {
@@ -73,20 +73,11 @@ const MarketMaker = () => {
                             return (
                                 <Box
                                     key={i}
-                                    style={{
-                                        ...base,
-                                        ...active,
-                                    }}
-                                    onClick={() => {
-                                        handleClick(name);
-                                    }}
                                     px={4}
-                                    py={2}
+                                    py={4}
                                     w={xs ? "50%" : "fit-content"}
                                 >
-                                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                                        {name}
-                                    </Text>
+                                    
                                 </Box>
                             );
                         })}

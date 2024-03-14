@@ -1,14 +1,14 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data, UserData, request_current_balance } from "../../components/Solana/state";
+import { request_raw_account_data, UserData, request_current_balance, uInt32ToLEBytes } from "../../components/Solana/state";
+import {TimeSeriesData} from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
-import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress,TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import {
     HStack,
@@ -34,11 +34,10 @@ import { MdOutlineContentCopy } from "react-icons/md";
 import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
-import { Orderbook, Market } from "@openbook-dex/openbook";
 import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaPowerOff } from "react-icons/fa";
-import usePlaceLimitOrder from "../../hooks/jupiter/usePlaceLimitOrder";
+import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 
@@ -48,10 +47,7 @@ import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
 import UseWalletConnection from "../../hooks/useWallet";
 
-interface OpenOrder {
-    publicKey: PublicKey;
-    account: Order;
-}
+
 
 interface MarketData {
     time: UTCTimestamp;
@@ -59,11 +55,6 @@ interface MarketData {
     high: number;
     low: number;
     close: number;
-}
-
-interface Level {
-    price: number;
-    quantity: number;
 }
 
 async function getMarketData(market_address: string) {
@@ -148,7 +139,7 @@ const TradePage = () => {
 
     const [additionalPixels, setAdditionalPixels] = useState(0);
 
-    const [selectedTab, setSelectedTab] = useState("Open");
+    const [selectedTab, setSelectedTab] = useState("Rewards");
 
     const handleClick = (tab: string) => {
         setSelectedTab(tab);
@@ -157,12 +148,9 @@ const TradePage = () => {
     let launch = findLaunch(launchList, pageName);
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
-    const [trade_data, setTradeData] = useState<TradeHistoryItem[]>([]);
 
-    const [market, setMarket] = useState<Market | null>(null);
     const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
     const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
-    const [lot_size, setLotSize] = useState<number | null>(null);
 
     const [base_amount, setBaseAmount] = useState<number | null>(null);
     const [quote_amount, setQuoteAmount] = useState<number | null>(null);
@@ -170,18 +158,11 @@ const TradePage = () => {
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
 
-    const [pda_sol_amount, setPDASOLAmount] = useState<number | null>(null);
-    const [pda_token_amount, setPDATokenAmount] = useState<number | null>(null);
-
-    const pda_sol_ws_id = useRef<number | null>(null);
-    const pda_token_ws_id = useRef<number | null>(null);
-
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
-    const check_pda_data = useRef<boolean>(true);
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -211,22 +192,7 @@ const TradePage = () => {
             return;
         }
 
-        let new_mid = quote_amount / base_amount;
-        //console.log("new mid", best_bid.price, best_ask.price, new_mid);
-        let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-        let today_seconds = today * 24 * 60 * 60;
-        let new_market_data: MarketData = {
-            time: today_seconds as UTCTimestamp,
-            open: new_mid,
-            high: new_mid,
-            low: new_mid,
-            close: new_mid,
-        };
-        const updated_price_data = [...market_data];
-        //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
-        updated_price_data[updated_price_data.length - 1] = new_market_data;
-        setMarketData(updated_price_data);
-
+        
         last_base_amount.current = base_amount;
         last_quote_amount.current = quote_amount;
     }, [base_amount, quote_amount, market_data]);
@@ -238,11 +204,11 @@ const TradePage = () => {
 
             let event_data = result.data;
             const [token_account] = TokenAccount.struct.deserialize(event_data);
-            let amount = token_account.amount / Math.pow(10, launch.decimals);
+            let amount = bignum_to_num(token_account.amount)
             console.log("update base amount", amount);
             setBaseAmount(amount);
         },
-        [launch],
+        [],
     );
 
     const check_quote_update = useCallback(async (result: any) => {
@@ -251,7 +217,7 @@ const TradePage = () => {
 
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = token_account.amount / Math.pow(10, 9);
+        let amount = bignum_to_num(token_account.amount)
         console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
@@ -277,27 +243,40 @@ const TradePage = () => {
     const CheckMarketData = useCallback(async () => {
         if (launch === null) return;
 
-        let programAddress = new PublicKey("srmqPvymJeFKQ4zGQed1GFppgkRHL9kaELCbyksJtPX");
-        let amm_program = new PublicKey("675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8");
+        const token_mint = launch.keys[LaunchKeys.MintAddress];
+        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        const seed_base = launch.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
-        const marketAddress = await PublicKey.createWithSeed(launch.keys[LaunchKeys.Seller], seed_base + "1", programAddress);
+        let amm_seed_keys = []
+        if (token_mint.toString() < wsol_mint.toString()) {
+            amm_seed_keys.push(token_mint)
+            amm_seed_keys.push(wsol_mint)
+        }
+        else{
+            amm_seed_keys.push(wsol_mint)
+            amm_seed_keys.push(token_mint)
+        }
 
-        const ammAddress = PublicKey.findProgramAddressSync(
-            [amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("amm_associated_seed")],
-            amm_program,
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            PROGRAM,
         )[0];
 
-        const base_vault = PublicKey.findProgramAddressSync(
-            [amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("coin_vault_associated_seed")],
-            amm_program,
-        )[0];
-        const quote_vault = PublicKey.findProgramAddressSync(
-            [amm_program.toBytes(), marketAddress.toBytes(), Buffer.from("pc_vault_associated_seed")],
-            amm_program,
-        )[0];
+        let base_amm_account = await getAssociatedTokenAddress(
+            token_mint, // mint
+            amm_data_account, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID
+        );
 
-        console.log(base_vault.toString(), quote_vault.toString());
+        let quote_amm_account = await getAssociatedTokenAddress(
+            wsol_mint, // mint
+            amm_data_account, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID
+        );
+
+        console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
             //let account_data = await request_raw_account_data("", marketAddress);
@@ -305,85 +284,35 @@ const TradePage = () => {
             //let bid_address = market_data.bids;
             //let ask_address = market_data.asks;
 
-            const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-            let market = await Market.load(connection, marketAddress, {}, programAddress);
-            //console.log(bignum_to_num(market.decoded.baseLotSize));
 
-            setBaseAddress(base_vault);
-            setQuoteAddress(quote_vault);
-            setMarket(market);
-            setLotSize(bignum_to_num(market.decoded.baseLotSize));
+            setBaseAddress(base_amm_account);
+            setQuoteAddress(quote_amm_account);
 
-            let base_amount = await request_token_amount("", base_vault);
-            let quote_amount = await request_token_amount("", quote_vault);
+            let base_amount = await request_token_amount("", base_amm_account);
+            let quote_amount = await request_token_amount("", quote_amm_account);
 
-            setBaseAmount(base_amount / Math.pow(10, launch.decimals));
-            setQuoteAmount(quote_amount / Math.pow(10, 9));
+            setBaseAmount(base_amount);
+            setQuoteAmount(quote_amount);
 
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 
             console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
 
-            // get the current state of the bid and ask
-            //let bid_account_data = await request_raw_account_data("", bid_address);
-            // let ask_account_data = await request_raw_account_data("", ask_address);
+            let index_buffer = uInt32ToLEBytes(0);
+            let price_data_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")], PROGRAM)[0];
+            let price_data_buffer = await request_raw_account_data("", price_data_account);
+            const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
-            //let asks = Orderbook.decode(market, ask_account_data);
-            //let bids = Orderbook.decode(market, bid_account_data);
-            //
-            // let ask_l2 = asks.getL2(1);
-            // let bid_l2 = bids.getL2(1);
-
-            //console.log("current bid/ask", ask_l2, bid_l2)
-
-            let data = await getMarketData(ammAddress.toString());
-            const updated_price_data = [...data];
-            let last_price_data : MarketData = updated_price_data[updated_price_data.length - 1];
-            let new_market_data: MarketData = {
-                time: last_price_data.time,
-                open: last_price_data.open,
-                high: Math.max(last_price_data.high, current_price),
-                low: Math.min(last_price_data.low, current_price),
-                close: current_price,
-            };
-            
-            //console.log("update Bid MD: ", updated_price_data[market_data.length - 1].value, new_market_data.value)
-            updated_price_data[updated_price_data.length - 1] = new_market_data;
-            //console.log(data)
-            setMarketData(updated_price_data);
-
+            console.log(price_data.data);
+            let data : MarketData[] = [];
+            for (let i = 0; i < price_data.data.length; i++) {
+                let item = price_data.data[i];
+                data.push({ time: bignum_to_num(item.timestamp)*60 as UTCTimestamp, open: Buffer.from(item.open).readDoubleLE(0), high: Buffer.from(item.high).readDoubleLE(0), low: Buffer.from(item.low).readDoubleLE(0), close: Buffer.from(item.close).readDoubleLE(0)});
+            }
+            setMarketData(data)
             check_market_data.current = false;
         }
     }, [launch]);
-
-    const CheckPDAData = useCallback(async () => {
-        if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
-
-        if (launch === null) return;
-
-        if (!check_pda_data.current) return;
-
-        let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
-        let pda_token_account_key = await getAssociatedTokenAddress(
-            launch.keys[LaunchKeys.MintAddress], // mint
-            user_pda_account, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
-        );
-
-        let token_amount = await request_token_amount("", pda_token_account_key);
-        let pda_balance = await request_current_balance("", user_pda_account);
-
-        token_amount /= Math.pow(10, launch.decimals);
-        setPDASOLAmount(pda_balance);
-        setPDATokenAmount(token_amount);
-
-        check_pda_data.current = false;
-    }, [wallet, launch]);
-
-    useEffect(() => {
-        CheckPDAData();
-    }, [wallet, CheckPDAData]);
 
     useEffect(() => {
         CheckMarketData();
@@ -491,10 +420,10 @@ const TradePage = () => {
                         </Box>
 
                         {leftPanel === "Info" && (
-                            <InfoContent launch={launch} pda_sol_amount={pda_sol_amount} pda_token_amount={pda_token_amount} />
+                            <InfoContent launch={launch} />
                         )}
 
-                        {leftPanel === "Trade" && <BuyAndSell launch={launch} />}
+                        {leftPanel === "Trade" && <BuyAndSell launch={launch} base_balance={base_amount} quote_balance={quote_amount} />}
                     </VStack>
 
                     <VStack
@@ -544,18 +473,10 @@ const TradePage = () => {
                                 borderTop: "1px solid rgba(134, 142, 150, 0.5)",
                             }}
                         >
-                            <Text color="white" fontSize={sm ? "medium" : "large"} m={0}>
-                                {selectedTab === "Open"
-                                    ? "Open Orders(0)"
-                                    : selectedTab === "Filled"
-                                      ? "Filled Orders(0)"
-                                      : selectedTab === "Rewards"
-                                        ? "My Rewards(1)"
-                                        : ""}
-                            </Text>
+                            
 
                             <HStack spacing={3}>
-                                {["Open", "Filled", "Rewards"].map((name, i) => {
+                                {["Rewards"].map((name, i) => {
                                     const isActive = selectedTab === name;
 
                                     const baseStyle = {
@@ -615,7 +536,7 @@ const TradePage = () => {
     );
 };
 
-const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
+const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchData, base_balance: number, quote_balance : number }) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
@@ -623,7 +544,7 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [sol_amount, setSOLAmount] = useState<number>(0);
     const [order_type, setOrderType] = useState<number>(0);
-    const { PlaceLimitOrder } = usePlaceLimitOrder();
+    const { PlaceMarketOrder } = usePlaceMarketOrder();
 
     const handleClick = (tab: string) => {
         setSelected(tab);
@@ -631,6 +552,42 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
         if (tab == "Buy") setOrderType(0);
         if (tab == "Sell") setOrderType(1);
     };
+
+    let price =   (quote_balance /Math.pow(10,9)) / (base_balance  / Math.pow(10, launch.decimals))
+
+    let invariant_before = base_balance * quote_balance;
+
+    let base_output =  (sol_amount * Math.pow(10,9) * base_balance / (quote_balance + sol_amount* Math.pow(10,9))) / Math.pow(10, launch.decimals);
+    let quote_output = (token_amount * Math.pow(10, launch.decimals) * quote_balance / (token_amount* Math.pow(10, launch.decimals) + base_balance)) / Math.pow(10,9);
+    
+
+    let base_no_slip = sol_amount / price;
+    let quote_no_slip = token_amount * price;
+
+    let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
+    if (order_type == 0) {
+        let invariant_after = (base_balance - base_output * Math.pow(10, launch.decimals)) * (quote_balance + sol_amount* Math.pow(10,9))
+        console.log("invariant: ", invariant_before, invariant_after);
+        console.log("sol_amount: ", sol_amount, " base balance: ", base_balance, " quote balance: ", quote_balance)
+        console.log(base_output, price, base_no_slip, slippage * 100)
+
+    }
+
+    let slippage_string = (slippage * 100).toFixed(2);
+
+
+    if (order_type == 1) {
+        let invariant_after = (base_balance + token_amount * Math.pow(10, launch.decimals)) * (quote_balance - quote_output* Math.pow(10,9))
+        console.log("invariant: ", invariant_before, invariant_after);
+        console.log(quote_output, price, quote_no_slip, slippage * 100)
+    }
+
+    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3)
+    quote_output_string += " (" + slippage_string + "%)"
+
+    let base_output_string = base_output <= 1e-3 ? base_output.toExponential(3) : base_output.toFixed(3)
+    base_output_string += " (" + slippage_string + "%)"
+
 
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
@@ -684,79 +641,79 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
 
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Amount:
+                    Swap:
                 </Text>
-                <InputGroup size="md">
-                    <Input
-                        color="white"
-                        size="lg"
-                        borderColor="rgba(134, 142, 150, 0.5)"
-                        value={token_amount}
-                        onChange={(e) => {
-                            setTokenAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
-                        }}
-                        type="number"
-                        min="0"
-                    />
-                    <InputRightElement h="100%" w={50}>
-                        <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
-                    </InputRightElement>
-                </InputGroup>
+                {selected === "Buy" ?
+                    <InputGroup size="md">
+                        <Input
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={sol_amount}
+                            onChange={(e) => {
+                                setSOLAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
+                            }}
+                            type="number"
+                            min="0"
+                        />
+                        <InputRightElement h="100%" w={50}>
+                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        </InputRightElement>
+                    </InputGroup>
+                    :
+                    <InputGroup size="md">
+                        <Input
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={token_amount}
+                            onChange={(e) => {
+                                setTokenAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
+                            }}
+                            type="number"
+                            min="0"
+                        />
+                        <InputRightElement h="100%" w={50}>
+                            <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        </InputRightElement>
+                    </InputGroup>
+                }
             </VStack>
 
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Price Per Token:
+                    For:
                 </Text>
-                <InputGroup size="md">
-                    <Input
-                        color="white"
-                        size="lg"
-                        borderColor="rgba(134, 142, 150, 0.5)"
-                        value={sol_amount}
-                        onChange={(e) => {
-                            setSOLAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
-                        }}
-                        type="number"
-                        min="0"
-                    />
-                    <InputRightElement h="100%" w={50}>
-                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
-                    </InputRightElement>
-                </InputGroup>
+                {selected === "Buy" ?
+                        <InputGroup size="md">
+                            <Input
+                                readOnly={true}
+                                color="white"
+                                size="lg"
+                                borderColor="rgba(134, 142, 150, 0.5)"
+                                value={base_output_string}
+                            />
+                            <InputRightElement h="100%" w={50}>
+                                <Image src={launch.icon} width={30} height={30} alt="SOL Icon" />
+                            </InputRightElement>
+                        </InputGroup>
+                    :
+                    <InputGroup size="md">
+                        <Input
+                            readOnly={true}
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={quote_output_string}
+                        />
+                        <InputRightElement h="100%" w={50}>
+                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+                        </InputRightElement>
+                    </InputGroup>
+                }
+                
             </VStack>
 
-            <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    You will {selected === "Buy" ? "Pay" : "Receive"}:
-                </Text>
-                <InputGroup size="md">
-                    <Input
-                        readOnly={true}
-                        color="white"
-                        size="lg"
-                        borderColor="rgba(134, 142, 150, 0.5)"
-                        value={sol_amount * token_amount}
-                    />
-                    <InputRightElement h="100%" w={50}>
-                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
-                    </InputRightElement>
-                </InputGroup>
-            </VStack>
-
-            <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Expiry:
-                </Text>
-                <Select placeholder="Never" color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)">
-                    <option value="option1">15 Minutes</option>
-                    <option value="option2">1 Hour</option>
-                    <option value="option3">1 Day</option>
-                    <option value="option2">3 Days</option>
-                    <option value="option3">7 Days</option>
-                    <option value="option2">30 Days</option>
-                </Select>
-            </VStack>
 
             <Button
                 mt={2}
@@ -768,7 +725,7 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
                 onClick={() => {
                     !wallet.connected
                         ? handleConnectWallet()
-                        : PlaceLimitOrder(launch, token_amount, token_amount * sol_amount, order_type);
+                        : PlaceMarketOrder(launch, token_amount, sol_amount, order_type);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
@@ -779,7 +736,6 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
             <Card bg="transparent">
                 <CardBody>
                     <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Limit Orders are placed via Jupiter Aggregator. <br />
                         <br /> MM Rewards are only granted on Buys through Let&apos;s Cook.
                     </Text>
                 </CardBody>
@@ -790,40 +746,15 @@ const BuyAndSell = ({ launch }: { launch: LaunchData }) => {
 
 const InfoContent = ({
     launch,
-    pda_sol_amount,
-    pda_token_amount,
 }: {
     launch: LaunchData;
-    pda_sol_amount: number;
-    pda_token_amount: number;
 }) => {
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
 
     return (
         <VStack spacing={8} w="100%" mb={3}>
-            {wallet.connected && (
-                <VStack spacing={2} w="100%" mt={-2} px={5} pb={6} style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Let&apos;s Cook Account:
-                    </Text>
-                    <HStack>
-                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {pda_sol_amount} SOL
-                        </Text>
-                        <Center height="20px">
-                            <Divider orientation="vertical" color="rgba(134, 142, 150, 0.5)" />
-                        </Center>
-                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {pda_token_amount} {launch.symbol}
-                        </Text>
-                    </HStack>
-                    <Button w="100%" onClick={() => GetMMTokens(launch)}>
-                        Withdraw
-                    </Button>
-                </VStack>
-            )}
-
+     
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     MM VOLUME (24h):
@@ -892,22 +823,6 @@ const InfoContent = ({
                     HYPE:
                 </Text>
                 <HypeVote launch_data={launch} />
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    POOL:
-                </Text>
-                <HStack justify="center" align="center" gap={4} onClick={(e) => e.stopPropagation()}>
-                    <Link
-                        href={`https://raydium.io/swap/?inputCurrency=${launch.keys[
-                            LaunchKeys.MintAddress
-                        ].toString()}&outputCurrency=sol&fixed=in`}
-                        target="_blank"
-                    >
-                        <Image src="/images/raydium.png" width={30} height={30} alt="Raydium Logo" />
-                    </Link>
-                </HStack>
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
