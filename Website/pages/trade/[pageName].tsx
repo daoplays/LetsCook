@@ -4,7 +4,7 @@ import Head from "next/head";
 import { request_raw_account_data, UserData, request_current_balance, request_token_supply, uInt32ToLEBytes } from "../../components/Solana/state";
 import {TimeSeriesData, MMLaunchData} from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
+import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
@@ -302,6 +302,8 @@ const TradePage = () => {
 
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
+
+            let token_holders = await RequestTokenHolders(token_mint);
 
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 

@@ -17,11 +17,13 @@ import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
+import useAppRoot from "../../context/useAppRoot";
 
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 const useGetMMRewards = () => {
     const wallet = useWallet();
+    const { checkProgramData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,6 +36,9 @@ const useGetMMRewards = () => {
             alert("Transaction failed, please try again");
             return;
         }
+
+        await checkProgramData();
+
 
         signature_ws_id.current = null;
     }, []);
