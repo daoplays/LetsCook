@@ -1,8 +1,8 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data, UserData, request_current_balance, uInt32ToLEBytes } from "../../components/Solana/state";
-import {TimeSeriesData} from "../../components/Solana/jupiter_state";
+import { request_raw_account_data, UserData, request_current_balance, request_token_supply, uInt32ToLEBytes } from "../../components/Solana/state";
+import {TimeSeriesData, MMLaunchData} from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount } from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
@@ -55,6 +55,7 @@ interface MarketData {
     high: number;
     low: number;
     close: number;
+    volume: number;
 }
 
 async function getMarketData(market_address: string) {
@@ -86,34 +87,17 @@ async function getMarketData(market_address: string) {
     return data;
 }
 
-async function getTokenData(market_address: string) {
+async function getSOLPrice() {
     // Default options are marked with *
-    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-    let today_seconds = today * 24 * 60 * 60;
+    const options = { method: "GET" };
+    
 
-    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
 
-    let url =
-        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
-        market_address +
-        "&type=15m" +
-        "&time_from=" +
-        start_time +
-        "&time_to=" +
-        today_seconds;
+    console.log(result["data"]["SOL"]["price"]);
 
-    let result = await fetch(url, options).then((response) => response.json());
 
-    console.log(result);
-
-    let data = [];
-    for (let i = 0; i < result["data"]["items"].length; i++) {
-        let item = result["data"]["items"][i];
-        data.push({ time: item.unixTime as UTCTimestamp, value: item.c });
-    }
-
-    return data;
+    return result["data"]["SOL"]["price"];
 }
 
 function findLaunch(list: LaunchData[], page_name: string | string[]) {
@@ -127,12 +111,25 @@ function findLaunch(list: LaunchData[], page_name: string | string[]) {
     return launchList[0];
 }
 
+function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
+    if (list === null || list === undefined) return [];
+    if (launch_data === null) return [];
+
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch_data.last_interaction)) / 24 / 60 / 60);
+
+
+    return list.filter(function (item) {
+        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+        return item.mint_key.equals(launch_data.keys[LaunchKeys.MintAddress]) && item.date == current_date;
+    });
+}
+
 const TradePage = () => {
     const wallet = useWallet();
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { launchList, currentUserData } = useAppRoot();
+    const { launchList, currentUserData, mmLaunchData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -147,13 +144,23 @@ const TradePage = () => {
 
     let launch = findLaunch(launchList, pageName);
 
+    let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
+    console.log("latest rewards: ", latest_rewards)
+
     const [market_data, setMarketData] = useState<MarketData[]>([]);
+    const [daily_data, setDailyData] = useState<MarketData[]>([]);
+
+    const [last_day_volume, setLastDayVolume] = useState<number>(0);
 
     const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
     const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
 
     const [base_amount, setBaseAmount] = useState<number | null>(null);
     const [quote_amount, setQuoteAmount] = useState<number | null>(null);
+
+    const [total_supply, setTotalSupply] = useState<number>(0);
+    const [sol_price, setSOLPrice] = useState<number>(0);
+
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
@@ -163,6 +170,8 @@ const TradePage = () => {
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
+
+
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -279,12 +288,9 @@ const TradePage = () => {
         console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
-            //let account_data = await request_raw_account_data("", marketAddress);
-            //const [market_data] = MarketStateLayoutV2.struct.deserialize(account_data);
-            //let bid_address = market_data.bids;
-            //let ask_address = market_data.asks;
-
-
+            
+            let sol_price  = await getSOLPrice();
+            setSOLPrice(sol_price)
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
@@ -293,6 +299,9 @@ const TradePage = () => {
 
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
+
+            let total_supply = await request_token_supply("", token_mint);
+            setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 
@@ -305,11 +314,44 @@ const TradePage = () => {
 
             console.log(price_data.data);
             let data : MarketData[] = [];
+            let daily_data : MarketData[] = [];
+
+            let now = (new Date()).getTime() / 1000;
+            let last_volume = 0;
+
+            let last_date = -1;
             for (let i = 0; i < price_data.data.length; i++) {
                 let item = price_data.data[i];
-                data.push({ time: bignum_to_num(item.timestamp)*60 as UTCTimestamp, open: Buffer.from(item.open).readDoubleLE(0), high: Buffer.from(item.high).readDoubleLE(0), low: Buffer.from(item.low).readDoubleLE(0), close: Buffer.from(item.close).readDoubleLE(0)});
+                let time = bignum_to_num(item.timestamp)*60;
+                let date = Math.floor(time / 24 / 60 / 60) * 24 * 60 * 60
+
+                let open = Buffer.from(item.open).readDoubleLE(0);
+                let high = Buffer.from(item.high).readDoubleLE(0);
+                let low = Buffer.from(item.low).readDoubleLE(0);
+                let close = Buffer.from(item.close).readDoubleLE(0)
+                let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
+
+                if (now - time < 24 * 60 * 60) {
+                    last_volume += volume;
+                }
+
+                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume});
+
+                if (date !== last_date) {
+                    daily_data.push({ time: date as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume})
+                    last_date = date
+                }
+                else {
+                    daily_data[daily_data.length - 1].high = high > daily_data[daily_data.length - 1].high ? high : daily_data[daily_data.length - 1].high;
+                    daily_data[daily_data.length - 1].low = low < daily_data[daily_data.length - 1].low ? low : daily_data[daily_data.length - 1].low;
+                    daily_data[daily_data.length - 1].close = close;
+                    daily_data[daily_data.length - 1].volume += volume;
+                }
+
             }
             setMarketData(data)
+            setDailyData(daily_data);
+            setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
     }, [launch]);
@@ -420,7 +462,7 @@ const TradePage = () => {
                         </Box>
 
                         {leftPanel === "Info" && (
-                            <InfoContent launch={launch} />
+                            <InfoContent launch={launch} volume={last_day_volume} mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null} price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0} total_supply={total_supply} sol_price={sol_price} quote_amount={quote_amount}/>
                         )}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} base_balance={base_amount} quote_balance={quote_amount} />}
@@ -746,8 +788,20 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
 
 const InfoContent = ({
     launch,
+    price,
+    sol_price,
+    quote_amount,
+    volume,
+    total_supply,
+    mm_data
 }: {
     launch: LaunchData;
+    price: number,
+    sol_price : number,
+    quote_amount : number,
+    volume : number,
+    total_supply: number, 
+    mm_data : MMLaunchData | null
 }) => {
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
@@ -757,28 +811,40 @@ const InfoContent = ({
      
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    MM VOLUME (24h):
+                    Price:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    -- SOL
+                    {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(launch.decimals, 3))} 
                 </Text>
+                <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+            </HStack>
+
+            <HStack mt={-2} px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    VOLUME (24h):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    {volume.toFixed(Math.min(launch.decimals, 3))} 
+                </Text>
+                <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    REWARD EMMISION (24h):
+                    SESSION REWARDS:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    -- {launch.symbol}
+                    {mm_data !== null ? bignum_to_num(mm_data.token_rewards) /Math.pow(10, launch.decimals) : "--"}
                 </Text>
+                <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    REWARD RATE (24h):
+                    MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    --
+                    {mm_data !== null ? bignum_to_num(mm_data.buy_amount) /Math.pow(10, launch.decimals) : 0}
                 </Text>
             </HStack>
 
@@ -787,7 +853,7 @@ const InfoContent = ({
                     SUPPLY:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {bignum_to_num(launch.total_supply)}
+                    {total_supply}
                 </Text>
             </HStack>
 
@@ -796,7 +862,7 @@ const InfoContent = ({
                     FDMC:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    -- USDC
+                    {(total_supply * price * sol_price).toFixed(2)} USDC
                 </Text>
             </HStack>
 
@@ -805,7 +871,7 @@ const InfoContent = ({
                     TVL:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    -- USDC
+                {(quote_amount / Math.pow(10,9) * sol_price).toFixed(2)} USDC
                 </Text>
             </HStack>
 

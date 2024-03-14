@@ -70,8 +70,6 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         { text: "FDMC", field: "fdmc" },
         { text: "VOL (24H)", field: "vol" },
         { text: "REWARDS (24H)", field: "rewards" },
-        { text: "START", field: "start" },
-        { text: "END", field: "end" },
     ];
 
     return (
@@ -184,13 +182,6 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}></Text>
-            </td>
-
-            <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}></Text>
-            </td>
 
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>

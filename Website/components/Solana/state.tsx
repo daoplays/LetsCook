@@ -292,6 +292,46 @@ export async function request_current_balance(bearer: string, pubkey: PublicKey)
 
     return current_balance;
 }
+
+export async function request_token_supply(bearer: string, mint: PublicKey): Promise<number> {
+    var body = {
+        id: 1,
+        jsonrpc: "2.0",
+        method: "getTokenSupply",
+        params: [mint.toString(), { encoding: "base64", commitment: "confirmed" }],
+    };
+
+    var response;
+    try {
+        response = await postData(RPC_NODE, bearer, body);
+    } catch (error) {
+        console.log(error);
+        return 0;
+    }
+    //console.log("TS result: ", response)
+
+    let valid_response = check_json(response);
+
+    //console.log("valid ", valid_response);
+    if (!valid_response) {
+        return 0;
+    }
+
+    let token_amount;
+    try {
+        let parsed_response: TokenBalanceData = response;
+
+        //console.log("parsed", parsed_account_data);
+
+        token_amount = parseInt(parsed_response.result.value.amount);
+    } catch (error) {
+        console.log(error);
+        return 0;
+    }
+
+    return token_amount;
+}
+
 export async function request_token_amount(bearer: string, pubkey: PublicKey): Promise<number> {
     var body = {
         id: 1,
