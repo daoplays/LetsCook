@@ -24,7 +24,7 @@ import BN from "bn.js";
 import bs58 from "bs58";
 
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
-import {TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export async function get_JWT_token(): Promise<any | null> {
     const token_url = `/.netlify/functions/jwt`;
@@ -294,20 +294,21 @@ export async function request_current_balance(bearer: string, pubkey: PublicKey)
     return current_balance;
 }
 
-
-export async function RequestTokenHolders(mint : PublicKey): Promise<Buffer[]> {
-
+export async function RequestTokenHolders(mint: PublicKey): Promise<Buffer[]> {
     let mint_bytes = mint.toBase58();
 
     var body = {
         id: 1,
         jsonrpc: "2.0",
         method: "getProgramAccounts",
-        params: [PROGRAM.toString(),{
-            filters: [{ memcmp: { offset: 0, bytes: mint_bytes } }],
-            encoding: "base64",
-            commitment: "confirmed",
-        },],
+        params: [
+            PROGRAM.toString(),
+            {
+                filters: [{ memcmp: { offset: 0, bytes: mint_bytes } }],
+                encoding: "base64",
+                commitment: "confirmed",
+            },
+        ],
     };
 
     var program_accounts_result;
@@ -320,10 +321,8 @@ export async function RequestTokenHolders(mint : PublicKey): Promise<Buffer[]> {
 
     console.log(program_accounts_result["result"]);
 
-
     return [];
 }
-
 
 export async function request_token_supply(bearer: string, mint: PublicKey): Promise<number> {
     var body = {

@@ -16,12 +16,10 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-
-import {getAssociatedTokenAddress,  ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
 import { make_tweet } from "../components/launch/twitter";
-
 
 const useInitAMM = (launchData: LaunchData) => {
     const wallet = useWallet();
@@ -38,25 +36,21 @@ const useInitAMM = (launchData: LaunchData) => {
             return;
         }
 
-        if (PROD){
+        if (PROD) {
             let response = await make_tweet(launchData.page_name);
             console.log(response);
         }
         signature_ws_id.current = null;
     }, []);
 
-
     const InitAMM = async () => {
         // if we have already done this then just skip this step
         console.log(launchData);
-       
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const initAMMToast = toast.loading("Initialising AMM...");
 
-
-       
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -68,7 +62,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             team_wallet, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -77,22 +71,19 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         var quote_pda_account = launchData.keys[LaunchKeys.WSOLAddress];
 
-
-        let amm_seed_keys = []
+        let amm_seed_keys = [];
         if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
-            amm_seed_keys.push(token_mint_pubkey)
-            amm_seed_keys.push(wrapped_sol_mint)
+            amm_seed_keys.push(token_mint_pubkey);
+            amm_seed_keys.push(wrapped_sol_mint);
+        } else {
+            amm_seed_keys.push(wrapped_sol_mint);
+            amm_seed_keys.push(token_mint_pubkey);
         }
-        else{
-            amm_seed_keys.push(wrapped_sol_mint)
-            amm_seed_keys.push(token_mint_pubkey)
-        }
-
 
         let amm_data_account = PublicKey.findProgramAddressSync(
             [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
@@ -103,20 +94,23 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
             wrapped_sol_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID
+            TOKEN_PROGRAM_ID,
         );
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let index_buffer = uInt32ToLEBytes(0);
-        let price_data_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")], PROGRAM)[0];
+        let price_data_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
+            PROGRAM,
+        )[0];
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
 
@@ -139,14 +133,13 @@ const useInitAMM = (launchData: LaunchData) => {
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
 
-            { pubkey: price_data_account, isSigner: false, isWritable: true }
-
+            { pubkey: price_data_account, isSigner: false, isWritable: true },
         ];
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-    
+
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,

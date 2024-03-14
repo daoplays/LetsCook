@@ -337,7 +337,11 @@ const useCreateMarket = (launchData: LaunchData) => {
             seed: seed_base + "5",
             programId: PROGRAMIDS.OPENBOOK_MARKET,
         });
-        const baseVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "6", programId: TOKEN_2022_PROGRAM_ID });
+        const baseVault = await generatePubKey({
+            fromPublicKey: wallet.publicKey,
+            seed: seed_base + "6",
+            programId: TOKEN_2022_PROGRAM_ID,
+        });
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
 
         console.log("mint", launchData.keys[LaunchKeys.MintAddress].toString());

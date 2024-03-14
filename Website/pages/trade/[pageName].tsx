@@ -1,14 +1,27 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data, UserData, request_current_balance, request_token_supply, uInt32ToLEBytes } from "../../components/Solana/state";
-import {TimeSeriesData, MMLaunchData} from "../../components/Solana/jupiter_state";
+import {
+    request_raw_account_data,
+    UserData,
+    request_current_balance,
+    request_token_supply,
+    uInt32ToLEBytes,
+} from "../../components/Solana/state";
+import { TimeSeriesData, MMLaunchData } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, LaunchData, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
+import {
+    bignum_to_num,
+    LaunchData,
+    MarketStateLayoutV2,
+    request_token_amount,
+    TokenAccount,
+    RequestTokenHolders,
+} from "../../components/Solana/state";
 import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress,TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 import {
     HStack,
@@ -46,8 +59,6 @@ import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
 import UseWalletConnection from "../../hooks/useWallet";
-
-
 
 interface MarketData {
     time: UTCTimestamp;
@@ -90,12 +101,10 @@ async function getMarketData(market_address: string) {
 async function getSOLPrice() {
     // Default options are marked with *
     const options = { method: "GET" };
-    
 
     let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
 
     console.log(result["data"]["SOL"]["price"]);
-
 
     return result["data"]["SOL"]["price"];
 }
@@ -116,7 +125,6 @@ function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
     if (launch_data === null) return [];
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch_data.last_interaction)) / 24 / 60 / 60);
-
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
@@ -145,7 +153,7 @@ const TradePage = () => {
     let launch = findLaunch(launchList, pageName);
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
-    console.log("latest rewards: ", latest_rewards)
+    console.log("latest rewards: ", latest_rewards);
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
     const [daily_data, setDailyData] = useState<MarketData[]>([]);
@@ -161,7 +169,6 @@ const TradePage = () => {
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [sol_price, setSOLPrice] = useState<number>(0);
 
-
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
 
@@ -170,8 +177,6 @@ const TradePage = () => {
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
-
-
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -201,24 +206,20 @@ const TradePage = () => {
             return;
         }
 
-        
         last_base_amount.current = base_amount;
         last_quote_amount.current = quote_amount;
     }, [base_amount, quote_amount, market_data]);
 
-    const check_base_update = useCallback(
-        async (result: any) => {
-            //console.log(result);
-            // if we have a subscription field check against ws_id
+    const check_base_update = useCallback(async (result: any) => {
+        //console.log(result);
+        // if we have a subscription field check against ws_id
 
-            let event_data = result.data;
-            const [token_account] = TokenAccount.struct.deserialize(event_data);
-            let amount = bignum_to_num(token_account.amount)
-            console.log("update base amount", amount);
-            setBaseAmount(amount);
-        },
-        [],
-    );
+        let event_data = result.data;
+        const [token_account] = TokenAccount.struct.deserialize(event_data);
+        let amount = bignum_to_num(token_account.amount);
+        console.log("update base amount", amount);
+        setBaseAmount(amount);
+    }, []);
 
     const check_quote_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -226,7 +227,7 @@ const TradePage = () => {
 
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount)
+        let amount = bignum_to_num(token_account.amount);
         console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
@@ -255,16 +256,14 @@ const TradePage = () => {
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let amm_seed_keys = []
+        let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
-            amm_seed_keys.push(token_mint)
-            amm_seed_keys.push(wsol_mint)
+            amm_seed_keys.push(token_mint);
+            amm_seed_keys.push(wsol_mint);
+        } else {
+            amm_seed_keys.push(wsol_mint);
+            amm_seed_keys.push(token_mint);
         }
-        else{
-            amm_seed_keys.push(wsol_mint)
-            amm_seed_keys.push(token_mint)
-        }
-
 
         let amm_data_account = PublicKey.findProgramAddressSync(
             [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
@@ -275,22 +274,21 @@ const TradePage = () => {
             token_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
             wsol_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID
+            TOKEN_PROGRAM_ID,
         );
 
         console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
-            
-            let sol_price  = await getSOLPrice();
-            setSOLPrice(sol_price)
+            let sol_price = await getSOLPrice();
+            setSOLPrice(sol_price);
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
@@ -310,48 +308,51 @@ const TradePage = () => {
             console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
 
             let index_buffer = uInt32ToLEBytes(0);
-            let price_data_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")], PROGRAM)[0];
+            let price_data_account = PublicKey.findProgramAddressSync(
+                [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
+                PROGRAM,
+            )[0];
             let price_data_buffer = await request_raw_account_data("", price_data_account);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
             console.log(price_data.data);
-            let data : MarketData[] = [];
-            let daily_data : MarketData[] = [];
+            let data: MarketData[] = [];
+            let daily_data: MarketData[] = [];
 
-            let now = (new Date()).getTime() / 1000;
+            let now = new Date().getTime() / 1000;
             let last_volume = 0;
 
             let last_date = -1;
             for (let i = 0; i < price_data.data.length; i++) {
                 let item = price_data.data[i];
-                let time = bignum_to_num(item.timestamp)*60;
-                let date = Math.floor(time / 24 / 60 / 60) * 24 * 60 * 60
+                let time = bignum_to_num(item.timestamp) * 60;
+                let date = Math.floor(time / 24 / 60 / 60) * 24 * 60 * 60;
 
                 let open = Buffer.from(item.open).readDoubleLE(0);
                 let high = Buffer.from(item.high).readDoubleLE(0);
                 let low = Buffer.from(item.low).readDoubleLE(0);
-                let close = Buffer.from(item.close).readDoubleLE(0)
+                let close = Buffer.from(item.close).readDoubleLE(0);
                 let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
 
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;
                 }
 
-                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume});
+                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
 
                 if (date !== last_date) {
-                    daily_data.push({ time: date as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume})
-                    last_date = date
-                }
-                else {
-                    daily_data[daily_data.length - 1].high = high > daily_data[daily_data.length - 1].high ? high : daily_data[daily_data.length - 1].high;
-                    daily_data[daily_data.length - 1].low = low < daily_data[daily_data.length - 1].low ? low : daily_data[daily_data.length - 1].low;
+                    daily_data.push({ time: date as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
+                    last_date = date;
+                } else {
+                    daily_data[daily_data.length - 1].high =
+                        high > daily_data[daily_data.length - 1].high ? high : daily_data[daily_data.length - 1].high;
+                    daily_data[daily_data.length - 1].low =
+                        low < daily_data[daily_data.length - 1].low ? low : daily_data[daily_data.length - 1].low;
                     daily_data[daily_data.length - 1].close = close;
                     daily_data[daily_data.length - 1].volume += volume;
                 }
-
             }
-            setMarketData(data)
+            setMarketData(data);
             setDailyData(daily_data);
             setLastDayVolume(last_volume);
             check_market_data.current = false;
@@ -464,7 +465,15 @@ const TradePage = () => {
                         </Box>
 
                         {leftPanel === "Info" && (
-                            <InfoContent launch={launch} volume={last_day_volume} mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null} price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0} total_supply={total_supply} sol_price={sol_price} quote_amount={quote_amount}/>
+                            <InfoContent
+                                launch={launch}
+                                volume={last_day_volume}
+                                mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
+                                price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
+                                total_supply={total_supply}
+                                sol_price={sol_price}
+                                quote_amount={quote_amount}
+                            />
                         )}
 
                         {leftPanel === "Trade" && <BuyAndSell launch={launch} base_balance={base_amount} quote_balance={quote_amount} />}
@@ -517,8 +526,6 @@ const TradePage = () => {
                                 borderTop: "1px solid rgba(134, 142, 150, 0.5)",
                             }}
                         >
-                            
-
                             <HStack spacing={3}>
                                 {["Rewards"].map((name, i) => {
                                     const isActive = selectedTab === name;
@@ -580,7 +587,7 @@ const TradePage = () => {
     );
 };
 
-const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchData, base_balance: number, quote_balance : number }) => {
+const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchData; base_balance: number; quote_balance: number }) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
@@ -597,41 +604,42 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
         if (tab == "Sell") setOrderType(1);
     };
 
-    let price =   (quote_balance /Math.pow(10,9)) / (base_balance  / Math.pow(10, launch.decimals))
+    let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
 
     let invariant_before = base_balance * quote_balance;
 
-    let base_output =  (sol_amount * Math.pow(10,9) * base_balance / (quote_balance + sol_amount* Math.pow(10,9))) / Math.pow(10, launch.decimals);
-    let quote_output = (token_amount * Math.pow(10, launch.decimals) * quote_balance / (token_amount* Math.pow(10, launch.decimals) + base_balance)) / Math.pow(10,9);
-    
+    let base_output =
+        (sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)) / Math.pow(10, launch.decimals);
+    let quote_output =
+        (token_amount * Math.pow(10, launch.decimals) * quote_balance) /
+        (token_amount * Math.pow(10, launch.decimals) + base_balance) /
+        Math.pow(10, 9);
 
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
     if (order_type == 0) {
-        let invariant_after = (base_balance - base_output * Math.pow(10, launch.decimals)) * (quote_balance + sol_amount* Math.pow(10,9))
+        let invariant_after = (base_balance - base_output * Math.pow(10, launch.decimals)) * (quote_balance + sol_amount * Math.pow(10, 9));
         console.log("invariant: ", invariant_before, invariant_after);
-        console.log("sol_amount: ", sol_amount, " base balance: ", base_balance, " quote balance: ", quote_balance)
-        console.log(base_output, price, base_no_slip, slippage * 100)
-
+        console.log("sol_amount: ", sol_amount, " base balance: ", base_balance, " quote balance: ", quote_balance);
+        console.log(base_output, price, base_no_slip, slippage * 100);
     }
 
     let slippage_string = (slippage * 100).toFixed(2);
 
-
     if (order_type == 1) {
-        let invariant_after = (base_balance + token_amount * Math.pow(10, launch.decimals)) * (quote_balance - quote_output* Math.pow(10,9))
+        let invariant_after =
+            (base_balance + token_amount * Math.pow(10, launch.decimals)) * (quote_balance - quote_output * Math.pow(10, 9));
         console.log("invariant: ", invariant_before, invariant_after);
-        console.log(quote_output, price, quote_no_slip, slippage * 100)
+        console.log(quote_output, price, quote_no_slip, slippage * 100);
     }
 
-    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3)
-    quote_output_string += " (" + slippage_string + "%)"
+    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
+    quote_output_string += " (" + slippage_string + "%)";
 
-    let base_output_string = base_output <= 1e-3 ? base_output.toExponential(3) : base_output.toFixed(3)
-    base_output_string += " (" + slippage_string + "%)"
-
+    let base_output_string = base_output <= 1e-3 ? base_output.toExponential(3) : base_output.toFixed(3);
+    base_output_string += " (" + slippage_string + "%)";
 
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
@@ -687,7 +695,7 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Swap:
                 </Text>
-                {selected === "Buy" ?
+                {selected === "Buy" ? (
                     <InputGroup size="md">
                         <Input
                             color="white"
@@ -701,10 +709,10 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
-                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
-                    :
+                ) : (
                     <InputGroup size="md">
                         <Input
                             color="white"
@@ -721,43 +729,29 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
                             <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
-                }
+                )}
             </VStack>
 
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     For:
                 </Text>
-                {selected === "Buy" ?
-                        <InputGroup size="md">
-                            <Input
-                                readOnly={true}
-                                color="white"
-                                size="lg"
-                                borderColor="rgba(134, 142, 150, 0.5)"
-                                value={base_output_string}
-                            />
-                            <InputRightElement h="100%" w={50}>
-                                <Image src={launch.icon} width={30} height={30} alt="SOL Icon" />
-                            </InputRightElement>
-                        </InputGroup>
-                    :
+                {selected === "Buy" ? (
                     <InputGroup size="md">
-                        <Input
-                            readOnly={true}
-                            color="white"
-                            size="lg"
-                            borderColor="rgba(134, 142, 150, 0.5)"
-                            value={quote_output_string}
-                        />
+                        <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={base_output_string} />
+                        <InputRightElement h="100%" w={50}>
+                            <Image src={launch.icon} width={30} height={30} alt="SOL Icon" />
+                        </InputRightElement>
+                    </InputGroup>
+                ) : (
+                    <InputGroup size="md">
+                        <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={quote_output_string} />
                         <InputRightElement h="100%" w={50}>
                             <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
                         </InputRightElement>
                     </InputGroup>
-                }
-                
+                )}
             </VStack>
-
 
             <Button
                 mt={2}
@@ -767,9 +761,7 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
                 py={2}
                 bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
                 onClick={() => {
-                    !wallet.connected
-                        ? handleConnectWallet()
-                        : PlaceMarketOrder(launch, token_amount, sol_amount, order_type);
+                    !wallet.connected ? handleConnectWallet() : PlaceMarketOrder(launch, token_amount, sol_amount, order_type);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
@@ -795,28 +787,27 @@ const InfoContent = ({
     quote_amount,
     volume,
     total_supply,
-    mm_data
+    mm_data,
 }: {
     launch: LaunchData;
-    price: number,
-    sol_price : number,
-    quote_amount : number,
-    volume : number,
-    total_supply: number, 
-    mm_data : MMLaunchData | null
+    price: number;
+    sol_price: number;
+    quote_amount: number;
+    volume: number;
+    total_supply: number;
+    mm_data: MMLaunchData | null;
 }) => {
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
 
     return (
         <VStack spacing={8} w="100%" mb={3}>
-     
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Price:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(launch.decimals, 3))} 
+                    {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(launch.decimals, 3))}
                 </Text>
                 <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
             </HStack>
@@ -826,7 +817,7 @@ const InfoContent = ({
                     VOLUME (24h):
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {volume.toFixed(Math.min(launch.decimals, 3))} 
+                    {volume.toFixed(Math.min(launch.decimals, 3))}
                 </Text>
                 <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
             </HStack>
@@ -836,7 +827,7 @@ const InfoContent = ({
                     SESSION REWARDS:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? bignum_to_num(mm_data.token_rewards) /Math.pow(10, launch.decimals) : "--"}
+                    {mm_data !== null ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, launch.decimals) : "--"}
                 </Text>
                 <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
             </HStack>
@@ -846,7 +837,7 @@ const InfoContent = ({
                     MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? bignum_to_num(mm_data.buy_amount) /Math.pow(10, launch.decimals) : 0}
+                    {mm_data !== null ? bignum_to_num(mm_data.buy_amount) / Math.pow(10, launch.decimals) : 0}
                 </Text>
             </HStack>
 
@@ -873,7 +864,7 @@ const InfoContent = ({
                     TVL:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                {(quote_amount / Math.pow(10,9) * sol_price).toFixed(2)} USDC
+                    {((quote_amount / Math.pow(10, 9)) * sol_price).toFixed(2)} USDC
                 </Text>
             </HStack>
 
@@ -916,7 +907,7 @@ const ChartComponent = (props) => {
         const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
         const chart = createChart(chartContainerRef.current);
 
-        const myPriceFormatter = p => p.toExponential(2);
+        const myPriceFormatter = (p) => p.toExponential(2);
 
         chart.applyOptions({
             layout: {

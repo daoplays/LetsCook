@@ -52,7 +52,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
     //console.trace()
     setProgramData(list);
 
-    console.log(list)
+    console.log(list);
 
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
@@ -100,7 +100,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     function tradeFilterTable({ list }: { list: LaunchData[] }) {
         return list.filter(function (item) {
             //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-            return item.flags[LaunchFlags.LPState] === 2
+            return item.flags[LaunchFlags.LPState] === 2;
         });
     }
 
@@ -149,9 +149,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [wallet, check_user_update]);
 
     useEffect(() => {
-        if (program_data === null)return;
+        if (program_data === null) return;
 
-        console.log("update data")
+        console.log("update data");
         let wallet_bytes = PublicKey.default.toBytes();
         let have_wallet = false;
         // console.log("wallet", wallet !== null ? wallet.toString() : "null");
@@ -167,12 +167,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
 
         for (let i = 0; i < program_data.length; i++) {
-            console.log("data ", i)
+            console.log("data ", i);
             if (program_data[i][0] === 0) {
-                try{
-                const [launch] = LaunchData.struct.deserialize(program_data[i]);
-                launch_data.push(launch);
-                }catch(error){}
+                try {
+                    const [launch] = LaunchData.struct.deserialize(program_data[i]);
+                    launch_data.push(launch);
+                } catch (error) {}
                 continue;
             }
 
@@ -184,7 +184,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(program_data[i]);
-                console.log("launch mm", mm)
+                console.log("launch mm", mm);
                 mm_launch_data.push(mm);
                 continue;
             }
@@ -211,14 +211,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 4) {
                 const [mm_user] = MMUserData.struct.deserialize(program_data[i]);
-                console.log("user mm", mm_user)
+                console.log("user mm", mm_user);
 
                 mm_user_data.push(mm_user);
                 continue;
             }
         }
 
-        console.log("launch data", launch_data)
+        console.log("launch data", launch_data);
         setLaunchData(launch_data);
         setUserData(user_data);
         setJoinData(join_data);
@@ -270,7 +270,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
         setHomePageData(home_page_data);
 
-
         // set up the map for the trade page
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
@@ -278,8 +277,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }
         setTradePageData(trade_page_map);
-
-
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {

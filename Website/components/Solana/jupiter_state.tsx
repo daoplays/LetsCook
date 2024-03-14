@@ -47,7 +47,6 @@ export class OHLCV {
         readonly low: number[],
         readonly close: number[],
         readonly volume: number,
-
     ) {}
 
     static readonly struct = new FixableBeetStruct<OHLCV>(
@@ -79,8 +78,6 @@ export class TimeSeriesData {
         "TimeSeriesData",
     );
 }
-
-
 
 export class MMUserData {
     constructor(
@@ -115,7 +112,6 @@ export class MMLaunchData {
         readonly buy_amount: bignum,
         readonly amount_distributed: bignum,
         readonly fraction_distributed: bignum,
-
     ) {}
 
     static readonly struct = new FixableBeetStruct<MMLaunchData>(
@@ -127,10 +123,17 @@ export class MMLaunchData {
             ["buy_amount", u64],
             ["amount_distributed", u64],
             ["fraction_distributed", u64],
-
         ],
         (args) =>
-            new MMLaunchData(args.account_type!, args.mint_key!, args.date!, args.token_rewards!, args.buy_amount!, args.amount_distributed!, args.fraction_distributed!),
+            new MMLaunchData(
+                args.account_type!,
+                args.mint_key!,
+                args.date!,
+                args.token_rewards!,
+                args.buy_amount!,
+                args.amount_distributed!,
+                args.fraction_distributed!,
+            ),
         "MMLaunchData",
     );
 }

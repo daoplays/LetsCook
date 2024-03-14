@@ -148,7 +148,7 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
     let time_left = (new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60 - current_date;
-    time_left *= 24
+    time_left *= 24;
     time_left = 24 - time_left;
     //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
 
@@ -202,16 +202,14 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
             </td>
 
             <td style={{ minWidth: md ? "120px" : "" }}>
-                {
-                current_date === reward.launch_reward.date &&
+                {current_date === reward.launch_reward.date && (
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    Wait {time_left.toFixed(1)}h
+                        Wait {time_left.toFixed(1)}h
                     </Text>
-                }
-                {current_date > reward.launch_reward.date &&
+                )}
+                {current_date > reward.launch_reward.date && (
                     <Button onClick={() => GetMMRewards(reward.launch_reward.date, launch)}>Claim</Button>
-                }
-               
+                )}
             </td>
         </tr>
     );

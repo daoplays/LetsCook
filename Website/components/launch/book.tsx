@@ -43,7 +43,15 @@ import {
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
+import {
+    Keypair,
+    PublicKey,
+    Transaction,
+    TransactionInstruction,
+    Connection,
+    ComputeBudgetProgram,
+    SYSVAR_RENT_PUBKEY,
+} from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
 import styles from "../../styles/LaunchBook.module.css";
@@ -358,16 +366,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
 
-        let amm_seed_keys = []
+        let amm_seed_keys = [];
         if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
-            amm_seed_keys.push(token_mint_pubkey)
-            amm_seed_keys.push(wrapped_sol_mint)
+            amm_seed_keys.push(token_mint_pubkey);
+            amm_seed_keys.push(wrapped_sol_mint);
+        } else {
+            amm_seed_keys.push(wrapped_sol_mint);
+            amm_seed_keys.push(token_mint_pubkey);
         }
-        else{
-            amm_seed_keys.push(wrapped_sol_mint)
-            amm_seed_keys.push(token_mint_pubkey)
-        }
-
 
         let amm_data_account = PublicKey.findProgramAddressSync(
             [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
@@ -378,14 +384,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             token_mint_pubkey, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
             wrapped_sol_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID
+            TOKEN_PROGRAM_ID,
         );
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
@@ -399,7 +405,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
@@ -435,7 +441,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
-
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });

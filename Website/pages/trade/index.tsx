@@ -70,16 +70,7 @@ const MarketMaker = () => {
                             const base = sm ? mobileBaseStyle : baseStyle;
                             const active = sm ? mobileActiveStyle : activeStyle;
 
-                            return (
-                                <Box
-                                    key={i}
-                                    px={4}
-                                    py={4}
-                                    w={xs ? "50%" : "fit-content"}
-                                >
-                                    
-                                </Box>
-                            );
+                            return <Box key={i} px={4} py={4} w={xs ? "50%" : "fit-content"}></Box>;
                         })}
                     </HStack>
                     <Text

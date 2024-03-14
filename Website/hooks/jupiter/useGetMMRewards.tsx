@@ -39,7 +39,6 @@ const useGetMMRewards = () => {
 
         await checkProgramData();
 
-
         signature_ws_id.current = null;
     }, []);
 
@@ -58,7 +57,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -67,7 +66,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let date_bytes = uInt32ToLEBytes(date);

@@ -88,14 +88,14 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             launchData.keys[LaunchKeys.MintAddress], // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
             launchData.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);

@@ -182,7 +182,6 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
                 </HStack>
             </td>
 
-
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
                     <Link href={`/trade/${launch.page_name}`} target="_blank">
