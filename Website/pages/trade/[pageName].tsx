@@ -168,6 +168,7 @@ const TradePage = () => {
 
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [sol_price, setSOLPrice] = useState<number>(0);
+    const [num_holders, setNumHolders] = useState<number>(0);
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
@@ -302,7 +303,7 @@ const TradePage = () => {
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
             let token_holders = await RequestTokenHolders(token_mint);
-
+            setNumHolders(token_holders);
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 
             console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
@@ -473,6 +474,7 @@ const TradePage = () => {
                                 total_supply={total_supply}
                                 sol_price={sol_price}
                                 quote_amount={quote_amount}
+                                num_holders={num_holders}
                             />
                         )}
 
@@ -788,6 +790,7 @@ const InfoContent = ({
     volume,
     total_supply,
     mm_data,
+    num_holders
 }: {
     launch: LaunchData;
     price: number;
@@ -796,6 +799,7 @@ const InfoContent = ({
     volume: number;
     total_supply: number;
     mm_data: MMLaunchData | null;
+    num_holders: number
 }) => {
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
@@ -873,7 +877,7 @@ const InfoContent = ({
                     HOLDERS:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    --
+                    {num_holders}
                 </Text>
             </HStack>
 
