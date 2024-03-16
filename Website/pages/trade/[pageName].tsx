@@ -8,7 +8,7 @@ import {
     request_token_supply,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData } from "../../components/Solana/jupiter_state";
+import { TimeSeriesData, MMLaunchData, reward_schedule } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import {
     bignum_to_num,
@@ -104,8 +104,6 @@ async function getSOLPrice() {
 
     let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
 
-    console.log(result["data"]["SOL"]["price"]);
-
     return result["data"]["SOL"]["price"];
 }
 
@@ -153,7 +151,6 @@ const TradePage = () => {
     let launch = findLaunch(launchList, pageName);
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
-    console.log("latest rewards: ", latest_rewards);
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
     const [daily_data, setDailyData] = useState<MarketData[]>([]);
@@ -302,8 +299,8 @@ const TradePage = () => {
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
-            let token_holders = await RequestTokenHolders(token_mint);
-            setNumHolders(token_holders);
+            //let token_holders = await RequestTokenHolders(token_mint);
+            //setNumHolders(token_holders);
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 
             console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
@@ -804,6 +801,12 @@ const InfoContent = ({
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
 
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
+    let reward = reward_schedule(current_date, launch);
+    if(mm_data !== null) {
+        reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, launch.decimals)
+    }
+
     return (
         <VStack spacing={8} w="100%" mb={3}>
             <HStack mt={-2} px={5} justify="space-between" w="100%">
@@ -831,7 +834,7 @@ const InfoContent = ({
                     SESSION REWARDS:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, launch.decimals) : "--"}
+                    {reward}
                 </Text>
                 <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
             </HStack>

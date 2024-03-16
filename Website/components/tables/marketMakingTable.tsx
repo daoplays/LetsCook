@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, PROD } from "../Solana/constants";
-import { MMLaunchData, MMUserData, RunMMUserDataGPA } from "../Solana/jupiter_state";
+import { MMLaunchData, MMUserData, RunMMUserDataGPA, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
@@ -16,23 +16,6 @@ interface Header {
     field: string | null;
 }
 
-function reward_schedule(date: number, launch_data: LaunchData): number {
-    let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
-    let total_supply = bignum_to_num(launch_data.total_supply);
-    let mm_amount = total_supply * reward_frac;
-    console.log(reward_frac, total_supply, mm_amount);
-    if (date < 10) {
-        return 0.05 * mm_amount;
-    }
-    if (date >= 10 && date < 20) {
-        return 0.03 * mm_amount;
-    }
-    if (date >= 20 && date < 30) {
-        return 0.02 * mm_amount;
-    }
-
-    return 0.0;
-}
 
 function filterTable(list: LaunchData[]) {
     if (list === null || list === undefined) return [];

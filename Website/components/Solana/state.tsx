@@ -962,7 +962,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.num_mints,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
-        0
+        1
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

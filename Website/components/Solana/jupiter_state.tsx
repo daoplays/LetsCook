@@ -22,11 +22,30 @@ import { Box } from "@chakra-ui/react";
 
 import BN from "bn.js";
 import bs58 from "bs58";
-import { LaunchInstruction, uInt8ToLEBytes, postData } from "./state";
+import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData } from "./state";
 
 export interface OpenOrder {
     publicKey: PublicKey;
     account: Order;
+}
+
+
+export function reward_schedule(date: number, launch_data: LaunchData): number {
+    let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
+    let total_supply = bignum_to_num(launch_data.total_supply);
+    let mm_amount = total_supply * reward_frac;
+    console.log(reward_frac, total_supply, mm_amount);
+    if (date < 10) {
+        return 0.05 * mm_amount;
+    }
+    if (date >= 10 && date < 20) {
+        return 0.03 * mm_amount;
+    }
+    if (date >= 20 && date < 30) {
+        return 0.02 * mm_amount;
+    }
+
+    return 0.0;
 }
 
 export function MM_reward_schedule(date: number, total_rewards: number): number {
