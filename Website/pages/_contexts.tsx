@@ -167,12 +167,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
 
         for (let i = 0; i < program_data.length; i++) {
-            console.log("data ", i);
             if (program_data[i][0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(program_data[i]);
+                    console.log("data ", i, launch.page_name);
+
                     launch_data.push(launch);
-                } catch (error) {}
+                } catch (error) {console.log("bad launch data", program_data[i])}
                 continue;
             }
 
@@ -184,7 +185,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(program_data[i]);
-                console.log("launch mm", mm);
+                //console.log("launch mm", mm);
                 mm_launch_data.push(mm);
                 continue;
             }

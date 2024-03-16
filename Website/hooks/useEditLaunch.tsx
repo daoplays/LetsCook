@@ -11,6 +11,7 @@ import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -55,14 +56,62 @@ const useEditLaunch = () => {
             PROGRAM,
         )[0];
 
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
+
+
+        let amm_seed_keys = [];
+        if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
+            amm_seed_keys.push(token_mint_pubkey);
+            amm_seed_keys.push(wrapped_sol_mint);
+        } else {
+            amm_seed_keys.push(wrapped_sol_mint);
+            amm_seed_keys.push(token_mint_pubkey);
+        }
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            PROGRAM,
+        )[0];
+
+        let base_amm_account = await getAssociatedTokenAddress(
+            token_mint_pubkey, // mint
+            amm_data_account, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let quote_amm_account = await getAssociatedTokenAddress(
+            wrapped_sol_mint, // mint
+            amm_data_account, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
+        );
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+
         console.log("launch account", newLaunchData.current.pagename, launch_data_account.toString());
 
         const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
+
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
+
+
+            { pubkey: amm_data_account, isSigner: false, isWritable: true },
+            { pubkey: quote_amm_account, isSigner: false, isWritable: true },
+            { pubkey: base_amm_account, isSigner: false, isWritable: true },
+
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
         ];
 
         const list_instruction = new TransactionInstruction({

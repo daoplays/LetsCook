@@ -10,6 +10,7 @@ import {
     PROD,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
+    FEES_PROGRAM
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -366,35 +367,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
 
-        let amm_seed_keys = [];
-        if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
-            amm_seed_keys.push(token_mint_pubkey);
-            amm_seed_keys.push(wrapped_sol_mint);
-        } else {
-            amm_seed_keys.push(wrapped_sol_mint);
-            amm_seed_keys.push(token_mint_pubkey);
-        }
-
-        let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
-            PROGRAM,
-        )[0];
-
-        let base_amm_account = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
-            amm_data_account, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-
-        let quote_amm_account = await getAssociatedTokenAddress(
-            wrapped_sol_mint, // mint
-            amm_data_account, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
@@ -420,11 +392,19 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
 
+        let team_token_account = await getAssociatedTokenAddress(
+            token_mint_pubkey, // mint
+            team_wallet, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
+
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
@@ -436,11 +416,12 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
-            { pubkey: team_wallet, isSigner: false, isWritable: true },
 
-            { pubkey: amm_data_account, isSigner: false, isWritable: true },
-            { pubkey: quote_amm_account, isSigner: false, isWritable: true },
-            { pubkey: base_amm_account, isSigner: false, isWritable: true },
+            { pubkey: team_wallet, isSigner: false, isWritable: true },
+            { pubkey: team_token_account, isSigner: false, isWritable: true },
+            { pubkey: FEES_PROGRAM, isSigner: false, isWritable: true },
+            { pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true },
+
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
@@ -462,7 +443,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
         transaction.partialSign(newLaunchData.current.token_keypair);
 

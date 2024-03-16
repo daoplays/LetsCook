@@ -122,7 +122,7 @@ function findLaunch(list: LaunchData[], page_name: string | string[]) {
 
 function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
     if (list === null || list === undefined) return [];
-    if (launch_data === null) return [];
+    if (launch_data === null || launch_data === undefined) return [];
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch_data.last_interaction)) / 24 / 60 / 60);
 

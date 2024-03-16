@@ -294,7 +294,7 @@ export async function request_current_balance(bearer: string, pubkey: PublicKey)
     return current_balance;
 }
 
-export async function RequestTokenHolders(mint: PublicKey): Promise<Buffer[]> {
+export async function RequestTokenHolders(mint: PublicKey): Promise<number> {
     let mint_bytes = mint.toBase58();
 
     var body = {
@@ -302,7 +302,7 @@ export async function RequestTokenHolders(mint: PublicKey): Promise<Buffer[]> {
         jsonrpc: "2.0",
         method: "getProgramAccounts",
         params: [
-            PROGRAM.toString(),
+            TOKEN_2022_PROGRAM_ID.toString(),
             {
                 filters: [{ memcmp: { offset: 0, bytes: mint_bytes } }],
                 encoding: "base64",
@@ -316,12 +316,13 @@ export async function RequestTokenHolders(mint: PublicKey): Promise<Buffer[]> {
         program_accounts_result = await postData(RPC_NODE, "", body);
     } catch (error) {
         console.log(error);
-        return [];
+        return 0;
     }
 
-    console.log(program_accounts_result["result"]);
+    console.log("request token holders:")
+    console.log(program_accounts_result["result"].length);
 
-    return [];
+    return program_accounts_result["result"].length;
 }
 
 export async function request_token_supply(bearer: string, mint: PublicKey): Promise<number> {
@@ -869,11 +870,11 @@ export async function RunGPA(): Promise<Buffer[]> {
         return [];
     }
 
-    //console.log(program_accounts_result["result"]);
+    console.log(program_accounts_result["result"]);
 
     let result = [];
     for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        //console.log(program_accounts_result["result"][i]);
+        console.log(i, program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
 
@@ -898,14 +899,10 @@ class CreateLaunch_Instruction {
         readonly decimals: number,
         readonly launch_date: bignum,
         readonly close_date: bignum,
-        readonly distribution: number[],
         readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly page_name: string,
-        readonly website: string,
-        readonly twitter: string,
-        readonly telegram: string,
-        readonly discord: string,
+        readonly fees: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -920,14 +917,10 @@ class CreateLaunch_Instruction {
             ["decimals", u8],
             ["launch_date", u64],
             ["close_date", u64],
-            ["distribution", array(u8)],
             ["num_mints", u32],
             ["ticket_price", u64],
             ["page_name", utf8String],
-            ["website", utf8String],
-            ["twitter", utf8String],
-            ["telegram", utf8String],
-            ["discord", utf8String],
+            ["fees", u32]
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -941,14 +934,10 @@ class CreateLaunch_Instruction {
                 args.decimals!,
                 args.launch_date!,
                 args.close_date!,
-                args.distribution!,
                 args.num_mints!,
                 args.ticket_price!,
                 args.page_name!,
-                args.website!,
-                args.twitter!,
-                args.telegram!,
-                args.discord!,
+                args.fees!
             ),
         "CreateLaunch_Instruction",
     );
@@ -970,14 +959,10 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.decimals,
         new_launch_data.opendate.getTime(),
         new_launch_data.closedate.getTime(),
-        new_launch_data.distribution,
         new_launch_data.num_mints,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
-        new_launch_data.web_url,
-        new_launch_data.twt_url,
-        new_launch_data.tele_url,
-        new_launch_data.disc_url,
+        0
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
