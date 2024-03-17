@@ -870,11 +870,11 @@ export async function RunGPA(): Promise<Buffer[]> {
         return [];
     }
 
-    console.log(program_accounts_result["result"]);
+    //console.log(program_accounts_result["result"]);
 
     let result = [];
     for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        console.log(i, program_accounts_result["result"][i]);
+        //console.log(i, program_accounts_result["result"][i]);
         let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
         let decoded_data = Buffer.from(encoded_data, "base64");
 
@@ -1287,5 +1287,49 @@ export class MarketStateLayoutV2 {
                 args.footer!,
             ),
         "MarketStateLayoutV2",
+    );
+}
+
+
+// transfer hook state
+
+/** ExtraAccountMeta as stored by the transfer hook program */
+export class ExtraAccountMeta {
+    constructor(
+        readonly discriminator: number,
+        readonly addressConfig: number[],
+        readonly isSigner: number,
+        readonly isWritable: number,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<ExtraAccountMeta>(
+        [
+            ["discriminator", u8],
+            ["addressConfig", uniformFixedSizeArray(u8, 32)],
+            ["isSigner", u8],
+            ["isWritable", u8],
+        ],
+        (args) => new ExtraAccountMeta(args.discriminator!, args.addressConfig!, args.isSigner!, args.isWritable!),
+        "ExtraAccountMeta",
+    );
+}
+
+export class ExtraAccountMetaList {
+    constructor(
+        readonly discriminator: bignum,
+        readonly length: number,
+        readonly count: number,
+        readonly metas: ExtraAccountMeta[],
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<ExtraAccountMetaList>(
+        [
+            ["discriminator", u64],
+            ["length", u32],
+            ["count", u32],
+            ["metas", array(ExtraAccountMeta.struct)],
+        ],
+        (args) => new ExtraAccountMetaList(args.discriminator!, args.length!, args.count!, args.metas!),
+        "ExtraAccountMetaList",
     );
 }

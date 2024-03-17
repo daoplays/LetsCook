@@ -8,12 +8,15 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     bignum_to_num,
+    request_raw_account_data,
+    ExtraAccountMetaList,
+    ExtraAccountMeta
 } from "../../components/Solana/state";
 import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../../components/Solana/constants";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, FEES_PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -141,6 +144,28 @@ const usePlaceMarketOrder = () => {
             PROGRAM,
         )[0];
 
+        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), launch.keys[LaunchKeys.MintAddress].toBuffer()], FEES_PROGRAM)[0];
+
+
+        let team_token_account_key = await getAssociatedTokenAddress(
+            launch.keys[LaunchKeys.MintAddress], // mint
+            launch.keys[LaunchKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
+
+        if (hook_accounts !== null) {
+            console.log(hook_accounts.slice(16, 16+35))
+            const [extra_accounts] = ExtraAccountMeta.struct.deserialize(hook_accounts.slice(16, 16+35));
+            let key = new PublicKey(extra_accounts.addressConfig)
+            console.log(extra_accounts);
+            console.log(key);
+        }
+
+        let include_hook = hook_accounts !== null;
+
         const instruction_data = serialise_PlaceLimit_instruction(order_type, order_type === 0 ? sol_amount : token_amount, []);
 
         var account_vector = [
@@ -169,6 +194,13 @@ const usePlaceMarketOrder = () => {
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
+        if (include_hook) {
+            account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: team_token_account_key, isSigner: false, isWritable: true });
+        }
+
         const instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
@@ -181,6 +213,8 @@ const usePlaceMarketOrder = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+
 
         console.log("sending transaction");
 

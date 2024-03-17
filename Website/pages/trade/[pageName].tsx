@@ -69,34 +69,6 @@ interface MarketData {
     volume: number;
 }
 
-async function getMarketData(market_address: string) {
-    // Default options are marked with *
-    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-    let today_seconds = Math.floor(new Date().getTime() / 1000);
-
-    let start_time = new Date(2024, 0, 1).getTime() / 1000;
-
-    let url =
-        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
-        market_address +
-        "&type=15m" +
-        "&time_from=" +
-        start_time +
-        "&time_to=" +
-        today_seconds;
-
-    let result = await fetch(url, options).then((response) => response.json());
-
-    console.log(result);
-
-    let data = [];
-    for (let i = 0; i < result["data"]["items"].length; i++) {
-        let item = result["data"]["items"][i];
-        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c });
-    }
-
-    return data;
-}
 
 async function getSOLPrice() {
     // Default options are marked with *
@@ -159,6 +131,7 @@ const TradePage = () => {
 
     const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
     const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
+    const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
 
     const [base_amount, setBaseAmount] = useState<number | null>(null);
     const [quote_amount, setQuoteAmount] = useState<number | null>(null);
@@ -169,6 +142,7 @@ const TradePage = () => {
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
+    const price_ws_id = useRef<number | null>(null);
 
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
@@ -179,7 +153,7 @@ const TradePage = () => {
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
         return () => {
-            console.log("in use effect return");
+            //console.log("in use effect return");
             const unsub = async () => {
                 const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
                 if (base_ws_id.current !== null) {
@@ -215,7 +189,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        console.log("update base amount", amount);
+        //console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
@@ -226,9 +200,18 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        console.log("update quote amount", amount);
+       // console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
+    }, []);
+
+    const check_price_update = useCallback(async (result: any) => {
+        //console.log(result);
+        // if we have a subscription field check against ws_id
+
+        let event_data = result.data;
+        const [price_data] = TimeSeriesData.struct.deserialize(event_data);
+        console.log("updated price data", price_data);
     }, []);
 
     // launch account subscription handler
@@ -236,17 +219,22 @@ const TradePage = () => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (base_ws_id.current === null && base_address !== null) {
-            console.log("subscribe 1");
+            //console.log("subscribe 1");
 
             base_ws_id.current = connection.onAccountChange(base_address, check_base_update, "confirmed");
         }
 
         if (quote_ws_id.current === null && quote_address !== null) {
-            console.log("subscribe 2");
+           // console.log("subscribe 2");
 
             quote_ws_id.current = connection.onAccountChange(quote_address, check_quote_update, "confirmed");
         }
-    }, [base_address, quote_address, check_base_update, check_quote_update]);
+
+        if (price_ws_id.current === null && price_address !== null) {
+            price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
+
+        }
+    }, [base_address, quote_address, price_address, check_price_update, check_base_update, check_quote_update]);
 
     const CheckMarketData = useCallback(async () => {
         if (launch === null) return;
@@ -282,7 +270,7 @@ const TradePage = () => {
             TOKEN_PROGRAM_ID,
         );
 
-        console.log(base_amm_account.toString(), quote_amm_account.toString());
+       // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
             let sol_price = await getSOLPrice();
@@ -303,17 +291,20 @@ const TradePage = () => {
             //setNumHolders(token_holders);
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 
-            console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
+           // console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
 
             let index_buffer = uInt32ToLEBytes(0);
             let price_data_account = PublicKey.findProgramAddressSync(
                 [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
                 PROGRAM,
             )[0];
+
+            setPriceAddress(price_data_account)
+
             let price_data_buffer = await request_raw_account_data("", price_data_account);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
-            console.log(price_data.data);
+            //console.log(price_data.data);
             let data: MarketData[] = [];
             let daily_data: MarketData[] = [];
 
@@ -618,21 +609,10 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
     let quote_no_slip = token_amount * price;
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
-    if (order_type == 0) {
-        let invariant_after = (base_balance - base_output * Math.pow(10, launch.decimals)) * (quote_balance + sol_amount * Math.pow(10, 9));
-        console.log("invariant: ", invariant_before, invariant_after);
-        console.log("sol_amount: ", sol_amount, " base balance: ", base_balance, " quote balance: ", quote_balance);
-        console.log(base_output, price, base_no_slip, slippage * 100);
-    }
+
 
     let slippage_string = (slippage * 100).toFixed(2);
 
-    if (order_type == 1) {
-        let invariant_after =
-            (base_balance + token_amount * Math.pow(10, launch.decimals)) * (quote_balance - quote_output * Math.pow(10, 9));
-        console.log("invariant: ", invariant_before, invariant_after);
-        console.log(quote_output, price, quote_no_slip, slippage * 100);
-    }
 
     let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
     quote_output_string += " (" + slippage_string + "%)";

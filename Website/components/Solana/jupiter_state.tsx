@@ -157,57 +157,6 @@ export class MMLaunchData {
     );
 }
 
-export async function RunMMUserDataGPA(wallet: WalletContextState | null): Promise<MMUserData[]> {
-    let index_buffer = uInt8ToLEBytes(4);
-    let account_bytes = bs58.encode(index_buffer);
-
-    let wallet_bytes = PublicKey.default.toBase58();
-
-    // console.log("wallet", wallet !== null ? wallet.toString() : "null");
-    if (wallet !== null) {
-        wallet_bytes = wallet.publicKey.toBase58();
-    }
-
-    var body = {
-        id: 1,
-        jsonrpc: "2.0",
-        method: "getProgramAccounts",
-        params: [
-            PROGRAM.toString(),
-            {
-                filters: [{ memcmp: { offset: 0, bytes: account_bytes } }, { memcmp: { offset: 1, bytes: wallet_bytes } }],
-                encoding: "base64",
-                commitment: "confirmed",
-            },
-        ],
-    };
-
-    var program_accounts_result;
-    try {
-        program_accounts_result = await postData(RPC_NODE, "", body);
-    } catch (error) {
-        console.log(error);
-        return [];
-    }
-
-    // console.log(program_accounts_result["result"]);
-
-    let result: MMUserData[] = [];
-    for (let i = 0; i < program_accounts_result["result"]?.length; i++) {
-        // console.log(program_accounts_result["result"][i]);
-        let encoded_data = program_accounts_result["result"][i]["account"]["data"][0];
-        let decoded_data = Buffer.from(encoded_data, "base64");
-        try {
-            const [game] = MMUserData.struct.deserialize(decoded_data);
-            result.push(game);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    return result;
-}
-
 class PlaceLimit_Instruction {
     constructor(
         readonly instruction: number,

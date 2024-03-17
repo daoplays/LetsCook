@@ -7,10 +7,12 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
+    request_raw_account_data,
+    ExtraAccountMetaList
 } from "../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { SOL_ACCOUNT_SEED, PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { SOL_ACCOUNT_SEED, PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, FEES_PROGRAM } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -112,6 +114,18 @@ const useInitAMM = (launchData: LaunchData) => {
             PROGRAM,
         )[0];
 
+        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
+
+        // check if the validation account exists
+        console.log("check extra accounts")
+        let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
+        if (hook_accounts !== null) {
+            console.log("have account data", hook_accounts);
+            //const [extra_accounts] = ExtraAccountMetaList.struct.deserialize(hook_accounts);
+            //console.log(extra_accounts);
+        }
+
+
         const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
 
         var account_vector = [
@@ -140,6 +154,11 @@ const useInitAMM = (launchData: LaunchData) => {
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
+        account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+
+
+
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
@@ -152,6 +171,8 @@ const useInitAMM = (launchData: LaunchData) => {
         list_transaction.feePayer = wallet.publicKey;
 
         list_transaction.add(list_instruction);
+        list_transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+
 
         try {
             let signed_transaction = await wallet.signTransaction(list_transaction);

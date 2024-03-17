@@ -48,11 +48,11 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 
     let list = await RunGPA();
 
-    console.log("check program data");
+    //console.log("check program data");
     //console.trace()
     setProgramData(list);
 
-    console.log(list);
+    //console.log(list);
 
     setIsLaunchDataLoading(false);
     setIsHomePageDataLoading(false);
@@ -151,7 +151,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     useEffect(() => {
         if (program_data === null) return;
 
-        console.log("update data");
+        //console.log("update data");
         let wallet_bytes = PublicKey.default.toBytes();
         let have_wallet = false;
         // console.log("wallet", wallet !== null ? wallet.toString() : "null");
@@ -170,7 +170,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (program_data[i][0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(program_data[i]);
-                    console.log("data ", i, launch.page_name);
+                    //console.log("data ", i, launch.page_name);
 
                     launch_data.push(launch);
                 } catch (error) {console.log("bad launch data", program_data[i])}
@@ -212,14 +212,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (program_data[i][0] === 4) {
                 const [mm_user] = MMUserData.struct.deserialize(program_data[i]);
-                console.log("user mm", mm_user);
+                //console.log("user mm", mm_user);
 
                 mm_user_data.push(mm_user);
                 continue;
             }
         }
 
-        console.log("launch data", launch_data);
+        //console.log("launch data", launch_data);
         setLaunchData(launch_data);
         setUserData(user_data);
         setJoinData(join_data);

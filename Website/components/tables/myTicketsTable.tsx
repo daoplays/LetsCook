@@ -45,6 +45,9 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     };
 
     const sortedLaunches = [...bags].sort((a, b) => {
+        if (a.launch_data === undefined || b.launch_data === undefined) {
+            return 0
+        }
         if (sortedField === "symbol") {
             return reverseSort
                 ? b.launch_data.symbol.localeCompare(a.launch_data.symbol)
@@ -247,14 +250,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             </td>
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
-                    <Link
-                        href={`https://raydium.io/swap/?inputCurrency=${launch.launch_data.keys[
-                            LaunchKeys.MintAddress
-                        ].toString()}&outputCurrency=sol&fixed=in`}
-                        target="_blank"
-                    >
-                        <Button onClick={(e) => e.stopPropagation()}>AMM</Button>
-                    </Link>
+                    
                     {MINTED_OUT || MINT_FAILED ? (
                         <Button
                             onClick={(e) => handleButtonClick(e)}

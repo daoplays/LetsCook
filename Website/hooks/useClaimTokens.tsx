@@ -6,11 +6,12 @@ import {
     send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
+    request_raw_account_data
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED, FEES_PROGRAM } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
@@ -98,6 +99,21 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             TOKEN_2022_PROGRAM_ID,
         );
 
+        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), launchData.keys[LaunchKeys.MintAddress].toBuffer()], FEES_PROGRAM)[0];
+
+
+        let team_token_account_key = await getAssociatedTokenAddress(
+            launchData.keys[LaunchKeys.MintAddress], // mint
+            launchData.keys[LaunchKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
+
+        let include_hook = hook_accounts !== null;
+
+
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
 
         var account_vector = [
@@ -121,6 +137,13 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
+
+        if (include_hook) {
+            account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: launchData.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: team_token_account_key, isSigner: false, isWritable: true });
+        }
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
