@@ -399,6 +399,11 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             TOKEN_2022_PROGRAM_ID,
         );
 
+        let hook_pda_key = PublicKey.findProgramAddressSync(
+            [token_mint_pubkey.toBuffer(), Buffer.from("pda")],
+            FEES_PROGRAM,
+        )[0];
+
         let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
@@ -418,6 +423,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
+            { pubkey: hook_pda_key, isSigner: false, isWritable: true },
             { pubkey: team_token_account, isSigner: false, isWritable: true },
             { pubkey: FEES_PROGRAM, isSigner: false, isWritable: true },
             { pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true },

@@ -49,7 +49,7 @@ function Navigation() {
                         </Text> */}
 
                         <Badge px={1.5} borderRadius={20} bg="rgb(104,51,10, .95)" color="white">
-                            Beta
+                            Devnet
                         </Badge>
                     </HStack>
                 </Link>

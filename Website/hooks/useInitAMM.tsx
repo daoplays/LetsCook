@@ -8,7 +8,6 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     request_raw_account_data,
-    ExtraAccountMetaList
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -116,6 +115,11 @@ const useInitAMM = (launchData: LaunchData) => {
 
         let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
 
+        let transfer_hook_pda = PublicKey.findProgramAddressSync(
+            [token_mint_pubkey.toBytes(), Buffer.from("pda")],
+            FEES_PROGRAM,
+        )[0];
+
         // check if the validation account exists
         console.log("check extra accounts")
         let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
@@ -156,6 +160,7 @@ const useInitAMM = (launchData: LaunchData) => {
 
         account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
 
 
 

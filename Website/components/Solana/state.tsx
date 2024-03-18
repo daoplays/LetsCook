@@ -1314,22 +1314,20 @@ export class ExtraAccountMeta {
     );
 }
 
-export class ExtraAccountMetaList {
+export class ExtraAccountMetaHead {
     constructor(
         readonly discriminator: bignum,
         readonly length: number,
         readonly count: number,
-        readonly metas: ExtraAccountMeta[],
     ) {}
 
-    static readonly struct = new FixableBeetStruct<ExtraAccountMetaList>(
+    static readonly struct = new FixableBeetStruct<ExtraAccountMetaHead>(
         [
             ["discriminator", u64],
             ["length", u32],
             ["count", u32],
-            ["metas", array(ExtraAccountMeta.struct)],
         ],
-        (args) => new ExtraAccountMetaList(args.discriminator!, args.length!, args.count!, args.metas!),
-        "ExtraAccountMetaList",
+        (args) => new ExtraAccountMetaHead(args.discriminator!, args.length!, args.count!),
+        "ExtraAccountMetaHead",
     );
 }

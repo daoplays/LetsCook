@@ -9,7 +9,7 @@ import {
     uInt32ToLEBytes,
     bignum_to_num,
     request_raw_account_data,
-    ExtraAccountMetaList,
+    ExtraAccountMetaHead,
     ExtraAccountMeta
 } from "../../components/Solana/state";
 import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
@@ -154,14 +154,23 @@ const usePlaceMarketOrder = () => {
             TOKEN_2022_PROGRAM_ID,
         );
 
+        let transfer_hook_pda = PublicKey.findProgramAddressSync(
+            [launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("pda")],
+            FEES_PROGRAM,
+        )[0];
+
         let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
         if (hook_accounts !== null) {
-            console.log(hook_accounts.slice(16, 16+35))
-            const [extra_accounts] = ExtraAccountMeta.struct.deserialize(hook_accounts.slice(16, 16+35));
-            let key = new PublicKey(extra_accounts.addressConfig)
-            console.log(extra_accounts);
-            console.log(key);
+            const [extra_accounts_head] = ExtraAccountMetaHead.struct.deserialize(hook_accounts.slice(0, 16));
+
+            console.log(extra_accounts_head);
+            for (let i = 0; i < extra_accounts_head.count; i++) {
+                const [extra_accounts] = ExtraAccountMeta.struct.deserialize(hook_accounts.slice(16 + 35*i, 16 + 35*(i+1)));
+                let key = new PublicKey(extra_accounts.addressConfig)
+                console.log(extra_accounts);
+                console.log(key.toString());
+            }
         }
 
         let include_hook = hook_accounts !== null;
@@ -197,7 +206,7 @@ const usePlaceMarketOrder = () => {
         if (include_hook) {
             account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-            account_vector.push({ pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: team_token_account_key, isSigner: false, isWritable: true });
         }
 

@@ -109,6 +109,11 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             TOKEN_2022_PROGRAM_ID,
         );
 
+        let transfer_hook_pda = PublicKey.findProgramAddressSync(
+            [launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("pda")],
+            FEES_PROGRAM,
+        )[0];
+
         let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
         let include_hook = hook_accounts !== null;
@@ -141,7 +146,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         if (include_hook) {
             account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-            account_vector.push({ pubkey: launchData.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: team_token_account_key, isSigner: false, isWritable: true });
         }
 
