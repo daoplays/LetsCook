@@ -261,7 +261,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             required
                                             className={styles.inputBox}
                                             placeholder="Enter Token Total Supply"
-                                            value={totalSupply !== "0" ? totalSupply : ""}
+                                            value={totalSupply}
                                             onChange={(e) => {
                                                 setTotalSupply(e.target.value);
                                             }}
@@ -281,7 +281,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             required
                                             className={styles.inputBox}
                                             placeholder="1-9"
-                                            value={decimal !== "0" ? decimal : ""}
+                                            value={decimal}
                                             onChange={(e) => {
                                                 setDecimal(e.target.value);
                                             }}
@@ -303,7 +303,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
-                                            value={mints !== "0" ? mints : ""}
+                                            value={mints}
                                             onChange={(e) => {
                                                 setMints(e.target.value);
                                             }}
@@ -323,7 +323,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             required
                                             className={styles.inputBox}
-                                            value={ticketPrice !== "0" ? ticketPrice : ""}
+                                            value={ticketPrice}
                                             onChange={(e) => {
                                                 setTotalPrice(e.target.value);
                                             }}
