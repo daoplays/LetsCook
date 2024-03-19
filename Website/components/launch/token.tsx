@@ -1,7 +1,20 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useRef, useEffect } from "react";
 import { PieChart } from "react-minimal-pie-chart";
 import { useMediaQuery } from "react-responsive";
-import { Center, VStack, Text, HStack, Input, InputRightElement, InputGroup, InputLeftElement, Spacer, Box } from "@chakra-ui/react";
+import {
+    Center,
+    VStack,
+    Text,
+    HStack,
+    Input,
+    InputRightElement,
+    InputGroup,
+    InputLeftElement,
+    Spacer,
+    Box,
+    Checkbox,
+    Tooltip,
+} from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution } from "../../components/Solana/state";
 import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
@@ -36,6 +49,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
+
+    const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -156,7 +171,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
     const Browse = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
                 Icon:
             </div>
             <div>
@@ -193,11 +208,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 style={{ backgroundSize: "cover" }}
                             />
 
-                            <VStack spacing={lg ? 8 : 10} flexGrow={1} align="start" width="100%">
+                            <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 {lg && <Browse />}
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
                                         Name:
                                     </div>
 
@@ -217,7 +232,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
                                         Symbol:
                                     </div>
 
@@ -243,11 +258,66 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     {/* </InputGroup> */}
                                 </HStack>
 
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                        Token Prefix:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            maxLength={3}
+                                            disabled={newLaunchData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="Enter Token Prefix Grind (Max 3 Characters)"
+                                            // value={}
+                                            // onChange={(e) => {
+                                            // }}
+                                        />
+                                    </div>
+                                </HStack>
+
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
-                        s
+
                         <VStack mt={lg ? 1 : 5} spacing={lg ? 8 : 10} w="100%">
+                            <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack spacing={15} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: "174px" }}>
+                                        Transfer Hook Program ID:
+                                    </div>
+
+                                    <HStack spacing={5} style={{ flexDirection: lg ? "column" : "row", flexGrow: 1 }}>
+                                        <div className={styles.textLabelInput}>
+                                            <Input
+                                                disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
+                                                size={lg ? "md" : "lg"}
+                                                required
+                                                className={styles.inputBox}
+                                                placeholder="Enter Transfer Hook Program ID"
+                                                // value={}
+                                                // onChange={(e) => {}}
+                                            />
+                                        </div>
+                                        <HStack w="340px" spacing={3}>
+                                            <Checkbox
+                                                size="lg"
+                                                onChange={() => {
+                                                    setIsCustomProgramId(!isCustomProgramId);
+                                                }}
+                                            >
+                                                Let&apos;s Cook Fees Hook
+                                            </Checkbox>
+                                            <Tooltip label="Explanation Here" hasArrow fontSize="large" offset={[0, 10]}>
+                                                <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                            </Tooltip>
+                                        </HStack>
+                                    </HStack>
+                                </HStack>
+                            </HStack>
+
                             <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
@@ -358,6 +428,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </HStack>
                             {/* </div> */}
                         </VStack>
+
                         <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
                             <div style={{ color: "white" }} className={`${styles.textLabel} font-face-kg`}>
                                 Distribution:
