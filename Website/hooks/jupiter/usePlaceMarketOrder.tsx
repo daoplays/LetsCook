@@ -10,7 +10,7 @@ import {
     bignum_to_num,
     request_raw_account_data,
     ExtraAccountMetaHead,
-    ExtraAccountMeta
+    ExtraAccountMeta,
 } from "../../components/Solana/state";
 import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
@@ -34,44 +34,43 @@ const usePlaceMarketOrder = () => {
     const { checkProgramData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
-    const [toastId, setToastId] = useState<number | string | null>(null);
 
     const signature_ws_id = useRef<number | null>(null);
+
+    let placeLimitToast;
 
     const check_signature_update = useCallback(
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
-                toast.update(toastId, {
+                toast.update(placeLimitToast, {
                     render: "Market Order Failed.  Please try again later.",
                     type: "error",
                     isLoading: false,
                     autoClose: 3000,
                 });
-                setToastId(null);
                 return;
             }
 
-            toast.update(toastId, {
+            toast.update(placeLimitToast, {
                 render: "Market Order Placed",
                 type: "success",
                 isLoading: false,
                 autoClose: 3000,
             });
+
             await checkProgramData();
 
             signature_ws_id.current = null;
-            setToastId(null);
         },
-        [toastId],
+        [checkProgramData, placeLimitToast],
     );
 
     const PlaceMarketOrder = async (launch: LaunchData, token_amount: number, sol_amount: number, order_type: number) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        const placeLimitToast = toast.loading("Placing Market Order..");
-        setToastId(placeLimitToast);
+        placeLimitToast = toast.loading("Placing Market Order...");
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -144,7 +143,18 @@ const usePlaceMarketOrder = () => {
             PROGRAM,
         )[0];
 
-        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), launch.keys[LaunchKeys.MintAddress].toBuffer()], FEES_PROGRAM)[0];
+        let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+            [Buffer.from("extra-account-metas"), launch.keys[LaunchKeys.MintAddress].toBuffer()],
+            FEES_PROGRAM,
+        )[0];
+
+        let team_token_account_key = await getAssociatedTokenAddress(
+            launch.keys[LaunchKeys.MintAddress], // mint
+            launch.keys[LaunchKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
 
         let transfer_hook_pda = PublicKey.findProgramAddressSync(
             [launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("pda")],
@@ -175,8 +185,8 @@ const usePlaceMarketOrder = () => {
 
             console.log(extra_accounts_head);
             for (let i = 0; i < extra_accounts_head.count; i++) {
-                const [extra_accounts] = ExtraAccountMeta.struct.deserialize(hook_accounts.slice(16 + 35*i, 16 + 35*(i+1)));
-                let key = new PublicKey(extra_accounts.addressConfig)
+                const [extra_accounts] = ExtraAccountMeta.struct.deserialize(hook_accounts.slice(16 + 35 * i, 16 + 35 * (i + 1)));
+                let key = new PublicKey(extra_accounts.addressConfig);
                 console.log(extra_accounts);
                 console.log(key.toString());
             }
@@ -235,7 +245,6 @@ const usePlaceMarketOrder = () => {
 
         transaction.add(instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-
 
         console.log("sending transaction");
 
