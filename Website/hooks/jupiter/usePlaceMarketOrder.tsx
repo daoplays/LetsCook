@@ -146,18 +146,27 @@ const usePlaceMarketOrder = () => {
 
         let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), launch.keys[LaunchKeys.MintAddress].toBuffer()], FEES_PROGRAM)[0];
 
-
-        let team_token_account_key = await getAssociatedTokenAddress(
-            launch.keys[LaunchKeys.MintAddress], // mint
-            launch.keys[LaunchKeys.TeamWallet], // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-
         let transfer_hook_pda = PublicKey.findProgramAddressSync(
             [launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("pda")],
             FEES_PROGRAM,
         )[0];
+
+        var team_wallet = launch.keys[LaunchKeys.TeamWallet];
+
+
+        let team_wsol_account = await getAssociatedTokenAddress(
+            wsol_mint, // mint
+            team_wallet, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
+        );
+
+        let user_wsol_account = await getAssociatedTokenAddress(
+            wsol_mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
+        );
 
         let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
@@ -207,7 +216,10 @@ const usePlaceMarketOrder = () => {
             account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
-            account_vector.push({ pubkey: team_token_account_key, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: team_wallet, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: user_wsol_account, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: team_wsol_account, isSigner: false, isWritable: true });
+
         }
 
         const instruction = new TransactionInstruction({

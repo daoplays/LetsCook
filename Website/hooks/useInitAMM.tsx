@@ -120,6 +120,20 @@ const useInitAMM = (launchData: LaunchData) => {
             FEES_PROGRAM,
         )[0];
 
+        let team_wsol_account = await getAssociatedTokenAddress(
+            wrapped_sol_mint, // mint
+            team_wallet, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
+        );
+
+        let source_wsol_account = await getAssociatedTokenAddress(
+            wrapped_sol_mint, // mint
+            program_sol_account, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
+        );
+
         // check if the validation account exists
         console.log("check extra accounts")
         let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
@@ -161,6 +175,8 @@ const useInitAMM = (launchData: LaunchData) => {
         account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: source_wsol_account, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: team_wsol_account, isSigner: false, isWritable: true });
 
 
 
@@ -176,7 +192,7 @@ const useInitAMM = (launchData: LaunchData) => {
         list_transaction.feePayer = wallet.publicKey;
 
         list_transaction.add(list_instruction);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+        list_transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
 
 
         try {
