@@ -69,7 +69,6 @@ interface MarketData {
     volume: number;
 }
 
-
 async function getSOLPrice() {
     // Default options are marked with *
     const options = { method: "GET" };
@@ -200,7 +199,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-       // console.log("update quote amount", amount);
+        // console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
     }, []);
@@ -225,14 +224,13 @@ const TradePage = () => {
         }
 
         if (quote_ws_id.current === null && quote_address !== null) {
-           // console.log("subscribe 2");
+            // console.log("subscribe 2");
 
             quote_ws_id.current = connection.onAccountChange(quote_address, check_quote_update, "confirmed");
         }
 
         if (price_ws_id.current === null && price_address !== null) {
             price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
-
         }
     }, [base_address, quote_address, price_address, check_price_update, check_base_update, check_quote_update]);
 
@@ -270,7 +268,7 @@ const TradePage = () => {
             TOKEN_PROGRAM_ID,
         );
 
-       // console.log(base_amm_account.toString(), quote_amm_account.toString());
+        // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
             let sol_price = await getSOLPrice();
@@ -291,7 +289,7 @@ const TradePage = () => {
             //setNumHolders(token_holders);
             let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
 
-           // console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
+            // console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
 
             let index_buffer = uInt32ToLEBytes(0);
             let price_data_account = PublicKey.findProgramAddressSync(
@@ -299,7 +297,7 @@ const TradePage = () => {
                 PROGRAM,
             )[0];
 
-            setPriceAddress(price_data_account)
+            setPriceAddress(price_data_account);
 
             let price_data_buffer = await request_raw_account_data("", price_data_account);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
@@ -610,9 +608,7 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
-
     let slippage_string = (slippage * 100).toFixed(2);
-
 
     let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
     quote_output_string += " (" + slippage_string + "%)";
@@ -767,7 +763,7 @@ const InfoContent = ({
     volume,
     total_supply,
     mm_data,
-    num_holders
+    num_holders,
 }: {
     launch: LaunchData;
     price: number;
@@ -776,47 +772,53 @@ const InfoContent = ({
     volume: number;
     total_supply: number;
     mm_data: MMLaunchData | null;
-    num_holders: number
+    num_holders: number;
 }) => {
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, launch);
-    if(mm_data !== null) {
-        reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, launch.decimals)
+    if (mm_data !== null) {
+        reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, launch.decimals);
     }
 
     return (
         <VStack spacing={8} w="100%" mb={3}>
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Price:
+                    PRICE:
                 </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(launch.decimals, 3))}
-                </Text>
-                <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+                <HStack>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(launch.decimals, 3))}
+                    </Text>
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+                </HStack>
             </HStack>
 
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     VOLUME (24h):
                 </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {volume.toFixed(Math.min(launch.decimals, 3))}
-                </Text>
-                <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
+                <HStack>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {volume.toFixed(Math.min(launch.decimals, 3))}
+                    </Text>
+                    <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
+                </HStack>
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     SESSION REWARDS:
                 </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {reward}
-                </Text>
-                <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
+                <HStack>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {reward}
+                    </Text>
+                    <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
+                </HStack>
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
