@@ -46,7 +46,7 @@ function Footer() {
                 />
             </Link>
 
-            <Link href="https://discord.gg/Pkg2ZyMc" target="_blank">
+            <Link href="https://discord.gg/fZQd5yGWEr" target="_blank">
                 <Image
                     src={discord}
                     width={30}
