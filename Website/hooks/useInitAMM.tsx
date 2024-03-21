@@ -136,9 +136,11 @@ const useInitAMM = (launchData: LaunchData) => {
 
         // check if the validation account exists
         console.log("check extra accounts")
+        let include_hook = false;
         let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
         if (hook_accounts !== null) {
             console.log("have account data", hook_accounts);
+            include_hook = true;
             //const [extra_accounts] = ExtraAccountMetaList.struct.deserialize(hook_accounts);
             //console.log(extra_accounts);
         }
@@ -172,11 +174,13 @@ const useInitAMM = (launchData: LaunchData) => {
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
-        account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: source_wsol_account, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: team_wsol_account, isSigner: false, isWritable: true });
+        if (include_hook) {
+            account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: source_wsol_account, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: team_wsol_account, isSigner: false, isWritable: true });
+        }
 
 
 

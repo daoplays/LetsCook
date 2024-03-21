@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput } from "../Solana/state";
+import { useEffect, useState, useCallback } from "react";
+import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -13,16 +13,26 @@ import { useRouter } from "next/router";
 import useInitAMM from "../../hooks/useInitAMM";
 import convertToBlob from "../../utils/convertImageToBlob";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
-import { LaunchFlags } from "../Solana/constants";
+import { LaunchFlags, LaunchKeys, RPC_NODE, WSS_NODE } from "../Solana/constants";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, unpackAccount, getTransferFeeAmount, createWithdrawWithheldTokensFromAccountsInstruction } from "@solana/spl-token";
+import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
+import bs58 from "bs58";
 
 interface Header {
     text: string;
     field: string | null;
 }
 
+interface TransferAccount {
+    pubkey: PublicKey;
+    amount: number;
+}
+
 const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[] }) => {
     const { sm } = useResponsive();
     const { checkProgramData } = useAppRoot();
+    const wallet = useWallet();
+
 
     const [sortedField, setSortedField] = useState<string | null>("date");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
@@ -54,6 +64,91 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
         return 0;
     });
+
+    const GetFeeAccounts = useCallback(async (launch : LaunchData) => {
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+        const allAccounts = await connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
+            commitment: "confirmed",
+            filters: [
+                {
+                    memcmp: {
+                        offset: 0,
+                        bytes: launch.keys[LaunchKeys.MintAddress].toString(),
+                    },
+                },
+            ],
+        });
+
+        const accountsToWithdrawFrom = [];
+        for (const accountInfo of allAccounts) {
+            const account = unpackAccount(accountInfo.pubkey, accountInfo.account, TOKEN_2022_PROGRAM_ID);
+            const transferFeeAmount = getTransferFeeAmount(account);
+            if (transferFeeAmount !== null && transferFeeAmount.withheldAmount > BigInt(0)) {
+                let transfer_account: TransferAccount = {
+                    pubkey: accountInfo.pubkey,
+                    amount: parseInt(transferFeeAmount.withheldAmount.toString()) / 1000,
+                };
+                console.log(accountInfo.pubkey.toString(), (parseInt(transferFeeAmount.withheldAmount.toString()) / 1000).toString());
+                accountsToWithdrawFrom.push(transfer_account);
+            }
+        }
+
+        console.log(allAccounts);
+        console.log(accountsToWithdrawFrom);
+       return accountsToWithdrawFrom;
+    }, []);
+
+    const GetFees = useCallback(async (launch: LaunchData) => {
+        if (wallet.publicKey === null) return;
+
+        let feeAccounts = await GetFeeAccounts(launch);
+        let user_token_key = await getAssociatedTokenAddress(
+            launch.keys[LaunchKeys.MintAddress], // mint
+            launch.keys[LaunchKeys.TeamWallet], // owner
+            true, // allow owner off curve,
+            TOKEN_2022_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+        );
+
+        let accountsToWithdrawFrom = [];
+        for (let i = 0; i < feeAccounts.length; i++) {
+            accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
+        }
+
+        let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
+            launch.keys[LaunchKeys.MintAddress],
+            user_token_key,
+            wallet.publicKey,
+            [],
+            accountsToWithdrawFrom,
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let txArgs = await get_current_blockhash("");
+
+        let transaction = new Transaction(txArgs);
+        transaction.feePayer = wallet.publicKey;
+
+        transaction.add(withdraw_idx);
+
+        try {
+            let signed_transaction = await wallet.signTransaction(transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+
+            let signature = transaction_response.result;
+            console.log("get tokens", signature);
+
+          
+        } catch (error) {
+            console.log(error)
+        }
+
+    }, [wallet]);
 
     return (
         <TableContainer>
@@ -96,7 +191,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
                 <tbody>
                     {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.page_name} launch={launch} />
+                        <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees}/>
                     ))}
                 </tbody>
             </table>
@@ -104,7 +199,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     );
 };
 
-const LaunchCard = ({ launch }: { launch: LaunchData }) => {
+const LaunchCard = ({ launch, GetFees}: { launch: LaunchData, GetFees : (launch: LaunchData) => Promise<void>}) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { InitAMM } = useInitAMM(launch);
@@ -138,6 +233,11 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const LaunchLPClicked = (e) => {
         e.stopPropagation();
         InitAMM();
+    };
+
+    const GetFeesClicked = (e) => {
+        e.stopPropagation();
+        GetFees(launch);
     };
 
     const EditClicked = async (e) => {
@@ -239,6 +339,12 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                             Edit
                         </Button>
                     )}
+                    {launch.flags[LaunchFlags.LPState] == 2 && 
+                        <Button onClick={(e) => GetFeesClicked(e)}>
+                        Collect Fees
+                        </Button>
+                        
+                    }
                 </HStack>
             </td>
         </tr>

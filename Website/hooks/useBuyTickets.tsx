@@ -74,7 +74,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
-            { pubkey: FEES_KEY, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });

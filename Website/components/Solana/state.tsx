@@ -517,6 +517,9 @@ export interface LaunchDataUserInput {
     closedate: Date;
     team_wallet: string;
     token_keypair: Keypair | null;
+    // extension data
+    transfer_fee : number;
+    max_transfer_fee: number;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -546,6 +549,8 @@ export const defaultUserInput: LaunchDataUserInput = {
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
     token_keypair: null,
+    transfer_fee: 0,
+    max_transfer_fee: 0,
 };
 
 export class myU64 {
@@ -758,6 +763,8 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
+        transfer_fee: 0,
+        max_transfer_fee: 0,
     };
 
     return data;
@@ -902,7 +909,9 @@ class CreateLaunch_Instruction {
         readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly page_name: string,
-        readonly fees: number,
+        readonly transfer_fee: number,
+        readonly max_transfer_fee: bignum,
+
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -920,7 +929,8 @@ class CreateLaunch_Instruction {
             ["num_mints", u32],
             ["ticket_price", u64],
             ["page_name", utf8String],
-            ["fees", u32]
+            ["transfer_fee", u16],
+            ["max_transfer_fee", u64]
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -937,7 +947,8 @@ class CreateLaunch_Instruction {
                 args.num_mints!,
                 args.ticket_price!,
                 args.page_name!,
-                args.fees!
+                args.transfer_fee!,
+                args.max_transfer_fee!
             ),
         "CreateLaunch_Instruction",
     );
@@ -962,7 +973,8 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.num_mints,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
-        1
+        new_launch_data.transfer_fee,
+        new_launch_data.max_transfer_fee
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
