@@ -501,7 +501,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack pb={75} h={"85vh"} w="100%">
+            <VStack pb={75} w="100%">
                 <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
                     Launch - BOOK
                 </Text>
@@ -594,6 +594,25 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         {closeDateAndTime}
                                     </Text>
                                 </HStack>
+                            </div>
+                        </HStack>
+
+                        <HStack spacing={15} w="100%">
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                AMM Fee:
+                            </div>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    disabled={newLaunchData.current.edit_mode === true}
+                                    size={sm ? "medium" : "lg"}
+                                    required
+                                    placeholder="Enter AMM Fee (in bps)"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    // value={}
+                                    // onChange={(e) => {
+                                    // }}
+                                />
                             </div>
                         </HStack>
 
