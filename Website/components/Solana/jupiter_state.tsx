@@ -71,10 +71,10 @@ export class OHLCV {
     static readonly struct = new FixableBeetStruct<OHLCV>(
         [
             ["timestamp", i64],
-            ["open", uniformFixedSizeArray(u8, 8)],
-            ["high", uniformFixedSizeArray(u8, 8)],
-            ["low", uniformFixedSizeArray(u8, 8)],
-            ["close", uniformFixedSizeArray(u8, 8)],
+            ["open", uniformFixedSizeArray(u8, 4)],
+            ["high", uniformFixedSizeArray(u8, 4)],
+            ["low", uniformFixedSizeArray(u8, 4)],
+            ["close", uniformFixedSizeArray(u8, 4)],
             ["volume", u64],
         ],
         (args) => new OHLCV(args.timestamp!, args.open!, args.high!, args.low!, args.close!, args.volume!),
@@ -95,6 +95,33 @@ export class TimeSeriesData {
         ],
         (args) => new TimeSeriesData(args.account_type!, args.data!),
         "TimeSeriesData",
+    );
+}
+
+
+export class AMMData {
+    constructor(
+        readonly account_type: number,
+        readonly base_key: PublicKey,
+        readonly quote_key: PublicKey,
+        readonly fee: number,
+        readonly num_data_accounts: number,
+        readonly last_price: number[],
+        readonly transferring: number
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<AMMData>(
+        [
+            ["account_type", u8],
+            ["base_key",publicKey],
+            ["quote_key", publicKey],
+            ["fee", u16],
+            ["num_data_accounts", u32],
+            ["last_price", uniformFixedSizeArray(u8, 4)],
+            ["transferring", u8],
+        ],
+        (args) => new AMMData(args.account_type!, args.base_key!, args.quote_key!, args.fee!, args.num_data_accounts!, args.last_price!, args.transferring!),
+        "AMMData",
     );
 }
 

@@ -5,11 +5,12 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, PROD } from "../Solana/constants";
-import { MMLaunchData, MMUserData, reward_schedule } from "../Solana/jupiter_state";
+import { AMMData, MMLaunchData, MMUserData, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
 import useAppRoot from "../../context/useAppRoot";
+import Launch from "../../pages/launch";
 
 interface Header {
     text: string;
@@ -26,13 +27,16 @@ function filterTable(list: LaunchData[]) {
     });
 }
 
+interface AMMLaunch {
+    amm_data: AMMData;
+    launch_data: LaunchData;
+}
+
 const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
-    const { mmLaunchData } = useAppRoot();
-
-    const [mmUserData, setMMUserData] = useState<MMUserData[]>([]);
+    const { ammData } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
@@ -48,10 +52,27 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         }
     };
 
+    console.log(ammData);
+    console.log(trade_list);
+
+    let amm_launches: AMMLaunch[] = [];
+    for (let i = 0; i < ammData.length; i++) {
+        console.log(ammData[i].base_key.toString());
+        const ammLaunch = trade_list.filter((launch) => {
+            return ammData[i].base_key.equals(launch.keys[LaunchKeys.MintAddress]);
+        });
+        if (ammLaunch.length === 0 || ammLaunch[0] === undefined)
+            continue;
+        
+        console.log(ammLaunch[0].page_name, ammData[i].base_key.toString());
+        let amm_launch: AMMLaunch = { amm_data: ammData[i], launch_data: ammLaunch[0] };
+        amm_launches.push(amm_launch);
+    }
+
     const tableHeaders: Header[] = [
         { text: "TOKEN", field: null },
+        { text: "PRICE", field: null },
         { text: "FDMC", field: "fdmc" },
-        { text: "VOL (24H)", field: "vol" },
         { text: "REWARDS (24H)", field: "rewards" },
     ];
 
@@ -90,8 +111,8 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
                 </thead>
 
                 <tbody>
-                    {trade_list.map((launch, i) => (
-                        <LaunchCard key={i} launch={launch} />
+                    {amm_launches.map((launch, i) => (
+                        <LaunchCard key={i} amm_launch={launch} />
                     ))}
                 </tbody>
             </table>
@@ -99,12 +120,13 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     );
 };
 
-const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
+const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch | any }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
-    let mm_rewards = reward_schedule(current_date, launch);
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch.last_interaction)) / 24 / 60 / 60);
+    let mm_rewards = reward_schedule(current_date, amm_launch.launch);
+    let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
 
     return (
         <tr
@@ -119,25 +141,34 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/trade/` + launch.page_name)}
+            onClick={() => router.push(`/trade/` + amm_launch.launch.page_name)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <HStack px={3} spacing={3} justify="center">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={amm_launch.launch.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.symbol}
+                        {amm_launch.launch.symbol}
                     </Text>
                 </HStack>
             </td>
 
+            <td style={{ minWidth: "120px" }}>
+                <HStack justify="center">
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch.decimals, 3))}
+                    </Text>
+                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                </HStack>
+            </td>
+            
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
@@ -150,18 +181,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        --
-                    </Text>
-                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                </HStack>
-            </td>
-
-            <td style={{ minWidth: "150px" }}>
-                <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
                         {mm_rewards}
                     </Text>
-                    <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={amm_launch.launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
         </tr>

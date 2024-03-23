@@ -3,7 +3,7 @@
 import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, bignum_to_num, LaunchDataUserInput, defaultUserInput, JoinData, RunGPA, serialise_basic_instruction, LaunchInstruction, get_current_blockhash, send_transaction, GPAccount } from "../components/Solana/state";
-import { MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
+import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY } from "../components/Solana/constants";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
@@ -78,6 +78,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [join_data, setJoinData] = useState<JoinData[]>([]);
     const [mm_launch_data, setMMLaunchData] = useState<MMLaunchData[]>([]);
     const [mm_user_data, setMMUserData] = useState<MMUserData[]>([]);
+
+    const [amm_data, setAMMData] = useState<AMMData[]>([]);
+
 
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
@@ -218,23 +221,30 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
-                    //console.log("data ", i, launch.page_name);
+                   // console.log("data ", i, launch.page_name);
 
                     launch_data.push(launch);
                 } catch (error) {console.log("bad launch data", data)}
                 continue;
             }
 
-            if (program_data[i][0] === 2) {
+            if (data[0] === 2) {
                 const [user] = UserData.struct.deserialize(data);
+                //console.log("user", user);
                 user_data.push(user);
                 continue;
             }
 
-            if (program_data[i][0] === 5) {
+            if (data[0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(data);
-                //console.log("launch mm", mm);
+               // console.log("launch mm", mm);
                 mm_launch_data.push(mm);
+                continue;
+            }
+
+            if (data[0] === 6) {
+                const [amm] = AMMData.struct.deserialize(data);                
+                amm_data.push(amm);
                 continue;
             }
 
@@ -251,14 +261,15 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (!isEqual) continue;
 
-            if (program_data[i][0] === 3) {
+            if (data[0] === 3) {
                 const [join] = JoinData.struct.deserialize(data);
+                //console.log("join", join);
 
                 join_data.push(join);
                 continue;
             }
 
-            if (program_data[i][0] === 4) {
+            if (data[0] === 4) {
                 const [mm_user] = MMUserData.struct.deserialize(data);
                 //console.log("user mm", mm_user);
 
@@ -367,6 +378,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             checkUserOrders={checkUserOrders}
             userOrders={userOrders}
             userTrades={userTrades}
+            ammData={amm_data}
         >
             {children}
         </AppRootContextProvider>
