@@ -24,7 +24,16 @@ import { toast } from "react-toastify";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getMint, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
+import {
+    getAssociatedTokenAddress,
+    TOKEN_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getMint,
+    getTransferHook,
+    resolveExtraAccountMeta,
+    ExtraAccountMetaAccountDataLayout,
+} from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import useAppRoot from "../../context/useAppRoot";
@@ -143,14 +152,12 @@ const usePlaceMarketOrder = () => {
             PROGRAM,
         )[0];
 
-
         let transfer_hook_pda = PublicKey.findProgramAddressSync(
             [launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("pda")],
             FEES_PROGRAM,
         )[0];
 
         var team_wallet = launch.keys[LaunchKeys.TeamWallet];
-
 
         let team_wsol_account = await getAssociatedTokenAddress(
             wsol_mint, // mint
@@ -167,31 +174,39 @@ const usePlaceMarketOrder = () => {
         );
 
         let mint_account = await getMint(connection, token_mint, "confirmed", TOKEN_2022_PROGRAM_ID);
-        let transfer_hook = getTransferHook(mint_account)
+        let transfer_hook = getTransferHook(mint_account);
 
-        let transfer_hook_program_account : PublicKey | null = null;
-        let transfer_hook_validation_account : PublicKey | null = null;
-        let extra_hook_accounts : AccountMeta[] = [];
+        let transfer_hook_program_account: PublicKey | null = null;
+        let transfer_hook_validation_account: PublicKey | null = null;
+        let extra_hook_accounts: AccountMeta[] = [];
         if (transfer_hook !== null) {
-            console.log(transfer_hook.programId.toString())
+            console.log(transfer_hook.programId.toString());
 
             transfer_hook_program_account = transfer_hook.programId;
-            transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint.toBuffer()], transfer_hook_program_account)[0];
+            transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+                [Buffer.from("extra-account-metas"), token_mint.toBuffer()],
+                transfer_hook_program_account,
+            )[0];
 
             // check if the validation account exists
-            console.log("check extra accounts")
+            console.log("check extra accounts");
             let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
             let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
             console.log(extra_account_metas);
             for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
-                console.log(extra_account_metas.extraAccountsList.extraAccounts[i])
-                let extra = extra_account_metas.extraAccountsList.extraAccounts[i]
-                let meta = await resolveExtraAccountMeta(connection, extra, extra_hook_accounts, Buffer.from([]), transfer_hook_program_account);
-               console.log(meta);
-               extra_hook_accounts.push(meta);
+                console.log(extra_account_metas.extraAccountsList.extraAccounts[i]);
+                let extra = extra_account_metas.extraAccountsList.extraAccounts[i];
+                let meta = await resolveExtraAccountMeta(
+                    connection,
+                    extra,
+                    extra_hook_accounts,
+                    Buffer.from([]),
+                    transfer_hook_program_account,
+                );
+                console.log(meta);
+                extra_hook_accounts.push(meta);
             }
-
         }
         const instruction_data = serialise_PlaceLimit_instruction(order_type, order_type === 0 ? sol_amount : token_amount, []);
 
@@ -224,12 +239,15 @@ const usePlaceMarketOrder = () => {
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-           
+
             for (let i = 0; i < extra_hook_accounts.length; i++) {
-                account_vector.push({ pubkey: extra_hook_accounts[i].pubkey, isSigner:  extra_hook_accounts[i].isSigner, isWritable:  extra_hook_accounts[i].isWritable });
+                account_vector.push({
+                    pubkey: extra_hook_accounts[i].pubkey,
+                    isSigner: extra_hook_accounts[i].isSigner,
+                    isWritable: extra_hook_accounts[i].isWritable,
+                });
             }
         }
-
 
         const instruction = new TransactionInstruction({
             keys: account_vector,

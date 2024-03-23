@@ -180,9 +180,9 @@ export async function check_signature(bearer: string, signature: string): Promis
 }
 
 export interface MetaData {
-    key: PublicKey,
-    signer: boolean,
-    writable: boolean
+    key: PublicKey;
+    signer: boolean;
+    writable: boolean;
 }
 
 interface AccountData {
@@ -211,7 +211,7 @@ export class Token22MintAccount {
         readonly decimals: number,
         readonly isInitialized: number,
         readonly freezeAuthority: COption<PublicKey>,
-        readonly tlvData: number[]
+        readonly tlvData: number[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<Token22MintAccount>(
@@ -360,7 +360,7 @@ export async function RequestTokenHolders(mint: PublicKey): Promise<number> {
         return 0;
     }
 
-    console.log("request token holders:")
+    console.log("request token holders:");
     console.log(program_accounts_result["result"].length);
 
     return program_accounts_result["result"].length;
@@ -529,7 +529,7 @@ export const enum LaunchInstruction {
     cancel_limit_order = 12,
     get_mm_tokens = 13,
     get_mm_rewards = 14,
-    close_account = 15
+    close_account = 15,
 }
 
 export interface LaunchDataUserInput {
@@ -560,7 +560,7 @@ export interface LaunchDataUserInput {
     team_wallet: string;
     token_keypair: Keypair | null;
     // extension data
-    transfer_fee : number;
+    transfer_fee: number;
     max_transfer_fee: number;
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
@@ -596,7 +596,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     transfer_fee: 0,
     max_transfer_fee: 0,
     permanent_delegate: null,
-    transfer_hook_program: null
+    transfer_hook_program: null,
 };
 
 export class myU64 {
@@ -812,7 +812,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         transfer_fee: 0,
         max_transfer_fee: 0,
         permanent_delegate: null,
-        transfer_hook_program: null
+        transfer_hook_program: null,
     };
 
     return data;
@@ -914,7 +914,6 @@ export interface GPAccount {
     data: Buffer;
 }
 
-
 export async function RunGPA(): Promise<GPAccount[]> {
     var body = {
         id: 1,
@@ -942,7 +941,7 @@ export async function RunGPA(): Promise<GPAccount[]> {
         // we dont want the program account
         if (decoded_data[0] === 1) continue;
 
-        result.push({pubkey: new PublicKey(program_accounts_result["result"][i]["pubkey"]), data: decoded_data});
+        result.push({ pubkey: new PublicKey(program_accounts_result["result"][i]["pubkey"]), data: decoded_data });
     }
 
     return result;
@@ -965,8 +964,7 @@ class CreateLaunch_Instruction {
         readonly page_name: string,
         readonly transfer_fee: number,
         readonly max_transfer_fee: bignum,
-        readonly extensions: number
-
+        readonly extensions: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -986,8 +984,7 @@ class CreateLaunch_Instruction {
             ["page_name", utf8String],
             ["transfer_fee", u16],
             ["max_transfer_fee", u64],
-            ["extensions", u8]
-
+            ["extensions", u8],
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1006,8 +1003,7 @@ class CreateLaunch_Instruction {
                 args.page_name!,
                 args.transfer_fee!,
                 args.max_transfer_fee!,
-                args.extensions!
-
+                args.extensions!,
             ),
         "CreateLaunch_Instruction",
     );
@@ -1019,9 +1015,9 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
     // console.log(new_launch_data.closedate.toString());
 
     let extensions =
-            (Extensions.TransferFee * Number(new_launch_data.transfer_fee > 0)) |
-            (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
-            (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
+        (Extensions.TransferFee * Number(new_launch_data.transfer_fee > 0)) |
+        (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
+        (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
     const data = new CreateLaunch_Instruction(
         LaunchInstruction.create_game,
@@ -1039,7 +1035,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.pagename,
         new_launch_data.transfer_fee,
         new_launch_data.max_transfer_fee,
-        extensions
+        extensions,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -1366,7 +1362,6 @@ export class MarketStateLayoutV2 {
         "MarketStateLayoutV2",
     );
 }
-
 
 // transfer hook state
 

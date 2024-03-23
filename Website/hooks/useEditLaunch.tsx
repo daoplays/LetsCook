@@ -59,7 +59,6 @@ const useEditLaunch = () => {
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
 
-
         let amm_seed_keys = [];
         if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
             amm_seed_keys.push(token_mint_pubkey);
@@ -90,7 +89,6 @@ const useEditLaunch = () => {
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-
         console.log("launch account", newLaunchData.current.pagename, launch_data_account.toString());
 
         const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
@@ -102,7 +100,6 @@ const useEditLaunch = () => {
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
             { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
-
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },

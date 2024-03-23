@@ -204,32 +204,34 @@ const TradePage = () => {
         setQuoteAmount(amount);
     }, []);
 
-    const check_price_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
+    const check_price_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
 
-        let event_data = result.data;
-        const [price_data] = TimeSeriesData.struct.deserialize(event_data);
-        console.log("updated price data", price_data);
+            let event_data = result.data;
+            const [price_data] = TimeSeriesData.struct.deserialize(event_data);
+            console.log("updated price data", price_data);
 
-        let data: MarketData[] = [];
+            let data: MarketData[] = [];
 
-        for (let i = 0; i < price_data.data.length; i++) {
-            let item = price_data.data[i];
-            let time = bignum_to_num(item.timestamp) * 60;
+            for (let i = 0; i < price_data.data.length; i++) {
+                let item = price_data.data[i];
+                let time = bignum_to_num(item.timestamp) * 60;
 
-            let open = Buffer.from(item.open).readDoubleLE(0);
-            let high = Buffer.from(item.high).readDoubleLE(0);
-            let low = Buffer.from(item.low).readDoubleLE(0);
-            let close = Buffer.from(item.close).readDoubleLE(0);
-            let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
+                let open = Buffer.from(item.open).readDoubleLE(0);
+                let high = Buffer.from(item.high).readDoubleLE(0);
+                let low = Buffer.from(item.low).readDoubleLE(0);
+                let close = Buffer.from(item.close).readDoubleLE(0);
+                let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
 
-
-            data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-            //console.log("new data", data);
-        }
-        setMarketData(data);
-    }, [launch]);
+                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
+                //console.log("new data", data);
+            }
+            setMarketData(data);
+        },
+        [launch],
+    );
 
     // launch account subscription handler
     useEffect(() => {

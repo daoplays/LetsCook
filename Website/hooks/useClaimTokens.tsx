@@ -6,10 +6,19 @@ import {
     send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
-    request_raw_account_data
+    request_raw_account_data,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getMint, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
+import {
+    getAssociatedTokenAddress,
+    TOKEN_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getMint,
+    getTransferHook,
+    resolveExtraAccountMeta,
+    ExtraAccountMetaAccountDataLayout,
+} from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED, FEES_PROGRAM } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -99,34 +108,40 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             TOKEN_2022_PROGRAM_ID,
         );
 
-       
-
         let mint_account = await getMint(connection, launchData.keys[LaunchKeys.MintAddress], "confirmed", TOKEN_2022_PROGRAM_ID);
-        let transfer_hook = getTransferHook(mint_account)
+        let transfer_hook = getTransferHook(mint_account);
 
-        let transfer_hook_program_account : PublicKey | null = null;
-        let transfer_hook_validation_account : PublicKey | null = null;
-        let extra_hook_accounts : AccountMeta[] = [];
+        let transfer_hook_program_account: PublicKey | null = null;
+        let transfer_hook_validation_account: PublicKey | null = null;
+        let extra_hook_accounts: AccountMeta[] = [];
         if (transfer_hook !== null) {
-            console.log(transfer_hook.programId.toString())
+            console.log(transfer_hook.programId.toString());
 
             transfer_hook_program_account = transfer_hook.programId;
-            transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), launchData.keys[LaunchKeys.MintAddress].toBuffer()], transfer_hook_program_account)[0];
+            transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+                [Buffer.from("extra-account-metas"), launchData.keys[LaunchKeys.MintAddress].toBuffer()],
+                transfer_hook_program_account,
+            )[0];
 
             // check if the validation account exists
-            console.log("check extra accounts")
+            console.log("check extra accounts");
             let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
             let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
             console.log(extra_account_metas);
             for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
-                console.log(extra_account_metas.extraAccountsList.extraAccounts[i])
-                let extra = extra_account_metas.extraAccountsList.extraAccounts[i]
-                let meta = await resolveExtraAccountMeta(connection, extra, extra_hook_accounts, Buffer.from([]), transfer_hook_program_account);
-               console.log(meta);
-               extra_hook_accounts.push(meta);
+                console.log(extra_account_metas.extraAccountsList.extraAccounts[i]);
+                let extra = extra_account_metas.extraAccountsList.extraAccounts[i];
+                let meta = await resolveExtraAccountMeta(
+                    connection,
+                    extra,
+                    extra_hook_accounts,
+                    Buffer.from([]),
+                    transfer_hook_program_account,
+                );
+                console.log(meta);
+                extra_hook_accounts.push(meta);
             }
-
         }
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
 
@@ -155,9 +170,13 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-           
+
             for (let i = 0; i < extra_hook_accounts.length; i++) {
-                account_vector.push({ pubkey: extra_hook_accounts[i].pubkey, isSigner:  extra_hook_accounts[i].isSigner, isWritable:  extra_hook_accounts[i].isWritable });
+                account_vector.push({
+                    pubkey: extra_hook_accounts[i].pubkey,
+                    isSigner: extra_hook_accounts[i].isSigner,
+                    isWritable: extra_hook_accounts[i].isWritable,
+                });
             }
         }
 

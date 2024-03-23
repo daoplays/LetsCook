@@ -29,7 +29,6 @@ export interface OpenOrder {
     account: Order;
 }
 
-
 export function reward_schedule(date: number, launch_data: LaunchData): number {
     let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
     let total_supply = bignum_to_num(launch_data.total_supply);
@@ -98,29 +97,43 @@ export class TimeSeriesData {
     );
 }
 
-
 export class AMMData {
     constructor(
         readonly account_type: number,
+        readonly base_mint: PublicKey,
+        readonly quote_mint: PublicKey,
         readonly base_key: PublicKey,
         readonly quote_key: PublicKey,
         readonly fee: number,
         readonly num_data_accounts: number,
         readonly last_price: number[],
-        readonly transferring: number
+        readonly transferring: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<AMMData>(
         [
             ["account_type", u8],
-            ["base_key",publicKey],
+            ["base_mint", publicKey],
+            ["quote_mint", publicKey],
+            ["base_key", publicKey],
             ["quote_key", publicKey],
             ["fee", u16],
             ["num_data_accounts", u32],
             ["last_price", uniformFixedSizeArray(u8, 4)],
             ["transferring", u8],
         ],
-        (args) => new AMMData(args.account_type!, args.base_key!, args.quote_key!, args.fee!, args.num_data_accounts!, args.last_price!, args.transferring!),
+        (args) =>
+            new AMMData(
+                args.account_type!,
+                args.base_mint!,
+                args.quote_mint!,
+                args.base_key!,
+                args.quote_key!,
+                args.fee!,
+                args.num_data_accounts!,
+                args.last_price!,
+                args.transferring!,
+            ),
         "AMMData",
     );
 }

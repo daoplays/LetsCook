@@ -2,7 +2,20 @@
 
 import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
-import { LaunchData, UserData, bignum_to_num, LaunchDataUserInput, defaultUserInput, JoinData, RunGPA, serialise_basic_instruction, LaunchInstruction, get_current_blockhash, send_transaction, GPAccount } from "../components/Solana/state";
+import {
+    LaunchData,
+    UserData,
+    bignum_to_num,
+    LaunchDataUserInput,
+    defaultUserInput,
+    JoinData,
+    RunGPA,
+    serialise_basic_instruction,
+    LaunchInstruction,
+    get_current_blockhash,
+    send_transaction,
+    GPAccount,
+} from "../components/Solana/state";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY } from "../components/Solana/constants";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
@@ -81,7 +94,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [amm_data, setAMMData] = useState<AMMData[]>([]);
 
-
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
 
@@ -155,7 +167,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         async ({ account }: { account: PublicKey }) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-           
             const instruction_data = serialise_basic_instruction(LaunchInstruction.close_account);
 
             var account_vector = [
@@ -182,8 +193,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
                 var transaction_response = await send_transaction("", encoded_transaction);
-
-
             } catch (error) {
                 console.log(error);
                 return;
@@ -213,18 +222,19 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         console.log("program_data", program_data.length);
 
         for (let i = 0; i < program_data.length; i++) {
-
             let data = program_data[i].data;
 
-           //CloseAccount({account: program_data[i].pubkey});
+            //CloseAccount({account: program_data[i].pubkey});
 
             if (data[0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
-                   // console.log("data ", i, launch.page_name);
+                    // console.log("data ", i, launch.page_name);
 
                     launch_data.push(launch);
-                } catch (error) {console.log("bad launch data", data)}
+                } catch (error) {
+                    console.log("bad launch data", data);
+                }
                 continue;
             }
 
@@ -237,13 +247,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(data);
-               // console.log("launch mm", mm);
+                // console.log("launch mm", mm);
                 mm_launch_data.push(mm);
                 continue;
             }
 
             if (data[0] === 6) {
-                const [amm] = AMMData.struct.deserialize(data);                
+                const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
                 continue;
             }

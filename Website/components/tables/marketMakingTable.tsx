@@ -17,7 +17,6 @@ interface Header {
     field: string | null;
 }
 
-
 function filterTable(list: LaunchData[]) {
     if (list === null || list === undefined) return [];
 
@@ -52,19 +51,17 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         }
     };
 
-    console.log(ammData);
-    console.log(trade_list);
+    //console.log(ammData);
+    //console.log(trade_list);
 
     let amm_launches: AMMLaunch[] = [];
     for (let i = 0; i < ammData.length; i++) {
-        console.log(ammData[i].base_key.toString());
         const ammLaunch = trade_list.filter((launch) => {
-            return ammData[i].base_key.equals(launch.keys[LaunchKeys.MintAddress]);
+            return ammData[i].base_mint.equals(launch.keys[LaunchKeys.MintAddress]);
         });
-        if (ammLaunch.length === 0 || ammLaunch[0] === undefined)
-            continue;
-        
-        console.log(ammLaunch[0].page_name, ammData[i].base_key.toString());
+        if (ammLaunch.length === 0 || ammLaunch[0] === undefined) continue;
+
+        console.log(ammLaunch[0].page_name, ammData[i].base_mint.toString());
         let amm_launch: AMMLaunch = { amm_data: ammData[i], launch_data: ammLaunch[0] };
         amm_launches.push(amm_launch);
     }
@@ -163,12 +160,12 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch | any }) => {
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch.decimals, 3))}
+                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch.decimals, 3))}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
-            
+
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>

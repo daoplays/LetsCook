@@ -95,7 +95,7 @@ function Navigation() {
                                 <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
                             </Link>
                         </Tooltip>
-                    </Show> 
+                    </Show>
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>

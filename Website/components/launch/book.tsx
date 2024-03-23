@@ -10,7 +10,7 @@ import {
     PROD,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
-    FEES_PROGRAM
+    FEES_PROGRAM,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -367,7 +367,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
 
-
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
             METAPLEX_META,
@@ -392,7 +391,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
 
-
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
@@ -410,7 +408,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
-          
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
@@ -421,18 +418,20 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
 
         if (newLaunchData.current.permanent_delegate !== null) {
-            console.log("add PD")
+            console.log("add PD");
             account_vector.push({ pubkey: newLaunchData.current.permanent_delegate, isSigner: false, isWritable: false });
         }
         if (newLaunchData.current.transfer_hook_program !== null) {
-            console.log("add hook", newLaunchData.current.transfer_hook_program.toString())
+            console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
         }
         if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
-            console.log("add hook extra")
-            let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
+            console.log("add hook extra");
+            let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+                [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
+                FEES_PROGRAM,
+            )[0];
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-
         }
 
         const list_instruction = new TransactionInstruction({

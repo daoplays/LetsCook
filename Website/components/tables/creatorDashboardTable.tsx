@@ -14,7 +14,14 @@ import useInitAMM from "../../hooks/useInitAMM";
 import convertToBlob from "../../utils/convertImageToBlob";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
 import { LaunchFlags, LaunchKeys, RPC_NODE, WSS_NODE, Extensions } from "../Solana/constants";
-import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, unpackAccount, getTransferFeeAmount, createWithdrawWithheldTokensFromAccountsInstruction } from "@solana/spl-token";
+import {
+    getAssociatedTokenAddress,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    unpackAccount,
+    getTransferFeeAmount,
+    createWithdrawWithheldTokensFromAccountsInstruction,
+} from "@solana/spl-token";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 
@@ -32,7 +39,6 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     const { sm } = useResponsive();
     const { checkProgramData } = useAppRoot();
     const wallet = useWallet();
-
 
     const [sortedField, setSortedField] = useState<string | null>("date");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
@@ -65,8 +71,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         return 0;
     });
 
-    const GetFeeAccounts = useCallback(async (launch : LaunchData) => {
-
+    const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const allAccounts = await connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
@@ -97,58 +102,57 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
         console.log(allAccounts);
         console.log(accountsToWithdrawFrom);
-       return accountsToWithdrawFrom;
+        return accountsToWithdrawFrom;
     }, []);
 
-    const GetFees = useCallback(async (launch: LaunchData) => {
-        if (wallet.publicKey === null) return;
+    const GetFees = useCallback(
+        async (launch: LaunchData) => {
+            if (wallet.publicKey === null) return;
 
-        let feeAccounts = await GetFeeAccounts(launch);
-        let user_token_key = await getAssociatedTokenAddress(
-            launch.keys[LaunchKeys.MintAddress], // mint
-            launch.keys[LaunchKeys.TeamWallet], // owner
-            true, // allow owner off curve,
-            TOKEN_2022_PROGRAM_ID,
-            ASSOCIATED_TOKEN_PROGRAM_ID,
-        );
+            let feeAccounts = await GetFeeAccounts(launch);
+            let user_token_key = await getAssociatedTokenAddress(
+                launch.keys[LaunchKeys.MintAddress], // mint
+                launch.keys[LaunchKeys.TeamWallet], // owner
+                true, // allow owner off curve,
+                TOKEN_2022_PROGRAM_ID,
+                ASSOCIATED_TOKEN_PROGRAM_ID,
+            );
 
-        let accountsToWithdrawFrom = [];
-        for (let i = 0; i < feeAccounts.length; i++) {
-            accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
-        }
+            let accountsToWithdrawFrom = [];
+            for (let i = 0; i < feeAccounts.length; i++) {
+                accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
+            }
 
-        let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
-            launch.keys[LaunchKeys.MintAddress],
-            user_token_key,
-            wallet.publicKey,
-            [],
-            accountsToWithdrawFrom,
-            TOKEN_2022_PROGRAM_ID,
-        );
+            let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
+                launch.keys[LaunchKeys.MintAddress],
+                user_token_key,
+                wallet.publicKey,
+                [],
+                accountsToWithdrawFrom,
+                TOKEN_2022_PROGRAM_ID,
+            );
 
-        let txArgs = await get_current_blockhash("");
+            let txArgs = await get_current_blockhash("");
 
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
+            let transaction = new Transaction(txArgs);
+            transaction.feePayer = wallet.publicKey;
 
-        transaction.add(withdraw_idx);
+            transaction.add(withdraw_idx);
 
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+            try {
+                let signed_transaction = await wallet.signTransaction(transaction);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-            var transaction_response = await send_transaction("", encoded_transaction);
+                var transaction_response = await send_transaction("", encoded_transaction);
 
-
-            let signature = transaction_response.result;
-            console.log("get tokens", signature);
-
-          
-        } catch (error) {
-            console.log(error)
-        }
-
-    }, [wallet]);
+                let signature = transaction_response.result;
+                console.log("get tokens", signature);
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        [wallet],
+    );
 
     return (
         <TableContainer>
@@ -191,7 +195,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
                 <tbody>
                     {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees}/>
+                        <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees} />
                     ))}
                 </tbody>
             </table>
@@ -199,7 +203,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     );
 };
 
-const LaunchCard = ({ launch, GetFees}: { launch: LaunchData, GetFees : (launch: LaunchData) => Promise<void>}) => {
+const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch: LaunchData) => Promise<void> }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { InitAMM } = useInitAMM(launch);
@@ -340,13 +344,11 @@ const LaunchCard = ({ launch, GetFees}: { launch: LaunchData, GetFees : (launch:
                         </Button>
                     )}
 
-                   
-                    {launch.flags[LaunchFlags.LPState] == 2 && launch.flags.length > LaunchFlags.Extensions && (launch.flags[LaunchFlags.Extensions] & Extensions.TransferFee) > 0 &&
-                        <Button onClick={(e) => GetFeesClicked(e)}>
-                        Collect Fees
-                        </Button>
-                        
-                    }
+                    {launch.flags[LaunchFlags.LPState] == 2 &&
+                        launch.flags.length > LaunchFlags.Extensions &&
+                        (launch.flags[LaunchFlags.Extensions] & Extensions.TransferFee) > 0 && (
+                            <Button onClick={(e) => GetFeesClicked(e)}>Collect Fees</Button>
+                        )}
                 </HStack>
             </td>
         </tr>

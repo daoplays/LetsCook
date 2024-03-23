@@ -95,5 +95,5 @@ export const Extensions = {
     None: 0,
     TransferFee: 1,
     PermanentDelegate: 2,
-    TransferHook: 4
+    TransferHook: 4,
 };

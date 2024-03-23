@@ -46,7 +46,7 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
 
     const sortedLaunches = [...bags].sort((a, b) => {
         if (a.launch_data === undefined || b.launch_data === undefined) {
-            return 0
+            return 0;
         }
         if (sortedField === "symbol") {
             return reverseSort
@@ -250,7 +250,6 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             </td>
             <td style={{ minWidth: md ? "150px" : "" }}>
                 <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
-                    
                     {MINTED_OUT || MINT_FAILED ? (
                         <Button
                             onClick={(e) => handleButtonClick(e)}
