@@ -219,10 +219,10 @@ const TradePage = () => {
                 let item = price_data.data[i];
                 let time = bignum_to_num(item.timestamp) * 60;
 
-                let open = Buffer.from(item.open).readDoubleLE(0);
-                let high = Buffer.from(item.high).readDoubleLE(0);
-                let low = Buffer.from(item.low).readDoubleLE(0);
-                let close = Buffer.from(item.close).readDoubleLE(0);
+                let open = Buffer.from(item.open).readFloatLE(0);
+                let high = Buffer.from(item.high).readFloatLE(0);
+                let low = Buffer.from(item.low).readFloatLE(0);
+                let close = Buffer.from(item.close).readFloatLE(0);
                 let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
 
                 data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
@@ -335,10 +335,10 @@ const TradePage = () => {
                 let time = bignum_to_num(item.timestamp) * 60;
                 let date = Math.floor(time / 24 / 60 / 60) * 24 * 60 * 60;
 
-                let open = Buffer.from(item.open).readDoubleLE(0);
-                let high = Buffer.from(item.high).readDoubleLE(0);
-                let low = Buffer.from(item.low).readDoubleLE(0);
-                let close = Buffer.from(item.close).readDoubleLE(0);
+                let open = Buffer.from(item.open).readFloatLE(0);
+                let high = Buffer.from(item.high).readFloatLE(0);
+                let low = Buffer.from(item.low).readFloatLE(0);
+                let close = Buffer.from(item.close).readFloatLE(0);
                 let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
 
                 if (now - time < 24 * 60 * 60) {

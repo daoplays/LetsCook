@@ -31,6 +31,16 @@ interface AMMLaunch {
     launch_data: LaunchData;
 }
 
+async function getSOLPrice() {
+    // Default options are marked with *
+    const options = { method: "GET" };
+
+    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
+
+    return result["data"]["SOL"]["price"];
+}
+
+
 const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
@@ -41,6 +51,9 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
     let trade_list = filterTable(launchList);
+
+    //let sol_price = await getSOLPrice();
+
 
     const handleHeaderClick = (e) => {
         if (e == sortedField) {
@@ -117,14 +130,14 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     );
 };
 
-const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch | any }) => {
+const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch.last_interaction)) / 24 / 60 / 60);
-    let mm_rewards = reward_schedule(current_date, amm_launch.launch);
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch_data.last_interaction)) / 24 / 60 / 60);
+    let mm_rewards = reward_schedule(current_date, amm_launch.launch_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
-
+    console.log(amm_launch)
     return (
         <tr
             style={{
@@ -138,21 +151,21 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch | any }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/trade/` + amm_launch.launch.page_name)}
+            onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)}
         >
             <td style={{ minWidth: sm ? "90px" : "120px" }}>
                 <HStack px={3} spacing={3} justify="center">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={amm_launch.launch.icon}
+                            src={amm_launch.launch_data.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {amm_launch.launch.symbol}
+                        {amm_launch.launch_data.symbol}
                     </Text>
                 </HStack>
             </td>
@@ -160,7 +173,7 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch | any }) => {
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch.decimals, 3))}
+                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch_data.decimals, 3))}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -180,7 +193,7 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch | any }) => {
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
                         {mm_rewards}
                     </Text>
-                    <Image src={amm_launch.launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={amm_launch.launch_data.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
         </tr>

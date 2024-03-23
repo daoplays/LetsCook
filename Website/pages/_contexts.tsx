@@ -218,6 +218,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let join_data: JoinData[] = [];
         let mm_launch_data: MMLaunchData[] = [];
         let mm_user_data: MMUserData[] = [];
+        let amm_data: AMMData[] = [];
 
         console.log("program_data", program_data.length);
 
@@ -294,6 +295,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setJoinData(join_data);
         setMMLaunchData(mm_launch_data);
         setMMUserData(mm_user_data);
+        setAMMData(amm_data);
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
