@@ -2,13 +2,13 @@
 
 import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
-import { LaunchData, UserData, bignum_to_num, LaunchDataUserInput, defaultUserInput, JoinData, RunGPA } from "../components/Solana/state";
+import { LaunchData, UserData, bignum_to_num, LaunchDataUserInput, defaultUserInput, JoinData, RunGPA, serialise_basic_instruction, LaunchInstruction, get_current_blockhash, send_transaction, GPAccount } from "../components/Solana/state";
 import { MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags } from "../components/Solana/constants";
-import { PublicKey, Connection, Keypair } from "@solana/web3.js";
+import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY } from "../components/Solana/constants";
+import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
-
+import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
 
 async function getUserTrades(wallet: WalletContextState): Promise<TradeHistoryItem[]> {
@@ -66,7 +66,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
 
-    const [program_data, setProgramData] = useState<Buffer[] | null>(null);
+    const [program_data, setProgramData] = useState<GPAccount[] | null>(null);
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
@@ -148,6 +148,47 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
     }, [wallet, check_user_update]);
 
+    const CloseAccount = useCallback(
+        async ({ account }: { account: PublicKey }) => {
+            if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
+
+           
+            const instruction_data = serialise_basic_instruction(LaunchInstruction.close_account);
+
+            var account_vector = [
+                { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+                { pubkey: account, isSigner: false, isWritable: true },
+                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            ];
+
+            const list_instruction = new TransactionInstruction({
+                keys: account_vector,
+                programId: PROGRAM,
+                data: instruction_data,
+            });
+
+            let txArgs = await get_current_blockhash("");
+
+            let transaction = new Transaction(txArgs);
+            transaction.feePayer = wallet.publicKey;
+
+            transaction.add(list_instruction);
+
+            try {
+                let signed_transaction = await wallet.signTransaction(transaction);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+                var transaction_response = await send_transaction("", encoded_transaction);
+
+
+            } catch (error) {
+                console.log(error);
+                return;
+            }
+        },
+        [wallet],
+    );
+
     useEffect(() => {
         if (program_data === null) return;
 
@@ -166,25 +207,32 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_launch_data: MMLaunchData[] = [];
         let mm_user_data: MMUserData[] = [];
 
+        console.log("program_data", program_data.length);
+
         for (let i = 0; i < program_data.length; i++) {
-            if (program_data[i][0] === 0) {
+
+            let data = program_data[i].data;
+
+           //CloseAccount({account: program_data[i].pubkey});
+
+            if (data[0] === 0) {
                 try {
-                    const [launch] = LaunchData.struct.deserialize(program_data[i]);
+                    const [launch] = LaunchData.struct.deserialize(data);
                     //console.log("data ", i, launch.page_name);
 
                     launch_data.push(launch);
-                } catch (error) {console.log("bad launch data", program_data[i])}
+                } catch (error) {console.log("bad launch data", data)}
                 continue;
             }
 
             if (program_data[i][0] === 2) {
-                const [user] = UserData.struct.deserialize(program_data[i]);
+                const [user] = UserData.struct.deserialize(data);
                 user_data.push(user);
                 continue;
             }
 
             if (program_data[i][0] === 5) {
-                const [mm] = MMLaunchData.struct.deserialize(program_data[i]);
+                const [mm] = MMLaunchData.struct.deserialize(data);
                 //console.log("launch mm", mm);
                 mm_launch_data.push(mm);
                 continue;
@@ -194,7 +242,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (!have_wallet) continue;
 
             // both join and MM user data have the user key in the same place
-            let comp_wallet_bytes = new Uint8Array(program_data[i].slice(1, 33));
+            let comp_wallet_bytes = new Uint8Array(data.slice(1, 33));
 
             let isEqual = true;
             for (let i = 0; i < wallet_bytes.length && isEqual; i++) {
@@ -204,14 +252,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (!isEqual) continue;
 
             if (program_data[i][0] === 3) {
-                const [join] = JoinData.struct.deserialize(program_data[i]);
+                const [join] = JoinData.struct.deserialize(data);
 
                 join_data.push(join);
                 continue;
             }
 
             if (program_data[i][0] === 4) {
-                const [mm_user] = MMUserData.struct.deserialize(program_data[i]);
+                const [mm_user] = MMUserData.struct.deserialize(data);
                 //console.log("user mm", mm_user);
 
                 mm_user_data.push(mm_user);

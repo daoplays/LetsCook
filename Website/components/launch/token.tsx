@@ -14,10 +14,11 @@ import {
     Box,
     Checkbox,
     Tooltip,
+    Divider
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution } from "../../components/Solana/state";
-import { DEFAULT_FONT_SIZE } from "../../components/Solana/constants";
+import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
+import { DEFAULT_FONT_SIZE, FEES_PROGRAM } from "../../components/Solana/constants";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import WoodenButton from "../Buttons/woodenButton";
@@ -155,7 +156,16 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             let attempts = 0;
             while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, tokenStart.length) !== tokenStart) {
                 attempts += 1;
-                newLaunchData.current.token_keypair = Keypair.generate();
+                let seed_buffer = []
+                for (let i = 0; i < 32; i++) {
+                    seed_buffer.push(Math.floor(Math.random()*255))
+                }
+                let seed = new Uint8Array(seed_buffer)
+               
+                newLaunchData.current.token_keypair = Keypair.fromSeed(seed);
+                if (attempts % 1000 === 0) {
+                    console.log("attempts: ", attempts)
+                }
             }
 
             console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
@@ -175,6 +185,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
         newLaunchData.current.transfer_fee = transferFee;
         newLaunchData.current.max_transfer_fee = maxTransferFee * Math.pow(10, newLaunchData.current.decimals);
+
+        if (permanentDelegate !== "") {
+            newLaunchData.current.permanent_delegate = new PublicKey(permanentDelegate)
+        }
+
+        if (transferHookID !== "") {
+            newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID)
+        }
 
         setScreen("details");
     }
@@ -293,6 +311,50 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </VStack>
                         </HStack>
 
+
+                        <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
+                                        Total Supply:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            disabled={newLaunchData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="Enter Token Total Supply"
+                                            value={totalSupply}
+                                            onChange={(e) => {
+                                                setTotalSupply(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+
+                                <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
+                                        Decimals:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            disabled={newLaunchData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="1-9"
+                                            value={decimal}
+                                            onChange={(e) => {
+                                                setDecimal(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+                            </HStack>
+
+                        <Divider/>
                         <VStack mt={lg ? 1 : 5} spacing={lg ? 8 : 10} w="100%">
                         <Text  className={`${styles.textLabel} font-face-kg`} color={"white"} style={{ width: "174px" }}>
                                 Token Extensions:
@@ -348,9 +410,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
                                                 size={lg ? "md" : "lg"}
                                                 className={styles.inputBox}
-                                                placeholder="Enter Transfer Hook Program ID"
+                                                placeholder="Enter Permanent Delegate ID"
                                                 value={permanentDelegate}
-                                                onChange={(e) => {setPermanentDelegate(e.target.value); setTransferHookID("")}}
+                                                onChange={(e) => {setPermanentDelegate(e.target.value); setTransferHookID(FEES_PROGRAM.toString())}}
                                             />
                                         </div>
                                         <Tooltip label="Will enforce transfer hook to stop delegate transfers from lets cook AMM" hasArrow fontSize="large" offset={[0, 10]}>
@@ -373,67 +435,19 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 className={styles.inputBox}
                                                 placeholder="Enter Transfer Hook Program ID"
                                                 value={transferHookID}
-                                                onChange={(e) => {setTransferHookID(e.target.value)}}
+                                                onChange={(e) => {setTransferHookID(e.target.value); setPermanentDelegate("")}}
                                             />
                                         </div>
                                         <HStack w="340px" spacing={3}>
-                                            <Checkbox
-                                                size="lg"
-                                                onChange={() => {
-                                                    setIsCustomProgramId(!isCustomProgramId);
-                                                }}
-                                            >
-                                                Let&apos;s Cook Fees Hook
-                                            </Checkbox>
-                                            <Tooltip label="Explanation Here" hasArrow fontSize="large" offset={[0, 10]}>
+                                            <Tooltip label="Users must initialisethe  extra account metadata for the mint themselves" hasArrow fontSize="large" offset={[0, 10]}>
                                                 <Image width={25} height={25} src="/images/help.png" alt="Help" />
                                             </Tooltip>
                                         </HStack>
                                     </HStack>
                                 </HStack>
                             </HStack>
-
-                            <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                        Total Supply:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            placeholder="Enter Token Total Supply"
-                                            value={totalSupply}
-                                            onChange={(e) => {
-                                                setTotalSupply(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
-
-                                <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
-                                        Decimals:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            placeholder="1-9"
-                                            value={decimal}
-                                            onChange={(e) => {
-                                                setDecimal(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
-                            </HStack>
+                            <Divider/>
+                   
 
                             <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={0} className={styles.eachField}>

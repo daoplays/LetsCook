@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import useInitAMM from "../../hooks/useInitAMM";
 import convertToBlob from "../../utils/convertImageToBlob";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
-import { LaunchFlags, LaunchKeys, RPC_NODE, WSS_NODE } from "../Solana/constants";
+import { LaunchFlags, LaunchKeys, RPC_NODE, WSS_NODE, Extensions } from "../Solana/constants";
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, unpackAccount, getTransferFeeAmount, createWithdrawWithheldTokensFromAccountsInstruction } from "@solana/spl-token";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -339,7 +339,9 @@ const LaunchCard = ({ launch, GetFees}: { launch: LaunchData, GetFees : (launch:
                             Edit
                         </Button>
                     )}
-                    {launch.flags[LaunchFlags.LPState] == 2 && 
+
+                   
+                    {launch.flags[LaunchFlags.LPState] == 2 && launch.flags.length > LaunchFlags.Extensions && (launch.flags[LaunchFlags.Extensions] & Extensions.TransferFee) > 0 &&
                         <Button onClick={(e) => GetFeesClicked(e)}>
                         Collect Fees
                         </Button>

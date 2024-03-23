@@ -8,8 +8,11 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     request_raw_account_data,
+    Token22MintAccount,
+    ExtraAccountMetaHead,
+    MetaData
 } from "../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { SOL_ACCOUNT_SEED, PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, FEES_PROGRAM } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -17,7 +20,7 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import { getAssociatedTokenAddress, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, getMint, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout, ExtraAccountMeta } from "@solana/spl-token";
 
 import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
 import { make_tweet } from "../components/launch/twitter";
@@ -112,39 +115,35 @@ const useInitAMM = (launchData: LaunchData) => {
             [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
             PROGRAM,
         )[0];
+      
 
-        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
+        let mint_account = await getMint(connection, token_mint_pubkey, "confirmed", TOKEN_2022_PROGRAM_ID);
+        let transfer_hook = getTransferHook(mint_account)
 
-        let transfer_hook_pda = PublicKey.findProgramAddressSync(
-            [token_mint_pubkey.toBytes(), Buffer.from("pda")],
-            FEES_PROGRAM,
-        )[0];
+        let transfer_hook_program_account : PublicKey | null = null;
+        let transfer_hook_validation_account : PublicKey | null = null;
+        let extra_hook_accounts : AccountMeta[] = [];
+        if (transfer_hook !== null) {
+            console.log(transfer_hook.programId.toString())
 
-        let team_wsol_account = await getAssociatedTokenAddress(
-            wrapped_sol_mint, // mint
-            team_wallet, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
+            transfer_hook_program_account = transfer_hook.programId;
+            transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], transfer_hook_program_account)[0];
 
-        let source_wsol_account = await getAssociatedTokenAddress(
-            wrapped_sol_mint, // mint
-            program_sol_account, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
+            // check if the validation account exists
+            console.log("check extra accounts")
+            let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
-        // check if the validation account exists
-        console.log("check extra accounts")
-        let include_hook = false;
-        let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
-        if (hook_accounts !== null) {
-            console.log("have account data", hook_accounts);
-            include_hook = true;
-            //const [extra_accounts] = ExtraAccountMetaList.struct.deserialize(hook_accounts);
-            //console.log(extra_accounts);
+            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
+            console.log(extra_account_metas);
+            for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
+                console.log(extra_account_metas.extraAccountsList.extraAccounts[i])
+                let extra = extra_account_metas.extraAccountsList.extraAccounts[i]
+                let meta = await resolveExtraAccountMeta(connection, extra, extra_hook_accounts, Buffer.from([]), transfer_hook_program_account);
+               console.log(meta);
+               extra_hook_accounts.push(meta);
+            }
+
         }
-
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
 
@@ -174,12 +173,13 @@ const useInitAMM = (launchData: LaunchData) => {
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
-        if (include_hook) {
-            account_vector.push({ pubkey: FEES_PROGRAM, isSigner: false, isWritable: true });
+        if (transfer_hook_program_account !== null) {
+            account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-            account_vector.push({ pubkey: transfer_hook_pda, isSigner: false, isWritable: true });
-            account_vector.push({ pubkey: source_wsol_account, isSigner: false, isWritable: true });
-            account_vector.push({ pubkey: team_wsol_account, isSigner: false, isWritable: true });
+           
+            for (let i = 0; i < extra_hook_accounts.length; i++) {
+                account_vector.push({ pubkey: extra_hook_accounts[i].pubkey, isSigner:  extra_hook_accounts[i].isSigner, isWritable:  extra_hook_accounts[i].isWritable });
+            }
         }
 
 

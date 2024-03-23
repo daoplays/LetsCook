@@ -164,14 +164,6 @@ const LaunchCard = ({ launch }: { launch: LaunchData | any }) => {
                     <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
-
-            <td style={{ minWidth: md ? "150px" : "" }}>
-                <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
-                    <Link href={`/trade/${launch.page_name}`} target="_blank">
-                        <Button onClick={(e) => e.stopPropagation()}>Trade</Button>
-                    </Link>
-                </HStack>
-            </td>
         </tr>
     );
 };

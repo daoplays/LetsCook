@@ -88,4 +88,12 @@ export enum LaunchFlags {
     TokenProgramVersion = 3,
     BookProvider = 4,
     AMMProvider = 5,
+    Extensions = 6,
 }
+
+export const Extensions = {
+    None: 0,
+    TransferFee: 1,
+    PermanentDelegate: 2,
+    TransferHook: 4
+};

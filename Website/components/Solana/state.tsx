@@ -17,7 +17,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
-import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials } from "./constants";
+import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials, Extensions } from "./constants";
 import { Box } from "@chakra-ui/react";
 
 import BN from "bn.js";
@@ -179,6 +179,12 @@ export async function check_signature(bearer: string, signature: string): Promis
     return null;
 }
 
+export interface MetaData {
+    key: PublicKey,
+    signer: boolean,
+    writable: boolean
+}
+
 interface AccountData {
     id: number;
     jsonrpc: string;
@@ -195,6 +201,41 @@ interface AccountData {
         };
     };
     error: string;
+}
+
+export class Token22MintAccount {
+    constructor(
+        readonly address: PublicKey,
+        readonly mintAuthority: COption<PublicKey>,
+        readonly supply: bignum,
+        readonly decimals: number,
+        readonly isInitialized: number,
+        readonly freezeAuthority: COption<PublicKey>,
+        readonly tlvData: number[]
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<Token22MintAccount>(
+        [
+            ["address", publicKey],
+            ["mintAuthority", publicKey],
+            ["supply", u64],
+            ["decimals", u8],
+            ["isInitialized", u8],
+            ["freezeAuthority", coption(publicKey)],
+            ["tlvData", array(u8)],
+        ],
+        (args) =>
+            new Token22MintAccount(
+                args.address!,
+                args.mintAuthority!,
+                args.supply!,
+                args.decimals!,
+                args.isInitialized!,
+                args.freezeAuthority!,
+                args.tlvData!,
+            ),
+        "Token22MintAccount",
+    );
 }
 
 export class TokenAccount {
@@ -488,6 +529,7 @@ export const enum LaunchInstruction {
     cancel_limit_order = 12,
     get_mm_tokens = 13,
     get_mm_rewards = 14,
+    close_account = 15
 }
 
 export interface LaunchDataUserInput {
@@ -520,6 +562,8 @@ export interface LaunchDataUserInput {
     // extension data
     transfer_fee : number;
     max_transfer_fee: number;
+    permanent_delegate: PublicKey | null;
+    transfer_hook_program: PublicKey | null;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -551,6 +595,8 @@ export const defaultUserInput: LaunchDataUserInput = {
     token_keypair: null,
     transfer_fee: 0,
     max_transfer_fee: 0,
+    permanent_delegate: null,
+    transfer_hook_program: null
 };
 
 export class myU64 {
@@ -765,6 +811,8 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         token_keypair: null,
         transfer_fee: 0,
         max_transfer_fee: 0,
+        permanent_delegate: null,
+        transfer_hook_program: null
     };
 
     return data;
@@ -861,7 +909,13 @@ export async function request_launch_data(bearer: string, pubkey: PublicKey): Pr
     return data;
 }
 
-export async function RunGPA(): Promise<Buffer[]> {
+export interface GPAccount {
+    pubkey: PublicKey;
+    data: Buffer;
+}
+
+
+export async function RunGPA(): Promise<GPAccount[]> {
     var body = {
         id: 1,
         jsonrpc: "2.0",
@@ -888,7 +942,7 @@ export async function RunGPA(): Promise<Buffer[]> {
         // we dont want the program account
         if (decoded_data[0] === 1) continue;
 
-        result.push(decoded_data);
+        result.push({pubkey: new PublicKey(program_accounts_result["result"][i]["pubkey"]), data: decoded_data});
     }
 
     return result;
@@ -911,6 +965,7 @@ class CreateLaunch_Instruction {
         readonly page_name: string,
         readonly transfer_fee: number,
         readonly max_transfer_fee: bignum,
+        readonly extensions: number
 
     ) {}
 
@@ -930,7 +985,9 @@ class CreateLaunch_Instruction {
             ["ticket_price", u64],
             ["page_name", utf8String],
             ["transfer_fee", u16],
-            ["max_transfer_fee", u64]
+            ["max_transfer_fee", u64],
+            ["extensions", u8]
+
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -948,7 +1005,9 @@ class CreateLaunch_Instruction {
                 args.ticket_price!,
                 args.page_name!,
                 args.transfer_fee!,
-                args.max_transfer_fee!
+                args.max_transfer_fee!,
+                args.extensions!
+
             ),
         "CreateLaunch_Instruction",
     );
@@ -958,6 +1017,11 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
+
+    let extensions =
+            (Extensions.TransferFee * Number(new_launch_data.transfer_fee > 0)) |
+            (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
+            (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
     const data = new CreateLaunch_Instruction(
         LaunchInstruction.create_game,
@@ -974,7 +1038,8 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
         new_launch_data.transfer_fee,
-        new_launch_data.max_transfer_fee
+        new_launch_data.max_transfer_fee,
+        extensions
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

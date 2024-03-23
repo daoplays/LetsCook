@@ -145,7 +145,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             let teamPubKey = new PublicKey(teamWallet);
             balance = await request_current_balance("", teamPubKey);
 
-            console.log("check balance", teamPubKey.toString(), balance);
+            //console.log("check balance", teamPubKey.toString(), balance);
 
             if (balance == 0) {
                 toast.error("Team wallet does not exist");
@@ -392,19 +392,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
 
-        let team_token_account = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
-            team_wallet, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-
-        let hook_pda_key = PublicKey.findProgramAddressSync(
-            [token_mint_pubkey.toBuffer(), Buffer.from("pda")],
-            FEES_PROGRAM,
-        )[0];
-
-        let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
@@ -423,11 +410,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
-            { pubkey: hook_pda_key, isSigner: false, isWritable: true },
-            { pubkey: team_token_account, isSigner: false, isWritable: true },
-            { pubkey: FEES_PROGRAM, isSigner: false, isWritable: true },
-            { pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true },
-
+          
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
@@ -436,6 +419,21 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
+
+        if (newLaunchData.current.permanent_delegate !== null) {
+            console.log("add PD")
+            account_vector.push({ pubkey: newLaunchData.current.permanent_delegate, isSigner: false, isWritable: false });
+        }
+        if (newLaunchData.current.transfer_hook_program !== null) {
+            console.log("add hook", newLaunchData.current.transfer_hook_program.toString())
+            account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
+        }
+        if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
+            console.log("add hook extra")
+            let transfer_hook_validation_account = PublicKey.findProgramAddressSync([Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()], FEES_PROGRAM)[0];
+            account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+
+        }
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

@@ -17,15 +17,6 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import {
-    Token,
-    DEVNET_PROGRAM_ID,
-    MAINNET_PROGRAM_ID,
-    Liquidity,
-    SYSTEM_PROGRAM_ID,
-    RENT_PROGRAM_ID,
-    LOOKUP_TABLE_CACHE,
-} from "@raydium-io/raydium-sdk";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
