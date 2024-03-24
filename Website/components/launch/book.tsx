@@ -281,6 +281,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 return;
             }
 
+            console.log(receipt);
+
             let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
             let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.banner_file.name].id;
 
@@ -424,15 +426,18 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         if (newLaunchData.current.transfer_hook_program !== null) {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
+
+            if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
+                console.log("add hook extra");
+                let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+                    [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
+                    FEES_PROGRAM,
+                )[0];
+                account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+            }
+            
         }
-        if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
-            console.log("add hook extra");
-            let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
-                [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
-                FEES_PROGRAM,
-            )[0];
-            account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-        }
+        
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
