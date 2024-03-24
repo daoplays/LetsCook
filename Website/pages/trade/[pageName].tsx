@@ -879,15 +879,6 @@ const InfoContent = ({
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    HOLDERS:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {num_holders}
-                </Text>
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     HYPE:
                 </Text>
                 <HypeVote launch_data={launch} />
