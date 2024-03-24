@@ -144,6 +144,16 @@ const usePlaceMarketOrder = () => {
             TOKEN_PROGRAM_ID,
         );
 
+        var team_wallet = launch.keys[LaunchKeys.TeamWallet];
+
+        let team_token_account = await getAssociatedTokenAddress(
+            token_mint, // mint
+            team_wallet, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let index_buffer = uInt32ToLEBytes(0);
@@ -151,27 +161,6 @@ const usePlaceMarketOrder = () => {
             [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
             PROGRAM,
         )[0];
-
-        let transfer_hook_pda = PublicKey.findProgramAddressSync(
-            [launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("pda")],
-            FEES_PROGRAM,
-        )[0];
-
-        var team_wallet = launch.keys[LaunchKeys.TeamWallet];
-
-        let team_wsol_account = await getAssociatedTokenAddress(
-            wsol_mint, // mint
-            team_wallet, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
-
-        let user_wsol_account = await getAssociatedTokenAddress(
-            wsol_mint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
 
         let mint_account = await getMint(connection, token_mint, "confirmed", TOKEN_2022_PROGRAM_ID);
         let transfer_hook = getTransferHook(mint_account);
@@ -224,6 +213,10 @@ const usePlaceMarketOrder = () => {
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
+
+            { pubkey: team_wallet, isSigner: false, isWritable: true },
+            { pubkey: team_token_account, isSigner: false, isWritable: true },
+
 
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
