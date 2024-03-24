@@ -57,7 +57,7 @@ const LeaderboardPage = () => {
                     <Text
                         fontSize={lg ? "large" : "x-large"}
                         m={0}
-                        color={user.user_name === currentUserData.user_name ? "yellow" : "white"}
+                        color={user.user_name !== "" && user.user_name === currentUserData.user_name ? "yellow" : "white"}
                     >
                         {rank}
                     </Text>
@@ -66,7 +66,7 @@ const LeaderboardPage = () => {
                     <Text
                         fontSize={lg ? "large" : "x-large"}
                         my={6}
-                        color={user.user_name === currentUserData.user_name ? "yellow" : "white"}
+                        color={user.user_name !== "" && user.user_name === currentUserData.user_name ? "yellow" : "white"}
                     >
                         {user.user_name !== "" ? user.user_name : user.user_key.toString()}
                     </Text>
@@ -75,7 +75,7 @@ const LeaderboardPage = () => {
                     <Text
                         fontSize={lg ? "large" : "x-large"}
                         m={0}
-                        color={user.user_name === currentUserData.user_name ? "yellow" : "white"}
+                        color={user.user_name !== "" && user.user_name === currentUserData.user_name ? "yellow" : "white"}
                     >
                         {user.total_points.toString()}
                     </Text>

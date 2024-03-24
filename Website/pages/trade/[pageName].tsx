@@ -131,9 +131,13 @@ const TradePage = () => {
     const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
     const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
     const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
+    const [user_address, setUserAddress] = useState<PublicKey | null>(null);
 
     const [base_amount, setBaseAmount] = useState<number | null>(null);
     const [quote_amount, setQuoteAmount] = useState<number | null>(null);
+
+    const [user_amount, setUserAmount] = useState<number>(0);
+
 
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [sol_price, setSOLPrice] = useState<number>(0);
@@ -142,6 +146,7 @@ const TradePage = () => {
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
     const price_ws_id = useRef<number | null>(null);
+    const user_token_ws_id = useRef<number | null>(null);
 
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
@@ -233,6 +238,22 @@ const TradePage = () => {
         [launch],
     );
 
+
+    const check_user_token_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+            const [token_account] = TokenAccount.struct.deserialize(event_data);
+            let amount = bignum_to_num(token_account.amount);
+            // console.log("update quote amount", amount);
+    
+            setUserAmount(amount);
+        },
+        [],
+    );
+
     // launch account subscription handler
     useEffect(() => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
@@ -252,7 +273,14 @@ const TradePage = () => {
         if (price_ws_id.current === null && price_address !== null) {
             price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
         }
-    }, [base_address, quote_address, price_address, check_price_update, check_base_update, check_quote_update]);
+
+        if (user_token_ws_id.current === null && price_address !== null) {
+
+            user_token_ws_id.current = connection.onAccountChange(user_address, check_user_token_update, "confirmed");
+        }
+
+        
+    }, [base_address, quote_address, price_address, user_address, check_price_update, check_base_update, check_quote_update, check_user_token_update]);
 
     const CheckMarketData = useCallback(async () => {
         if (launch === null) return;
@@ -288,6 +316,14 @@ const TradePage = () => {
             TOKEN_PROGRAM_ID,
         );
 
+
+        let user_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
         // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
@@ -295,12 +331,15 @@ const TradePage = () => {
             setSOLPrice(sol_price);
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
+            setUserAddress(user_token_account_key);
 
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
+            let user_amount = await request_token_amount("", user_token_account_key);
 
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
+            setUserAmount(user_amount);
 
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
@@ -484,7 +523,7 @@ const TradePage = () => {
                             />
                         )}
 
-                        {leftPanel === "Trade" && <BuyAndSell launch={launch} base_balance={base_amount} quote_balance={quote_amount} />}
+                        {leftPanel === "Trade" && <BuyAndSell launch={launch} base_balance={base_amount} quote_balance={quote_amount} user_balance={user_amount}/>}
                     </VStack>
 
                     <VStack
@@ -595,7 +634,7 @@ const TradePage = () => {
     );
 };
 
-const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchData; base_balance: number; quote_balance: number }) => {
+const BuyAndSell = ({ launch, base_balance, quote_balance, user_balance }: { launch: LaunchData; base_balance: number; quote_balance: number, user_balance : number }) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
@@ -604,6 +643,8 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
     const [sol_amount, setSOLAmount] = useState<number>(0);
     const [order_type, setOrderType] = useState<number>(0);
     const { PlaceMarketOrder } = usePlaceMarketOrder();
+    const { userSOLBalance } = useAppRoot();
+
 
     const handleClick = (tab: string) => {
         setSelected(tab);
@@ -682,7 +723,7 @@ const BuyAndSell = ({ launch, base_balance, quote_balance }: { launch: LaunchDat
                     Available Balance:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    0.00 {selected === "Buy" ? "SOL" : launch.symbol}
+                    {selected === "Buy" ? userSOLBalance.toFixed(2) : (user_balance/Math.pow(10, launch.decimals)).toFixed(2)} {selected === "Buy" ? "SOL" : launch.symbol}
                 </Text>
             </HStack>
 

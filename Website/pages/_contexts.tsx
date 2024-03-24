@@ -15,6 +15,7 @@ import {
     get_current_blockhash,
     send_transaction,
     GPAccount,
+    request_current_balance
 } from "../components/Solana/state";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY } from "../components/Solana/constants";
@@ -97,10 +98,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
 
+    const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
+
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
 
     const user_account_ws_id = useRef<number | null>(null);
+    const user_balance_ws_id = useRef<number | null>(null);
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
 
@@ -151,6 +155,33 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         [current_user_data],
     );
 
+    const checkUserBalance = useCallback(async () => {
+
+        if (wallet === null || wallet.publicKey === null) {
+            return;
+        }
+
+        let balance = await request_current_balance("", wallet.publicKey);
+        setUserSOLBalance(balance);
+    }, [wallet]);
+
+    const check_user_balance = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
+
+            try {
+                let balance =  result["lamports"] / 1e9;
+                console.log("have user balance event data", balance);
+                setUserSOLBalance(balance);
+
+            } catch (error) {
+                
+            }
+        },
+        [],
+    );
+
     // launch account subscription handler
     useEffect(() => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
@@ -161,7 +192,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             user_account_ws_id.current = connection.onAccountChange(user_data_account, check_user_update, "confirmed");
         }
-    }, [wallet, check_user_update]);
+
+        if (user_balance_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
+            checkUserBalance();
+            user_balance_ws_id.current = connection.onAccountChange(wallet.publicKey, check_user_balance, "confirmed");
+        }
+    }, [wallet, check_user_update, check_user_balance, checkUserBalance]);
 
     const CloseAccount = useCallback(
         async ({ account }: { account: PublicKey }) => {
@@ -391,6 +427,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             userOrders={userOrders}
             userTrades={userTrades}
             ammData={amm_data}
+            userSOLBalance={userSOLBalance}
         >
             {children}
         </AppRootContextProvider>

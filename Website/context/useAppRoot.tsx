@@ -22,6 +22,7 @@ interface AppRootTypes {
     userOrders: OpenOrder[];
     userTrades: TradeHistoryItem[];
     ammData: AMMData[];
+    userSOLBalance : number;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -44,6 +45,7 @@ export const AppRootContextProvider = ({
     userOrders,
     userTrades,
     ammData,
+    userSOLBalance
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -64,6 +66,7 @@ export const AppRootContextProvider = ({
                 userOrders,
                 userTrades,
                 ammData,
+                userSOLBalance
             }}
         >
             {children}

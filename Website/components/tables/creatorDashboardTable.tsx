@@ -151,7 +151,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                 console.log(error);
             }
         },
-        [wallet],
+        [wallet, GetFeeAccounts],
     );
 
     return (
