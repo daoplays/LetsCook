@@ -81,7 +81,7 @@ const LeaderboardPage = () => {
             return 0;
         });
 
-        const currentUserIndex = sortedUsers.findIndex((user) => user.user_name === currentUserData?.user_name);
+        const currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
 
         if (currentUserIndex !== -1) {
             const currentUser = sortedUsers.splice(currentUserIndex, 1)[0];
@@ -140,14 +140,12 @@ const LeaderboardPage = () => {
     };
 
     const UserCard = ({ user, index }: { user: UserData; index: number }) => {
-        const isUser = user.user_name === currentUserData?.user_name || user.user_key.toString() === currentUserData?.user_key.toString();
+        const isUser = user.user_key.equals(currentUserData?.user_key);
         const sortedUsers = [...userList].sort((a, b) => b.total_points - a.total_points);
 
         const rank =
-            sortedUsers.findIndex(
-                (u) => u.user_name || u.user_key.toString() === (user.user_name !== "" ? user.user_name : user.user_key.toString()),
-            ) + 1;
-
+            sortedUsers.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
+            
         return (
             <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
                 <td>
