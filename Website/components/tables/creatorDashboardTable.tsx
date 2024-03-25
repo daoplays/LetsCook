@@ -117,39 +117,46 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                 TOKEN_2022_PROGRAM_ID,
                 ASSOCIATED_TOKEN_PROGRAM_ID,
             );
+            let current_idx = 0;
+            let block_size = 20;
+            while(current_idx < feeAccounts.length) {
+                let end_idx = Math.min(current_idx + block_size, feeAccounts.length);
 
-            let accountsToWithdrawFrom = [];
-            for (let i = 0; i < feeAccounts.length; i++) {
-                accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
-            }
+                let accountsToWithdrawFrom = [];
+                for (let i = current_idx; i < end_idx; i++) {
+                    accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
+                }
 
-            let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
-                launch.keys[LaunchKeys.MintAddress],
-                user_token_key,
-                wallet.publicKey,
-                [],
-                accountsToWithdrawFrom,
-                TOKEN_2022_PROGRAM_ID,
-            );
+                let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
+                    launch.keys[LaunchKeys.MintAddress],
+                    user_token_key,
+                    wallet.publicKey,
+                    [],
+                    accountsToWithdrawFrom,
+                    TOKEN_2022_PROGRAM_ID,
+                );
 
-            let txArgs = await get_current_blockhash("");
+                let txArgs = await get_current_blockhash("");
 
-            let transaction = new Transaction(txArgs);
-            transaction.feePayer = wallet.publicKey;
+                let transaction = new Transaction(txArgs);
+                transaction.feePayer = wallet.publicKey;
 
-            transaction.add(withdraw_idx);
+                transaction.add(withdraw_idx);
 
-            try {
-                let signed_transaction = await wallet.signTransaction(transaction);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                try {
+                    let signed_transaction = await wallet.signTransaction(transaction);
+                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-                var transaction_response = await send_transaction("", encoded_transaction);
+                    var transaction_response = await send_transaction("", encoded_transaction);
 
-                let signature = transaction_response.result;
-                console.log("get tokens", signature);
-            } catch (error) {
-                console.log(error);
-            }
+                    let signature = transaction_response.result;
+                    console.log("get tokens", signature);
+                } catch (error) {
+                    console.log(error);
+                }
+
+                current_idx += block_size;
+        }
         },
         [wallet, GetFeeAccounts],
     );
