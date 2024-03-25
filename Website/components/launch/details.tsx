@@ -11,6 +11,7 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
+import Image from "next/image";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -135,8 +136,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
-                    Launch - Page
+                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                    Page Information
                 </Text>
                 <form style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12}>
@@ -176,7 +177,10 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                             <input id="file" type="file" onChange={handleFileChange} />
                                             <span
                                                 className={styles.browse}
-                                                style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer" }}
+                                                style={{
+                                                    cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
+                                                    padding: "5px 10px",
+                                                }}
                                             >
                                                 BROWSE
                                             </span>
@@ -212,7 +216,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
-                                    <img className={styles.mediaLogo} src="./images/web.png" alt="" />
+                                    <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
                                     <div className={styles.textLabelInput}>
                                         <input
                                             placeholder="Enter your Website URL"
@@ -229,7 +233,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
-                                    <img className={styles.mediaLogo} src="/images/tele.png" alt="Telegram" />
+                                    <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
 
                                     <div className={styles.textLabelInput}>
                                         <input
@@ -246,7 +250,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                             </div>
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
-                                    <img className={styles.mediaLogo} src="/images/twt.png" alt="Twitter" />
+                                    <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
 
                                     <div className={styles.textLabelInput}>
                                         <input
@@ -265,7 +269,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
-                                    <img className={styles.mediaLogo} src="/images/discord.png" alt="Discord" />
+                                    <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
 
                                     <div className={styles.textLabelInput}>
                                         <input

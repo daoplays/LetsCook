@@ -435,9 +435,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 )[0];
                 account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
             }
-            
         }
-        
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -503,14 +501,12 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack pb={75} w="100%">
-                <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
-                    Launch - BOOK
+            <VStack pb={150} w="100%">
+                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                    Book Token Raffle
                 </Text>
                 <form style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
-                        <div className={`${styles.textLabel} font-face-kg`}>TOKEN RAFFLE</div>
-
                         <HStack spacing={15}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
                                 OPEN DATE:
@@ -608,7 +604,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     disabled={newLaunchData.current.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
-                                    placeholder="Enter AMM Fee (in bps)"
+                                    placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
                                     className={styles.inputBox}
                                     type="text"
                                     // value={}
