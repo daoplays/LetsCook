@@ -138,7 +138,6 @@ const TradePage = () => {
 
     const [user_amount, setUserAmount] = useState<number>(0);
 
-
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [sol_price, setSOLPrice] = useState<number>(0);
     const [num_holders, setNumHolders] = useState<number>(0);
@@ -238,21 +237,17 @@ const TradePage = () => {
         [launch],
     );
 
+    const check_user_token_update = useCallback(async (result: any) => {
+        //console.log(result);
+        // if we have a subscription field check against ws_id
 
-    const check_user_token_update = useCallback(
-        async (result: any) => {
-            //console.log(result);
-            // if we have a subscription field check against ws_id
+        let event_data = result.data;
+        const [token_account] = TokenAccount.struct.deserialize(event_data);
+        let amount = bignum_to_num(token_account.amount);
+        // console.log("update quote amount", amount);
 
-            let event_data = result.data;
-            const [token_account] = TokenAccount.struct.deserialize(event_data);
-            let amount = bignum_to_num(token_account.amount);
-            // console.log("update quote amount", amount);
-    
-            setUserAmount(amount);
-        },
-        [],
-    );
+        setUserAmount(amount);
+    }, []);
 
     // launch account subscription handler
     useEffect(() => {
@@ -275,12 +270,18 @@ const TradePage = () => {
         }
 
         if (user_token_ws_id.current === null && price_address !== null) {
-
             user_token_ws_id.current = connection.onAccountChange(user_address, check_user_token_update, "confirmed");
         }
-
-        
-    }, [base_address, quote_address, price_address, user_address, check_price_update, check_base_update, check_quote_update, check_user_token_update]);
+    }, [
+        base_address,
+        quote_address,
+        price_address,
+        user_address,
+        check_price_update,
+        check_base_update,
+        check_quote_update,
+        check_user_token_update,
+    ]);
 
     const CheckMarketData = useCallback(async () => {
         if (launch === null) return;
@@ -315,7 +316,6 @@ const TradePage = () => {
             true, // allow owner off curve
             TOKEN_PROGRAM_ID,
         );
-
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
@@ -403,7 +403,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch]);
+    }, [launch, wallet.publicKey]);
 
     useEffect(() => {
         CheckMarketData();
@@ -523,7 +523,14 @@ const TradePage = () => {
                             />
                         )}
 
-                        {leftPanel === "Trade" && <BuyAndSell launch={launch} base_balance={base_amount} quote_balance={quote_amount} user_balance={user_amount}/>}
+                        {leftPanel === "Trade" && (
+                            <BuyAndSell
+                                launch={launch}
+                                base_balance={base_amount}
+                                quote_balance={quote_amount}
+                                user_balance={user_amount}
+                            />
+                        )}
                     </VStack>
 
                     <VStack
@@ -634,7 +641,17 @@ const TradePage = () => {
     );
 };
 
-const BuyAndSell = ({ launch, base_balance, quote_balance, user_balance }: { launch: LaunchData; base_balance: number; quote_balance: number, user_balance : number }) => {
+const BuyAndSell = ({
+    launch,
+    base_balance,
+    quote_balance,
+    user_balance,
+}: {
+    launch: LaunchData;
+    base_balance: number;
+    quote_balance: number;
+    user_balance: number;
+}) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
@@ -644,7 +661,6 @@ const BuyAndSell = ({ launch, base_balance, quote_balance, user_balance }: { lau
     const [order_type, setOrderType] = useState<number>(0);
     const { PlaceMarketOrder } = usePlaceMarketOrder();
     const { userSOLBalance } = useAppRoot();
-
 
     const handleClick = (tab: string) => {
         setSelected(tab);
@@ -723,7 +739,8 @@ const BuyAndSell = ({ launch, base_balance, quote_balance, user_balance }: { lau
                     Available Balance:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {selected === "Buy" ? userSOLBalance.toFixed(2) : (user_balance/Math.pow(10, launch.decimals)).toFixed(2)} {selected === "Buy" ? "SOL" : launch.symbol}
+                    {selected === "Buy" ? userSOLBalance.toFixed(2) : (user_balance / Math.pow(10, launch.decimals)).toFixed(2)}{" "}
+                    {selected === "Buy" ? "SOL" : launch.symbol}
                 </Text>
             </HStack>
 
@@ -774,14 +791,28 @@ const BuyAndSell = ({ launch, base_balance, quote_balance, user_balance }: { lau
                 </Text>
                 {selected === "Buy" ? (
                     <InputGroup size="md">
-                        <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={base_output_string} />
+                        <Input
+                            readOnly={true}
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={base_output_string}
+                            disabled
+                        />
                         <InputRightElement h="100%" w={50}>
                             <Image src={launch.icon} width={30} height={30} alt="SOL Icon" />
                         </InputRightElement>
                     </InputGroup>
                 ) : (
                     <InputGroup size="md">
-                        <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={quote_output_string} />
+                        <Input
+                            readOnly={true}
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={quote_output_string}
+                            disabled
+                        />
                         <InputRightElement h="100%" w={50}>
                             <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
                         </InputRightElement>
@@ -801,7 +832,7 @@ const BuyAndSell = ({ launch, base_balance, quote_balance, user_balance }: { lau
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                    {!wallet.connected ? "Connect Wallet" : "Place Order"}
+                    {!wallet.connected ? "Connect Wallet" : selected === "Buy" ? "Buy" : selected === "Sell" ? "Sell" : ""}
                 </Text>
             </Button>
 

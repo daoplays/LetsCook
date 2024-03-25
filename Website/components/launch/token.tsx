@@ -15,6 +15,9 @@ import {
     Checkbox,
     Tooltip,
     Divider,
+    chakra,
+    FormControl,
+    FormLabel,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
@@ -54,8 +57,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     // token extensions
-    const [transferFee, setTransferFee] = useState<number>(newLaunchData.current.transfer_fee);
-    const [maxTransferFee, setMaxTransferFee] = useState<number>(newLaunchData.current.transfer_fee);
+    const [transferFee, setTransferFee] = useState<string>(newLaunchData.current.transfer_fee.toString());
+    const [maxTransferFee, setMaxTransferFee] = useState<string>(newLaunchData.current.max_transfer_fee.toString());
     const [permanentDelegate, setPermanentDelegate] = useState<string>("");
     const [transferHookID, setTransferHookID] = useState<string>("");
 
@@ -151,8 +154,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         newLaunchData.current.token_keypair = Keypair.generate();
+
         if (tokenStart !== "") {
             let attempts = 0;
+
             while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, tokenStart.length) !== tokenStart) {
                 attempts += 1;
                 let seed_buffer = [];
@@ -182,8 +187,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
         newLaunchData.current.distribution = distribution;
 
-        newLaunchData.current.transfer_fee = transferFee;
-        newLaunchData.current.max_transfer_fee = maxTransferFee * Math.pow(10, newLaunchData.current.decimals);
+        newLaunchData.current.transfer_fee = parseFloat(transferFee);
+        newLaunchData.current.max_transfer_fee = parseInt(maxTransferFee) * Math.pow(10, newLaunchData.current.decimals);
 
         if (permanentDelegate !== "") {
             newLaunchData.current.permanent_delegate = new PublicKey(permanentDelegate);
@@ -213,7 +218,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
+                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected (Size Limit: 1MB)"}
             </Text>
         </HStack>
     );
@@ -221,19 +226,44 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
-                    Launch - Token
+                <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                    Token Information:
                 </Text>
                 <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
-                    <VStack px={lg ? 4 : 12} spacing={25}>
+                    <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
-                            <Image
-                                src={displayImg ? displayImg : "/images/upload-image.png"}
-                                width={lg ? 180 : 235}
-                                height={lg ? 180 : 235}
-                                alt="Image Frame"
-                                style={{ backgroundSize: "cover" }}
-                            />
+                            {displayImg ? (
+                                <Image
+                                    src={displayImg}
+                                    width={lg ? 180 : 235}
+                                    height={lg ? 180 : 235}
+                                    alt="Image Frame"
+                                    style={{ backgroundSize: "cover", borderRadius: 12 }}
+                                />
+                            ) : (
+                                <VStack
+                                    justify="center"
+                                    align="center"
+                                    style={{ minWidth: lg ? 180 : 235, minHeight: lg ? 180 : 235, cursor: "pointer" }}
+                                    borderRadius={12}
+                                    border="2px dashed rgba(134, 142, 150, 0.5)"
+                                    as={chakra.label}
+                                    htmlFor="file"
+                                >
+                                    <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
+                                        Icon Preview
+                                    </Text>
+
+                                    <chakra.input
+                                        required
+                                        style={{ display: "none" }}
+                                        type="file"
+                                        id="file"
+                                        name="file"
+                                        onChange={handleFileChange}
+                                    />
+                                </VStack>
+                            )}
 
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 {lg && <Browse />}
@@ -352,13 +382,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         </HStack>
 
                         <Divider />
-                        <VStack mt={lg ? 1 : 5} spacing={lg ? 8 : 10} w="100%">
-                            <Text className={`${styles.textLabel} font-face-kg`} color={"white"} style={{ width: "174px" }}>
+                        <VStack spacing={lg ? 8 : 10} w="100%">
+                            <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                 Token Extensions:
                             </Text>
                             <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "115px" : "185px" }}>
                                         Transfer Fee:
                                     </div>
 
@@ -367,17 +397,17 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             className={styles.inputBox}
-                                            placeholder="Enter Transfer Fee in bps"
+                                            placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
                                             value={transferFee}
                                             onChange={(e) => {
-                                                setTransferFee(parseInt(e.target.value));
+                                                setTransferFee(e.target.value);
                                             }}
                                         />
                                     </div>
                                 </HStack>
 
                                 <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "115px" : "135px" }}>
                                         Max Fee:
                                     </div>
 
@@ -386,10 +416,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             className={styles.inputBox}
-                                            placeholder="0"
+                                            placeholder="Max number of tokens taxed in a single transaction"
                                             value={maxTransferFee}
                                             onChange={(e) => {
-                                                setMaxTransferFee(parseInt(e.target.value));
+                                                setMaxTransferFee(e.target.value);
                                             }}
                                         />
                                     </div>
@@ -397,12 +427,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </HStack>
                             <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={15} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: "174px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "100px" : "172px" }}>
                                         Permanent Delegate:
                                     </div>
 
-                                    <HStack spacing={5} style={{ flexDirection: lg ? "column" : "row", flexGrow: 1 }}>
-                                        <div className={styles.textLabelInput}>
+                                    <HStack spacing={0} style={{ flexGrow: 1 }}>
+                                        <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                             <Input
                                                 disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
                                                 size={lg ? "md" : "lg"}
@@ -421,19 +451,19 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             fontSize="large"
                                             offset={[0, 10]}
                                         >
-                                            <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                            <Image width={30} height={30} src="/images/help.png" alt="Help" />
                                         </Tooltip>
                                     </HStack>
                                 </HStack>
                             </HStack>
                             <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={15} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: "174px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "135px" : "174px" }}>
                                         Transfer Hook Program ID:
                                     </div>
 
-                                    <HStack spacing={5} style={{ flexDirection: lg ? "column" : "row", flexGrow: 1 }}>
-                                        <div className={styles.textLabelInput}>
+                                    <HStack spacing={0} style={{ flexGrow: 1 }}>
+                                        <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                             <Input
                                                 disabled={
                                                     newLaunchData.current.edit_mode === true ||
@@ -450,20 +480,21 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 }}
                                             />
                                         </div>
-                                        <HStack w="340px" spacing={3}>
-                                            <Tooltip
-                                                label="Users must initialisethe  extra account metadata for the mint themselves"
-                                                hasArrow
-                                                fontSize="large"
-                                                offset={[0, 10]}
-                                            >
-                                                <Image width={25} height={25} src="/images/help.png" alt="Help" />
-                                            </Tooltip>
-                                        </HStack>
+                                        <Tooltip
+                                            label="Users must initialize the extra account metadata for the mint themselves"
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Image width={30} height={30} src="/images/help.png" alt="Help" />
+                                        </Tooltip>
                                     </HStack>
                                 </HStack>
                             </HStack>
                             <Divider />
+                            <Text mt={-3} className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
+                                Distribution:
+                            </Text>
 
                             <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
                                 <HStack spacing={0} className={styles.eachField}>
@@ -487,7 +518,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
                                         Ticket Price:
                                     </div>
 
@@ -535,9 +566,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         </VStack>
 
                         <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
-                            <div style={{ color: "white" }} className={`${styles.textLabel} font-face-kg`}>
-                                Distribution:
-                            </div>
                             <HStack
                                 justify="space-between"
                                 align={"center"}
@@ -865,7 +893,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 Cancel
                             </button>
                             <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
-                                NEXT
+                                NEXT (1/3)
                             </button>
                         </HStack>
                     </VStack>

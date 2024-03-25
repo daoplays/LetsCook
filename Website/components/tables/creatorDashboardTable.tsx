@@ -24,6 +24,7 @@ import {
 } from "@solana/spl-token";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
+import { toast } from "react-toastify";
 
 interface Header {
     text: string;
@@ -105,59 +106,73 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         return accountsToWithdrawFrom;
     }, []);
 
-    const GetFees = useCallback(
-        async (launch: LaunchData) => {
-            if (wallet.publicKey === null) return;
+    const GetFees = useCallback(async (launch: LaunchData) => {
+        if (wallet.publicKey === null) return;
 
-            let feeAccounts = await GetFeeAccounts(launch);
-            let user_token_key = await getAssociatedTokenAddress(
-                launch.keys[LaunchKeys.MintAddress], // mint
-                launch.keys[LaunchKeys.TeamWallet], // owner
-                true, // allow owner off curve,
+        const collectToast = toast.loading("Collecting Fees...");
+
+        let feeAccounts = await GetFeeAccounts(launch);
+        let user_token_key = await getAssociatedTokenAddress(
+            launch.keys[LaunchKeys.MintAddress], // mint
+            launch.keys[LaunchKeys.TeamWallet], // owner
+            true, // allow owner off curve,
+            TOKEN_2022_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+        );
+        let current_idx = 0;
+        let block_size = 20;
+        while(current_idx < feeAccounts.length) {
+            let end_idx = Math.min(current_idx + block_size, feeAccounts.length);
+
+            let accountsToWithdrawFrom = [];
+            for (let i = current_idx; i < end_idx; i++) {
+                accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
+            }
+
+            let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
+                launch.keys[LaunchKeys.MintAddress],
+                user_token_key,
+                wallet.publicKey,
+                [],
+                accountsToWithdrawFrom,
                 TOKEN_2022_PROGRAM_ID,
-                ASSOCIATED_TOKEN_PROGRAM_ID,
             );
-            let current_idx = 0;
-            let block_size = 20;
-            while(current_idx < feeAccounts.length) {
-                let end_idx = Math.min(current_idx + block_size, feeAccounts.length);
 
-                let accountsToWithdrawFrom = [];
-                for (let i = current_idx; i < end_idx; i++) {
-                    accountsToWithdrawFrom.push(feeAccounts[i].pubkey);
-                }
+            let txArgs = await get_current_blockhash("");
 
-                let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
-                    launch.keys[LaunchKeys.MintAddress],
-                    user_token_key,
-                    wallet.publicKey,
-                    [],
-                    accountsToWithdrawFrom,
-                    TOKEN_2022_PROGRAM_ID,
-                );
+            let transaction = new Transaction(txArgs);
+            transaction.feePayer = wallet.publicKey;
 
-                let txArgs = await get_current_blockhash("");
+            transaction.add(withdraw_idx);
 
-                let transaction = new Transaction(txArgs);
-                transaction.feePayer = wallet.publicKey;
+            try {
+                let signed_transaction = await wallet.signTransaction(transaction);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-                transaction.add(withdraw_idx);
+                var transaction_response = await send_transaction("", encoded_transaction);
 
-                try {
-                    let signed_transaction = await wallet.signTransaction(transaction);
-                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
+            let signature = transaction_response.result;
+            console.log("get tokens", signature);
 
-                    var transaction_response = await send_transaction("", encoded_transaction);
+            toast.update(collectToast, {
+                render: "Fees has been successfully collected!",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            } catch (error) {
+                console.log(error);
 
-                    let signature = transaction_response.result;
-                    console.log("get tokens", signature);
-                } catch (error) {
-                    console.log(error);
-                }
-
-                current_idx += block_size;
+                toast.update(collectToast, {
+                    render: "Failed to collect fees, please try again later.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+            }
         }
-        },
+        
+    },
         [wallet, GetFeeAccounts],
     );
 
