@@ -47,44 +47,6 @@ const LeaderboardPage = () => {
         setName(e.target.value);
     };
 
-    const UserCard = ({ user, index }: { user: UserData; index: number }) => {
-        const sortedUsers = [...userList].sort((a, b) => b.total_points - a.total_points);
-        const rank = sortedUsers.findIndex((u) => u.user_name === user.user_name) + 1;
-
-        return (
-            <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
-                <td>
-                    <Text
-                        fontSize={lg ? "large" : "x-large"}
-                        m={0}
-                        color={user.user_name !== "" && user.user_name === currentUserData.user_name ? "yellow" : "white"}
-                    >
-                        {rank}
-                    </Text>
-                </td>
-                <td>
-                    <Text
-                        fontSize={lg ? "large" : "x-large"}
-                        my={6}
-                        color={user.user_name !== "" && user.user_name === currentUserData.user_name ? "yellow" : "white"}
-                    >
-                        {user.user_name !== "" ? user.user_name : user.user_key.toString()}
-                    </Text>
-                </td>
-                <td>
-                    <Text
-                        fontSize={lg ? "large" : "x-large"}
-                        m={0}
-                        color={user.user_name !== "" && user.user_name === currentUserData.user_name ? "yellow" : "white"}
-                    >
-                        {user.total_points.toString()}
-                    </Text>
-                </td>
-                <td style={{ minWidth: "60px" }}></td>
-            </tr>
-        );
-    };
-
     const LeaderboardTable = ({ user_data }: { user_data: UserData[] }) => {
         const { sm } = useResponsive();
         const { checkProgramData } = useAppRoot();
@@ -119,7 +81,7 @@ const LeaderboardPage = () => {
             return 0;
         });
 
-        const currentUserIndex = sortedUsers.findIndex((user) => user.user_name === currentUserData.user_name);
+        const currentUserIndex = sortedUsers.findIndex((user) => user.user_name === currentUserData?.user_name);
 
         if (currentUserIndex !== -1) {
             const currentUser = sortedUsers.splice(currentUserIndex, 1)[0];
@@ -177,6 +139,37 @@ const LeaderboardPage = () => {
         );
     };
 
+    const UserCard = ({ user, index }: { user: UserData; index: number }) => {
+        const isUser = user.user_name === currentUserData?.user_name || user.user_key.toString() === currentUserData?.user_key.toString();
+        const sortedUsers = [...userList].sort((a, b) => b.total_points - a.total_points);
+
+        const rank =
+            sortedUsers.findIndex(
+                (u) => u.user_name || u.user_key.toString() === (user.user_name !== "" ? user.user_name : user.user_key.toString()),
+            ) + 1;
+
+        return (
+            <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
+                <td>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0} color={isUser ? "yellow" : "white"}>
+                        {rank}
+                    </Text>
+                </td>
+                <td>
+                    <Text fontSize={lg ? "large" : "x-large"} my={6} color={isUser ? "yellow" : "white"}>
+                        {user.user_name !== "" ? user.user_name : user.user_key.toString()}
+                    </Text>
+                </td>
+                <td>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0} color={isUser ? "yellow" : "white"}>
+                        {user.total_points.toString()}
+                    </Text>
+                </td>
+                <td style={{ minWidth: "60px" }}></td>
+            </tr>
+        );
+    };
+
     return (
         <>
             <Head>
@@ -210,7 +203,7 @@ const LeaderboardPage = () => {
 
                 <LeaderboardTable user_data={userList} />
 
-                {!wallet.connected && (
+                {/* {!wallet.connected && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
                         <Text
                             fontSize={lg ? "large" : "x-large"}
@@ -222,7 +215,7 @@ const LeaderboardPage = () => {
                             Sign in to view Leaderboard
                         </Text>
                     </HStack>
-                )}
+                )} */}
             </main>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>

@@ -62,13 +62,6 @@ const usePlaceMarketOrder = () => {
                 return;
             }
 
-            toast.update(placeLimitToast, {
-                render: "Market Order Placed",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-
             await checkProgramData();
 
             signature_ws_id.current = null;
@@ -153,7 +146,6 @@ const usePlaceMarketOrder = () => {
             TOKEN_2022_PROGRAM_ID,
         );
 
-
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let index_buffer = uInt32ToLEBytes(0);
@@ -217,7 +209,6 @@ const usePlaceMarketOrder = () => {
             { pubkey: team_wallet, isSigner: false, isWritable: true },
             { pubkey: team_token_account, isSigner: false, isWritable: true },
 
-
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
 
@@ -270,6 +261,13 @@ const usePlaceMarketOrder = () => {
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+
+            toast.update(placeLimitToast, {
+                render: "Market Order Placed",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
         } catch (error) {
             toast.update(placeLimitToast, {
                 render: "Market Order Failed.  Please try again later.",

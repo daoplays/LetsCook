@@ -24,6 +24,7 @@ import {
 } from "@solana/spl-token";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
+import { toast } from "react-toastify";
 
 interface Header {
     text: string;
@@ -109,6 +110,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         async (launch: LaunchData) => {
             if (wallet.publicKey === null) return;
 
+            const collectToast = toast.loading("Collecting Fees...");
+
             let feeAccounts = await GetFeeAccounts(launch);
             let user_token_key = await getAssociatedTokenAddress(
                 launch.keys[LaunchKeys.MintAddress], // mint
@@ -147,8 +150,22 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
                 let signature = transaction_response.result;
                 console.log("get tokens", signature);
+
+                toast.update(collectToast, {
+                    render: "Fees has been successfully collected!",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
             } catch (error) {
                 console.log(error);
+
+                toast.update(collectToast, {
+                    render: "Failed to collect fees, please try again later.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
             }
         },
         [wallet, GetFeeAccounts],

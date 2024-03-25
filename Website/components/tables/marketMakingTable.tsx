@@ -40,7 +40,6 @@ async function getSOLPrice() {
     return result["data"]["SOL"]["price"];
 }
 
-
 const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
@@ -53,7 +52,6 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     let trade_list = filterTable(launchList);
 
     //let sol_price = await getSOLPrice();
-
 
     const handleHeaderClick = (e) => {
         if (e == sortedField) {
@@ -137,7 +135,8 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch }) => {
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch_data.last_interaction)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.launch_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
-    console.log(amm_launch)
+    console.log(amm_launch);
+
     return (
         <tr
             style={{
@@ -196,6 +195,8 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch }) => {
                     <Image src={amm_launch.launch_data.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
+
+            <td />
         </tr>
     );
 };
