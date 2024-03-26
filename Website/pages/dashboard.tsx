@@ -63,7 +63,15 @@ const DashboardPage = () => {
                             router.push("/launch");
                         }}
                     >
-                        New Launch
+                        New Token
+                    </Button>
+                    <Button
+                        w={sm ? "100%" : "fit-content"}
+                        onClick={() => {
+                            router.push("/collection");
+                        }}
+                    >
+                        New Collection
                     </Button>
                     {/* </Link> */}
                 </Flex>
