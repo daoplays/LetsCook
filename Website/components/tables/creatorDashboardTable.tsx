@@ -72,7 +72,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         return 0;
     });
 
-    const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
+    const GetFeeAccounts = useCallback(async (launch: LaunchData) =>  {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const allAccounts = await connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
@@ -94,9 +94,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
             if (transferFeeAmount !== null && transferFeeAmount.withheldAmount > BigInt(0)) {
                 let transfer_account: TransferAccount = {
                     pubkey: accountInfo.pubkey,
-                    amount: parseInt(transferFeeAmount.withheldAmount.toString()) / 1000,
+                    amount: parseInt(transferFeeAmount.withheldAmount.toString()) / Math.pow(10, launch.decimals),
                 };
-                console.log(accountInfo.pubkey.toString(), (parseInt(transferFeeAmount.withheldAmount.toString()) / 1000).toString());
                 accountsToWithdrawFrom.push(transfer_account);
             }
         }
@@ -109,9 +108,30 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
     const GetFees = useCallback(async (launch: LaunchData) => {
         if (wallet.publicKey === null) return;
 
-        const collectToast = toast.loading("Collecting Fees...");
+        const collectToast = toast.loading("Collecting Fee Accounts...");
 
-        let feeAccounts = await GetFeeAccounts(launch);
+        let feeAccounts : TransferAccount[] = await GetFeeAccounts(launch);
+
+        let total_fees = 0;
+        for (let i = 0; i < feeAccounts.length; i++) {
+            total_fees += feeAccounts[i].amount;
+        }
+
+        if (total_fees === 0) {
+            toast.update(collectToast, {
+                render: "No fees to collect",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        toast.update(collectToast, {
+            render: "Collecting " + total_fees.toFixed(2) + " Fees",
+            type: "success",
+        })
+
         let user_token_key = await getAssociatedTokenAddress(
             launch.keys[LaunchKeys.MintAddress], // mint
             launch.keys[LaunchKeys.TeamWallet], // owner
@@ -122,6 +142,9 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         let current_idx = 0;
         let block_size = 20;
         while(current_idx < feeAccounts.length) {
+
+
+
             let end_idx = Math.min(current_idx + block_size, feeAccounts.length);
 
             let accountsToWithdrawFrom = [];
@@ -154,12 +177,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
             let signature = transaction_response.result;
             console.log("get tokens", signature);
 
-            toast.update(collectToast, {
-                render: "Fees has been successfully collected!",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+
+            current_idx += block_size;
             } catch (error) {
                 console.log(error);
 
@@ -169,8 +188,17 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
                     isLoading: false,
                     autoClose: 3000,
                 });
+                break;
             }
         }
+
+
+        toast.update(collectToast, {
+            render: "Fees have been successfully collected!",
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
         
     },
         [wallet, GetFeeAccounts],
