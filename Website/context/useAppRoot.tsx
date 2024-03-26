@@ -4,7 +4,10 @@ import { PropsWithChildren, createContext, useContext, MutableRefObject } from "
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-
+import { PublicKey} from "@solana/web3.js";
+import {
+    Mint
+} from "@solana/spl-token";
 interface AppRootTypes {
     launchList: LaunchData[];
     homePageList: LaunchData[];
@@ -23,6 +26,8 @@ interface AppRootTypes {
     userTrades: TradeHistoryItem[];
     ammData: AMMData[];
     userSOLBalance : number;
+    SOLPrice : number;
+    mintData : Map<String, Mint>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -45,7 +50,9 @@ export const AppRootContextProvider = ({
     userOrders,
     userTrades,
     ammData,
-    userSOLBalance
+    userSOLBalance,
+    SOLPrice,
+    mintData
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -66,7 +73,9 @@ export const AppRootContextProvider = ({
                 userOrders,
                 userTrades,
                 ammData,
-                userSOLBalance
+                userSOLBalance,
+                SOLPrice,
+                mintData
             }}
         >
             {children}

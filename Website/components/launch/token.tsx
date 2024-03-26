@@ -57,8 +57,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     // token extensions
-    const [transferFee, setTransferFee] = useState<string>(newLaunchData.current.transfer_fee.toString());
-    const [maxTransferFee, setMaxTransferFee] = useState<string>(newLaunchData.current.max_transfer_fee.toString());
+    const [transferFee, setTransferFee] = useState<string>(newLaunchData.current.transfer_fee > 0 ? newLaunchData.current.transfer_fee.toString() : "");
+    const [maxTransferFee, setMaxTransferFee] = useState<string>(newLaunchData.current.max_transfer_fee > 0 ? newLaunchData.current.max_transfer_fee.toString() : "");
     const [permanentDelegate, setPermanentDelegate] = useState<string>("");
     const [transferHookID, setTransferHookID] = useState<string>("");
 

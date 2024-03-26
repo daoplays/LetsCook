@@ -69,14 +69,6 @@ interface MarketData {
     volume: number;
 }
 
-async function getSOLPrice() {
-    // Default options are marked with *
-    const options = { method: "GET" };
-
-    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
-
-    return result["data"]["SOL"]["price"];
-}
 
 function findLaunch(list: LaunchData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -106,7 +98,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { launchList, currentUserData, mmLaunchData } = useAppRoot();
+    const { launchList, currentUserData, mmLaunchData, SOLPrice } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -139,7 +131,6 @@ const TradePage = () => {
     const [user_amount, setUserAmount] = useState<number>(0);
 
     const [total_supply, setTotalSupply] = useState<number>(0);
-    const [sol_price, setSOLPrice] = useState<number>(0);
     const [num_holders, setNumHolders] = useState<number>(0);
 
     const base_ws_id = useRef<number | null>(null);
@@ -327,8 +318,6 @@ const TradePage = () => {
         // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
-            let sol_price = await getSOLPrice();
-            setSOLPrice(sol_price);
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
             setUserAddress(user_token_account_key);
@@ -517,7 +506,7 @@ const TradePage = () => {
                                 mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
                                 price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                 total_supply={total_supply}
-                                sol_price={sol_price}
+                                sol_price={SOLPrice}
                                 quote_amount={quote_amount}
                                 num_holders={num_holders}
                             />
@@ -670,8 +659,6 @@ const BuyAndSell = ({
     };
 
     let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
-
-    let invariant_before = base_balance * quote_balance;
 
     let base_output =
         (sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)) / Math.pow(10, launch.decimals);

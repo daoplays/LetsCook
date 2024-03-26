@@ -1,4 +1,4 @@
-import { PublicKey, Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { PublicKey, Keypair, LAMPORTS_PER_SOL, AccountInfo } from "@solana/web3.js";
 import {
     FixableBeetStruct,
     BeetStruct,
@@ -205,34 +205,36 @@ interface AccountData {
 
 export class Token22MintAccount {
     constructor(
-        readonly address: PublicKey,
-        readonly mintAuthority: COption<PublicKey>,
+        readonly mintOption: number,
+        readonly mintAuthority: PublicKey,
         readonly supply: bignum,
         readonly decimals: number,
         readonly isInitialized: number,
-        readonly freezeAuthority: COption<PublicKey>,
-        readonly tlvData: number[],
+        readonly freezeOption: number,
+        readonly freezeAuthority: PublicKey,
     ) {}
 
     static readonly struct = new FixableBeetStruct<Token22MintAccount>(
         [
-            ["address", publicKey],
+            ["mintOption", u32],
             ["mintAuthority", publicKey],
             ["supply", u64],
             ["decimals", u8],
             ["isInitialized", u8],
-            ["freezeAuthority", coption(publicKey)],
-            ["tlvData", array(u8)],
+            ["freezeOption", u32],
+            ["freezeAuthority", publicKey],
+
         ],
         (args) =>
             new Token22MintAccount(
-                args.address!,
+                args.mintOption!,
                 args.mintAuthority!,
                 args.supply!,
                 args.decimals!,
                 args.isInitialized!,
+                args.freezeOption!,
                 args.freezeAuthority!,
-                args.tlvData!,
+
             ),
         "Token22MintAccount",
     );
@@ -333,6 +335,41 @@ export async function request_current_balance(bearer: string, pubkey: PublicKey)
     let current_balance: number = account_info_result["result"]["value"]["lamports"] / LAMPORTS_PER_SOL;
 
     return current_balance;
+}
+
+export async function requestMultipleAccounts(bearer: string, pubkeys: PublicKey[]): Promise<Buffer[]> {
+
+    let key_strings = []
+    for (let i = 0; i < pubkeys.length; i++) {
+        key_strings.push(pubkeys[i].toString());
+    }
+
+    var body = {
+        id: 1,
+        jsonrpc: "2.0",
+        method: "getMultipleAccounts",
+        params: [key_strings, { encoding: "base64", commitment: "confirmed" }],
+    };
+
+    var result;
+    try {
+        result = await postData(RPC_NODE, bearer, body);
+    } catch (error) {
+        console.log(error);
+        return [];
+    }
+    let valid_response = check_json(result);
+    if (!valid_response) {
+        console.log(result);
+        return [];
+    }
+
+    var data : Buffer[] = []
+    for (let i = 0; i < result["result"]["value"].length; i++) {
+        data.push(Buffer.from(result["result"]["value"][i]["data"][0], "base64"))
+    }
+
+    return data;
 }
 
 export async function RequestTokenHolders(mint: PublicKey): Promise<number> {

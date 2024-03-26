@@ -11,7 +11,9 @@ import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
 import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";
-
+import {
+    Mint
+} from "@solana/spl-token";
 interface Header {
     text: string;
     field: string | null;
@@ -29,29 +31,21 @@ function filterTable(list: LaunchData[]) {
 interface AMMLaunch {
     amm_data: AMMData;
     launch_data: LaunchData;
+    mint: Mint;
 }
 
-async function getSOLPrice() {
-    // Default options are marked with *
-    const options = { method: "GET" };
 
-    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
-
-    return result["data"]["SOL"]["price"];
-}
 
 const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
-    const { ammData } = useAppRoot();
+    const { ammData, SOLPrice, mintData } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
     let trade_list = filterTable(launchList);
-
-    //let sol_price = await getSOLPrice();
 
     const handleHeaderClick = (e) => {
         if (e == sortedField) {
@@ -62,19 +56,18 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
         }
     };
 
-    //console.log(ammData);
-    //console.log(trade_list);
-
     let amm_launches: AMMLaunch[] = [];
-    for (let i = 0; i < ammData.length; i++) {
-        const ammLaunch = trade_list.filter((launch) => {
-            return ammData[i].base_mint.equals(launch.keys[LaunchKeys.MintAddress]);
-        });
-        if (ammLaunch.length === 0 || ammLaunch[0] === undefined) continue;
+    if (mintData !== null) {
+        for (let i = 0; i < ammData.length; i++) {
+            const ammLaunch = trade_list.filter((launch) => {
+                return ammData[i].base_mint.equals(launch.keys[LaunchKeys.MintAddress]);
+            });
+            if (ammLaunch.length === 0 || ammLaunch[0] === undefined) continue;
 
-        console.log(ammLaunch[0].page_name, ammData[i].base_mint.toString());
-        let amm_launch: AMMLaunch = { amm_data: ammData[i], launch_data: ammLaunch[0] };
-        amm_launches.push(amm_launch);
+            console.log(ammLaunch[0].page_name, ammData[i].base_mint.toString(), mintData.get(ammData[i].base_mint.toString()));
+            let amm_launch: AMMLaunch = { amm_data: ammData[i], launch_data: ammLaunch[0], mint : mintData!== null ? mintData.get(ammData[i].base_mint.toString()) : null};
+            amm_launches.push(amm_launch);
+        }
     }
 
     const tableHeaders: Header[] = [
@@ -120,7 +113,7 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
 
                 <tbody>
                     {amm_launches.map((launch, i) => (
-                        <LaunchCard key={i} amm_launch={launch} />
+                        <LaunchCard key={i} amm_launch={launch}  SOLPrice={SOLPrice}/>
                     ))}
                 </tbody>
             </table>
@@ -128,7 +121,7 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     );
 };
 
-const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch }) => {
+const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch, SOLPrice : number }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
 
@@ -136,7 +129,8 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch }) => {
     let mm_rewards = reward_schedule(current_date, amm_launch.launch_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
     console.log(amm_launch);
-
+    let total_supply = (amm_launch.mint !== null && amm_launch.mint !== undefined) ? Number(amm_launch.mint.supply) / Math.pow(10, amm_launch.launch_data.decimals) : 0;
+    let market_cap = total_supply * last_price * SOLPrice;
     return (
         <tr
             style={{
@@ -181,7 +175,7 @@ const LaunchCard = ({ amm_launch }: { amm_launch: AMMLaunch }) => {
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        --
+                        {market_cap.toFixed(2)}
                     </Text>
                     <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
