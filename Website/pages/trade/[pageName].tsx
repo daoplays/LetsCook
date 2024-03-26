@@ -685,13 +685,12 @@ const BuyAndSell = ({
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
-    let slippage_string = (slippage * 100).toFixed(2);
+    let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
+    let quote_output_string = base_output === 0 ? "0" : quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
+    quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
-    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
-    quote_output_string += " (" + slippage_string + "%)";
-
-    let base_output_string = base_output <= 1e-3 ? base_output.toExponential(3) : base_output.toFixed(3);
-    base_output_string += " (" + slippage_string + "%)";
+    let base_output_string = base_output === 0 ? "0" : base_output <= 1e-3 ? base_output.toExponential(3) : base_output.toFixed(3);
+    base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>

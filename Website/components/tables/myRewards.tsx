@@ -7,7 +7,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import { JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
 import { MMLaunchData, MMUserData } from "../Solana/jupiter_state";
-import { LaunchKeys } from "../Solana/constants";
+import { LaunchKeys, LaunchFlags } from "../Solana/constants";
 import useGetMMRewards from "../../hooks/jupiter/useGetMMRewards";
 
 interface Header {
@@ -18,6 +18,16 @@ interface Header {
 interface MappedReward {
     launch_reward: MMLaunchData;
     user_reward: MMUserData;
+    launch: LaunchData;
+}
+
+function filterTable(list: LaunchData[]) {
+    if (list === null || list === undefined) return [];
+
+    return list.filter(function (item) {
+        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+        return item.flags[LaunchFlags.LPState] == 2;
+    });
 }
 
 function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
@@ -40,21 +50,10 @@ function filterUserRewards(list: MMUserData[], launch_data: LaunchData) {
     });
 }
 
-const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => {
-    const { sm } = useResponsive();
-    const { checkProgramData, mmLaunchData, mmUserData } = useAppRoot();
+function getMappedRewards(user_rewards: MMUserData[], launch_rewards: MMLaunchData[], launch_data: LaunchData, mapped_rewards : MappedReward[]) {
 
-    const tableHeaders: Header[] = [
-        { text: "REWARD DAY", field: "reward_day" },
-        { text: "TOTAL REWARDS", field: "total_rewards" },
-        { text: "TOTAL BOUGHT", field: "total_bought" },
-        { text: "USER BOUGHT", field: "user_bought" },
-        { text: "USER %", field: "user_percent" },
-        { text: "USER REWARDS", field: "user_rewards" },
-    ];
-
-    let filtered_user_rewards = filterUserRewards(mmUserData, launch_data);
-    let filtered_launch_rewards = filterLaunchRewards(mmLaunchData, launch_data);
+    let filtered_user_rewards = filterUserRewards(user_rewards, launch_data);
+    let filtered_launch_rewards = filterLaunchRewards(launch_rewards, launch_data);
 
     filtered_user_rewards.sort((a, b) => {
         if (a.date < b.date) {
@@ -76,16 +75,47 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
         return 0;
     });
 
-    let mapped_rewards: MappedReward[] = [];
     for (let i = 0; i < filtered_user_rewards.length; i++) {
         for (let j = 0; j < filtered_launch_rewards.length; j++) {
             if (filtered_launch_rewards[j].date === filtered_user_rewards[i].date) {
-                let m: MappedReward = { launch_reward: filtered_launch_rewards[j], user_reward: filtered_user_rewards[i] };
+                let m: MappedReward = { launch_reward: filtered_launch_rewards[j], user_reward: filtered_user_rewards[i], launch : launch_data };
                 mapped_rewards.push(m);
                 break;
             }
         }
     }
+
+
+}
+const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => {
+    const { sm } = useResponsive();
+    const { checkProgramData, mmLaunchData, mmUserData, launchList } = useAppRoot();
+
+    const tableHeaders: Header[] = [
+        { text: "REWARD DAY", field: "reward_day" },
+        { text: "TOTAL REWARDS", field: "total_rewards" },
+        { text: "TOTAL BOUGHT", field: "total_bought" },
+        { text: "USER BOUGHT", field: "user_bought" },
+        { text: "USER %", field: "user_percent" },
+        { text: "USER REWARDS", field: "user_rewards" },
+    ];
+
+    if (launch_data === null) {
+        tableHeaders.unshift({text: "TOKEN", field: "token"})
+    }
+
+    let mapped_rewards: MappedReward[] = [];
+
+    if (launch_data !== null) {
+        getMappedRewards(mmUserData, mmLaunchData, launch_data, mapped_rewards);
+    }
+    else {
+        let trade_list = filterTable(launchList);
+        for (let i = 0; i < trade_list.length; i++) {
+            getMappedRewards(mmUserData, mmLaunchData, trade_list[i], mapped_rewards);
+        }
+    }
+
 
     return (
         <TableContainer w={"100%"}>
@@ -121,7 +151,7 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
 
                 <tbody>
                     {mapped_rewards.map((r, i) => (
-                        <RewardCard key={i} reward={r} launch={launch_data} />
+                        <RewardCard key={i} reward={r} show_icon={launch_data === null}/>
                     ))}
                 </tbody>
             </table>
@@ -129,25 +159,25 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
     );
 };
 
-const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchData }) => {
+const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: boolean }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { GetMMRewards } = useGetMMRewards();
 
     let days_rewards = bignum_to_num(reward.launch_reward.token_rewards);
-    days_rewards /= Math.pow(10, launch.decimals);
+    days_rewards /= Math.pow(10, reward.launch.decimals);
 
     let total_traded = bignum_to_num(reward.launch_reward.buy_amount);
-    total_traded /= Math.pow(10, launch.decimals);
+    total_traded /= Math.pow(10, reward.launch.decimals);
 
     let user_traded = bignum_to_num(reward.user_reward.buy_amount);
-    user_traded /= Math.pow(10, launch.decimals);
+    user_traded /= Math.pow(10, reward.launch.decimals);
 
     let user_percent = (100 * user_traded) / total_traded;
     let user_amount = (days_rewards * user_percent) / 100;
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
-    let time_left = (new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60 - current_date;
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(reward.launch.last_interaction)) / 24 / 60 / 60);
+    let time_left = (new Date().getTime() / 1000 - bignum_to_num(reward.launch.last_interaction)) / 24 / 60 / 60 - current_date;
     time_left *= 24;
     time_left = 24 - time_left;
     //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
@@ -166,6 +196,24 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
         >
+            {show_icon &&
+                <td style={{ minWidth: sm ? "90px" : "120px" }}>
+                    <HStack px={3} spacing={3} justify="center">
+                        <Box w={45} h={45} borderRadius={10}>
+                            <Image
+                                alt="Launch icon"
+                                src={reward.launch.icon}
+                                width={45}
+                                height={45}
+                                style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                            />
+                        </Box>
+                        <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                            {reward.launch.symbol}
+                        </Text>
+                    </HStack>
+                </td>
+            }
             <td style={{ minWidth: "120px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {reward.launch_reward.date}
@@ -208,7 +256,7 @@ const RewardCard = ({ reward, launch }: { reward: MappedReward; launch: LaunchDa
                     </Text>
                 )}
                 {current_date > reward.launch_reward.date && (
-                    <Button onClick={() => GetMMRewards(reward.launch_reward.date, launch)}>Claim</Button>
+                    <Button onClick={() => GetMMRewards(reward.launch_reward.date, reward.launch)}>Claim</Button>
                 )}
             </td>
         </tr>

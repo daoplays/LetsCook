@@ -39,7 +39,7 @@ const MarketMaker = () => {
                 >
                     <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : 0}>
                         {/* add rewards  */}
-                        {["Markets"].map((name, i) => {
+                        {["Markets", "Rewards"].map((name, i) => {
                             const isActive = selected === name;
 
                             const baseStyle = {
@@ -70,7 +70,23 @@ const MarketMaker = () => {
                             const base = sm ? mobileBaseStyle : baseStyle;
                             const active = sm ? mobileActiveStyle : activeStyle;
 
-                            return <Box key={i} px={4} py={4} w={xs ? "50%" : "fit-content"}></Box>;
+                            return <Box
+                            key={i}
+                            style={{
+                                ...base,
+                                ...active,
+                            }}
+                            onClick={() => {
+                                handleClick(name);
+                            }}
+                            px={4}
+                            py={2}
+                            w={xs ? "50%" : "fit-content"}
+                        >
+                            <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                                {name}
+                            </Text>
+                        </Box>;
                         })}
                     </HStack>
                     <Text
@@ -80,7 +96,7 @@ const MarketMaker = () => {
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >
-                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "My Rewards" : "My Orders"}
+                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
                     </Text>
 
                     {selected === "Orders" && (
@@ -138,7 +154,15 @@ const MarketMaker = () => {
                     </HStack>
                 )}
 
-                {/* {selected === "Rewards" && <MyRewardsTable />} */}
+                {selected === "Rewards" && <MyRewardsTable launch_data={null}/>}
+
+                {!wallet.connected && selected === "Rewards" && (
+                    <HStack w="100%" align="center" justify="center" mt={25}>
+                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
+                            Connect your wallet to see your rewards
+                        </Text>
+                    </HStack>
+                )}
             </main>
         </>
     );
