@@ -4,8 +4,8 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
-import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
-import { LaunchData, LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
+import { DEFAULT_FONT_SIZE, PROGRAM } from "../Solana/constants";
+import { LaunchData, LaunchDataUserInput, request_current_balance } from "../Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
@@ -13,11 +13,11 @@ import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
 
-interface DetailsPageProps {
+interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const DetailsPage = ({ setScreen }: DetailsPageProps) => {
+const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
@@ -130,14 +130,14 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     }
 
     async function prevPage(e) {
-        if (await setData(e)) setScreen("token");
+        if (await setData(e)) setScreen("step 3");
     }
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
-                    Page Information
+                    Page Information:
                 </Text>
                 <form style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12}>
@@ -298,7 +298,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    prevPage(e);
+                                    setScreen("step 3");
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >
@@ -311,7 +311,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >
-                                NEXT
+                                Confirm (4/4)
                             </button>
                         </div>
                     </VStack>
@@ -321,4 +321,4 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     );
 };
 
-export default DetailsPage;
+export default CollectionPage;

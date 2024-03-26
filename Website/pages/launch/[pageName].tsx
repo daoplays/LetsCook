@@ -40,7 +40,7 @@ import { WarningModal } from "../../components/Solana/modals";
 import { ButtonString } from "../../components/user_status";
 import Head from "next/head";
 
-const MintPage = () => {
+const TokenMintPage = () => {
     const wallet = useWallet();
     const router = useRouter();
     const { pageName } = router.query;
@@ -590,4 +590,4 @@ const MintPage = () => {
     );
 };
 
-export default MintPage;
+export default TokenMintPage;

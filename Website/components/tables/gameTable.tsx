@@ -11,6 +11,7 @@ import useAppRoot from "../../context/useAppRoot";
 import Links from "../Buttons/links";
 import { FaSort } from "react-icons/fa";
 import { useRouter } from "next/router";
+import { ButtonString } from "../user_status";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -209,10 +210,11 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                     {date}
                 </Text>
             </td>
-            {/* <td style={{ minWidth: "100px" }}>
-                <Button>View</Button>
-            </td> */}
-            <td style={{ minWidth: "75px" }} />
+            <td style={{ minWidth: "100px" }}>
+                <Button as={Link} href={`/launch/${launch.page_name}`} style={{ textDecoration: "none" }}>
+                    View
+                </Button>
+            </td>
         </tr>
     );
 };
