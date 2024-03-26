@@ -182,8 +182,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         type: "info",
                     });
                }
-               if (attempts > 20000)
-                break
             }
 
             //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
