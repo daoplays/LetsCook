@@ -648,7 +648,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     }}
                                     className={`${styles.nextBtn} font-face-kg `}
                                 >
-                                    PREVIOUS
+                                    Go Back
                                 </button>
                                 <button
                                     type="button"

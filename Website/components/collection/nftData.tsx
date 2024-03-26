@@ -17,46 +17,13 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
+            <VStack w="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Individual NFT info:
                 </Text>
                 <form onSubmit={() => {}} style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
-                            {/* {displayImg ? (
-                                <Image
-                                    src={displayImg}
-                                    width={lg ? 180 : 235}
-                                    height={lg ? 180 : 235}
-                                    alt="Image Frame"
-                                    style={{ backgroundSize: "cover", borderRadius: 12 }}
-                                />
-                            ) : (
-                                <VStack
-                                    justify="center"
-                                    align="center"
-                                    style={{ minWidth: lg ? 180 : 235, minHeight: lg ? 180 : 235, cursor: "pointer" }}
-                                    borderRadius={12}
-                                    border="2px dashed rgba(134, 142, 150, 0.5)"
-                                    as={chakra.label}
-                                    htmlFor="file"
-                                >
-                                    <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
-                                        Image Preview
-                                    </Text>
-
-                                    <chakra.input
-                                        required
-                                        style={{ display: "none" }}
-                                        type="file"
-                                        id="file"
-                                        name="file"
-                                        onChange={() => {}}
-                                    />
-                                </VStack>
-                            )} */}
-
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>

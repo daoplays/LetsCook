@@ -5,6 +5,7 @@ import CollectionInfo from "../../components/collection/info";
 import NFTData from "../../components/collection/nftData";
 import { useState } from "react";
 import HybridInfo from "../../components/collection/hybridInfo";
+import CollectionPage from "../../components/collection/collectionPage";
 
 const Launch = () => {
     const router = useRouter();
@@ -20,6 +21,7 @@ const Launch = () => {
                 {screen === "step 1" && <CollectionInfo setScreen={setScreen} />}
                 {screen === "step 2" && <NFTData setScreen={setScreen} />}
                 {screen === "step 3" && <HybridInfo setScreen={setScreen} />}
+                {screen === "step 4" && <CollectionPage setScreen={setScreen} />}
             </main>
         </>
     );
