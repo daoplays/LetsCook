@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 
-const Collection = () => {
+const TokenLaunch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
     const [screen, setScreen] = useState("token");
@@ -19,7 +19,7 @@ const Collection = () => {
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | Collection</title>
+                <title>Let&apos;s Cook | Token</title>
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)", paddingTop: lg ? "25px" : "50px" }}>
                 {screen === "token" && <TokenPage setScreen={setScreen} />}
@@ -32,4 +32,4 @@ const Collection = () => {
     );
 };
 
-export default Collection;
+export default TokenLaunch;

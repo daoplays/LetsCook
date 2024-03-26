@@ -7,7 +7,7 @@ import { useState } from "react";
 import HybridInfo from "../../components/collection/hybridInfo";
 import CollectionPage from "../../components/collection/collectionPage";
 
-const Launch = () => {
+const CollectionLaunch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
     const [screen, setScreen] = useState("step 1");
@@ -15,7 +15,7 @@ const Launch = () => {
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | Launch</title>
+                <title>Let&apos;s Cook | Collection</title>
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)", paddingTop: lg ? "25px" : "50px" }}>
                 {screen === "step 1" && <CollectionInfo setScreen={setScreen} />}
@@ -27,4 +27,4 @@ const Launch = () => {
     );
 };
 
-export default Launch;
+export default CollectionLaunch;
