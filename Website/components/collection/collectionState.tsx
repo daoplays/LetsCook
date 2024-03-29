@@ -61,6 +61,7 @@ export interface CollectionDataUserInput {
     transfer_hook_program: PublicKey | null;
     nft_images: FileList | null;
     nft_metadata: FileList | null;
+    token_mint: PublicKey | null;
 }
 
 export const defaultCollectionInput: CollectionDataUserInput = {
@@ -94,5 +95,6 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     permanent_delegate: null,
     transfer_hook_program: null,
     nft_images: null,
-    nft_metadata: null
+    nft_metadata: null,
+    token_mint : null
 };

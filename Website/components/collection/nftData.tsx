@@ -42,7 +42,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     const BrowseImages = () => (
         <HStack spacing={0} className={styles.eachField}>
             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Icon:
+                Icons:
             </div>
             <div>
                 <label className={styles.label}>
@@ -73,7 +73,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     const BrowseMetaData = () => (
         <HStack spacing={0} className={styles.eachField}>
             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Icon:
+                MetaData:
             </div>
             <div>
                 <label className={styles.label}>
