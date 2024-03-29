@@ -13,7 +13,37 @@ interface NFTDataProps {
 const NFTData = ({ setScreen }: NFTDataProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const [displayImg, setDisplayImg] = useState<string>("");
+    const [collectionName, setCollectionName] = useState<string>("");
+    const [nftImage, setNftImage] = useState<string>("");
+    const [metadata, setMetadata] = useState<string>("");
+
+    const handleCollectionNameChange = (e) => {
+        setCollectionName(e.target.value);
+    };
+
+    const handleNftImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files && e.target.files[0];
+
+        if (files) {
+            setNftImage(URL.createObjectURL(e.target.files[0]));
+        }
+    };
+
+    const handleMetadataChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files && e.target.files[0];
+
+        if (files) {
+            setMetadata(URL.createObjectURL(e.target.files[0]));
+        }
+    };
+
+    function setLaunchData(e) {
+        e.preventDefault();
+
+        // Todo: Validation
+
+        setScreen("step 3");
+    }
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -21,7 +51,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Individual NFT info:
                 </Text>
-                <form onSubmit={() => {}} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
@@ -38,7 +68,8 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
-                                            onChange={() => {}}
+                                            value={collectionName}
+                                            onChange={(e) => handleCollectionNameChange(e)}
                                         />
                                     </div>
                                 </HStack>
@@ -49,14 +80,14 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                     </div>
                                     <div>
                                         <label className={styles.label}>
-                                            <input id="file" type="file" />
+                                            <input id="file" type="file" onChange={(e) => handleNftImageChange(e)} />
                                             <span className={styles.browse} style={{ cursor: "pointer", padding: "5px 10px" }}>
                                                 BROWSE
                                             </span>
                                         </label>
                                     </div>
                                     <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                        No File Selected
+                                        {nftImage ? "File Selected" : "No File Selected"}
                                     </Text>
                                 </HStack>
 
@@ -66,14 +97,14 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                     </div>
                                     <div>
                                         <label className={styles.label}>
-                                            <input id="file" type="file" />
+                                            <input id="file" type="file" onChange={(e) => handleMetadataChange(e)} />
                                             <span className={styles.browse} style={{ cursor: "pointer", padding: "5px 10px" }}>
                                                 BROWSE
                                             </span>
                                         </label>
                                     </div>
                                     <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                        No File Selected
+                                        {metadata ? "File Selected" : "No File Selected"}
                                     </Text>
                                 </HStack>
                             </VStack>
@@ -89,12 +120,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                             >
                                 Go Back
                             </button>
-                            <button
-                                className={`${styles.nextBtn} font-face-kg `}
-                                onClick={() => {
-                                    setScreen("step 3");
-                                }}
-                            >
+                            <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
                                 NEXT (2/4)
                             </button>
                         </HStack>

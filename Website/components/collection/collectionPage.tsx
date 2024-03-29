@@ -29,8 +29,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
 
-    const { launchList } = useAppRoot();
-
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
@@ -95,42 +93,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return false;
         }
 
-        if (newLaunchData.current.banner_file === null) {
-            toast.error("Please select a banner image.");
-            return false;
-        }
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let balance = 0;
-
-        if (newLaunchData.current.edit_mode === false) {
-            balance = await request_current_balance("", launch_data_account);
-        }
-
-        console.log("check balance", name, launch_data_account.toString(), balance);
-
-        if (balance > 0) {
-            toast.error("Page name already exists");
-            return false;
-        }
-
-        newLaunchData.current.pagename = name;
-        newLaunchData.current.description = description;
-        newLaunchData.current.web_url = web;
-        newLaunchData.current.twt_url = twitter;
-        newLaunchData.current.disc_url = discord;
-        newLaunchData.current.tele_url = telegram;
-
         return true;
     }
 
-    async function nextPage(e) {
-        if (await setData(e)) setScreen("book");
-    }
-
-    async function prevPage(e) {
-        if (await setData(e)) setScreen("step 3");
+    async function submit(e) {
+        if (await setData(e)) {
+            alert("Created Successfully");
+        }
     }
 
     return (
@@ -297,7 +266,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                         >
                             <button
                                 type="button"
-                                onClick={(e) => {
+                                onClick={() => {
                                     setScreen("step 3");
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
@@ -307,7 +276,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    nextPage(e);
+                                    submit(e);
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >

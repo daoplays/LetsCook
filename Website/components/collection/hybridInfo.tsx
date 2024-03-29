@@ -5,6 +5,8 @@ import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import useResponsive from "../../hooks/useResponsive";
 import styles2 from "../../styles/LaunchDetails.module.css";
+import getImageDimensions from "../../utils/getImageDimension";
+import { toast } from "react-toastify";
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -13,7 +15,56 @@ interface HybridInfoProps {
 const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const [displayImg, setDisplayImg] = useState<string>("");
+
+    const [displayImage, setTokenImage] = useState<string>("");
+    const [token, setToken] = useState<string>("");
+    const [swapRate, setSwapRate] = useState<string>("");
+    const [swapFee, setSwapFee] = useState<string>("");
+    const [cooldown, setCooldown] = useState<string>("");
+    const [feeWallet, setFeeWallet] = useState<string>("");
+
+    const handleTokenChange = (e) => {
+        setToken(e.target.value);
+    };
+    const handleSwapRateChange = (e) => {
+        setSwapRate(e.target.value);
+    };
+    const handleSwapFeeChange = (e) => {
+        setSwapFee(e.target.value);
+    };
+    const handleCooldownChange = (e) => {
+        setCooldown(e.target.value);
+    };
+    const handleFeeWalletChange = (e) => {
+        setFeeWallet(e.target.value);
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files && e.target.files[0];
+
+        if (file) {
+            if (file.size <= 1048576) {
+                const dimensions = await getImageDimensions(file);
+
+                if (dimensions.width === dimensions.height) {
+                    // newLaunchData.current.icon_file = file;
+                    setTokenImage(URL.createObjectURL(e.target.files[0]));
+                } else {
+                    toast.error("Please upload an image with equal width and height.");
+                }
+            } else {
+                toast.error("File size exceeds 1MB limit.");
+            }
+        }
+    };
+
+    function setLaunchData(e) {
+        e.preventDefault();
+
+        // Todo: Validation
+
+        setScreen("step 4");
+    }
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -21,12 +72,12 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Hybrid Info:
                 </Text>
-                <form onSubmit={() => {}} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
-                            {displayImg ? (
+                            {displayImage ? (
                                 <Image
-                                    src={displayImg}
+                                    src={displayImage}
                                     width={lg ? 180 : 235}
                                     height={lg ? 180 : 235}
                                     alt="Image Frame"
@@ -47,12 +98,11 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                     </Text>
 
                                     <chakra.input
-                                        required
                                         style={{ display: "none" }}
                                         type="file"
                                         id="file"
                                         name="file"
-                                        onChange={() => {}}
+                                        onChange={(e) => handleFileChange(e)}
                                     />
                                 </VStack>
                             )}
@@ -71,7 +121,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
-                                            onChange={() => {}}
+                                            value={token}
+                                            onChange={(e) => handleTokenChange(e)}
                                         />
                                     </div>
 
@@ -99,7 +150,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
-                                            onChange={() => {}}
+                                            value={swapRate}
+                                            onChange={(e) => handleSwapRateChange(e)}
                                         />
                                     </div>
                                 </HStack>
@@ -111,7 +163,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                         </div>
 
                                         <div className={styles.distributionField}>
-                                            <Input size="lg" onChange={(e) => {}} />
+                                            <Input size="lg" value={swapFee} onChange={(e) => handleSwapFeeChange(e)} />
                                             <Image
                                                 className={styles.percentage}
                                                 width={15}
@@ -128,7 +180,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                         </div>
 
                                         <div className={styles.distributionField}>
-                                            <Input size="lg" onChange={(e) => {}} />
+                                            <Input size="lg" value={cooldown} onChange={(e) => handleCooldownChange(e)} />
                                         </div>
 
                                         <Text m={0} ml={2} mt={1} className="font-face-rk" fontSize={"x-large"}>
@@ -151,7 +203,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
-                                            onChange={() => {}}
+                                            value={feeWallet}
+                                            onChange={(e) => handleFeeWalletChange(e)}
                                         />
                                     </div>
                                 </HStack>
@@ -168,12 +221,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                             >
                                 Go Back
                             </button>
-                            <button
-                                className={`${styles.nextBtn} font-face-kg `}
-                                onClick={() => {
-                                    setScreen("step 4");
-                                }}
-                            >
+                            <button className={`${styles.nextBtn} font-face-kg `} type="submit">
                                 NEXT (3/4)
                             </button>
                         </HStack>

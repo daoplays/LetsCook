@@ -5,6 +5,8 @@ import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import useResponsive from "../../hooks/useResponsive";
 import styles2 from "../../styles/LaunchDetails.module.css";
+import getImageDimensions from "../../utils/getImageDimension";
+import { toast } from "react-toastify";
 
 interface CollectionInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -13,7 +15,44 @@ interface CollectionInfoProps {
 const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+
+    const [name, setName] = useState<string>("");
+    const [symbol, setSymbol] = useState<string>("");
+    const [maxSupply, setMaxSupply] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
     const [displayImg, setDisplayImg] = useState<string>("");
+
+    const handleNameChange = (e) => {
+        setName(e.target.value);
+    };
+    const handleSymbolChange = (e) => {
+        setSymbol(e.target.value);
+    };
+    const handleMaxSupplyChange = (e) => {
+        setMaxSupply(e.target.value);
+    };
+    const handleDescriptionChange = (e) => {
+        setDescription(e.target.value);
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files && e.target.files[0];
+
+        if (file) {
+            if (file.size <= 1048576) {
+                const dimensions = await getImageDimensions(file);
+
+                if (dimensions.width === dimensions.height) {
+                    // newLaunchData.current.icon_file = file;
+                    setDisplayImg(URL.createObjectURL(e.target.files[0]));
+                } else {
+                    toast.error("Please upload an image with equal width and height.");
+                }
+            } else {
+                toast.error("File size exceeds 1MB limit.");
+            }
+        }
+    };
 
     const Browse = () => (
         <HStack spacing={0} className={styles.eachField}>
@@ -22,17 +61,25 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             </div>
             <div>
                 <label className={styles.label}>
-                    <input id="file" type="file" />
+                    <input id="file" type="file" onChange={(e) => handleFileChange(e)} />
                     <span className={styles.browse} style={{ cursor: "pointer", padding: "5px 10px" }}>
                         BROWSE
                     </span>
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                No File Selected
+                {displayImg ? "File Selected" : "No File Selected"}
             </Text>
         </HStack>
     );
+
+    function setLaunchData(e) {
+        e.preventDefault();
+
+        // Todo: Validation
+
+        setScreen("step 2");
+    }
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -40,7 +87,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form onSubmit={() => {}} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
@@ -66,12 +113,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     </Text>
 
                                     <chakra.input
-                                        required
                                         style={{ display: "none" }}
                                         type="file"
                                         id="file"
                                         name="file"
-                                        onChange={() => {}}
+                                        onChange={(e) => handleFileChange(e)}
                                     />
                                 </VStack>
                             )}
@@ -92,7 +138,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
-                                            onChange={() => {}}
+                                            value={name}
+                                            onChange={(e) => handleNameChange(e)}
                                         />
                                     </div>
                                 </HStack>
@@ -112,7 +159,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                 required
                                                 className={styles.inputBox}
                                                 type="text"
-                                                onChange={() => {}}
+                                                value={symbol}
+                                                onChange={(e) => handleSymbolChange(e)}
                                             />
                                         </div>
                                     </HStack>
@@ -131,7 +179,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                 required
                                                 className={styles.inputBox}
                                                 type="text"
-                                                onChange={() => {}}
+                                                value={maxSupply}
+                                                onChange={(e) => handleMaxSupplyChange(e)}
                                             />
                                         </div>
                                     </HStack>
@@ -152,7 +201,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     placeholder="Feel free to provide more details about your NFT collection, it will be displayed in your collection page."
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles2.inputTxtarea}`}
-                                    onChange={(e) => {}}
+                                    value={description}
+                                    onChange={(e) => handleDescriptionChange(e)}
                                 />
                             </div>
                         </div>
@@ -161,12 +211,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
-                            <button
-                                className={`${styles.nextBtn} font-face-kg `}
-                                onClick={() => {
-                                    setScreen("step 2");
-                                }}
-                            >
+                            <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
                                 NEXT (1/4)
                             </button>
                         </HStack>
