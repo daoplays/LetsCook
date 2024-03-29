@@ -193,6 +193,19 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return;
         }
 
+        // check if the launch account already exists, if so just skip all this
+        let test_launch_data_account = PublicKey.findProgramAddressSync(
+            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
+            PROGRAM,
+        )[0];
+
+
+        let account_balance = await request_current_balance("", test_launch_data_account);
+        if (account_balance > 0) {
+            await EditLaunch();
+            return;
+        }
+
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const irys_wallet = { name: "phantom", provider: wallet };

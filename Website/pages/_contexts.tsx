@@ -15,15 +15,46 @@ import {
     get_current_blockhash,
     send_transaction,
     GPAccount,
-    request_current_balance
+    request_current_balance,
+    requestMultipleAccounts,
+    Token22MintAccount
 } from "../components/Solana/state";
+import {
+    unpackMint,
+    Mint,
+    TOKEN_2022_PROGRAM_ID
+} from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY } from "../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys } from "../components/Solana/constants";
+import { CollectionDataUserInput, defaultCollectionInput } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
+
+const GetSOLPrice = async (setSOLPrice)=> {
+    // Default options are marked with *
+    const options = { method: "GET" };
+
+    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
+
+    setSOLPrice(result["data"]["SOL"]["price"]);
+}
+
+const GetTradeMintData = async (trade_keys, setMintMap)=> {
+    const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+    let result = await connection.getMultipleAccountsInfo(trade_keys, 'confirmed')
+
+    let mint_map = new Map<PublicKey, Mint>();
+    for (let i = 0; i < result.length; i++) {
+        let mint = unpackMint(trade_keys[i], result[i], TOKEN_2022_PROGRAM_ID)
+        console.log("mint; ", mint.address.toString())
+        mint_map.set(trade_keys[i].toString(), mint);
+    }
+    setMintMap(mint_map);
+}
+
 
 async function getUserTrades(wallet: WalletContextState): Promise<TradeHistoryItem[]> {
     if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
@@ -85,6 +116,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
+    const [mintData, setMintData] = useState<Map<String, Mint> | null>(null);
 
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
@@ -99,6 +131,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
 
     const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
+    const [solPrice, setSolPrice] = useState<number>(0);
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
@@ -107,6 +140,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const user_balance_ws_id = useRef<number | null>(null);
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
+    const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
 
     function closeFilterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -379,12 +413,18 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setHomePageData(home_page_data);
 
         // set up the map for the trade page
+        let trade_mints : PublicKey[] = []
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
         for (let i = 0; i < trade_filtered.length; i++) {
+            console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
+            trade_mints.push(trade_filtered[i].keys[LaunchKeys.MintAddress]);
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }
         setTradePageData(trade_page_map);
+
+        GetTradeMintData(trade_mints, setMintData)
+
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {
@@ -399,6 +439,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
+        GetSOLPrice(setSolPrice);
     }, []);
 
     const checkUserOrders = useCallback(async () => {
@@ -428,6 +469,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             userTrades={userTrades}
             ammData={amm_data}
             userSOLBalance={userSOLBalance}
+            SOLPrice={solPrice}
+            mintData={mintData}
+            newCollectionData={newCollectionData}
         >
             {children}
         </AppRootContextProvider>

@@ -184,7 +184,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
                 toast.update(collectToast, {
                     render: "Failed to collect fees, please try again later.",
-                    type: "success",
+                    type: "error",
                     isLoading: false,
                     autoClose: 3000,
                 });
