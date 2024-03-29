@@ -45,10 +45,10 @@ const CollectionDashboardTable = ({ creatorLaunches }: { creatorLaunches: Launch
 
     const tableHeaders: Header[] = [
         { text: "COLLECTION", field: null },
-        { text: "SOCIALS", field: null },
-        { text: "TOTAL SUPPLY", field: "total supply" },
+        { text: "TOKEN", field: null },
         { text: "TOKENS PER NFT", field: "tokens per nft" },
-        { text: "SWAP RATE", field: "swap rate" },
+        { text: "UNWRAP FEE", field: "unwrap fee" },
+        { text: "TOTAL SUPPLY", field: "total supply" },
     ];
 
     const handleHeaderClick = (field: string | null) => {
