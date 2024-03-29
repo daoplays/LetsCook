@@ -26,7 +26,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
 
-
     function setLaunchData(e) {
         e.preventDefault();
 
@@ -53,12 +52,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.token_keypair = Keypair.generate();
 
         if (tokenStart !== "") {
-
             let est_time = "1s";
-            if (tokenStart.length == 2)
-                est_time = "5s"
-            if (tokenStart.length === 3)
-                est_time = "5min"
+            if (tokenStart.length == 2) est_time = "5s";
+            if (tokenStart.length === 3) est_time = "5min";
 
             const grindToast = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
             let attempts = 0;
@@ -73,12 +69,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
                 newCollectionData.current.token_keypair = Keypair.fromSeed(seed);
                 if (attempts % 10000 === 0) {
-                    console.log("attempts: " + attempts)
+                    console.log("attempts: " + attempts);
                     toast.update(grindToast, {
                         render: "Grind Attempts: " + attempts.toString(),
                         type: "info",
                     });
-               }
+                }
             }
 
             //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
@@ -105,7 +101,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const handleSymbolChange = (e) => {
         setSymbol(e.target.value);
     };
-
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
@@ -143,7 +138,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newCollectionData.current.icon_file !== null ? newCollectionData.current.icon_file.name : "No File Selected (Size Limit: 1MB)"}
+                {newCollectionData.current.icon_file !== null
+                    ? newCollectionData.current.icon_file.name
+                    : "No File Selected (Size Limit: 1MB)"}
             </Text>
         </HStack>
     );
@@ -157,7 +154,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
-                        {displayImg ? (
+                            {displayImg ? (
                                 <Image
                                     src={displayImg}
                                     width={lg ? 180 : 235}
@@ -260,34 +257,31 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                             />
                                         </div>
                                     </HStack>
-
                                 </Flex>
 
-
                                 <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                            Max Supply:
-                                        </div>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
+                                        Max Supply:
+                                    </div>
 
-                                        <div className={styles.textLabelInput}>
-                                            <Input
-                                                disabled={newCollectionData.current.edit_mode === true}
-                                                size={lg ? "md" : "lg"}
-                                                required
-                                                className={styles.inputBox}
-                                                placeholder="Enter Token Total Supply"
-                                                value={totalSupply}
-                                                onChange={(e) => {
-                                                    setTotalSupply(e.target.value);
-                                                }}
-                                            />
-                                        </div>
-                                    </HStack>
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            disabled={newCollectionData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="Enter Token Total Supply"
+                                            value={totalSupply}
+                                            onChange={(e) => {
+                                                setTotalSupply(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
 
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
-                   
 
                         <div className={styles2.launchBodyLowerVertical}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: "175px", color: "white" }}>
@@ -302,7 +296,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     className={`${styles.inputBox} ${styles2.inputTxtarea}`}
                                     onChange={(e) => {
                                         setDescription(e.target.value);
-                                    }}                                />
+                                    }}
+                                />
                             </div>
                         </div>
 

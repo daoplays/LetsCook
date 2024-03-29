@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import useResponsive from "../hooks/useResponsive";
-import CreatorDashboardTable from "../components/tables/creatorDashboardTable";
+import TokenDashboardTable from "../components/tables/tokenDashboardTable";
 import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
 import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";
@@ -11,6 +11,7 @@ import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
+import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -18,6 +19,7 @@ const DashboardPage = () => {
     const { sm, lg } = useResponsive();
     const { launchList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
+    const [selected, setSelected] = useState("Tokens");
 
     const { newLaunchData } = useAppRoot();
 
@@ -43,9 +45,49 @@ const DashboardPage = () => {
                     py={18}
                     gap={2}
                     alignItems="center"
-                    justifyContent="end"
+                    justifyContent="space-between"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
                 >
+                    <HStack spacing={3} zIndex={99}>
+                        {["Tokens", "Collections"].map((name, i) => {
+                            const isActive = selected === name;
+
+                            const baseStyle = {
+                                display: "flex",
+                                alignItems: "center",
+                                cursor: "pointer",
+                            };
+
+                            const activeStyle = {
+                                color: "white",
+                                borderBottom: isActive ? "2px solid white" : "",
+                                opacity: isActive ? 1 : 0.5,
+                            };
+
+                            return (
+                                <HStack
+                                    key={i}
+                                    style={{
+                                        ...baseStyle,
+                                        ...activeStyle,
+                                    }}
+                                    onClick={() => {
+                                        setSelected(name);
+                                    }}
+                                    px={4}
+                                    py={2}
+                                    mt={-2}
+                                    w={"fit-content"}
+                                    justify="center"
+                                >
+                                    <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
+                                        {name}
+                                    </Text>
+                                </HStack>
+                            );
+                        })}
+                    </HStack>
+
                     <Text
                         fontSize={sm ? 25 : 35}
                         color="white"
@@ -56,26 +98,33 @@ const DashboardPage = () => {
                         Creator Dashboard
                     </Text>
                     {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
-                    <Button
-                        w={sm ? "100%" : "fit-content"}
-                        onClick={() => {
-                            newLaunchData.current = defaultUserInput;
-                            router.push("/launch");
-                        }}
-                    >
-                        New Token
-                    </Button>
-                    <Button
-                        w={sm ? "100%" : "fit-content"}
-                        onClick={() => {
-                            router.push("/collection");
-                        }}
-                    >
-                        New Collection
-                    </Button>
+                    <HStack>
+                        <Button
+                            w={sm ? "100%" : "fit-content"}
+                            onClick={() => {
+                                newLaunchData.current = defaultUserInput;
+                                router.push("/launch");
+                            }}
+                            hidden={selected === "Collections"}
+                        >
+                            New Token
+                        </Button>
+                        <Button
+                            w={sm ? "100%" : "fit-content"}
+                            onClick={() => {
+                                router.push("/collection");
+                            }}
+                            hidden={selected === "Tokens"}
+                        >
+                            New Collection
+                        </Button>
+                    </HStack>
                     {/* </Link> */}
                 </Flex>
-                <CreatorDashboardTable creatorLaunches={creatorLaunches} />
+
+                {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
+                {selected === "Collections" && <CollectionDashboardTable creatorLaunches={creatorLaunches} />}
+
                 {creatorLaunches.length <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
                         <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
