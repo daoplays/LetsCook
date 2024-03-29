@@ -26,7 +26,7 @@ import {
 } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys } from "../components/Solana/constants";
-import { CollectionDataUserInput, defaultCollectionInput } from "../components/collection/collectionState";
+import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
@@ -114,7 +114,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [program_data, setProgramData] = useState<GPAccount[] | null>(null);
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
-    const [collection_data, setCollectionData] = useState<LaunchData[] | null>(null);
+    const [collection_data, setCollectionData] = useState<CollectionData[] | null>(null);
 
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
@@ -291,7 +291,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_launch_data: MMLaunchData[] = [];
         let mm_user_data: MMUserData[] = [];
         let amm_data: AMMData[] = [];
-        let collections: LaunchData[] = [];
+        let collections: CollectionData[] = [];
 
         console.log("program_data", program_data.length);
 

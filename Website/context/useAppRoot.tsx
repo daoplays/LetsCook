@@ -3,7 +3,7 @@
 import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
-import { CollectionDataUserInput } from "../components/collection/collectionState";
+import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { PublicKey} from "@solana/web3.js";
 import {
@@ -30,7 +30,7 @@ interface AppRootTypes {
     SOLPrice : number;
     mintData : Map<String, Mint>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
-    collectionList : LaunchData[];
+    collectionList : CollectionData[];
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);

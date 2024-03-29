@@ -107,6 +107,128 @@ export const defaultCollectionInput: CollectionDataUserInput = {
 };
 
 
+export class CollectionData {
+    constructor(
+        readonly account_type: number,
+        readonly game_id: bignum,
+        readonly last_interaction: bignum,
+        readonly num_interactions: number,
+
+        readonly name: string,
+        readonly symbol: string,
+        readonly icon: string,
+        readonly meta_url: string,
+        readonly banner: string,
+        readonly page_name: string,
+        readonly description: string,
+
+        readonly total_supply: bignum,
+        readonly decimals: number,
+        readonly num_mints: bignum,
+        readonly ticket_price: bignum,
+        readonly minimum_liquidity: bignum,
+        readonly launch_date: bignum,
+        readonly end_date: bignum,
+
+        readonly tickets_sold: number,
+        readonly tickets_claimed: number,
+        readonly mints_won: number,
+        readonly positive_votes: number,
+        readonly negative_votes: number,
+
+        readonly total_mm_buy_amount: bignum,
+        readonly total_mm_sell_amount: bignum,
+        readonly last_mm_reward_date: number,
+
+        readonly socials: string[],
+        readonly distribution: number[],
+        readonly flags: number[],
+        readonly strings: string[],
+        readonly keys: PublicKey[],
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<CollectionData>(
+        [
+            ["account_type", u8],
+            ["game_id", u64],
+            ["last_interaction", i64],
+            ["num_interactions", u16],
+
+            ["name", utf8String],
+            ["symbol", utf8String],
+            ["icon", utf8String],
+            ["meta_url", utf8String],
+            ["banner", utf8String],
+            ["page_name", utf8String],
+            ["description", utf8String],
+
+            ["total_supply", u64],
+            ["decimals", u8],
+            ["num_mints", u32],
+            ["ticket_price", u64],
+            ["minimum_liquidity", u64],
+            ["launch_date", u64],
+            ["end_date", u64],
+
+            ["tickets_sold", u32],
+            ["tickets_claimed", u32],
+            ["mints_won", u32],
+            ["positive_votes", u32],
+            ["negative_votes", u32],
+
+            ["total_mm_buy_amount", u64],
+            ["total_mm_sell_amount", u64],
+            ["last_mm_reward_date", u32],
+
+            ["socials", array(utf8String)],
+            ["distribution", array(u8)],
+            ["flags", array(u8)],
+            ["strings", array(utf8String)],
+            ["keys", array(publicKey)],
+        ],
+        (args) =>
+            new CollectionData(
+                args.account_type!,
+                args.game_id!,
+                args.last_interaction!,
+                args.num_interactions!,
+
+                args.name!,
+                args.symbol!,
+                args.icon!,
+                args.meta_url!,
+                args.banner!,
+                args.page_name!,
+                args.description!,
+
+                args.total_supply!,
+                args.decimals!,
+                args.num_mints!,
+                args.ticket_price!,
+                args.minimum_liquidity!,
+                args.launch_date!,
+                args.end_date!,
+
+                args.tickets_sold!,
+                args.tickets_claimed!,
+                args.mints_won!,
+                args.positive_votes!,
+                args.negative_votes!,
+
+                args.total_mm_buy_amount!,
+                args.total_mm_sell_amount!,
+                args.last_mm_reward_date!,
+
+                args.socials!,
+                args.distribution!,
+                args.flags!,
+                args.strings!,
+                args.keys!,
+            ),
+        "CollectionData",
+    );
+}
+
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,
