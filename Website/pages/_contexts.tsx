@@ -114,6 +114,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [program_data, setProgramData] = useState<GPAccount[] | null>(null);
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
+    const [collection_data, setCollectionData] = useState<LaunchData[] | null>(null);
+
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
     const [mintData, setMintData] = useState<Map<String, Mint> | null>(null);
@@ -289,6 +291,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_launch_data: MMLaunchData[] = [];
         let mm_user_data: MMUserData[] = [];
         let amm_data: AMMData[] = [];
+        let collections: LaunchData[] = [];
 
         console.log("program_data", program_data.length);
 
@@ -328,7 +331,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 amm_data.push(amm);
                 continue;
             }
-
+            if (data[0] === 8) {
+                const [collection] = LaunchData.struct.deserialize(data);
+                collections.push(collection);
+                continue;
+            }
             // other data depends on a wallet
             if (!have_wallet) continue;
 
@@ -366,6 +373,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMLaunchData(mm_launch_data);
         setMMUserData(mm_user_data);
         setAMMData(amm_data);
+        setCollectionData(collections)
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
@@ -472,6 +480,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             SOLPrice={solPrice}
             mintData={mintData}
             newCollectionData={newCollectionData}
+            collectionList={collection_data}
         >
             {children}
         </AppRootContextProvider>

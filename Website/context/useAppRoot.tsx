@@ -30,6 +30,7 @@ interface AppRootTypes {
     SOLPrice : number;
     mintData : Map<String, Mint>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
+    collectionList : LaunchData[];
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -55,7 +56,8 @@ export const AppRootContextProvider = ({
     userSOLBalance,
     SOLPrice,
     mintData,
-    newCollectionData
+    newCollectionData,
+    collectionList
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -79,7 +81,8 @@ export const AppRootContextProvider = ({
                 userSOLBalance,
                 SOLPrice,
                 mintData,
-                newCollectionData
+                newCollectionData,
+                collectionList
             }}
         >
             {children}

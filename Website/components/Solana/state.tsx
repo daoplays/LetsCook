@@ -567,6 +567,7 @@ export const enum LaunchInstruction {
     get_mm_tokens = 13,
     get_mm_rewards = 14,
     close_account = 15,
+    launch_collection = 16
 }
 
 export interface LaunchDataUserInput {
