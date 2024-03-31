@@ -9,10 +9,10 @@ export const distributionLabels = {
     fields: [
         { title: "Raffle (SOL)", color: "#FF6651" },
         { title: "$TOKEN", color: "#FF9548" },
-        { title: "Market Maker Rewards", color: "#66FFB6" },
-        { title: "Liquidity Provider Rewards", color: "#61efff" },
-        { title: "Airdrops / Marketing", color: "#988FFF" },
-        { title: "Team", color: "#8CB3FF" },
+        { title: "Market Maker Rewards", color: "#66FF75" },
+        { title: "Liquidity Provider Rewards", color: "#41F4FF" },
+        { title: "Airdrops / Marketing", color: "#FFF069" },
+        { title: "Team", color: "#8A7FFF" },
         { title: "Others", color: "#FD98FE" },
     ],
 };
