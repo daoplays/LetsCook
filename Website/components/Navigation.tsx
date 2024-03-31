@@ -62,6 +62,20 @@ function Navigation() {
                     </Tooltip>
 
                     <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Hybrids" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={isHomePageOnly ? "#" : "/hybrids"}>
+                                <Image
+                                    src="/images/hybrids.png"
+                                    width={35}
+                                    height={35}
+                                    alt={"Hybrids"}
+                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                />
+                            </Link>
+                        </Tooltip>
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={isHomePageOnly ? "#" : "/trade"}>
                                 <Image

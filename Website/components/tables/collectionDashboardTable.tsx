@@ -25,6 +25,7 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
+import { CollectionData } from "../collection/collectionState";
 
 interface Header {
     text: string;
@@ -36,12 +37,9 @@ interface TransferAccount {
     amount: number;
 }
 
-const CollectionDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[] }) => {
+const CollectionDashboardTable = ({ collectionList }: { collectionList: CollectionData[] }) => {
     const { sm } = useResponsive();
     const wallet = useWallet();
-
-    const [sortedField, setSortedField] = useState<string | null>("date");
-    const [reverseSort, setReverseSort] = useState<boolean>(true);
 
     const tableHeaders: Header[] = [
         { text: "COLLECTION", field: null },
@@ -50,27 +48,6 @@ const CollectionDashboardTable = ({ creatorLaunches }: { creatorLaunches: Launch
         { text: "UNWRAP FEE", field: "unwrap fee" },
         { text: "TOTAL SUPPLY", field: "total supply" },
     ];
-
-    const handleHeaderClick = (field: string | null) => {
-        if (field === sortedField) {
-            setReverseSort(!reverseSort);
-        } else {
-            setSortedField(field);
-            setReverseSort(false);
-        }
-    };
-
-    const sortedLaunches = [...creatorLaunches].sort((a, b) => {
-        if (sortedField === "total supply") {
-            return reverseSort ? b.symbol.localeCompare(a.symbol) : a.symbol.localeCompare(b.symbol);
-        } else if (sortedField === "tokens per nft") {
-            return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
-        } else if (sortedField === "swap rate") {
-            return reverseSort ? b.launch_date - a.launch_date : a.launch_date - b.launch_date;
-        }
-
-        return 0;
-    });
 
     return (
         <TableContainer>
@@ -89,12 +66,7 @@ const CollectionDashboardTable = ({ creatorLaunches }: { creatorLaunches: Launch
                     >
                         {tableHeaders.map((i) => (
                             <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack
-                                    gap={sm ? 1 : 2}
-                                    justify="center"
-                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
-                                    onClick={() => handleHeaderClick(i.field)}
-                                >
+                                <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
                                     </Text>
@@ -112,7 +84,7 @@ const CollectionDashboardTable = ({ creatorLaunches }: { creatorLaunches: Launch
                 </thead>
 
                 <tbody>
-                    {sortedLaunches.map((launch) => (
+                    {collectionList.map((launch) => (
                         <LaunchCard key={launch.page_name} launch={launch} />
                     ))}
                 </tbody>
@@ -121,9 +93,9 @@ const CollectionDashboardTable = ({ creatorLaunches }: { creatorLaunches: Launch
     );
 };
 
-const LaunchCard = ({ launch }: { launch: LaunchData }) => {
+const LaunchCard = ({ launch }: { launch: CollectionData }) => {
     const router = useRouter();
-    const { sm, md } = useResponsive();
+    const { sm, md, lg } = useResponsive();
 
     return (
         <tr
@@ -139,12 +111,32 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
         >
-            <td style={{ minWidth: sm ? "90px" : "150px" }}>{/* Collection */}</td>
-            <td style={{ minWidth: "120px" }}>{/* Socials  */}</td>
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>{/* Total Supply */}</td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>{/* Tokens Per NFT  */}</td>
-            <td style={{ minWidth: md ? "230px" : "" }}>{/* Swap Rate */}</td>
-            <td style={{ minWidth: "100px" }}>{/* Action Button  */}</td>
+            <td style={{ minWidth: sm ? "90px" : "150px" }}>
+                {" "}
+                <HStack px={3} spacing={3} justify="center">
+                    <Box w={45} h={45} borderRadius={10}>
+                        <Image
+                            alt="Launch icon"
+                            src={launch.icon}
+                            width={45}
+                            height={45}
+                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                        />
+                    </Box>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.symbol}
+                    </Text>
+                </HStack>
+            </td>
+            <td style={{ minWidth: "120px" }}>{/* Token  */}</td>
+            <td style={{ minWidth: sm ? "170px" : "200px" }}>{/* Tokens Per NFT  */}</td>
+            <td style={{ minWidth: sm ? "150px" : "200px" }}>{/* Unwrap Fee */}</td>
+            <td style={{ minWidth: md ? "230px" : "" }}>{parseInt(launch.total_supply)}</td>
+            <td style={{ minWidth: "100px" }}>
+                <Button as={Link} href={`/collection/${launch.page_name}`} style={{ textDecoration: "none" }}>
+                    View
+                </Button>
+            </td>
         </tr>
     );
 };

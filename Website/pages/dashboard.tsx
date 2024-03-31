@@ -123,7 +123,7 @@ const DashboardPage = () => {
                 </Flex>
 
                 {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
-                {selected === "Collections" && <CollectionDashboardTable creatorLaunches={creatorLaunches} />}
+                {selected === "Collections" && <CollectionDashboardTable collectionList={creatorLaunches} />}
 
                 {creatorLaunches.length <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
