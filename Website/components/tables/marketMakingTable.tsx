@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -136,6 +136,8 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             : 0;
     let market_cap = total_supply * last_price * SOLPrice;
 
+    console.log((amm_launch.launch_data.flags[LaunchFlags.Extensions] & Extensions.TransferFee) > 0);
+
     return (
         <tr
             style={{
@@ -195,7 +197,29 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "150px" }}>{(amm_launch.launch_data.flags[LaunchFlags.Extensions] & Extensions.TransferFee) > 0}</td>
+            <td style={{ minWidth: "120px" }}>
+                <HStack justify="center">
+                    {amm_launch.launch_data.flags && (
+                        <>
+                            {amm_launch.launch_data.flags[LaunchFlags.Extensions] & Extensions.TransferFee && (
+                                <Tooltip label="Transfer Fee" hasArrow fontSize="large" offset={[0, 10]}>
+                                    <div style={{ height: "20px", width: "20px", backgroundColor: "#7BFF70", borderRadius: "50%" }} />
+                                </Tooltip>
+                            )}
+                            {amm_launch.launch_data.flags[LaunchFlags.Extensions] & Extensions.PermanentDelegate && (
+                                <Tooltip label="Permanent Delegate" hasArrow fontSize="large" offset={[0, 10]}>
+                                    <div style={{ height: "20px", width: "20px", backgroundColor: "#FF7979", borderRadius: "50%" }} />
+                                </Tooltip>
+                            )}
+                            {amm_launch.launch_data.flags[LaunchFlags.Extensions] & Extensions.TransferHook && (
+                                <Tooltip label="Transfer Hook" hasArrow fontSize="large" offset={[0, 10]}>
+                                    <div style={{ height: "20px", width: "20px", backgroundColor: "#72AAFF", borderRadius: "50%" }} />
+                                </Tooltip>
+                            )}
+                        </>
+                    )}
+                </HStack>
+            </td>
 
             <td />
         </tr>
