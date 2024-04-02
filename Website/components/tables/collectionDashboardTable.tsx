@@ -96,7 +96,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
 const LaunchCard = ({ launch }: { launch: CollectionData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    console.log(launch)
+    console.log(launch);
     return (
         <tr
             style={{

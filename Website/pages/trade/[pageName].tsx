@@ -8,7 +8,7 @@ import {
     request_token_supply,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData, reward_schedule } from "../../components/Solana/jupiter_state";
+import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import {
     bignum_to_num,
@@ -18,10 +18,10 @@ import {
     TokenAccount,
     RequestTokenHolders,
 } from "../../components/Solana/state";
-import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, Mint, getTransferFeeConfig } from "@solana/spl-token";
 
 import {
     HStack,
@@ -59,6 +59,7 @@ import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
 import UseWalletConnection from "../../hooks/useWallet";
+import ShowExtensions from "../../components/Solana/extensions";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -69,13 +70,23 @@ interface MarketData {
     volume: number;
 }
 
-
 function findLaunch(list: LaunchData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
 
     let launchList = list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
         return item.page_name == page_name;
+    });
+
+    return launchList[0];
+}
+
+function findAMM(list: AMMData[], base_mint: PublicKey) {
+    if (list === null || list === undefined || base_mint === undefined || base_mint === null) return null;
+
+    let launchList = list.filter(function (item) {
+        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+        return item.base_mint.equals(base_mint);
     });
 
     return launchList[0];
@@ -98,7 +109,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { launchList, currentUserData, mmLaunchData, SOLPrice } = useAppRoot();
+    const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -112,8 +123,9 @@ const TradePage = () => {
     };
 
     let launch = findLaunch(launchList, pageName);
-
+    let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
     let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
+    let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
     const [daily_data, setDailyData] = useState<MarketData[]>([]);
@@ -515,6 +527,8 @@ const TradePage = () => {
                         {leftPanel === "Trade" && (
                             <BuyAndSell
                                 launch={launch}
+                                amm={amm}
+                                mint_data={base_mint}
                                 base_balance={base_amount}
                                 quote_balance={quote_amount}
                                 user_balance={user_amount}
@@ -632,11 +646,15 @@ const TradePage = () => {
 
 const BuyAndSell = ({
     launch,
+    amm,
+    mint_data,
     base_balance,
     quote_balance,
     user_balance,
 }: {
     launch: LaunchData;
+    amm: AMMData;
+    mint_data: Mint;
     base_balance: number;
     quote_balance: number;
     user_balance: number;
@@ -657,6 +675,14 @@ const BuyAndSell = ({
         if (tab == "Buy") setOrderType(0);
         if (tab == "Sell") setOrderType(1);
     };
+
+    let transfer_fee = 0;
+    let max_transfer_fee = 0;
+    let transfer_fee_config = getTransferFeeConfig(mint_data);
+    if (transfer_fee_config !== null) {
+        transfer_fee = transfer_fee_config.newerTransferFee.transferFeeBasisPoints;
+        max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, launch.decimals);
+    }
 
     let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
 
@@ -727,6 +753,30 @@ const BuyAndSell = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                     {selected === "Buy" ? userSOLBalance.toFixed(2) : (user_balance / Math.pow(10, launch.decimals)).toFixed(2)}{" "}
                     {selected === "Buy" ? "SOL" : launch.symbol}
+                </Text>
+            </HStack>
+            <HStack justify="space-between" w="100%" mt={2}>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    AMM Fee (bps):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                    {amm.fee}
+                </Text>
+            </HStack>
+            <HStack justify="space-between" w="100%" mt={2}>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    Transfer Fee (bps):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                    {transfer_fee}
+                </Text>
+            </HStack>
+            <HStack justify="space-between" w="100%" mt={2}>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    Max Transfer Fee ({launch.symbol}):
+                </Text>
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                    {max_transfer_fee}
                 </Text>
             </HStack>
 
@@ -947,6 +997,12 @@ const InfoContent = ({
                     SOCIALS:
                 </Text>
                 <Links socials={launch.socials} />
+            </HStack>
+            <HStack px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    EXTENSIONS:
+                </Text>
+                <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
             </HStack>
         </VStack>
     );

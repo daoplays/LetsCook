@@ -50,8 +50,12 @@ function filterUserRewards(list: MMUserData[], launch_data: LaunchData) {
     });
 }
 
-function getMappedRewards(user_rewards: MMUserData[], launch_rewards: MMLaunchData[], launch_data: LaunchData, mapped_rewards : MappedReward[]) {
-
+function getMappedRewards(
+    user_rewards: MMUserData[],
+    launch_rewards: MMLaunchData[],
+    launch_data: LaunchData,
+    mapped_rewards: MappedReward[],
+) {
     let filtered_user_rewards = filterUserRewards(user_rewards, launch_data);
     let filtered_launch_rewards = filterLaunchRewards(launch_rewards, launch_data);
 
@@ -78,14 +82,16 @@ function getMappedRewards(user_rewards: MMUserData[], launch_rewards: MMLaunchDa
     for (let i = 0; i < filtered_user_rewards.length; i++) {
         for (let j = 0; j < filtered_launch_rewards.length; j++) {
             if (filtered_launch_rewards[j].date === filtered_user_rewards[i].date) {
-                let m: MappedReward = { launch_reward: filtered_launch_rewards[j], user_reward: filtered_user_rewards[i], launch : launch_data };
+                let m: MappedReward = {
+                    launch_reward: filtered_launch_rewards[j],
+                    user_reward: filtered_user_rewards[i],
+                    launch: launch_data,
+                };
                 mapped_rewards.push(m);
                 break;
             }
         }
     }
-
-
 }
 const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => {
     const { sm } = useResponsive();
@@ -101,21 +107,19 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
     ];
 
     if (launch_data === null) {
-        tableHeaders.unshift({text: "TOKEN", field: "token"})
+        tableHeaders.unshift({ text: "TOKEN", field: "token" });
     }
 
     let mapped_rewards: MappedReward[] = [];
 
     if (launch_data !== null) {
         getMappedRewards(mmUserData, mmLaunchData, launch_data, mapped_rewards);
-    }
-    else {
+    } else {
         let trade_list = filterTable(launchList);
         for (let i = 0; i < trade_list.length; i++) {
             getMappedRewards(mmUserData, mmLaunchData, trade_list[i], mapped_rewards);
         }
     }
-
 
     return (
         <TableContainer w={"100%"}>
@@ -151,7 +155,7 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
 
                 <tbody>
                     {mapped_rewards.map((r, i) => (
-                        <RewardCard key={i} reward={r} show_icon={launch_data === null}/>
+                        <RewardCard key={i} reward={r} show_icon={launch_data === null} />
                     ))}
                 </tbody>
             </table>
@@ -196,7 +200,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
         >
-            {show_icon &&
+            {show_icon && (
                 <td style={{ minWidth: sm ? "90px" : "120px" }}>
                     <HStack px={3} spacing={3} justify="center">
                         <Box w={45} h={45} borderRadius={10}>
@@ -213,7 +217,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                         </Text>
                     </HStack>
                 </td>
-            }
+            )}
             <td style={{ minWidth: "120px" }}>
                 <Text fontSize={lg ? "large" : "x-large"} m={0}>
                     {reward.launch_reward.date}

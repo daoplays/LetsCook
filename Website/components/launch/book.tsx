@@ -199,7 +199,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             PROGRAM,
         )[0];
 
-
         let account_balance = await request_current_balance("", test_launch_data_account);
         if (account_balance > 0) {
             await EditLaunch();

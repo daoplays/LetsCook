@@ -143,9 +143,8 @@ const LeaderboardPage = () => {
         const isUser = user.user_key.equals(currentUserData?.user_key);
         const sortedUsers = [...userList].sort((a, b) => b.total_points - a.total_points);
 
-        const rank =
-            sortedUsers.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
-            
+        const rank = sortedUsers.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
+
         return (
             <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
                 <td>

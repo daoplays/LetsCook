@@ -70,23 +70,25 @@ const MarketMaker = () => {
                             const base = sm ? mobileBaseStyle : baseStyle;
                             const active = sm ? mobileActiveStyle : activeStyle;
 
-                            return <Box
-                            key={i}
-                            style={{
-                                ...base,
-                                ...active,
-                            }}
-                            onClick={() => {
-                                handleClick(name);
-                            }}
-                            px={4}
-                            py={2}
-                            w={xs ? "50%" : "fit-content"}
-                        >
-                            <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                                {name}
-                            </Text>
-                        </Box>;
+                            return (
+                                <Box
+                                    key={i}
+                                    style={{
+                                        ...base,
+                                        ...active,
+                                    }}
+                                    onClick={() => {
+                                        handleClick(name);
+                                    }}
+                                    px={4}
+                                    py={2}
+                                    w={xs ? "50%" : "fit-content"}
+                                >
+                                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                                        {name}
+                                    </Text>
+                                </Box>
+                            );
                         })}
                     </HStack>
                     <Text
@@ -154,7 +156,7 @@ const MarketMaker = () => {
                     </HStack>
                 )}
 
-                {selected === "Rewards" && <MyRewardsTable launch_data={null}/>}
+                {selected === "Rewards" && <MyRewardsTable launch_data={null} />}
 
                 {!wallet.connected && selected === "Rewards" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>

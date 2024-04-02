@@ -57,8 +57,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     // token extensions
-    const [transferFee, setTransferFee] = useState<string>(newLaunchData.current.transfer_fee > 0 ? newLaunchData.current.transfer_fee.toString() : "");
-    const [maxTransferFee, setMaxTransferFee] = useState<string>(newLaunchData.current.max_transfer_fee > 0 ? newLaunchData.current.max_transfer_fee.toString() : "");
+    const [transferFee, setTransferFee] = useState<string>(
+        newLaunchData.current.transfer_fee > 0 ? newLaunchData.current.transfer_fee.toString() : "",
+    );
+    const [maxTransferFee, setMaxTransferFee] = useState<string>(
+        newLaunchData.current.max_transfer_fee > 0 ? newLaunchData.current.max_transfer_fee.toString() : "",
+    );
     const [permanentDelegate, setPermanentDelegate] = useState<string>("");
     const [transferHookID, setTransferHookID] = useState<string>("");
 
@@ -156,12 +160,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         newLaunchData.current.token_keypair = Keypair.generate();
 
         if (tokenStart !== "") {
-
             let est_time = "1s";
-            if (tokenStart.length == 2)
-                est_time = "5s"
-            if (tokenStart.length === 3)
-                est_time = "5min"
+            if (tokenStart.length == 2) est_time = "5s";
+            if (tokenStart.length === 3) est_time = "5min";
 
             const grindToast = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
             let attempts = 0;
@@ -176,12 +177,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                 newLaunchData.current.token_keypair = Keypair.fromSeed(seed);
                 if (attempts % 10000 === 0) {
-                    console.log("attempts: " + attempts)
+                    console.log("attempts: " + attempts);
                     toast.update(grindToast, {
                         render: "Grind Attempts: " + attempts.toString(),
                         type: "info",
                     });
-               }
+                }
             }
 
             //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());

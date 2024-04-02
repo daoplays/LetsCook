@@ -33,7 +33,9 @@ const DashboardPage = () => {
         const filteredLaunches = launchList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
 
-        const filteredCollections = collectionList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
+        const filteredCollections = collectionList.filter(
+            (launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString(),
+        );
         setCreatorCollections(filteredCollections);
     }, [wallet, launchList, collectionList]);
 

@@ -7,7 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
-    request_raw_account_data
+    request_raw_account_data,
 } from "../../components/Solana/state";
 import { serialise_ClaimReward_instruction } from "../../components/Solana/jupiter_state";
 
@@ -20,10 +20,15 @@ import BN from "bn.js";
 import { toast } from "react-toastify";
 import useAppRoot from "../../context/useAppRoot";
 
-import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getMint,
+import {
+    getAssociatedTokenAddress,
+    TOKEN_2022_PROGRAM_ID,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getMint,
     getTransferHook,
     resolveExtraAccountMeta,
-    ExtraAccountMetaAccountDataLayout, } from "@solana/spl-token";
+    ExtraAccountMetaAccountDataLayout,
+} from "@solana/spl-token";
 
 const useGetMMRewards = () => {
     const wallet = useWallet();
@@ -87,7 +92,6 @@ const useGetMMRewards = () => {
             PROGRAM,
         )[0];
 
-
         let mint_account = await getMint(connection, token_mint, "confirmed", TOKEN_2022_PROGRAM_ID);
         let transfer_hook = getTransferHook(mint_account);
 
@@ -123,7 +127,6 @@ const useGetMMRewards = () => {
                 extra_hook_accounts.push(meta);
             }
         }
-
 
         const instruction_data = serialise_ClaimReward_instruction(date);
 

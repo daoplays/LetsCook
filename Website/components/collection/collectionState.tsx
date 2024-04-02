@@ -18,7 +18,7 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
 import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials, Extensions } from "../Solana/constants";
-import {LaunchInstruction,request_raw_account_data } from "../Solana/state";
+import { LaunchInstruction, request_raw_account_data } from "../Solana/state";
 
 import { Box } from "@chakra-ui/react";
 
@@ -27,8 +27,6 @@ import bs58 from "bs58";
 
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-
-
 
 export interface CollectionDataUserInput {
     edit_mode: boolean;
@@ -99,18 +97,16 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     nft_metadata: null,
     nft_image_url: "",
     nft_metadata_url: "",
-    token_mint : null,
+    token_mint: null,
     token_name: "",
     token_symbol: "",
-    token_image_url: ""
-    
+    token_image_url: "",
 };
-
 
 export class CollectionData {
     constructor(
         readonly account_type: number,
-      
+
         readonly collection_name: string,
         readonly collection_symbol: string,
         readonly collection_icon_url: string,
@@ -131,7 +127,7 @@ export class CollectionData {
         readonly num_available: number,
         readonly swap_price: bignum,
         readonly swap_fee: number,
-      
+
         readonly positive_votes: number,
         readonly negative_votes: number,
 
@@ -150,7 +146,7 @@ export class CollectionData {
     static readonly struct = new FixableBeetStruct<CollectionData>(
         [
             ["account_type", u8],
-        
+
             ["collection_name", utf8String],
             ["collection_symbol", utf8String],
             ["collection_icon_url", utf8String],
@@ -171,12 +167,11 @@ export class CollectionData {
             ["num_available", u32],
             ["swap_price", u64],
             ["swap_fee", u16],
-           
+
             ["positive_votes", u32],
             ["negative_votes", u32],
 
             ["availability", array(u8)],
-
 
             ["total_mm_buy_amount", u64],
             ["total_mm_sell_amount", u64],
@@ -190,7 +185,7 @@ export class CollectionData {
         (args) =>
             new CollectionData(
                 args.account_type!,
-        
+
                 args.collection_name!,
                 args.collection_symbol!,
                 args.collection_icon_url!,
@@ -211,7 +206,7 @@ export class CollectionData {
                 args.num_available!,
                 args.swap_price!,
                 args.swap_fee!,
-               
+
                 args.positive_votes!,
                 args.negative_votes!,
 
@@ -243,12 +238,7 @@ export class AssignmentData {
             ["nft_index", u32],
             ["status", u8],
         ],
-        (args) =>
-            new AssignmentData(
-                args.account_type!,
-                args.nft_index!,
-                args.status!,
-            ),
+        (args) => new AssignmentData(args.account_type!, args.nft_index!, args.status!),
         "AssignmentData",
     );
 }
@@ -268,13 +258,7 @@ export class LookupData {
             ["nft_mint", publicKey],
             ["nft_index", u32],
         ],
-        (args) =>
-            new LookupData(
-                args.account_type!,
-                args.colection_mint!,
-                args.nft_mint!,
-                args.nft_index!,
-            ),
+        (args) => new LookupData(args.account_type!, args.colection_mint!, args.nft_mint!, args.nft_index!),
         "LookupData",
     );
 }
@@ -317,13 +301,13 @@ class LaunchCollection_Instruction {
 
         readonly nft_uri: string,
         readonly nft_icon: string,
-        
+
         readonly banner: string,
         readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly page_name: string,
         readonly transfer_fee: number,
-        readonly extensions: number,   
+        readonly extensions: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -344,7 +328,6 @@ class LaunchCollection_Instruction {
             ["page_name", utf8String],
             ["transfer_fee", u16],
             ["extensions", u8],
-
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -379,7 +362,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
-        console.log(new_launch_data)
+    console.log(new_launch_data);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
         new_launch_data.collection_name,

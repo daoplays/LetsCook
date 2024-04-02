@@ -9,13 +9,9 @@ import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META } from "../Solana/constants";
-import {
-    unpackMint,
-    Mint,
-    TOKEN_2022_PROGRAM_ID
-} from "@solana/spl-token";
-import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
-import {request_raw_account_data} from "../Solana/state"
+import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
+import { request_raw_account_data } from "../Solana/state";
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -53,16 +49,14 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         //console.log("deserialize meta data");
         let meta_data = Metadata.deserialize(raw_meta_data);
         console.log(meta_data);
-        console.log(meta_data[0].data.symbol, meta_data[0].data.name)
-        let uri_json = await fetch(meta_data[0].data.uri).then(res => res.json());
+        console.log(meta_data[0].data.symbol, meta_data[0].data.name);
+        let uri_json = await fetch(meta_data[0].data.uri).then((res) => res.json());
         console.log(uri_json["image"]);
-        setTokenName(meta_data[0].data.name)    
-        setTokenIconURL(uri_json["image"])    
-        setTokenSymbol(meta_data[0].data.symbol)    
-        
+        setTokenName(meta_data[0].data.name);
+        setTokenIconURL(uri_json["image"]);
+        setTokenSymbol(meta_data[0].data.symbol);
 
-        return
-
+        return;
     }
 
     function setLaunchData(e) {
@@ -101,81 +95,91 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             type="text"
                                             onChange={(e) => {
                                                 setTokenMint(e.target.value);
-                                            }}                                        />
+                                            }}
+                                        />
                                     </div>
 
                                     <div style={{ marginLeft: "12px" }}>
                                         <label className={styles.label}>
-                                            <button onClick={(e) => setMintData(e)} className={styles.browse} style={{ cursor: "pointer", padding: "5px 10px" }}>
+                                            <button
+                                                onClick={(e) => setMintData(e)}
+                                                className={styles.browse}
+                                                style={{ cursor: "pointer", padding: "5px 10px" }}
+                                            >
                                                 Search
                                             </button>
                                         </label>
                                     </div>
                                 </HStack>
                                 <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
-                            {token_icon_url ? (
-                                <Image
-                                    src={token_icon_url}
-                                    width={lg ? 180 : 235}
-                                    height={lg ? 180 : 235}
-                                    alt="Image Frame"
-                                    style={{ backgroundSize: "cover", borderRadius: 12 }}
-                                />
-                            ) : (
-                                <VStack
-                                    justify="center"
-                                    align="center"
-                                    style={{ minWidth: lg ? 180 : 235, minHeight: lg ? 180 : 235, cursor: "pointer" }}
-                                    borderRadius={12}
-                                    border="2px dashed rgba(134, 142, 150, 0.5)"
-                                    as={chakra.label}
-                                    htmlFor="file"
-                                >
-                                    <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
-                                        Icon Preview
-                                    </Text>
-                                </VStack>
-                            )}
-
-                            <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            placeholder="Token Name"
-                                            readOnly={true}
-                                            size={lg ? "md" : "lg"}
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={token_name}
+                                    {token_icon_url ? (
+                                        <Image
+                                            src={token_icon_url}
+                                            width={lg ? 180 : 235}
+                                            height={lg ? 180 : 235}
+                                            alt="Image Frame"
+                                            style={{ backgroundSize: "cover", borderRadius: 12 }}
                                         />
-                                    </div>
-                                </HStack>
+                                    ) : (
+                                        <VStack
+                                            justify="center"
+                                            align="center"
+                                            style={{ minWidth: lg ? 180 : 235, minHeight: lg ? 180 : 235, cursor: "pointer" }}
+                                            borderRadius={12}
+                                            border="2px dashed rgba(134, 142, 150, 0.5)"
+                                            as={chakra.label}
+                                            htmlFor="file"
+                                        >
+                                            <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
+                                                Icon Preview
+                                            </Text>
+                                        </VStack>
+                                    )}
 
-                                <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
-                                    <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                            Symbol:
-                                        </div>
-                                        <div className={styles.textLabelInput}>
-                                            <Input
-                                                // pl={9}
-                                                bg="#494949"
-                                                placeholder="Token Symbol"
-                                                readOnly={true}
-                                                size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
-                                                type="text"
-                                                value={token_symbol}
-                                            />
-                                        </div>
-                                    </HStack>
-                                </Flex>
-                                </VStack>
+                                    <VStack spacing={8} flexGrow={1} align="start" width="100%">
+                                        <HStack spacing={0} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "100px" : "132px" }}
+                                            >
+                                                Name:
+                                            </div>
 
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    placeholder="Token Name"
+                                                    readOnly={true}
+                                                    size={lg ? "md" : "lg"}
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                    value={token_name}
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
+                                            <HStack spacing={0} className={styles.eachField}>
+                                                <div
+                                                    className={`${styles.textLabel} font-face-kg`}
+                                                    style={{ minWidth: lg ? "100px" : "132px" }}
+                                                >
+                                                    Symbol:
+                                                </div>
+                                                <div className={styles.textLabelInput}>
+                                                    <Input
+                                                        // pl={9}
+                                                        bg="#494949"
+                                                        placeholder="Token Symbol"
+                                                        readOnly={true}
+                                                        size={lg ? "md" : "lg"}
+                                                        className={styles.inputBox}
+                                                        type="text"
+                                                        value={token_symbol}
+                                                    />
+                                                </div>
+                                            </HStack>
+                                        </Flex>
+                                    </VStack>
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
@@ -194,24 +198,26 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             type="text"
                                             onChange={(e) => {
                                                 setSwapRate(e.target.value);
-                                            }}                                        />
+                                            }}
+                                        />
                                     </div>
                                 </HStack>
 
-                                    <HStack spacing={0} w="100%" className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
-                                            Swap Fee:
-                                        </div>
+                                <HStack spacing={0} w="100%" className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                        Swap Fee:
+                                    </div>
 
-                                        <div className={styles.distributionField}>
-                                            <Input size="lg" 
+                                    <div className={styles.distributionField}>
+                                        <Input
+                                            size="lg"
                                             onChange={(e) => {
                                                 setSwapFee(e.target.value);
-                                            }} 
-                                            />
-                                            bps
-                                        </div>
-                                    </HStack>
+                                            }}
+                                        />
+                                        bps
+                                    </div>
+                                </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
@@ -228,7 +234,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             type="text"
                                             onChange={(e) => {
                                                 setTeamWallet(e.target.value);
-                                            }}                                         />
+                                            }}
+                                        />
                                     </div>
                                 </HStack>
                             </VStack>

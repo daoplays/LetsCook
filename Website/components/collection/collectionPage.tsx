@@ -27,7 +27,7 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import {serialise_LaunchCollection_instruction} from "./collectionState";
+import { serialise_LaunchCollection_instruction } from "./collectionState";
 import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
@@ -62,11 +62,10 @@ type Tag = {
 };
 
 function receivedText(e) {
-    return JSON.parse(e.target.result); 
-  }
+    return JSON.parse(e.target.result);
+}
 
 const CollectionPage = ({ setScreen }: CollectionPageProps) => {
-
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
@@ -192,7 +191,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return;
         }
 
-
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         const irys_wallet = { name: "phantom", provider: wallet };
@@ -208,10 +206,9 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         if (newCollectionData.current.icon_url == "" || newCollectionData.current.banner_url == "") {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
-
-            let file_list : File[] = []
-            file_list.push(newCollectionData.current.icon_file)
-            file_list.push(newCollectionData.current.banner_file)
+            let file_list: File[] = [];
+            file_list.push(newCollectionData.current.icon_file);
+            file_list.push(newCollectionData.current.banner_file);
             for (let i = 0; i < newCollectionData.current.nft_images.length; i++) {
                 file_list.push(newCollectionData.current.nft_images[i]);
             }
@@ -263,9 +260,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             let tags: Tag[] = [];
 
-
             for (let i = 0; i < file_list.length; i++) {
-                tags.push({ name: "Content-Type", value: file_list[i].type })
+                tags.push({ name: "Content-Type", value: file_list[i].type });
             }
 
             const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
@@ -273,7 +269,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             let receipt;
 
             try {
-
                 receipt = await irys.uploadFolder(file_list, {
                     //@ts-ignore
                     tags,
@@ -296,7 +291,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return;
             }
 
-            
             let manifestId = receipt.manifestId;
 
             let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newCollectionData.current.icon_file.name].id;
@@ -305,9 +299,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             newCollectionData.current.icon_url = icon_url;
             newCollectionData.current.banner_url = banner_url;
             newCollectionData.current.nft_image_url = "https://gateway.irys.xyz/" + manifestId + "/";
-
         }
-
 
         if (newCollectionData.current.uri == "") {
             // console.log(icon_url, banner_url);
@@ -322,21 +314,21 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
 
-            let file_list : File[] = []
-            file_list.push(json_file)
+            let file_list: File[] = [];
+            file_list.push(json_file);
 
             let fr = new FileReader();
             fr.onload = function () {
                 let parsedJSON = JSON.parse(fr.result.toString());
                 console.log(parsedJSON);
-                // your code to consume the json                    
-            }
+                // your code to consume the json
+            };
             for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
                 let text = await newCollectionData.current.nft_metadata[i].text();
-                let json = JSON.parse(text)
+                let json = JSON.parse(text);
                 let index = newCollectionData.current.nft_metadata[i].name.split(".")[0];
-                json["image"] = newCollectionData.current.nft_image_url + index + ".png"
-                console.log(json)
+                json["image"] = newCollectionData.current.nft_image_url + index + ".png";
+                console.log(json);
 
                 const blob = new Blob([JSON.stringify(json)], { type: "application/json" });
                 const json_file = new File([blob], newCollectionData.current.nft_metadata[i].name);
@@ -344,12 +336,11 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             }
 
             let size = 0;
-            for (let i = 0; i < file_list.length; i++){
+            for (let i = 0; i < file_list.length; i++) {
                 size += file_list[i].size;
             }
 
-            console.log(file_list)
-
+            console.log(file_list);
 
             const json_price = await irys.getPrice(size);
 
@@ -375,7 +366,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             let json_tags: Tag[] = [];
             for (let i = 0; i < file_list.length; i++) {
-                json_tags.push({ name: "Content-Type", value: "application/json" })
+                json_tags.push({ name: "Content-Type", value: "application/json" });
             }
 
             const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
@@ -407,7 +398,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return;
             }
 
-            console.log(json_receipt)
+            console.log(json_receipt);
 
             let manifestId = json_receipt.manifestId;
 
@@ -416,10 +407,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             newCollectionData.current.uri = collection_meta_url;
             newCollectionData.current.nft_metadata_url = "https://gateway.irys.xyz/" + manifestId + "/";
 
-            console.log(newCollectionData.current.uri, newCollectionData.current.nft_metadata_url )
+            console.log(newCollectionData.current.uri, newCollectionData.current.nft_metadata_url);
         }
-
-        
 
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -443,9 +432,10 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             TOKEN_2022_PROGRAM_ID,
         );
 
-        let nft_master_key = (PublicKey.findProgramAddressSync([Buffer.from("metadata"),
-            METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer(), Buffer.from("edition")], METAPLEX_META))[0];
-
+        let nft_master_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer(), Buffer.from("edition")],
+            METAPLEX_META,
+        )[0];
 
         let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
 
@@ -456,7 +446,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
@@ -473,7 +462,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
-
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -517,7 +505,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 isLoading: false,
                 autoClose: 3000,
             });
-
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {
@@ -592,7 +579,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                         </div>
 
                         <VStack w="100%" spacing={30} mt={42} mb={25}>
-                             <div className={styles.launchBodyLowerHorizontal}>
+                            <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
                                     <div className={styles.textLabelInput}>
@@ -683,14 +670,14 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                                 Go Back
                             </button>
                             <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        Launch(e);
-                                    }}
-                                    className={`${styles.nextBtn} font-face-kg `}
-                                >
-                                    CONFIRM (4/4)
-                                </button>
+                                type="button"
+                                onClick={(e) => {
+                                    Launch(e);
+                                }}
+                                className={`${styles.nextBtn} font-face-kg `}
+                            >
+                                CONFIRM (4/4)
+                            </button>
                         </div>
                     </VStack>
                 </form>

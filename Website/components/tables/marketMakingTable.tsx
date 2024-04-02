@@ -12,6 +12,7 @@ import { TfiReload } from "react-icons/tfi";
 import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";
 import { Mint } from "@solana/spl-token";
+import ShowExtensions from "../Solana/extensions";
 interface Header {
     text: string;
     field: string | null;
@@ -195,7 +196,9 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "150px" }}>{(amm_launch.launch_data.flags[LaunchFlags.Extensions] & Extensions.TransferFee) > 0}</td>
+            <td style={{ minWidth: "150px" }}>
+                <ShowExtensions extension_flag={amm_launch.launch_data.flags[LaunchFlags.Extensions]} />
+            </td>
 
             <td />
         </tr>

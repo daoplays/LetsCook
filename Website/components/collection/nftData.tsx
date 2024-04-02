@@ -19,8 +19,6 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     const { sm, md, lg } = useResponsive();
     const [displayImg, setDisplayImg] = useState<string>("");
 
-
-
     function setLaunchData(e) {
         e.preventDefault();
 
@@ -35,14 +33,13 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         setScreen("step 3");
     }
 
-
     const handleImagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
         if (file) {
             console.log(e.target.files);
             newCollectionData.current.nft_images = e.target.files;
-            setDisplayImg("images")
+            setDisplayImg("images");
         }
     };
 
@@ -63,7 +60,9 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newCollectionData.current.nft_images === null ? "No Files Selected" : newCollectionData.current.nft_images.length+" images selected"}
+                {newCollectionData.current.nft_images === null
+                    ? "No Files Selected"
+                    : newCollectionData.current.nft_images.length + " images selected"}
             </Text>
         </HStack>
     );
@@ -74,7 +73,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         if (file) {
             console.log(e.target.files);
             newCollectionData.current.nft_metadata = e.target.files;
-            setDisplayImg("meta")
+            setDisplayImg("meta");
         }
     };
 
@@ -95,11 +94,12 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newCollectionData.current.nft_metadata === null ? "No Files Selected" : newCollectionData.current.nft_images.length+" files selected"}
+                {newCollectionData.current.nft_metadata === null
+                    ? "No Files Selected"
+                    : newCollectionData.current.nft_images.length + " files selected"}
             </Text>
         </HStack>
     );
-
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -130,7 +130,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                 </HStack>
 
                                 <BrowseImages />
-                                <BrowseMetaData/>
+                                <BrowseMetaData />
                             </VStack>
                         </HStack>
 

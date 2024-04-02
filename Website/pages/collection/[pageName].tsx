@@ -1,6 +1,6 @@
 import { VStack, Text, HStack, Progress, Button, Tooltip, Link } from "@chakra-ui/react";
 import { bignum_to_num } from "../../components/Solana/state";
-import { useState } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -11,12 +11,15 @@ import Head from "next/head";
 import { MdOutlineContentCopy } from "react-icons/md";
 import trimAddress from "../../utils/trimAddress";
 import useAppRoot from "../../context/useAppRoot";
-import { CollectionData } from "../../components/collection/collectionState";
+import { AssignmentData, CollectionData } from "../../components/collection/collectionState";
 import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys } from "../../components/Solana/constants";
+import { CollectionKeys, WSS_NODE, RPC_NODE, PROGRAM } from "../../components/Solana/constants";
+import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
+import useWrapNFT from "../../hooks/collections/useWrapNFT";
+import useMintNFT from "../../hooks/collections/useMintNFT";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -36,12 +39,125 @@ const CollectionSwapPage = () => {
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
     const { collectionList } = useAppRoot();
+    const [launch, setCollectionData] = useState<CollectionData | null>(null);
+    const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
 
-    let launch = findLaunch(collectionList, pageName);
+    const launch_account_ws_id = useRef<number | null>(null);
+    const nft_account_ws_id = useRef<number | null>(null);
+    const mint_nft = useRef<boolean>(false);
 
-    const {ClaimNFT} = useClaimNFT(launch);
+    const { ClaimNFT } = useClaimNFT(launch);
+    const { MintNFT } = useMintNFT(launch);
+    const { WrapNFT } = useWrapNFT(launch);
 
+    useEffect(() => {
+        let launch = findLaunch(collectionList, pageName);
+        setCollectionData(launch);
+    }, [collectionList, pageName]);
 
+    // when page unloads unsub from any active websocket listeners
+
+    useEffect(() => {
+        return () => {
+            console.log("in use effect return");
+            const unsub = async () => {
+                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                if (launch_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
+                    launch_account_ws_id.current = null;
+                }
+                if (nft_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(nft_account_ws_id.current);
+                    nft_account_ws_id.current = null;
+                }
+            };
+            unsub();
+        };
+    }, []);
+
+    useEffect(() => {
+        let launch = findLaunch(collectionList, pageName);
+        console.log(launch);
+        setCollectionData(launch);
+    }, [collectionList, pageName]);
+
+    useEffect(() => {
+        if (assigned_nft === null || !mint_nft.current) {
+            return;
+        }
+
+        MintNFT();
+
+        mint_nft.current = false;
+    }, [assigned_nft, MintNFT]);
+
+    const check_launch_update = useCallback(
+        async (result: any) => {
+            console.log("collection", result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+
+            console.log("have collection data", event_data, launch_account_ws_id.current);
+            let account_data = Buffer.from(event_data, "base64");
+
+            const [updated_data] = CollectionData.struct.deserialize(account_data);
+
+            console.log(updated_data);
+
+            if (updated_data.num_available !== launch.num_available) {
+                setCollectionData(updated_data);
+            }
+        },
+        [launch],
+    );
+    const check_assignment_update = useCallback(async (result: any) => {
+        console.log("assignment", result);
+        // if we have a subscription field check against ws_id
+
+        let event_data = result.data;
+
+        console.log("have assignment data", event_data);
+        let account_data = Buffer.from(event_data, "base64");
+
+        if (account_data.length === 0) {
+            console.log("account deleted");
+            setAssignedNFT(null);
+            mint_nft.current = false;
+            return;
+        }
+
+        const [updated_data] = AssignmentData.struct.deserialize(account_data);
+
+        console.log(updated_data);
+        mint_nft.current = true;
+        setAssignedNFT(updated_data);
+    }, []);
+
+    useEffect(() => {
+        if (launch === null) return;
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+        if (launch_account_ws_id.current === null) {
+            console.log("subscribe 1");
+            let launch_data_account = PublicKey.findProgramAddressSync(
+                [Buffer.from(launch.page_name), Buffer.from("Collection")],
+                PROGRAM,
+            )[0];
+
+            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
+        }
+
+        if (nft_account_ws_id.current === null) {
+            console.log("subscribe 2");
+            let nft_assignment_account = PublicKey.findProgramAddressSync(
+                [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+                PROGRAM,
+            )[0];
+            nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
+        }
+    }, [wallet, launch, check_launch_update, check_assignment_update]);
 
     if (!pageName) return;
 
@@ -112,7 +228,9 @@ const CollectionSwapPage = () => {
 
                             <VStack spacing={3} margin="auto 0">
                                 <Button onClick={() => ClaimNFT()}>{bignum_to_num(launch.swap_price)} Tokens = 1 NFT</Button>
-                                <Button>1 NFT = {bignum_to_num(launch.swap_price)} - {bignum_to_num(launch.swap_fee)}% Tokens</Button>
+                                <Button onClick={() => WrapNFT()}>
+                                    1 NFT = {bignum_to_num(launch.swap_price)} - {bignum_to_num(launch.swap_fee)}% Tokens
+                                </Button>
                             </VStack>
 
                             <VStack>
@@ -144,13 +262,14 @@ const CollectionSwapPage = () => {
                                     }}
                                     size="sm"
                                     min={0}
+                                    max={launch.total_supply}
                                     value={launch.num_available}
                                     boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                                 />
                                 <HStack style={{ position: "absolute", zIndex: 1 }}>
                                     <HStack justify="center">
                                         <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
-                                        {launch.num_available} / {launch.total_supply}
+                                            {launch.num_available} / {launch.total_supply}
                                         </Text>
                                     </HStack>
                                 </HStack>

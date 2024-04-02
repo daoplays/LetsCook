@@ -223,7 +223,6 @@ export class Token22MintAccount {
             ["isInitialized", u8],
             ["freezeOption", u32],
             ["freezeAuthority", publicKey],
-
         ],
         (args) =>
             new Token22MintAccount(
@@ -234,7 +233,6 @@ export class Token22MintAccount {
                 args.isInitialized!,
                 args.freezeOption!,
                 args.freezeAuthority!,
-
             ),
         "Token22MintAccount",
     );
@@ -338,8 +336,7 @@ export async function request_current_balance(bearer: string, pubkey: PublicKey)
 }
 
 export async function requestMultipleAccounts(bearer: string, pubkeys: PublicKey[]): Promise<Buffer[]> {
-
-    let key_strings = []
+    let key_strings = [];
     for (let i = 0; i < pubkeys.length; i++) {
         key_strings.push(pubkeys[i].toString());
     }
@@ -364,9 +361,9 @@ export async function requestMultipleAccounts(bearer: string, pubkeys: PublicKey
         return [];
     }
 
-    var data : Buffer[] = []
+    var data: Buffer[] = [];
     for (let i = 0; i < result["result"]["value"].length; i++) {
-        data.push(Buffer.from(result["result"]["value"][i]["data"][0], "base64"))
+        data.push(Buffer.from(result["result"]["value"][i]["data"][0], "base64"));
     }
 
     return data;
@@ -570,7 +567,7 @@ export const enum LaunchInstruction {
     launch_collection = 16,
     claim_nft = 17,
     mint_nft = 18,
-    wrap_nft = 19
+    wrap_nft = 19,
 }
 
 export interface LaunchDataUserInput {

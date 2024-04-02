@@ -3,12 +3,10 @@
 import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
-import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
+import { CollectionDataUserInput, CollectionData, LookupData } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { PublicKey} from "@solana/web3.js";
-import {
-    Mint
-} from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { Mint } from "@solana/spl-token";
 interface AppRootTypes {
     launchList: LaunchData[];
     homePageList: LaunchData[];
@@ -26,11 +24,12 @@ interface AppRootTypes {
     userOrders: OpenOrder[];
     userTrades: TradeHistoryItem[];
     ammData: AMMData[];
-    userSOLBalance : number;
-    SOLPrice : number;
-    mintData : Map<String, Mint>;
+    userSOLBalance: number;
+    SOLPrice: number;
+    mintData: Map<String, Mint>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
-    collectionList : CollectionData[];
+    collectionList: CollectionData[];
+    NFTLookup: Map<String, LookupData[]>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -57,7 +56,8 @@ export const AppRootContextProvider = ({
     SOLPrice,
     mintData,
     newCollectionData,
-    collectionList
+    collectionList,
+    NFTLookup,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -82,7 +82,8 @@ export const AppRootContextProvider = ({
                 SOLPrice,
                 mintData,
                 newCollectionData,
-                collectionList
+                collectionList,
+                NFTLookup,
             }}
         >
             {children}
