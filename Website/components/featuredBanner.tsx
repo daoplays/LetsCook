@@ -78,7 +78,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     {featuredLaunch !== null ? featuredLaunch.symbol : ""}
                                 </Text>
 
-                                {!lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+                                {!lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
@@ -169,7 +169,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                         </VStack>
                     </HStack>
 
-                    {lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+                    {lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
 
                     {!isHomePage && (
                         // <Link href={`/launch/${featuredLaunch?.page_name}`} >

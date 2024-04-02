@@ -190,7 +190,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             </td>
             <td style={{ minWidth: "180px" }}>
                 {socialsExist ? (
-                    <Links featuredLaunch={launch} />
+                    <Links socials={launch.socials} />
                 ) : (
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
                         No Socials
