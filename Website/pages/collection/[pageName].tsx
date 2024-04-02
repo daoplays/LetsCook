@@ -16,7 +16,6 @@ import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import useMintNFT from "../../hooks/collections/useMintNFT";
 import { CollectionKeys } from "../../components/Solana/constants";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
@@ -41,7 +40,7 @@ const CollectionSwapPage = () => {
     let launch = findLaunch(collectionList, pageName);
 
     const {ClaimNFT} = useClaimNFT(launch);
-    const {MintNFT} = useMintNFT(launch);
+
 
 
     if (!pageName) return;

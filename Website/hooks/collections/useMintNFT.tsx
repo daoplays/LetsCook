@@ -38,9 +38,14 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
     }, []);
 
     const MintNFT = async () => {
+
+        console.log("in mint nft")
         setIsLoading(true);
 
-        if (wallet.signTransaction === undefined) return;
+        if (wallet.signTransaction === undefined) {
+            console.log(wallet, "invalid wallet");
+            return
+        };
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
@@ -48,6 +53,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         }
 
         if (signature_ws_id.current !== null) {
+            console.log("signature not null")
             alert("Transaction pending, please wait");
             return;
         }
@@ -55,6 +61,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (launchData === null) {
+            console.log("launch is null");
             return;
         }
 
@@ -65,6 +72,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             PROGRAM,
         )[0];
 
+        console.log("get assignment data")
         let assignment_data = await request_assignment_data(nft_assignment_account);
 
         if (assignment_data === null) {
