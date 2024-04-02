@@ -52,6 +52,8 @@ import {
     Connection,
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
+    SystemProgram,
+    LAMPORTS_PER_SOL
 } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
@@ -70,7 +72,7 @@ import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 
 let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
-
+let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
 // Define the Tag type
 type Tag = {
     name: string;
@@ -90,6 +92,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [submitStatus, setSubmitStatus] = useState<string | null>(null);
+    const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
+
     const signature_ws_id = useRef<number | null>(null);
 
     const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
@@ -169,6 +173,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.opendate = openDate;
         newLaunchData.current.closedate = closeDate;
         newLaunchData.current.team_wallet = teamWallet;
+        newLaunchData.current.amm_fee = parseInt(amm_fee);
 
         return true;
     }
@@ -220,27 +225,31 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
-            let price;
-            let balance_before;
+            
+            //let balance_before;
 
-            try {
-                price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
-                balance_before = await irys.getLoadedBalance();
-            } catch (e) {
-                toast.update(uploadImageToArweave, {
-                    render: e,
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                return;
-            }
+            let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
+  
+             console.log("price", Number(price));
 
-            // console.log("balance_before", balance_before.toString());
-
-            if (balance_before.lt(price)) {
+            //if (balance_before.lt(price)) {
                 try {
-                    await irys.fund(price);
+                    let txArgs = await get_current_blockhash("");
+        
+                    var tx = new Transaction(txArgs).add(
+                        SystemProgram.transfer({
+                            fromPubkey: wallet.publicKey,
+                            toPubkey: new PublicKey(IRYS_WALLET),
+                            lamports: Number(price),
+                        })
+                    );
+                    tx.feePayer = wallet.publicKey;
+                    let signed_transaction = await wallet.signTransaction(tx);
+                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
+        
+                    var transaction_response = await send_transaction("", encoded_transaction);
+                    console.log(transaction_response);
+                   // await irys.fund(price);
                     toast.update(uploadImageToArweave, {
                         render: "Your account has been successfully funded.",
                         type: "success",
@@ -256,9 +265,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     });
                     return;
                 }
-            }
+            //}
 
-            const balance_after = await irys.getLoadedBalance();
+            //const balance_after = await irys.getLoadedBalance();
             // console.log("balance_after", balance_after.toString());
 
             const tags: Tag[] = [
@@ -320,7 +329,22 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
 
             try {
-                await irys.fund(json_price);
+                let txArgs = await get_current_blockhash("");
+        
+                    var tx = new Transaction(txArgs).add(
+                        SystemProgram.transfer({
+                            fromPubkey: wallet.publicKey,
+                            toPubkey: new PublicKey(IRYS_WALLET),
+                            lamports: Number(json_price),
+                        })
+                    );
+                    tx.feePayer = wallet.publicKey;
+                    let signed_transaction = await wallet.signTransaction(tx);
+                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
+        
+                    var transaction_response = await send_transaction("", encoded_transaction);
+                    console.log(transaction_response);
+                //await irys.fund(json_price);
                 toast.update(fundMetadata, {
                     render: "Your account has been successfully funded.",
                     type: "success",
@@ -619,9 +643,10 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
                                     className={styles.inputBox}
                                     type="text"
-                                    // value={}
-                                    // onChange={(e) => {
-                                    // }}
+                                    value={parseInt(amm_fee) > 0 ? amm_fee : ""}
+                                    onChange={(e) => {
+                                        setAMMFee(e.target.value);
+                                    }}
                                 />
                             </div>
                         </HStack>

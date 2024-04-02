@@ -597,6 +597,7 @@ export interface LaunchDataUserInput {
     closedate: Date;
     team_wallet: string;
     token_keypair: Keypair | null;
+    amm_fee : number;
     // extension data
     transfer_fee: number;
     max_transfer_fee: number;
@@ -631,6 +632,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
     token_keypair: null,
+    amm_fee: 0,
     transfer_fee: 0,
     max_transfer_fee: 0,
     permanent_delegate: null,
@@ -847,6 +849,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
+        amm_fee : 0,
         transfer_fee: 0,
         max_transfer_fee: 0,
         permanent_delegate: null,
