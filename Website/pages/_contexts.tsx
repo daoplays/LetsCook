@@ -298,7 +298,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
-            //CloseAccount({account: program_data[i].pubkey});
 
             if (data[0] === 0) {
                 try {
@@ -332,7 +331,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 continue;
             }
             if (data[0] === 8) {
-                const [collection] = LaunchData.struct.deserialize(data);
+                //CloseAccount({account: program_data[i].pubkey});
+
+                const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
                 continue;
             }

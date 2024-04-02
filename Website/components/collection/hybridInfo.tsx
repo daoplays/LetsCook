@@ -5,10 +5,17 @@ import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import useResponsive from "../../hooks/useResponsive";
 import styles2 from "../../styles/LaunchDetails.module.css";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
-
+import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META } from "../Solana/constants";
+import {
+    unpackMint,
+    Mint,
+    TOKEN_2022_PROGRAM_ID
+} from "@solana/spl-token";
+import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
+import {request_raw_account_data} from "../Solana/state"
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -19,17 +26,53 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const { newCollectionData } = useAppRoot();
 
     const { sm, md, lg } = useResponsive();
-    const [displayImg, setDisplayImg] = useState<string>("");
     const [token_mint, setTokenMint] = useState<string>("");
+    const [token_name, setTokenName] = useState<string>("");
+    const [token_icon_url, setTokenIconURL] = useState<string>("");
+    const [token_symbol, setTokenSymbol] = useState<string>("");
+
     const [team_wallet, setTeamWallet] = useState<string>("");
     const [swap_fee, setSwapFee] = useState<string>("");
     const [swap_rate, setSwapRate] = useState<string>("");
+
+    async function setMintData(e): Promise<void> {
+        e.preventDefault();
+
+        let token_key = new PublicKey(token_mint);
+        let token_meta_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
+            METAPLEX_META,
+        )[0];
+        let raw_meta_data = await request_raw_account_data("", token_meta_key);
+
+        if (raw_meta_data === null) {
+            toast.error("Token metadata not found");
+            return;
+        }
+
+        //console.log("deserialize meta data");
+        let meta_data = Metadata.deserialize(raw_meta_data);
+        console.log(meta_data);
+        console.log(meta_data[0].data.symbol, meta_data[0].data.name)
+        let uri_json = await fetch(meta_data[0].data.uri).then(res => res.json());
+        console.log(uri_json["image"]);
+        setTokenName(meta_data[0].data.name)    
+        setTokenIconURL(uri_json["image"])    
+        setTokenSymbol(meta_data[0].data.symbol)    
+        
+
+        return
+
+    }
 
     function setLaunchData(e) {
         e.preventDefault();
 
         newCollectionData.current.team_wallet = team_wallet;
-        
+        newCollectionData.current.token_image_url = token_icon_url;
+        newCollectionData.current.token_name = token_name;
+        newCollectionData.current.token_symbol = token_symbol;
+        newCollectionData.current.token_mint = new PublicKey(token_mint);
 
         setScreen("step 4");
     }
@@ -63,12 +106,76 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
                                     <div style={{ marginLeft: "12px" }}>
                                         <label className={styles.label}>
-                                            <input id="file" type="file" />
-                                            <span className={styles.browse} style={{ cursor: "pointer", padding: "5px 10px" }}>
+                                            <button onClick={(e) => setMintData(e)} className={styles.browse} style={{ cursor: "pointer", padding: "5px 10px" }}>
                                                 Search
-                                            </span>
+                                            </button>
                                         </label>
                                     </div>
+                                </HStack>
+                                <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                            {token_icon_url ? (
+                                <Image
+                                    src={token_icon_url}
+                                    width={lg ? 180 : 235}
+                                    height={lg ? 180 : 235}
+                                    alt="Image Frame"
+                                    style={{ backgroundSize: "cover", borderRadius: 12 }}
+                                />
+                            ) : (
+                                <VStack
+                                    justify="center"
+                                    align="center"
+                                    style={{ minWidth: lg ? 180 : 235, minHeight: lg ? 180 : 235, cursor: "pointer" }}
+                                    borderRadius={12}
+                                    border="2px dashed rgba(134, 142, 150, 0.5)"
+                                    as={chakra.label}
+                                    htmlFor="file"
+                                >
+                                    <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
+                                        Icon Preview
+                                    </Text>
+                                </VStack>
+                            )}
+
+                            <VStack spacing={8} flexGrow={1} align="start" width="100%">
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
+                                        Name:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            placeholder="Token Name"
+                                            readOnly={true}
+                                            size={lg ? "md" : "lg"}
+                                            className={styles.inputBox}
+                                            type="text"
+                                            value={token_name}
+                                        />
+                                    </div>
+                                </HStack>
+
+                                <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
+                                    <HStack spacing={0} className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
+                                            Symbol:
+                                        </div>
+                                        <div className={styles.textLabelInput}>
+                                            <Input
+                                                // pl={9}
+                                                bg="#494949"
+                                                placeholder="Token Symbol"
+                                                readOnly={true}
+                                                size={lg ? "md" : "lg"}
+                                                className={styles.inputBox}
+                                                type="text"
+                                                value={token_symbol}
+                                            />
+                                        </div>
+                                    </HStack>
+                                </Flex>
+                                </VStack>
+
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>

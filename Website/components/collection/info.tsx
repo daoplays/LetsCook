@@ -19,10 +19,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const { newCollectionData } = useAppRoot();
 
     const { sm, md, lg } = useResponsive();
-    const [name, setName] = useState<string>(newCollectionData.current.name);
-    const [symbol, setSymbol] = useState<string>(newCollectionData.current.symbol);
+    const [name, setName] = useState<string>(newCollectionData.current.collection_name);
+    const [symbol, setSymbol] = useState<string>(newCollectionData.current.collection_symbol);
     const [tokenStart, setTokenStart] = useState<string>("");
-    const [totalSupply, setTotalSupply] = useState<string>(newCollectionData.current.total_supply.toString());
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
 
@@ -86,10 +85,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             });
         }
 
-        newCollectionData.current.name = name;
-        newCollectionData.current.symbol = symbol;
+        newCollectionData.current.collection_name = name;
+        newCollectionData.current.collection_symbol = symbol;
         newCollectionData.current.displayImg = displayImg;
-        newCollectionData.current.total_supply = parseInt(totalSupply);
         newCollectionData.current.description = description;
 
         setScreen("step 2");
@@ -258,26 +256,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         </div>
                                     </HStack>
                                 </Flex>
-
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                        Max Supply:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            disabled={newCollectionData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            placeholder="Enter Token Total Supply"
-                                            value={totalSupply}
-                                            onChange={(e) => {
-                                                setTotalSupply(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
 
                                 {!lg && <Browse />}
                             </VStack>

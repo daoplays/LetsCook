@@ -18,7 +18,7 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
 import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials, Extensions } from "../Solana/constants";
-import {LaunchInstruction } from "../Solana/state";
+import {LaunchInstruction,request_raw_account_data } from "../Solana/state";
 
 import { Box } from "@chakra-ui/react";
 
@@ -32,15 +32,14 @@ import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export interface CollectionDataUserInput {
     edit_mode: boolean;
-    name: string;
-    symbol: string;
+    collection_name: string;
+    collection_symbol: string;
     icon_file: File | null;
     uri_file: File | null;
     banner_file: File | null;
     icon_url: string;
     banner_url: string;
     total_supply: number;
-    decimals: number;
     num_mints: number;
     minimum_liquidity: number;
     ticket_price: number;
@@ -52,8 +51,6 @@ export interface CollectionDataUserInput {
     twt_url: string;
     disc_url: string;
     displayImg: string;
-    opendate: Date;
-    closedate: Date;
     team_wallet: string;
     token_keypair: Keypair | null;
     // extension data
@@ -66,12 +63,15 @@ export interface CollectionDataUserInput {
     nft_image_url: string;
     nft_metadata_url: string;
     token_mint: PublicKey | null;
+    token_name: string;
+    token_symbol: string;
+    token_image_url: string;
 }
 
 export const defaultCollectionInput: CollectionDataUserInput = {
     edit_mode: false,
-    name: "",
-    symbol: "",
+    collection_name: "",
+    collection_symbol: "",
     icon_file: null,
     uri_file: null,
     banner_file: null,
@@ -79,7 +79,6 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     banner_url: "",
     displayImg: null,
     total_supply: 0,
-    decimals: 0,
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
@@ -90,8 +89,6 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     tele_url: "",
     twt_url: "",
     disc_url: "",
-    opendate: new Date(new Date().setHours(0, 0, 0, 0)),
-    closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
     token_keypair: null,
     transfer_fee: 0,
@@ -103,6 +100,9 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     nft_image_url: "",
     nft_metadata_url: "",
     token_mint : null,
+    token_name: "",
+    token_symbol: "",
+    token_image_url: ""
     
 };
 
@@ -110,38 +110,38 @@ export const defaultCollectionInput: CollectionDataUserInput = {
 export class CollectionData {
     constructor(
         readonly account_type: number,
-        readonly game_id: bignum,
-        readonly last_interaction: bignum,
-        readonly num_interactions: number,
+      
+        readonly collection_name: string,
+        readonly collection_symbol: string,
+        readonly collection_icon_url: string,
+        readonly collection_meta_url: string,
 
-        readonly name: string,
-        readonly symbol: string,
-        readonly icon: string,
-        readonly meta_url: string,
+        readonly token_name: string,
+        readonly token_symbol: string,
+        readonly token_icon_url: string,
+
+        readonly nft_icon_url: string,
+        readonly nft_meta_url: string,
+
         readonly banner: string,
         readonly page_name: string,
         readonly description: string,
 
-        readonly total_supply: bignum,
-        readonly decimals: number,
-        readonly num_mints: bignum,
-        readonly ticket_price: bignum,
-        readonly minimum_liquidity: bignum,
-        readonly launch_date: bignum,
-        readonly end_date: bignum,
-
-        readonly tickets_sold: number,
-        readonly tickets_claimed: number,
-        readonly mints_won: number,
+        readonly total_supply: number,
+        readonly num_available: number,
+        readonly swap_price: bignum,
+        readonly swap_fee: number,
+      
         readonly positive_votes: number,
         readonly negative_votes: number,
+
+        readonly availability: number[],
 
         readonly total_mm_buy_amount: bignum,
         readonly total_mm_sell_amount: bignum,
         readonly last_mm_reward_date: number,
 
         readonly socials: string[],
-        readonly distribution: number[],
         readonly flags: number[],
         readonly strings: string[],
         readonly keys: PublicKey[],
@@ -150,38 +150,39 @@ export class CollectionData {
     static readonly struct = new FixableBeetStruct<CollectionData>(
         [
             ["account_type", u8],
-            ["game_id", u64],
-            ["last_interaction", i64],
-            ["num_interactions", u16],
+        
+            ["collection_name", utf8String],
+            ["collection_symbol", utf8String],
+            ["collection_icon_url", utf8String],
+            ["collection_meta_url", utf8String],
 
-            ["name", utf8String],
-            ["symbol", utf8String],
-            ["icon", utf8String],
-            ["meta_url", utf8String],
+            ["token_name", utf8String],
+            ["token_symbol", utf8String],
+            ["token_icon_url", utf8String],
+
+            ["nft_icon_url", utf8String],
+            ["nft_meta_url", utf8String],
+
             ["banner", utf8String],
             ["page_name", utf8String],
             ["description", utf8String],
 
-            ["total_supply", u64],
-            ["decimals", u8],
-            ["num_mints", u32],
-            ["ticket_price", u64],
-            ["minimum_liquidity", u64],
-            ["launch_date", u64],
-            ["end_date", u64],
-
-            ["tickets_sold", u32],
-            ["tickets_claimed", u32],
-            ["mints_won", u32],
+            ["total_supply", u32],
+            ["num_available", u32],
+            ["swap_price", u64],
+            ["swap_fee", u16],
+           
             ["positive_votes", u32],
             ["negative_votes", u32],
+
+            ["availability", array(u8)],
+
 
             ["total_mm_buy_amount", u64],
             ["total_mm_sell_amount", u64],
             ["last_mm_reward_date", u32],
 
             ["socials", array(utf8String)],
-            ["distribution", array(u8)],
             ["flags", array(u8)],
             ["strings", array(utf8String)],
             ["keys", array(publicKey)],
@@ -189,38 +190,38 @@ export class CollectionData {
         (args) =>
             new CollectionData(
                 args.account_type!,
-                args.game_id!,
-                args.last_interaction!,
-                args.num_interactions!,
+        
+                args.collection_name!,
+                args.collection_symbol!,
+                args.collection_icon_url!,
+                args.collection_meta_url!,
 
-                args.name!,
-                args.symbol!,
-                args.icon!,
-                args.meta_url!,
+                args.token_name!,
+                args.token_symbol!,
+                args.token_icon_url!,
+
+                args.nft_icon_url!,
+                args.nft_meta_url!,
+
                 args.banner!,
                 args.page_name!,
                 args.description!,
 
                 args.total_supply!,
-                args.decimals!,
-                args.num_mints!,
-                args.ticket_price!,
-                args.minimum_liquidity!,
-                args.launch_date!,
-                args.end_date!,
-
-                args.tickets_sold!,
-                args.tickets_claimed!,
-                args.mints_won!,
+                args.num_available!,
+                args.swap_price!,
+                args.swap_fee!,
+               
                 args.positive_votes!,
                 args.negative_votes!,
+
+                args.availability!,
 
                 args.total_mm_buy_amount!,
                 args.total_mm_sell_amount!,
                 args.last_mm_reward_date!,
 
                 args.socials!,
-                args.distribution!,
                 args.flags!,
                 args.strings!,
                 args.keys!,
@@ -229,67 +230,140 @@ export class CollectionData {
     );
 }
 
+export class AssignmentData {
+    constructor(
+        readonly account_type: number,
+        readonly nft_index: number,
+        readonly status: number,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<AssignmentData>(
+        [
+            ["account_type", u8],
+            ["nft_index", u32],
+            ["status", u8],
+        ],
+        (args) =>
+            new AssignmentData(
+                args.account_type!,
+                args.nft_index!,
+                args.status!,
+            ),
+        "AssignmentData",
+    );
+}
+
+export class LookupData {
+    constructor(
+        readonly account_type: number,
+        readonly colection_mint: PublicKey,
+        readonly nft_mint: PublicKey,
+        readonly nft_index: number,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<LookupData>(
+        [
+            ["account_type", u8],
+            ["colection_mint", publicKey],
+            ["nft_mint", publicKey],
+            ["nft_index", u32],
+        ],
+        (args) =>
+            new LookupData(
+                args.account_type!,
+                args.colection_mint!,
+                args.nft_mint!,
+                args.nft_index!,
+            ),
+        "LookupData",
+    );
+}
+
+export async function request_assignment_data(pubkey: PublicKey): Promise<AssignmentData | null> {
+    let account_data = await request_raw_account_data("", pubkey);
+
+    if (account_data === null) {
+        return null;
+    }
+
+    const [data] = AssignmentData.struct.deserialize(account_data);
+
+    return data;
+}
+
+export async function request_lookup_data(pubkey: PublicKey): Promise<LookupData | null> {
+    let account_data = await request_raw_account_data("", pubkey);
+
+    if (account_data === null) {
+        return null;
+    }
+
+    const [data] = LookupData.struct.deserialize(account_data);
+
+    return data;
+}
+
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,
-        readonly name: string,
-        readonly symbol: string,
-        readonly uri: string,
-        readonly icon: string,
+        readonly collection_name: string,
+        readonly collection_symbol: string,
+        readonly collection_uri: string,
+        readonly collection_icon: string,
+
+        readonly token_name: string,
+        readonly token_symbol: string,
+        readonly token_icon: string,
+
+        readonly nft_uri: string,
+        readonly nft_icon: string,
+        
         readonly banner: string,
         readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly page_name: string,
         readonly transfer_fee: number,
-        readonly max_transfer_fee: bignum,
         readonly extensions: number,   
-        readonly description: string,
-        readonly website: string,
-        readonly twitter: string,
-        readonly telegram: string,
-        readonly discord: string,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
         [
             ["instruction", u8],
-            ["name", utf8String],
-            ["symbol", utf8String],
-            ["uri", utf8String],
-            ["icon", utf8String],
+            ["collection_name", utf8String],
+            ["collection_symbol", utf8String],
+            ["collection_uri", utf8String],
+            ["collection_icon", utf8String],
+            ["token_name", utf8String],
+            ["token_symbol", utf8String],
+            ["token_icon", utf8String],
+            ["nft_uri", utf8String],
+            ["nft_icon", utf8String],
             ["banner", utf8String],
             ["num_mints", u32],
             ["ticket_price", u64],
             ["page_name", utf8String],
             ["transfer_fee", u16],
-            ["max_transfer_fee", u64],
             ["extensions", u8],
-            ["description", utf8String],
-            ["website", utf8String],
-            ["twitter", utf8String],
-            ["telegram", utf8String],
-            ["discord", utf8String],
 
         ],
         (args) =>
             new LaunchCollection_Instruction(
                 args.instruction!,
-                args.name!,
-                args.symbol!,
-                args.uri!,
-                args.icon!,
+                args.collection_name!,
+                args.collection_symbol!,
+                args.collection_uri!,
+                args.collection_icon!,
+                args.token_name!,
+                args.token_symbol!,
+                args.token_icon!,
+                args.nft_uri!,
+                args.nft_icon!,
                 args.banner!,
                 args.num_mints!,
                 args.ticket_price!,
                 args.page_name!,
                 args.transfer_fee!,
-                args.max_transfer_fee!,
                 args.extensions!,
-                args.description!,
-                args.website!,
-                args.twitter!,
-                args.telegram!,
-                args.discord!,
             ),
         "LaunchCollection_Instruction",
     );
@@ -305,24 +379,24 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
+        console.log(new_launch_data)
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
-        new_launch_data.name,
-        new_launch_data.symbol,
+        new_launch_data.collection_name,
+        new_launch_data.collection_symbol,
         new_launch_data.uri,
         new_launch_data.icon_url,
+        new_launch_data.token_name,
+        new_launch_data.token_symbol,
+        new_launch_data.token_image_url,
+        new_launch_data.nft_metadata_url,
+        new_launch_data.nft_image_url,
         new_launch_data.banner_url,
         new_launch_data.num_mints,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
         new_launch_data.transfer_fee,
-        new_launch_data.max_transfer_fee,
         extensions,
-        new_launch_data.description,
-        new_launch_data.web_url,
-        new_launch_data.twt_url,
-        new_launch_data.tele_url,
-        new_launch_data.disc_url,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

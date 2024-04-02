@@ -9,12 +9,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { LaunchKeys } from "./Solana/constants";
+import { CollectionKeys, LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
+import { CollectionData } from "./collection/collectionState";
 
 interface CollectionFeaturedBannerProps {
-    featuredLaunch: LaunchData;
+    featuredLaunch: CollectionData;
     isHomePage?: boolean;
 }
 
@@ -50,7 +51,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                     <HStack spacing={lg ? 0 : 8} w="fit-content" mt={!isHomePage ? 0 : -2}>
                         {featuredLaunch !== null && (
                             <Image
-                                src={featuredLaunch.icon}
+                                src={featuredLaunch.collection_icon_url}
                                 width={lg ? 130 : 200}
                                 height={lg ? 130 : 200}
                                 alt="$LOGO"
@@ -68,18 +69,18 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? featuredLaunch.name : ""}
+                                    {featuredLaunch !== null ? featuredLaunch.collection_name : ""}
                                 </Text>
 
-                                {!lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+                                {!lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
                             </Flex>
 
                             {!isHomePage && (
                                 <HStack spacing={3} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
                                         CA:{" "}
-                                        {featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                            ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
+                                        {featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
+                                            ? trimAddress(featuredLaunch.keys[CollectionKeys.CollectionMint].toString())
                                             : ""}
                                     </Text>
 
@@ -156,7 +157,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                         </VStack>
                     </HStack>
 
-                    {lg && featuredLaunch !== null && <Links featuredLaunch={featuredLaunch} />}
+                    {lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
                 </Flex>
             </Box>
         </Box>

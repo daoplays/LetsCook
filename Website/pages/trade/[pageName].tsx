@@ -946,7 +946,7 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     SOCIALS:
                 </Text>
-                <Links featuredLaunch={launch} />
+                <Links socials={launch.socials} />
             </HStack>
         </VStack>
     );

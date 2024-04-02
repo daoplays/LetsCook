@@ -24,7 +24,13 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     function setLaunchData(e) {
         e.preventDefault();
 
-        
+        if (newCollectionData.current.nft_metadata.length !== newCollectionData.current.nft_images.length) {
+            toast.error("number of metadata and image files do not match");
+            return;
+        }
+
+        newCollectionData.current.num_mints = newCollectionData.current.nft_metadata.length;
+        newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
 
         setScreen("step 3");
     }
@@ -36,6 +42,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         if (file) {
             console.log(e.target.files);
             newCollectionData.current.nft_images = e.target.files;
+            setDisplayImg("images")
         }
     };
 
@@ -56,7 +63,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newCollectionData.current.nft_images !== null ? "No Files Selected (Size Limit: 1MB)" : ""}
+                {newCollectionData.current.nft_images === null ? "No Files Selected" : newCollectionData.current.nft_images.length+" images selected"}
             </Text>
         </HStack>
     );
@@ -67,6 +74,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         if (file) {
             console.log(e.target.files);
             newCollectionData.current.nft_metadata = e.target.files;
+            setDisplayImg("meta")
         }
     };
 
@@ -87,7 +95,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newCollectionData.current.nft_metadata !== null ? "No Files Selected (Size Limit: 1MB)" : ""}
+                {newCollectionData.current.nft_metadata === null ? "No Files Selected" : newCollectionData.current.nft_images.length+" files selected"}
             </Text>
         </HStack>
     );

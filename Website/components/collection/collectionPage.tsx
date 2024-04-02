@@ -61,6 +61,10 @@ type Tag = {
     value: string;
 };
 
+function receivedText(e) {
+    return JSON.parse(e.target.result); 
+  }
+
 const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
     const router = useRouter();
@@ -300,7 +304,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             newCollectionData.current.icon_url = icon_url;
             newCollectionData.current.banner_url = banner_url;
-            newCollectionData.current.nft_image_url = manifestId;
+            newCollectionData.current.nft_image_url = "https://gateway.irys.xyz/" + manifestId + "/";
 
         }
 
@@ -308,8 +312,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         if (newCollectionData.current.uri == "") {
             // console.log(icon_url, banner_url);
             var metadata = {
-                name: newCollectionData.current.name,
-                symbol: newCollectionData.current.symbol,
+                name: newCollectionData.current.collection_name,
+                symbol: newCollectionData.current.collection_symbol,
                 description: newCollectionData.current.description,
                 image: newCollectionData.current.icon_url,
             };
@@ -320,8 +324,23 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             let file_list : File[] = []
             file_list.push(json_file)
+
+            let fr = new FileReader();
+            fr.onload = function () {
+                let parsedJSON = JSON.parse(fr.result.toString());
+                console.log(parsedJSON);
+                // your code to consume the json                    
+            }
             for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
-                file_list.push(newCollectionData.current.nft_metadata[i]);
+                let text = await newCollectionData.current.nft_metadata[i].text();
+                let json = JSON.parse(text)
+                let index = newCollectionData.current.nft_metadata[i].name.split(".")[0];
+                json["image"] = newCollectionData.current.nft_image_url + index + ".png"
+                console.log(json)
+
+                const blob = new Blob([JSON.stringify(json)], { type: "application/json" });
+                const json_file = new File([blob], newCollectionData.current.nft_metadata[i].name);
+                file_list.push(json_file);
             }
 
             let size = 0;
@@ -395,7 +414,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             let collection_meta_url = "https://gateway.irys.xyz/" + json_receipt.manifest.paths[json_file.name].id;
 
             newCollectionData.current.uri = collection_meta_url;
-            newCollectionData.current.nft_metadata_url = manifestId;
+            newCollectionData.current.nft_metadata_url = "https://gateway.irys.xyz/" + manifestId + "/";
 
             console.log(newCollectionData.current.uri, newCollectionData.current.nft_metadata_url )
         }
@@ -439,15 +458,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
 
-            { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: nft_token_account, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
             { pubkey: nft_master_key, isSigner: false, isWritable: true },
-
-            { pubkey: team_wallet, isSigner: false, isWritable: true },
+            { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });

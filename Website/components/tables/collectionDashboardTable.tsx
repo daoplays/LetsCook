@@ -96,7 +96,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
 const LaunchCard = ({ launch }: { launch: CollectionData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-
+    console.log(launch)
     return (
         <tr
             style={{
@@ -117,21 +117,36 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={launch.collection_icon_url}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {launch.symbol}
+                        {launch.collection_symbol}
                     </Text>
                 </HStack>
             </td>
-            <td style={{ minWidth: "120px" }}>{/* Token  */}</td>
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>{/* Tokens Per NFT  */}</td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>{/* Unwrap Fee */}</td>
-            <td style={{ minWidth: md ? "230px" : "" }}>{parseInt(launch.total_supply)}</td>
+            <td style={{ minWidth: "120px" }}>
+                <HStack px={3} spacing={3} justify="center">
+                    <Box w={45} h={45} borderRadius={10}>
+                        <Image
+                            alt="Launch icon"
+                            src={launch.token_icon_url}
+                            width={45}
+                            height={45}
+                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                        />
+                    </Box>
+                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        {launch.token_symbol}
+                    </Text>
+                </HStack>
+            </td>
+            <td style={{ minWidth: sm ? "170px" : "200px" }}>{bignum_to_num(launch.swap_price)}</td>
+            <td style={{ minWidth: sm ? "150px" : "200px" }}>{launch.swap_fee}</td>
+            <td style={{ minWidth: md ? "230px" : "" }}>{launch.total_supply}</td>
             <td style={{ minWidth: "100px" }}>
                 <Button as={Link} href={`/collection/${launch.page_name}`} style={{ textDecoration: "none" }}>
                     View

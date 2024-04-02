@@ -12,13 +12,15 @@ import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
+import { CollectionData } from "../components/collection/collectionState";
 
 const DashboardPage = () => {
     const router = useRouter();
     const wallet = useWallet();
     const { sm, lg } = useResponsive();
-    const { launchList } = useAppRoot();
+    const { launchList, collectionList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
+    const [creatorCollections, setCreatorCollections] = useState<CollectionData[] | null>(null);
     const [selected, setSelected] = useState("Tokens");
 
     const { newLaunchData } = useAppRoot();
@@ -30,7 +32,10 @@ const DashboardPage = () => {
 
         const filteredLaunches = launchList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
         setCreatorLaunches(filteredLaunches);
-    }, [wallet, launchList]);
+
+        const filteredCollections = collectionList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
+        setCreatorCollections(filteredCollections);
+    }, [wallet, launchList, collectionList]);
 
     if (!creatorLaunches) return <Loader />;
 
@@ -123,7 +128,7 @@ const DashboardPage = () => {
                 </Flex>
 
                 {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
-                {selected === "Collections" && <CollectionDashboardTable collectionList={creatorLaunches} />}
+                {selected === "Collections" && <CollectionDashboardTable collectionList={creatorCollections} />}
 
                 {creatorLaunches.length <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>

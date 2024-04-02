@@ -567,7 +567,10 @@ export const enum LaunchInstruction {
     get_mm_tokens = 13,
     get_mm_rewards = 14,
     close_account = 15,
-    launch_collection = 16
+    launch_collection = 16,
+    claim_nft = 17,
+    mint_nft = 18,
+    wrap_nft = 19
 }
 
 export interface LaunchDataUserInput {

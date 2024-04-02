@@ -1,5 +1,5 @@
 import { VStack, Text, HStack, Progress, Button, Tooltip, Link } from "@chakra-ui/react";
-import { LaunchData } from "../../components/Solana/state";
+import { bignum_to_num } from "../../components/Solana/state";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -15,6 +15,9 @@ import { CollectionData } from "../../components/collection/collectionState";
 import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
+import useClaimNFT from "../../hooks/collections/useClaimNFT";
+import useMintNFT from "../../hooks/collections/useMintNFT";
+import { CollectionKeys } from "../../components/Solana/constants";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -36,6 +39,10 @@ const CollectionSwapPage = () => {
     const { collectionList } = useAppRoot();
 
     let launch = findLaunch(collectionList, pageName);
+
+    const {ClaimNFT} = useClaimNFT(launch);
+    const {MintNFT} = useMintNFT(launch);
+
 
     if (!pageName) return;
 
@@ -65,18 +72,18 @@ const CollectionSwapPage = () => {
                         <HStack spacing={24} alignItems="start">
                             <VStack>
                                 <Image
-                                    src={"/images/smile.png"}
+                                    src={launch.token_icon_url}
                                     width={180}
                                     height={180}
                                     alt="Image Frame"
                                     style={{ backgroundSize: "cover", borderRadius: 12 }}
                                 />
                                 <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    $JOY
+                                    {launch.token_symbol}
                                 </Text>
                                 <HStack spacing={2} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                        CA: {trimAddress("DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263")}
+                                        CA: {trimAddress(launch.keys[CollectionKeys.MintAddress].toString())}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -105,26 +112,20 @@ const CollectionSwapPage = () => {
                             </VStack>
 
                             <VStack spacing={3} margin="auto 0">
-                                <Button>X Tokens = 1 NFT</Button>
-                                <Button>1 NFT = X - 1% Tokens</Button>
-                                <HStack alignItems="start">
-                                    <Text m={0} color="white" fontSize="medium" fontFamily="ReemKufiRegular">
-                                        Platform Fee: 0.005
-                                    </Text>
-                                    <Image src="/images/sol.png" width={22} height={22} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                                </HStack>
+                                <Button onClick={() => ClaimNFT()}>{bignum_to_num(launch.swap_price)} Tokens = 1 NFT</Button>
+                                <Button>1 NFT = {bignum_to_num(launch.swap_price)} - {bignum_to_num(launch.swap_fee)}% Tokens</Button>
                             </VStack>
 
                             <VStack>
                                 <Image
-                                    src={launch.icon}
+                                    src={launch.collection_icon_url}
                                     width={180}
                                     height={180}
                                     alt="Image Frame"
                                     style={{ backgroundSize: "cover", borderRadius: 12 }}
                                 />
                                 <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    {launch.name}
+                                    {launch.collection_name}
                                 </Text>
                             </VStack>
                         </HStack>
@@ -144,13 +145,13 @@ const CollectionSwapPage = () => {
                                     }}
                                     size="sm"
                                     min={0}
-                                    value={10}
+                                    value={launch.num_available}
                                     boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                                 />
                                 <HStack style={{ position: "absolute", zIndex: 1 }}>
                                     <HStack justify="center">
                                         <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
-                                            10 / {parseInt(launch.total_supply)}
+                                        {launch.num_available} / {launch.total_supply}
                                         </Text>
                                     </HStack>
                                 </HStack>
