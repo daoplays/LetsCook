@@ -112,6 +112,9 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         let valid_lookups: LookupData[] = [];
         for (let i = 0; i < token_infos.length; i++) {
+            if ( token_infos[i] === null) {
+                continue;
+            }
             let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
             if (account.amount > 0) {
                 valid_lookups.push(LookupData[i]);
