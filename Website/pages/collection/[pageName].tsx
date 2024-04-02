@@ -149,6 +149,9 @@ const CollectionSwapPage = () => {
             launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
         }
 
+        if (wallet === null || wallet.publicKey === null) {
+            return;
+        }
         if (nft_account_ws_id.current === null) {
             console.log("subscribe 2");
             let nft_assignment_account = PublicKey.findProgramAddressSync(
