@@ -144,7 +144,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     </Text>
                 </HStack>
             </td>
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>{bignum_to_num(launch.swap_price)}</td>
+            <td style={{ minWidth: sm ? "170px" : "200px" }}>{bignum_to_num(launch.swap_price)/Math.pow(10, launch.token_decimals)}</td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>{launch.swap_fee / 100}</td>
             <td style={{ minWidth: md ? "230px" : "" }}>{launch.total_supply}</td>
             <td style={{ minWidth: "100px" }}>

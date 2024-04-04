@@ -28,6 +28,7 @@ import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "rea
 import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
+import { sleep } from "@irys/sdk/build/cjs/common/utils";
 
 const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
@@ -321,7 +322,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
             if (data[0] === 8) {
                 //CloseAccount({account: program_data[i].pubkey});
-
+                
                 const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
                 continue;

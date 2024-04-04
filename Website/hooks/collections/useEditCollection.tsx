@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
-import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import { uInt32ToLEBytes, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../../components/Solana/state";
+import { SOL_ACCOUNT_SEED, DEBUG, SYSTEM_KEY, PROGRAM, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -61,17 +61,42 @@ const useEditCollection = () => {
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
+        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+
+        let token_mint = newCollectionData.current.token_mint;
+
+        let team_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            team_wallet, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let pda_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            program_sol_account, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
 
         const instruction_data = serialise_EditCollection_instruction(newCollectionData.current);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: false },
 
+            { pubkey: token_mint, isSigner: false, isWritable: true },
+            { pubkey: team_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+
+
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
         ];
 
         const list_instruction = new TransactionInstruction({

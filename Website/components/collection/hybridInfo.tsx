@@ -8,10 +8,11 @@ import styles2 from "../../styles/LaunchDetails.module.css";
 import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
-import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META } from "../Solana/constants";
-import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META, Extensions } from "../Solana/constants";
+import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate } from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { request_raw_account_data } from "../Solana/state";
+import ShowExtensions from "../Solana/extensions";
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -22,11 +23,12 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const { newCollectionData } = useAppRoot();
 
     const { sm, md, lg } = useResponsive();
-    const [token_mint, setTokenMint] = useState<string>(newCollectionData.current.token_mint.toString());
+    const [token_mint, setTokenMint] = useState<string>(newCollectionData.current.token_mint?.toString());
     const [token_name, setTokenName] = useState<string>(newCollectionData.current.token_symbol);
     const [token_icon_url, setTokenIconURL] = useState<string>(newCollectionData.current.token_image_url);
     const [token_symbol, setTokenSymbol] = useState<string>(newCollectionData.current.token_symbol);
     const [token_decimals, setTokenDecimals] = useState<number>(0);
+    const [token_extensions, setTokenExtensions] = useState<number>(0);
 
     const [team_wallet, setTeamWallet] = useState<string>(newCollectionData.current.team_wallet);
     const [swap_fee, setSwapFee] = useState<string>(newCollectionData.current.swap_fee > 0 ? newCollectionData.current.swap_fee.toString() : "");
@@ -60,6 +62,17 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             return;
         }
 
+        // check the extensions we care about
+        let transfer_hook = getTransferHook(mint);
+        let transfer_fee_config = getTransferFeeConfig(mint);
+        let permanent_delegate = getPermanentDelegate(mint);
+
+        let extensions =
+        (Extensions.TransferFee * Number(transfer_fee_config !== null)) |
+        (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
+        (Extensions.TransferHook * Number(transfer_hook !== null));
+        console.log("extensions", extensions)
+
         //console.log("deserialize meta data");
         let meta_data = Metadata.deserialize(raw_meta_data);
         console.log(meta_data);
@@ -70,6 +83,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         setTokenIconURL(uri_json["image"]);
         setTokenSymbol(meta_data[0].data.symbol);
         setTokenDecimals(mint.decimals);
+        setTokenExtensions(extensions);
         return;
     }
 
@@ -89,6 +103,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.swap_rate = parseInt(swap_rate);
         newCollectionData.current.swap_fee = parseInt(swap_fee);
         newCollectionData.current.token_decimals = token_decimals;
+        newCollectionData.current.token_extensions = token_extensions;
 
 
         setScreen("step 4");
@@ -137,6 +152,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
                                 <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                                     {token_icon_url ? (
+                                        <VStack>
                                         <Image
                                             src={token_icon_url}
                                             width={lg ? 180 : 235}
@@ -144,6 +160,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             alt="Image Frame"
                                             style={{ backgroundSize: "cover", borderRadius: 12 }}
                                         />
+                                        <ShowExtensions extension_flag={token_extensions}/>
+                                        </VStack>
                                     ) : (
                                         <VStack
                                             justify="center"

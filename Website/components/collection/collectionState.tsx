@@ -52,7 +52,7 @@ export interface CollectionDataUserInput {
     swap_rate: number;
     swap_fee: number;
 
-    // extension data
+    // nft_extension data
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
     nft_images: FileList | null;
@@ -65,6 +65,7 @@ export interface CollectionDataUserInput {
     token_symbol: string;
     token_image_url: string;
     token_decimals: number;
+    token_extensions : number;
 }
 
 export const defaultCollectionInput: CollectionDataUserInput = {
@@ -101,7 +102,8 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_name: "",
     token_symbol: "",
     token_image_url: "",
-    token_decimals: 0
+    token_decimals: 0,
+    token_extensions: 0
 };
 
 export class CollectionData {
@@ -116,9 +118,12 @@ export class CollectionData {
         readonly token_name: string,
         readonly token_symbol: string,
         readonly token_icon_url: string,
+        readonly token_decimals: number,
+        readonly token_extensions: number,
 
         readonly nft_icon_url: string,
         readonly nft_meta_url: string,
+        readonly nft_name : string,
 
         readonly banner: string,
         readonly page_name: string,
@@ -156,9 +161,12 @@ export class CollectionData {
             ["token_name", utf8String],
             ["token_symbol", utf8String],
             ["token_icon_url", utf8String],
+            ["token_decimals", u8],
+            ["token_extensions", u8],
 
             ["nft_icon_url", utf8String],
             ["nft_meta_url", utf8String],
+            ["nft_name", utf8String],
 
             ["banner", utf8String],
             ["page_name", utf8String],
@@ -195,9 +203,12 @@ export class CollectionData {
                 args.token_name!,
                 args.token_symbol!,
                 args.token_icon_url!,
+                args.token_decimals!,
+                args.token_extensions!,
 
                 args.nft_icon_url!,
                 args.nft_meta_url!,
+                args.nft_name!,
 
                 args.banner!,
                 args.page_name!,
@@ -299,6 +310,8 @@ class LaunchCollection_Instruction {
         readonly token_name: string,
         readonly token_symbol: string,
         readonly token_icon: string,
+        readonly token_decimals: number,
+        readonly token_extensions: number,
 
         readonly nft_uri: string,
         readonly nft_icon: string,
@@ -309,7 +322,7 @@ class LaunchCollection_Instruction {
         readonly swap_price: bignum,
         readonly page_name: string,
         readonly swap_fee: number,
-        readonly extensions: number,
+        readonly nft_extensions: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -322,6 +335,8 @@ class LaunchCollection_Instruction {
             ["token_name", utf8String],
             ["token_symbol", utf8String],
             ["token_icon", utf8String],
+            ["token_decimals", u8],
+            ["token_extensions", u8],
             ["nft_uri", utf8String],
             ["nft_icon", utf8String],
             ["nft_name", utf8String],
@@ -330,7 +345,7 @@ class LaunchCollection_Instruction {
             ["swap_price", u64],
             ["page_name", utf8String],
             ["swap_fee", u16],
-            ["extensions", u8],
+            ["nft_extensions", u8],
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -342,6 +357,8 @@ class LaunchCollection_Instruction {
                 args.token_name!,
                 args.token_symbol!,
                 args.token_icon!,
+                args.token_decimals!,
+                args.token_extensions!,
                 args.nft_uri!,
                 args.nft_icon!,
                 args.nft_name!,
@@ -350,7 +367,7 @@ class LaunchCollection_Instruction {
                 args.swap_price!,
                 args.page_name!,
                 args.swap_fee!,
-                args.extensions!,
+                args.nft_extensions!,
             ),
         "LaunchCollection_Instruction",
     );
@@ -395,7 +412,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
 
-    let extensions =
+    let nft_extensions =
         (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
@@ -409,6 +426,8 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.token_name,
         new_launch_data.token_symbol,
         new_launch_data.token_image_url,
+        new_launch_data.token_decimals,
+        new_launch_data.token_extensions,
         new_launch_data.nft_metadata_url,
         new_launch_data.nft_image_url,
         new_launch_data.nft_name,
@@ -417,7 +436,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.swap_rate * Math.pow(10, new_launch_data.token_decimals),
         new_launch_data.pagename,
         new_launch_data.swap_fee,
-        extensions,
+        nft_extensions,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

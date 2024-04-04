@@ -262,7 +262,7 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
-                                {/*<ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]}/>*/}
+                                <ShowExtensions extension_flag={launch.token_extensions}/>
                             </VStack>
 
                             <VStack spacing={3} margin="auto 0">
