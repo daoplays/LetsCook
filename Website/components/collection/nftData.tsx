@@ -16,19 +16,46 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     const router = useRouter();
     const { newCollectionData } = useAppRoot();
 
+    const [nft_name, setNFTName] = useState<string>(newCollectionData.current.nft_name);
+
     const { sm, md, lg } = useResponsive();
     const [displayImg, setDisplayImg] = useState<string>("");
 
     function setLaunchData(e) {
         e.preventDefault();
 
+        if (newCollectionData.current.nft_metadata === null ||  newCollectionData.current.nft_images === null) {
+            toast.error("missing nft data");
+            return;
+        }
+
         if (newCollectionData.current.nft_metadata.length !== newCollectionData.current.nft_images.length) {
             toast.error("number of metadata and image files do not match");
             return;
         }
 
+
+        if (newCollectionData.current.nft_metadata.length === 0) {
+            toast.error("number of metadata and image files must be greater than zero");
+            return;
+        }
+
+        let image_type = newCollectionData.current.nft_images[0].type;
+        for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
+            if (newCollectionData.current.nft_metadata[i].type !== "application/json") {
+                toast.error("meta data must be of type json");
+                console.log(newCollectionData.current.nft_metadata[i].type)
+                return;
+            }
+            if (newCollectionData.current.nft_images[i].type !== image_type) {
+                toast.error("all images must be of the same type");
+                return;
+            }
+        }
+
         newCollectionData.current.num_mints = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
+        newCollectionData.current.nft_name = nft_name;
 
         setScreen("step 3");
     }
@@ -96,7 +123,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                 {newCollectionData.current.nft_metadata === null
                     ? "No Files Selected"
-                    : newCollectionData.current.nft_images.length + " files selected"}
+                    : newCollectionData.current.nft_metadata.length + " files selected"}
             </Text>
         </HStack>
     );
@@ -118,13 +145,14 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            placeholder="Enter Collection Name"
+                                            placeholder="Enter NFT Name, will be followed by #number"
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
                                             className={styles.inputBox}
                                             type="text"
-                                            onChange={() => {}}
+                                            value={nft_name}
+                                            onChange={(e) => {setNFTName(e.target.value)}}
                                         />
                                     </div>
                                 </HStack>

@@ -51,15 +51,17 @@ export interface CollectionDataUserInput {
     displayImg: string;
     team_wallet: string;
     token_keypair: Keypair | null;
+    swap_rate: number;
+    swap_fee: number;
+
     // extension data
-    transfer_fee: number;
-    max_transfer_fee: number;
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
     nft_images: FileList | null;
     nft_metadata: FileList | null;
     nft_image_url: string;
     nft_metadata_url: string;
+    nft_name: string;
     token_mint: PublicKey | null;
     token_name: string;
     token_symbol: string;
@@ -89,14 +91,15 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     disc_url: "",
     team_wallet: "",
     token_keypair: null,
-    transfer_fee: 0,
-    max_transfer_fee: 0,
+    swap_rate: 0,
+    swap_fee: 0,
     permanent_delegate: null,
     transfer_hook_program: null,
     nft_images: null,
     nft_metadata: null,
     nft_image_url: "",
     nft_metadata_url: "",
+    nft_name: "",
     token_mint: null,
     token_name: "",
     token_symbol: "",
@@ -358,7 +361,6 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
     // console.log(new_launch_data.closedate.toString());
 
     let extensions =
-        (Extensions.TransferFee * Number(new_launch_data.transfer_fee > 0)) |
         (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
@@ -378,7 +380,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.num_mints,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
-        new_launch_data.transfer_fee,
+        new_launch_data.swap_rate,
         extensions,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);

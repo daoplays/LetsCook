@@ -226,49 +226,43 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
             
-            //let balance_before;
-
             let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
   
              console.log("price", Number(price));
 
-            //if (balance_before.lt(price)) {
-                try {
-                    let txArgs = await get_current_blockhash("");
-        
-                    var tx = new Transaction(txArgs).add(
-                        SystemProgram.transfer({
-                            fromPubkey: wallet.publicKey,
-                            toPubkey: new PublicKey(IRYS_WALLET),
-                            lamports: Number(price),
-                        })
-                    );
-                    tx.feePayer = wallet.publicKey;
-                    let signed_transaction = await wallet.signTransaction(tx);
-                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
-        
-                    var transaction_response = await send_transaction("", encoded_transaction);
-                    console.log(transaction_response);
-                   // await irys.fund(price);
-                    toast.update(uploadImageToArweave, {
-                        render: "Your account has been successfully funded.",
-                        type: "success",
-                        isLoading: false,
-                        autoClose: 2000,
-                    });
-                } catch (error) {
-                    toast.update(uploadImageToArweave, {
-                        render: "Oops! Something went wrong during funding. Please try again later. ",
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 3000,
-                    });
-                    return;
-                }
-            //}
+            try {
+                await irys.fund(price);
 
-            //const balance_after = await irys.getLoadedBalance();
-            // console.log("balance_after", balance_after.toString());
+                let txArgs = await get_current_blockhash("");
+    
+                var tx = new Transaction(txArgs).add(
+                    SystemProgram.transfer({
+                        fromPubkey: wallet.publicKey,
+                        toPubkey: new PublicKey(IRYS_WALLET),
+                        lamports: Number(price),
+                    })
+                );
+                tx.feePayer = wallet.publicKey;
+                let signed_transaction = await wallet.signTransaction(tx);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+    
+                var transaction_response = await send_transaction("", encoded_transaction);
+                console.log(transaction_response);
+                toast.update(uploadImageToArweave, {
+                    render: "Your account has been successfully funded.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } catch (error) {
+                toast.update(uploadImageToArweave, {
+                    render: "Oops! Something went wrong during funding. Please try again later. ",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
+            }
 
             const tags: Tag[] = [
                 { name: "Content-Type", value: newLaunchData.current.icon_file.type },

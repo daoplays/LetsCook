@@ -62,11 +62,19 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     function setLaunchData(e) {
         e.preventDefault();
 
+        if (token_name === "") {
+            toast.error("Token name not set, please search for valid Token 2022 token");
+            return;
+        }
+
         newCollectionData.current.team_wallet = team_wallet;
         newCollectionData.current.token_image_url = token_icon_url;
         newCollectionData.current.token_name = token_name;
         newCollectionData.current.token_symbol = token_symbol;
         newCollectionData.current.token_mint = new PublicKey(token_mint);
+        newCollectionData.current.swap_rate = parseInt(swap_rate);
+        newCollectionData.current.swap_fee = parseInt(swap_fee);
+
 
         setScreen("step 4");
     }
@@ -196,6 +204,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
+                                            value={swap_rate}
                                             onChange={(e) => {
                                                 setSwapRate(e.target.value);
                                             }}
@@ -208,14 +217,21 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                         Swap Fee:
                                     </div>
 
-                                    <div className={styles.distributionField}>
+                                    <div className={styles.textLabelInput}>
                                         <Input
-                                            size="lg"
+                                            bg="#494949"
+                                            placeholder="Enter Swap Fee (Bps - 100 = 1%)"
+                                            size={lg ? "md" : "lg"}
+                                            maxLength={8}
+                                            required
+                                            className={styles.inputBox}
+                                            type="text"
+                                            value={swap_fee}
                                             onChange={(e) => {
                                                 setSwapFee(e.target.value);
                                             }}
                                         />
-                                        bps
+                                        
                                     </div>
                                 </HStack>
 

@@ -272,6 +272,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     placeholder="Feel free to provide more details about your NFT collection, it will be displayed in your collection page."
                                     style={{ minHeight: 200 }}
                                     className={`${styles.inputBox} ${styles2.inputTxtarea}`}
+                                    value={description}
                                     onChange={(e) => {
                                         setDescription(e.target.value);
                                     }}

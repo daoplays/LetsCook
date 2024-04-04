@@ -38,6 +38,7 @@ import {
     Connection,
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
+    SystemProgram
 } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import bs58 from "bs58";
@@ -54,6 +55,7 @@ interface CollectionPageProps {
 }
 
 let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
+let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
 
 // Define the Tag type
 type Tag = {
@@ -214,7 +216,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             }
 
             let price;
-            let balance_before;
 
             try {
                 let size = 0;
@@ -222,7 +223,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     size += file_list[i].size;
                 }
                 price = await irys.getPrice(size);
-                balance_before = await irys.getLoadedBalance();
             } catch (e) {
                 toast.update(uploadImageToArweave, {
                     render: e,
@@ -235,29 +235,39 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             // console.log("balance_before", balance_before.toString());
 
-            if (balance_before.lt(price)) {
-                try {
-                    await irys.fund(price);
-                    toast.update(uploadImageToArweave, {
-                        render: "Your account has been successfully funded.",
-                        type: "success",
-                        isLoading: false,
-                        autoClose: 2000,
-                    });
-                } catch (error) {
-                    toast.update(uploadImageToArweave, {
-                        render: "Oops! Something went wrong during funding. Please try again later. ",
-                        type: "error",
-                        isLoading: false,
-                        autoClose: 3000,
-                    });
-                    return;
-                }
+            try {
+                let txArgs = await get_current_blockhash("");
+    
+                var tx = new Transaction(txArgs).add(
+                    SystemProgram.transfer({
+                        fromPubkey: wallet.publicKey,
+                        toPubkey: new PublicKey(IRYS_WALLET),
+                        lamports: Number(price),
+                    })
+                );
+                tx.feePayer = wallet.publicKey;
+                let signed_transaction = await wallet.signTransaction(tx);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+    
+                var transaction_response = await send_transaction("", encoded_transaction);
+
+                //await irys.fund(price);
+                toast.update(uploadImageToArweave, {
+                    render: "Your account has been successfully funded.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } catch (error) {
+                toast.update(uploadImageToArweave, {
+                    render: "Oops! Something went wrong during funding. Please try again later. ",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
             }
-
-            const balance_after = await irys.getLoadedBalance();
-            // console.log("balance_after", balance_after.toString());
-
+        
             let tags: Tag[] = [];
 
             for (let i = 0; i < file_list.length; i++) {
@@ -347,7 +357,22 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
 
             try {
-                await irys.fund(json_price);
+                let txArgs = await get_current_blockhash("");
+    
+                var tx = new Transaction(txArgs).add(
+                    SystemProgram.transfer({
+                        fromPubkey: wallet.publicKey,
+                        toPubkey: new PublicKey(IRYS_WALLET),
+                        lamports: Number(json_price),
+                    })
+                );
+                tx.feePayer = wallet.publicKey;
+                let signed_transaction = await wallet.signTransaction(tx);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+    
+                var transaction_response = await send_transaction("", encoded_transaction);
+
+                //await irys.fund(json_price);
                 toast.update(fundMetadata, {
                     render: "Your account has been successfully funded.",
                     type: "success",
@@ -418,28 +443,28 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             PROGRAM,
         )[0];
 
-        var token_mint_pubkey = newCollectionData.current.token_keypair.publicKey;
+        var collection_mint_pubkey = newCollectionData.current.token_keypair.publicKey;
 
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
+        let collection_meta_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), collection_mint_pubkey.toBuffer()],
             METAPLEX_META,
         )[0];
 
-        let nft_token_account = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
+        let collection_token_account = await getAssociatedTokenAddress(
+            collection_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
         );
 
-        let nft_master_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer(), Buffer.from("edition")],
+        let collection_master_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), collection_mint_pubkey.toBuffer(), Buffer.from("edition")],
             METAPLEX_META,
         )[0];
 
         let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
 
-        console.log("mint", token_mint_pubkey.toString());
+        console.log("mint", collection_mint_pubkey.toString());
 
         const instruction_data = serialise_LaunchCollection_instruction(newCollectionData.current);
 
@@ -449,14 +474,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
-            { pubkey: nft_token_account, isSigner: false, isWritable: true },
-            { pubkey: token_meta_key, isSigner: false, isWritable: true },
-            { pubkey: nft_master_key, isSigner: false, isWritable: true },
+            { pubkey: collection_mint_pubkey, isSigner: true, isWritable: true },
+            { pubkey: collection_token_account, isSigner: false, isWritable: true },
+            { pubkey: collection_meta_key, isSigner: false, isWritable: true },
+            { pubkey: collection_master_key, isSigner: false, isWritable: true },
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
