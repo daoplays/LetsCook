@@ -88,10 +88,11 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const wallet = useWallet();
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
-    const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
-    const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
+
+    const [localOpenDate, setLocalOpenDate] = useState<Date>(newLaunchData.current.opendate);
+    const [localCloseDate, setLocalCloseDate] = useState<Date>(newLaunchData.current.closedate);
+
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
-    const [submitStatus, setSubmitStatus] = useState<string | null>(null);
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
 
     const signature_ws_id = useRef<number | null>(null);
@@ -102,27 +103,27 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
-    console.log(zone);
+    //console.log(zone);
 
     useEffect(() => {
-        let local_launch_date = new Date(openDate.setMinutes(openDate.getMinutes() - local_date.getTimezoneOffset()));
-        let splitLaunchDate = local_launch_date.toUTCString().split(" ");
+        let splitLaunchDate = localOpenDate.toString().split(" ");
         let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
         let splitLaunchTime = splitLaunchDate[4].split(":");
         let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
-
         setLaunchDateAndTime(`${launchDateString} ${launchTimeString}`);
-    }, [openDate, local_date, zone]);
+
+
+    }, [localOpenDate, local_date, zone]);
 
     useEffect(() => {
-        let local_end_date = new Date(closeDate.setMinutes(closeDate.getMinutes() - local_date.getTimezoneOffset()));
-        let splitEndDate = local_end_date.toUTCString().split(" ");
+        let splitEndDate = localCloseDate.toString().split(" ");
         let endDateString = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
         let splitEndTime = splitEndDate[4].split(":");
         let endTimeString = splitEndTime[0] + ":" + splitEndTime[1] + " " + zone;
-
+       
         setCloseDateAndTime(`${endDateString} ${endTimeString}`);
-    }, [closeDate, local_date, zone]);
+
+    }, [localCloseDate, local_date, zone]);
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -160,18 +161,19 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
-        if (!newLaunchData.current.edit_mode && closeDate.getTime() <= openDate.getTime()) {
+        if (!newLaunchData.current.edit_mode && localCloseDate.getTime() <= localOpenDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
         }
 
-        if (!newLaunchData.current.edit_mode && openDate.getTime() < new Date().getTime()) {
+        if (!newLaunchData.current.edit_mode && localOpenDate.getTime() < new Date().getTime()) {
             toast.error("Open date must be set after now");
             return false;
         }
 
-        newLaunchData.current.opendate = openDate;
-        newLaunchData.current.closedate = closeDate;
+        
+        newLaunchData.current.opendate = localOpenDate;
+        newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
         newLaunchData.current.amm_fee = parseInt(amm_fee);
 
@@ -562,9 +564,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                     showTimeSelect
                                                     timeFormat="HH:mm"
                                                     timeIntervals={15}
-                                                    selected={openDate}
+                                                    selected={localOpenDate}
                                                     onChange={(date) => {
-                                                        setOpenDate(date);
+                                                        setLocalOpenDate(date);
                                                         //onCloseStart();
                                                     }}
                                                     onClickOutside={() => onCloseStart()}
@@ -606,9 +608,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                                     keepOpen
                                                     timeFormat="HH:mm"
                                                     timeIntervals={15}
-                                                    selected={closeDate}
+                                                    selected={localCloseDate}
                                                     onChange={(date) => {
-                                                        setcloseDate(date);
+                                                        setLocalCloseDate(date);
                                                         //OnCloseEnd();
                                                     }}
                                                     onClickOutside={() => OnCloseEnd()}

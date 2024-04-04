@@ -118,7 +118,7 @@ const useInitAMM = (launchData: LaunchData) => {
             TOKEN_PROGRAM_ID,
         );
 
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+        let user_data_account = PublicKey.findProgramAddressSync([launchData.keys[LaunchKeys.Seller].toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let index_buffer = uInt32ToLEBytes(0);
         let price_data_account = PublicKey.findProgramAddressSync(

@@ -27,6 +27,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import trimAddress from "../../utils/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import PageNotFound from "../../components/pageNotFound";
+import useInitAMM from "../../hooks/useInitAMM";
 import useCheckTickets from "../../hooks/useCheckTickets";
 import useBuyTickets from "../../hooks/useBuyTickets";
 import useClaimTickets from "../../hooks/useClaimTokens";
@@ -74,6 +75,7 @@ const TokenMintPage = () => {
     const { CheckTickets } = useCheckTickets(launchData);
     const { ClaimTokens } = useClaimTickets(launchData);
     const { RefundTickets } = useRefundTickets(launchData);
+    const { InitAMM } = useInitAMM(launchData);
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data });
 
@@ -421,6 +423,7 @@ const TokenMintPage = () => {
                                                 handleConnectWallet();
                                             } else {
                                                 if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
+                                                    //InitAMM(); 
                                                     CheckTickets();
                                                 } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
                                                     return;
