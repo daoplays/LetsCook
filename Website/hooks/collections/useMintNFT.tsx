@@ -6,6 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
+    request_raw_account_data
 } from "../../components/Solana/state";
 import {
     CollectionData,
@@ -22,6 +23,7 @@ import {
     TransactionInstruction,
     Connection,
     Keypair,
+    AccountMeta
 } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -43,7 +45,7 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData } = useAppRoot();
+    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -172,6 +174,8 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             ],
             METAPLEX_META,
         )[0];
+        
+
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.mint_nft);
 

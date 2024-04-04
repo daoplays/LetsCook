@@ -21,6 +21,7 @@ import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import ShowExtensions from "../../components/Solana/extensions";
+import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate } from "@solana/spl-token";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -39,9 +40,10 @@ const CollectionSwapPage = () => {
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
-    const { collectionList } = useAppRoot();
+    const { collectionList, mintData } = useAppRoot();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
+    const [out_amount, setOutAmount] = useState<number>(0);
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
@@ -53,9 +55,34 @@ const CollectionSwapPage = () => {
     const { WrapNFT } = useWrapNFT(launch);
 
     useEffect(() => {
+        if (collectionList === null || mintData === null)
+            return;
+
         let launch = findLaunch(collectionList, pageName);
         setCollectionData(launch);
-    }, [collectionList, pageName]);
+
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
+        let transfer_fee_config = getTransferFeeConfig(mint);
+        let max_fee = transfer_fee_config !== null ?  Number(transfer_fee_config.newerTransferFee.maximumFee) : 1e16;
+        let transfer_fee = transfer_fee_config !== null ? transfer_fee_config.newerTransferFee.transferFeeBasisPoints : 0;
+        let swap_price = bignum_to_num(launch.swap_price);
+
+        let input_transfer_fee = Math.min(max_fee, swap_price * transfer_fee / 100 / 100);
+        let input_amount = swap_price - input_transfer_fee;
+
+        let swap_fee = input_amount * launch.swap_fee / 100 / 100;
+
+        let output_fee = Math.min((input_amount - swap_fee) * transfer_fee / 100 / 100, max_fee);
+
+        let final_output = input_amount - output_fee;
+        
+        console.log(swap_price, final_output);
+        setOutAmount(final_output / Math.pow(10, launch.token_decimals));
+
+    }, [collectionList, pageName, mintData]);
+
+
 
     // when page unloads unsub from any active websocket listeners
 
@@ -77,11 +104,6 @@ const CollectionSwapPage = () => {
         };
     }, []);
 
-    useEffect(() => {
-        let launch = findLaunch(collectionList, pageName);
-        console.log(launch);
-        setCollectionData(launch);
-    }, [collectionList, pageName]);
 
     useEffect(() => {
         if (assigned_nft === null || !mint_nft.current) {
@@ -270,7 +292,7 @@ const CollectionSwapPage = () => {
                                     <Button 
                                         onClick={() => ClaimNFT()} 
                                     >
-                                            {bignum_to_num(launch.swap_price) } {launch.token_symbol}  = 1 NFT
+                                            {bignum_to_num(launch.swap_price)/Math.pow(10, launch.token_decimals) } {launch.token_symbol}  = 1 NFT
                                     </Button>
                                 :
                                     <Button onClick={() => MintNFT()}>
@@ -278,7 +300,7 @@ const CollectionSwapPage = () => {
                                     </Button>
                                 }
                                 <Button onClick={() => WrapNFT()}>
-                                    1 NFT = {bignum_to_num(launch.swap_price)} - {(launch.swap_fee/100/100).toFixed(2)}%  {launch.token_symbol}
+                                    1 NFT = {out_amount.toFixed(Math.min(3, launch.token_decimals))}  {launch.token_symbol}
                                 </Button>
                             </VStack>
 

@@ -21,7 +21,7 @@ import {
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys } from "../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData, LookupData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
@@ -432,6 +432,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
             trade_mints.push(trade_filtered[i].keys[LaunchKeys.MintAddress]);
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
+        }
+        for (let i = 0; i < collections.length; i++) {
+            console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
+            trade_mints.push(collections[i].keys[CollectionKeys.MintAddress]);
         }
         setTradePageData(trade_page_map);
 
