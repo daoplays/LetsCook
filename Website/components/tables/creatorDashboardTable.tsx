@@ -72,6 +72,8 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         return 0;
     });
 
+    console.log(sortedLaunches)
+
     const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
@@ -264,8 +266,8 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     let current_time = new Date().getTime();
 
     const timeDifference = launchData.launch_date - current_time;
-    const isEditable = timeDifference > 48 * 60 * 60 * 1000; // 48 hours
-
+    const isEditable = timeDifference > 48 * 60 * 60 * 1000 || launchData.description === ""; // 48 hours
+    console.log(launchData)
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);

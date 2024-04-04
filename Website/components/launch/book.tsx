@@ -231,7 +231,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
              console.log("price", Number(price));
 
             try {
-                await irys.fund(price);
+                //await irys.fund(price);
 
                 let txArgs = await get_current_blockhash("");
     

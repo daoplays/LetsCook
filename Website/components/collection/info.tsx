@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState, useRef } from "react";
 import { Center, VStack, Text, HStack, Input, chakra, Flex } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -9,7 +9,7 @@ import getImageDimensions from "../../utils/getImageDimension";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { Keypair, PublicKey } from "@solana/web3.js";
-
+import trimAddress from "../../utils/trimAddress";
 interface CollectionInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -25,22 +25,86 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
 
-    function setLaunchData(e) {
+    const grind_attempts = useRef<number>(0);
+    const grind_toast = useRef<any | null>(null);
+
+    async function tokenGrind() : Promise<void> {
+        
+        if (grind_attempts.current === 0) {
+            let est_time = "1s";
+            if (tokenStart.length == 2) est_time = "5s";
+            if (tokenStart.length === 3) est_time = "5min";
+            grind_toast.current = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        else {
+            toast.update(grind_toast.current, {
+                render: "Grind Attempts: " + grind_attempts.current.toString(),
+                type: "info",
+             });
+             await new Promise((resolve) => setTimeout(resolve, 500));
+
+        }
+
+        let success : boolean = false;
+        for (let i = 0; i < 100000; i++) {
+            grind_attempts.current++;
+            let seed_buffer = [];
+
+            for (let i = 0; i < 32; i++) {
+                seed_buffer.push(Math.floor(Math.random() * 255));
+            }
+
+            let seed = new Uint8Array(seed_buffer);
+
+            newCollectionData.current.token_keypair = Keypair.fromSeed(seed);
+
+            if (newCollectionData.current.token_keypair.publicKey.toString().startsWith(tokenStart)) {
+                success = true;
+                break;
+            }
+        } 
+
+        if(success){
+            let key_str = trimAddress(newCollectionData.current.token_keypair.publicKey.toString())
+            //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
+            toast.update(grind_toast.current, {
+                render: "Token " + key_str + " found after " + grind_attempts.current.toString() + " attempts!",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            grind_attempts.current = 0;
+            grind_toast.current = null;
+            return;
+        }else{
+             
+            // give the CPU a small break to do other things
+            process.nextTick(function(){
+                // continue working
+                tokenGrind();
+            });
+        }
+
+        return;
+    }
+
+    async function setData(e): Promise<boolean> {
         e.preventDefault();
 
         if (newCollectionData.current.icon_file === null) {
             toast.error("Please select an icon image.");
-            return;
+            return false;
         }
 
         if (symbol.length > 10) {
             toast.error("Maximum symbol length is 10 characters");
-            return;
+            return false;
         }
 
         if (name.length > 25) {
             toast.error("Maximum name length is 25 characters");
-            return;
+            return false;
         }
 
         if (description.length > 250) {
@@ -51,38 +115,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.token_keypair = Keypair.generate();
 
         if (tokenStart !== "") {
-            let est_time = "1s";
-            if (tokenStart.length == 2) est_time = "5s";
-            if (tokenStart.length === 3) est_time = "5min";
-
-            const grindToast = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
-            let attempts = 0;
-
-            while (newCollectionData.current.token_keypair.publicKey.toString().substring(0, tokenStart.length) !== tokenStart) {
-                attempts += 1;
-                let seed_buffer = [];
-                for (let i = 0; i < 32; i++) {
-                    seed_buffer.push(Math.floor(Math.random() * 255));
-                }
-                let seed = new Uint8Array(seed_buffer);
-
-                newCollectionData.current.token_keypair = Keypair.fromSeed(seed);
-                if (attempts % 10000 === 0) {
-                    console.log("attempts: " + attempts);
-                    toast.update(grindToast, {
-                        render: "Grind Attempts: " + attempts.toString(),
-                        type: "info",
-                    });
-                }
-            }
-
-            //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
-            toast.update(grindToast, {
-                render: "Token Prefix found after " + attempts.toString() + " attempts!",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+            await tokenGrind();
         }
 
         newCollectionData.current.collection_name = name;
@@ -90,7 +123,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
 
-        setScreen("step 2");
+        return true;
+    }
+
+    async function nextPage(e) {
+        if (await setData(e)) setScreen("step 2");
     }
 
     const handleNameChange = (e) => {
@@ -149,7 +186,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
@@ -284,7 +321,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
-                            <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    nextPage(e);
+                                }}
+                                className={`${styles.nextBtn} font-face-kg `}
+                            >
                                 NEXT (1/4)
                             </button>
                         </HStack>

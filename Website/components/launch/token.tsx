@@ -33,7 +33,7 @@ import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
 import getImageDimensions from "../../utils/getImageDimension";
 import { distributionLabels } from "../../constant/root";
-
+import trimAddress from "../../utils/trimAddress";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -65,6 +65,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     );
     const [permanentDelegate, setPermanentDelegate] = useState<string>("");
     const [transferHookID, setTransferHookID] = useState<string>("");
+
+    const grind_attempts = useRef<number>(0);
+    const grind_toast = useRef<any | null>(null);
+
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -109,89 +113,126 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     // Calculate the total sum of all percentages
     const totalPercentage = getTotalPercentage(distribution);
 
-    function setLaunchData(e) {
+    async function tokenGrind() : Promise<void> {
+        
+        if (grind_attempts.current === 0) {
+            let est_time = "1s";
+            if (tokenStart.length == 2) est_time = "5s";
+            if (tokenStart.length === 3) est_time = "5min";
+            grind_toast.current = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        else {
+            toast.update(grind_toast.current, {
+                render: "Grind Attempts: " + grind_attempts.current.toString(),
+                type: "info",
+             });
+             await new Promise((resolve) => setTimeout(resolve, 500));
+
+        }
+
+        let success : boolean = false;
+        for (let i = 0; i < 100000; i++) {
+            grind_attempts.current++;
+            let seed_buffer = [];
+
+            for (let i = 0; i < 32; i++) {
+                seed_buffer.push(Math.floor(Math.random() * 255));
+            }
+
+            let seed = new Uint8Array(seed_buffer);
+
+            newLaunchData.current.token_keypair = Keypair.fromSeed(seed);
+
+            if (newLaunchData.current.token_keypair.publicKey.toString().startsWith(tokenStart)) {
+                success = true;
+                break;
+            }
+        } 
+
+        if(success){
+            let key_str = trimAddress(newLaunchData.current.token_keypair.publicKey.toString())
+
+            //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
+            toast.update(grind_toast.current, {
+                render: "Token " + key_str + " found after " + grind_attempts.current.toString() + " attempts!",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            grind_attempts.current = 0;
+            grind_toast.current = null;
+            return;
+        }else{
+             
+            // give the CPU a small break to do other things
+            process.nextTick(function(){
+                // continue working
+                tokenGrind();
+            });
+        }
+
+        return;
+    }
+
+    async function setData(e): Promise<boolean> {
         e.preventDefault();
 
         if (totalPercentage !== 100) {
             toast.error("The total percentage must add up to 100%.");
-            return;
+            return false;
         }
 
         if (newLaunchData.current.icon_file === null) {
             toast.error("Please select an icon image.");
-            return;
+            return false;
         }
 
         if (parseFloat(ticketPrice) < 0.00001) {
             toast.error("Minimum ticket price is 0.00001 SOL");
-            return;
+            return false;
         }
 
         if (symbol.length > 10) {
             toast.error("Maximum symbol length is 10 characters");
-            return;
+            return false;
         }
 
         if (name.length > 25) {
             toast.error("Maximum name length is 25 characters");
-            return;
+            return false;
         }
 
         if (distribution[Distribution.LP] === 0) {
             toast.error("Liquidity pool allocation must be greater than zero");
-            return;
+            return false;
         }
 
         if (distribution[Distribution.Raffle] === 0) {
             toast.error("Raffle allocation must be greater than zero");
-            return;
+            return false;
         }
 
         if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (distribution[Distribution.Raffle] / 100) < parseInt(mints)) {
             toast.error("Not enough tokens to support the raffle");
-            return;
+            return false;
         }
 
         if (parseInt(totalSupply) < 10) {
             toast.error("Total supply of tokens must be over 10");
-            return;
+            return false;
         }
 
         newLaunchData.current.token_keypair = Keypair.generate();
 
         if (tokenStart !== "") {
-            let est_time = "1s";
-            if (tokenStart.length == 2) est_time = "5s";
-            if (tokenStart.length === 3) est_time = "5min";
+           
+            
 
-            const grindToast = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
-            let attempts = 0;
+            
+            await tokenGrind();
 
-            while (newLaunchData.current.token_keypair.publicKey.toString().substring(0, tokenStart.length) !== tokenStart) {
-                attempts += 1;
-                let seed_buffer = [];
-                for (let i = 0; i < 32; i++) {
-                    seed_buffer.push(Math.floor(Math.random() * 255));
-                }
-                let seed = new Uint8Array(seed_buffer);
-
-                newLaunchData.current.token_keypair = Keypair.fromSeed(seed);
-                if (attempts % 10000 === 0) {
-                    console.log("attempts: " + attempts);
-                    toast.update(grindToast, {
-                        render: "Grind Attempts: " + attempts.toString(),
-                        type: "info",
-                    });
-                }
-            }
-
-            //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
-            toast.update(grindToast, {
-                render: "Token Prefix found after " + attempts.toString() + " attempts!",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+            
         }
 
         newLaunchData.current.name = name;
@@ -217,7 +258,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID);
         }
 
-        setScreen("details");
+        
+
+        return true;
+    }
+
+    async function nextPage(e) {
+        if (await setData(e)) setScreen("details");
     }
 
     const Browse = () => (
@@ -248,7 +295,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Token Information:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: lg ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
@@ -911,7 +958,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
-                            <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
+                            
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    nextPage(e);
+                                }}
+                                className={`${styles.nextBtn} font-face-kg `}
+                            >
                                 NEXT (1/3)
                             </button>
                         </HStack>

@@ -1092,6 +1092,7 @@ class EditLaunch_Instruction {
         readonly twitter: string,
         readonly telegram: string,
         readonly discord: string,
+        readonly amm_fee: number
     ) {}
 
     static readonly struct = new FixableBeetStruct<EditLaunch_Instruction>(
@@ -1103,6 +1104,8 @@ class EditLaunch_Instruction {
             ["twitter", utf8String],
             ["telegram", utf8String],
             ["discord", utf8String],
+            ["amm_fee", u16],
+
         ],
         (args) =>
             new EditLaunch_Instruction(
@@ -1113,6 +1116,7 @@ class EditLaunch_Instruction {
                 args.twitter!,
                 args.telegram!,
                 args.discord!,
+                args.amm_fee!
             ),
         "EditLaunch_Instruction",
     );
@@ -1127,6 +1131,7 @@ export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUser
         new_launch_data.twt_url,
         new_launch_data.tele_url,
         new_launch_data.disc_url,
+        new_launch_data.amm_fee
     );
     const [buf] = EditLaunch_Instruction.struct.serialize(data);
 

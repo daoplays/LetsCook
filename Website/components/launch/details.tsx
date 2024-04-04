@@ -158,6 +158,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                             bg="#494949"
                                             size={lg ? "md" : "lg"}
                                             required
+                                            disabled={newLaunchData.current.edit_mode === true}
                                             placeholder="Yourpagename"
                                             className={styles.inputBox}
                                             type="text"
