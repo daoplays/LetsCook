@@ -126,29 +126,28 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             console.log(lookup_data);
         }
 
-        let token_mint_pubkey = nft_keypair.publicKey;
 
         let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), nft_pubkey.toBuffer()],
             METAPLEX_META,
         )[0];
 
         let nft_token_account = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
+            nft_pubkey, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
         );
 
         let nft_escrow_account = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
+            nft_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
         );
 
         let nft_master_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer(), Buffer.from("edition")],
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), nft_pubkey.toBuffer(), Buffer.from("edition")],
             METAPLEX_META,
         )[0];
 
@@ -184,7 +183,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: token_mint_pubkey, isSigner: mint_is_signer, isWritable: true },
+            { pubkey: nft_pubkey, isSigner: mint_is_signer, isWritable: true },
             { pubkey: nft_token_account, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
             { pubkey: nft_master_key, isSigner: false, isWritable: true },

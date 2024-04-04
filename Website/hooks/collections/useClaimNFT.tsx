@@ -59,31 +59,29 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         }
     }, []);
 
-    useEffect(() => {
-        console.log("wallet updated", wallet);
-    }, [wallet]);
 
     const ClaimNFT = async () => {
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
         )[0];
-        console.log("get assignment data");
         let assignment_data = await request_assignment_data(nft_assignment_account);
 
         if (assignment_data !== null) {
-            console.log("assignment data found");
             if (assignment_data.status > 0) {
                 await MintNFT();
                 return;
             }
         }
 
+        if (launchData.num_available === 0) {
+            return;
+        }
+
         setIsLoading(true);
 
         if (wallet.signTransaction === undefined) return;
 
-        console.log("in claim, ", wallet);
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;

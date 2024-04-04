@@ -11,7 +11,7 @@ import Head from "next/head";
 import { MdOutlineContentCopy } from "react-icons/md";
 import trimAddress from "../../utils/trimAddress";
 import useAppRoot from "../../context/useAppRoot";
-import { AssignmentData, CollectionData } from "../../components/collection/collectionState";
+import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
@@ -45,6 +45,7 @@ const CollectionSwapPage = () => {
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
     const mint_nft = useRef<boolean>(false);
+    const check_initial_assignment = useRef<boolean>(true);
 
     const { ClaimNFT } = useClaimNFT(launch);
     const { MintNFT } = useMintNFT(launch);
@@ -134,6 +135,28 @@ const CollectionSwapPage = () => {
         setAssignedNFT(updated_data);
     }, []);
 
+    const get_assignment_data = useCallback(async () => {
+
+        if (!check_initial_assignment.current) {
+            return;
+        }
+        let nft_assignment_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+            PROGRAM,
+        )[0];
+
+        let assignment_data = await request_assignment_data(nft_assignment_account);
+        check_initial_assignment.current = false;
+        if (assignment_data === null) {
+          
+            return;
+        }
+
+        console.log(assignment_data);
+        setAssignedNFT(assignment_data);
+
+    }, [launch, wallet]);
+
     useEffect(() => {
         if (launch === null) return;
 
@@ -162,6 +185,17 @@ const CollectionSwapPage = () => {
         }
     }, [wallet, launch, check_launch_update, check_assignment_update]);
 
+    useEffect(() => {
+        if (launch === null) return;
+
+        if (wallet === null || wallet.publicKey === null) {
+            return;
+        }
+        console.log("get initial assignment data");
+        get_assignment_data();
+
+    }, [launch, wallet, get_assignment_data]);
+    
     if (!pageName) return;
 
     if (launch === null) return <Loader />;
@@ -230,7 +264,17 @@ const CollectionSwapPage = () => {
                             </VStack>
 
                             <VStack spacing={3} margin="auto 0">
-                                <Button onClick={() => ClaimNFT()}>{bignum_to_num(launch.swap_price)} Tokens = 1 NFT</Button>
+                                {assigned_nft === null ?
+                                    <Button 
+                                        onClick={() => ClaimNFT()} 
+                                    >
+                                            {bignum_to_num(launch.swap_price)} Tokens = 1 NFT
+                                    </Button>
+                                :
+                                    <Button onClick={() => MintNFT()}>
+                                        Claim NFT {assigned_nft.nft_index + 1}
+                                    </Button>
+                                }
                                 <Button onClick={() => WrapNFT()}>
                                     1 NFT = {bignum_to_num(launch.swap_price)} - {bignum_to_num(launch.swap_fee)}% Tokens
                                 </Button>
