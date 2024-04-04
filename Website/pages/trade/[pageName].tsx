@@ -122,10 +122,6 @@ const TradePage = () => {
         setSelectedTab(tab);
     };
 
-    let launch = findLaunch(launchList, pageName);
-    let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
-    let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
-    let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
     const [daily_data, setDailyData] = useState<MarketData[]>([]);
@@ -145,6 +141,11 @@ const TradePage = () => {
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [num_holders, setNumHolders] = useState<number>(0);
 
+    const [launch, setLaunch] = useState<LaunchData | null>(null);
+    const [amm, setAMM] = useState<AMMData | null>(null);
+    const [base_mint, setBaseMint] = useState<Mint | null>(null);
+
+
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
     const price_ws_id = useRef<number | null>(null);
@@ -155,6 +156,8 @@ const TradePage = () => {
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
+
+
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -176,6 +179,21 @@ const TradePage = () => {
     }, []);
 
     useEffect(() => {
+        if (ammData === null || launchList === null || mintData === null)
+            return;
+
+        let launch = findLaunch(launchList, pageName);
+        setLaunch(launch);
+    
+        let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
+        setAMM(amm);
+
+        let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
+        setBaseMint(base_mint)
+
+    }, [launchList, ammData, mintData]);
+
+    useEffect(() => {
         if (base_amount === null || quote_amount === null) {
             return;
         }
@@ -187,7 +205,7 @@ const TradePage = () => {
         last_base_amount.current = base_amount;
         last_quote_amount.current = quote_amount;
     }, [base_amount, quote_amount, market_data]);
-
+    
     const check_base_update = useCallback(async (result: any) => {
         //console.log(result);
         // if we have a subscription field check against ws_id
@@ -422,13 +440,16 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (launch === null) {
+    if (launch === null || amm === null || base_mint === null || mmLaunchData === null) {
         return (
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-        );
+        );    
     }
+
+    let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
+
 
     return (
         <>
