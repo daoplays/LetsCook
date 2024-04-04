@@ -22,14 +22,15 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const { newCollectionData } = useAppRoot();
 
     const { sm, md, lg } = useResponsive();
-    const [token_mint, setTokenMint] = useState<string>("");
-    const [token_name, setTokenName] = useState<string>("");
-    const [token_icon_url, setTokenIconURL] = useState<string>("");
-    const [token_symbol, setTokenSymbol] = useState<string>("");
+    const [token_mint, setTokenMint] = useState<string>(newCollectionData.current.token_mint.toString());
+    const [token_name, setTokenName] = useState<string>(newCollectionData.current.token_symbol);
+    const [token_icon_url, setTokenIconURL] = useState<string>(newCollectionData.current.token_image_url);
+    const [token_symbol, setTokenSymbol] = useState<string>(newCollectionData.current.token_symbol);
+    const [token_decimals, setTokenDecimals] = useState<number>(0);
 
-    const [team_wallet, setTeamWallet] = useState<string>("");
-    const [swap_fee, setSwapFee] = useState<string>("");
-    const [swap_rate, setSwapRate] = useState<string>("");
+    const [team_wallet, setTeamWallet] = useState<string>(newCollectionData.current.team_wallet);
+    const [swap_fee, setSwapFee] = useState<string>(newCollectionData.current.swap_fee > 0 ? newCollectionData.current.swap_fee.toString() : "");
+    const [swap_rate, setSwapRate] = useState<string>(newCollectionData.current.swap_rate > 0 ? newCollectionData.current.swap_rate.toString() : "");
 
     async function setMintData(e): Promise<void> {
         e.preventDefault();
@@ -46,6 +47,19 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             return;
         }
 
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        let result = await connection.getAccountInfo(token_key, "confirmed");
+    
+        let mint : Mint;
+        try {
+            mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
+            console.log(mint);
+        }
+        catch(error){
+            toast.error("Token not using Token2022 program");
+            return;
+        }
+
         //console.log("deserialize meta data");
         let meta_data = Metadata.deserialize(raw_meta_data);
         console.log(meta_data);
@@ -55,7 +69,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         setTokenName(meta_data[0].data.name);
         setTokenIconURL(uri_json["image"]);
         setTokenSymbol(meta_data[0].data.symbol);
-
+        setTokenDecimals(mint.decimals);
         return;
     }
 
@@ -74,6 +88,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.token_mint = new PublicKey(token_mint);
         newCollectionData.current.swap_rate = parseInt(swap_rate);
         newCollectionData.current.swap_fee = parseInt(swap_fee);
+        newCollectionData.current.token_decimals = token_decimals;
 
 
         setScreen("step 4");
@@ -101,6 +116,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
+                                            value={token_mint}
                                             onChange={(e) => {
                                                 setTokenMint(e.target.value);
                                             }}
@@ -248,6 +264,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             required
                                             className={styles.inputBox}
                                             type="text"
+                                            value={team_wallet}
                                             onChange={(e) => {
                                                 setTeamWallet(e.target.value);
                                             }}

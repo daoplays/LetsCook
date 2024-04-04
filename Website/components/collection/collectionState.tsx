@@ -39,8 +39,6 @@ export interface CollectionDataUserInput {
     banner_url: string;
     total_supply: number;
     collection_size: number;
-    minimum_liquidity: number;
-    ticket_price: number;
     uri: string;
     pagename: string;
     description: string;
@@ -66,6 +64,7 @@ export interface CollectionDataUserInput {
     token_name: string;
     token_symbol: string;
     token_image_url: string;
+    token_decimals: number;
 }
 
 export const defaultCollectionInput: CollectionDataUserInput = {
@@ -80,8 +79,6 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     displayImg: null,
     total_supply: 0,
     collection_size: 0,
-    minimum_liquidity: 0,
-    ticket_price: 0,
     uri: "",
     pagename: "",
     description: "",
@@ -104,6 +101,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_name: "",
     token_symbol: "",
     token_image_url: "",
+    token_decimals: 0
 };
 
 export class CollectionData {
@@ -416,9 +414,9 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.nft_name,
         new_launch_data.banner_url,
         new_launch_data.collection_size,
-        new_launch_data.ticket_price * LAMPORTS_PER_SOL,
+        new_launch_data.swap_rate * Math.pow(10, new_launch_data.token_decimals),
         new_launch_data.pagename,
-        new_launch_data.swap_rate,
+        new_launch_data.swap_fee,
         extensions,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);

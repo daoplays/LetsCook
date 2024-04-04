@@ -270,7 +270,7 @@ const CollectionSwapPage = () => {
                                     <Button 
                                         onClick={() => ClaimNFT()} 
                                     >
-                                            {bignum_to_num(launch.swap_price)} Tokens = 1 NFT
+                                            {bignum_to_num(launch.swap_price) } {launch.token_symbol}  = 1 NFT
                                     </Button>
                                 :
                                     <Button onClick={() => MintNFT()}>
@@ -278,7 +278,7 @@ const CollectionSwapPage = () => {
                                     </Button>
                                 }
                                 <Button onClick={() => WrapNFT()}>
-                                    1 NFT = {bignum_to_num(launch.swap_price)} - {bignum_to_num(launch.swap_fee)}% Tokens
+                                    1 NFT = {bignum_to_num(launch.swap_price)} - {(launch.swap_fee/100/100).toFixed(2)}%  {launch.token_symbol}
                                 </Button>
                             </VStack>
 
