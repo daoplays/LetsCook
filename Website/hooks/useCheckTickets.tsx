@@ -6,18 +6,18 @@ import {
     send_transaction,
     serialise_basic_instruction,
 } from "../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, PYTH_BTC, PYTH_ETH, PYTH_SOL, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import useAppRoot from "../context/useAppRoot";
-
+import useInitAMM from "./useInitAMM";
 const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData } = useAppRoot();
-
+    const {GetInitAMMInstruction} = useInitAMM(launchData);
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -98,7 +98,15 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        if (launchData.flags[LaunchFlags.LPState] < 2) {
+            let init_idx = await GetInitAMMInstruction();
+            transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
+            transaction.add(init_idx);
+        }
+
         transaction.add(list_instruction);
+
+
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

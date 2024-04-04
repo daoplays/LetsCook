@@ -57,13 +57,12 @@ const useInitAMM = (launchData: LaunchData) => {
         signature_ws_id.current = null;
     }, []);
 
-    const InitAMM = async () => {
+    const GetInitAMMInstruction = async () => {
         // if we have already done this then just skip this step
         console.log(launchData);
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        const initAMMToast = toast.loading("Initialising AMM...");
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -209,6 +208,19 @@ const useInitAMM = (launchData: LaunchData) => {
             data: instruction_data,
         });
 
+        return list_instruction;
+    };
+
+    const InitAMM = async () => {
+        // if we have already done this then just skip this step
+        console.log(launchData);
+
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+        const initAMMToast = toast.loading("Initialising AMM...");
+
+        const list_instruction = await GetInitAMMInstruction();
+
         let list_txArgs = await get_current_blockhash("");
 
         let list_transaction = new Transaction(list_txArgs);
@@ -248,7 +260,7 @@ const useInitAMM = (launchData: LaunchData) => {
         }
     };
 
-    return { InitAMM, isLoading };
+    return { InitAMM, GetInitAMMInstruction, isLoading };
 };
 
 export default useInitAMM;

@@ -776,7 +776,7 @@ const BuyAndSell = ({
                     Max Transfer Fee ({launch.symbol}):
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {max_transfer_fee}
+                    {max_transfer_fee / Math.pow(10, launch.decimals)}
                 </Text>
             </HStack>
 
