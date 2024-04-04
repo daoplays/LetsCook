@@ -16,10 +16,11 @@ import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys, WSS_NODE, RPC_NODE, PROGRAM } from "../../components/Solana/constants";
+import { CollectionKeys, WSS_NODE, RPC_NODE, PROGRAM, Extensions, LaunchFlags } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
+import ShowExtensions from "../../components/Solana/extensions";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -261,6 +262,7 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
+                                {/*<ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]}/>*/}
                             </VStack>
 
                             <VStack spacing={3} margin="auto 0">

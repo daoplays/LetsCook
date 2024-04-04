@@ -38,7 +38,7 @@ export interface CollectionDataUserInput {
     icon_url: string;
     banner_url: string;
     total_supply: number;
-    num_mints: number;
+    collection_size: number;
     minimum_liquidity: number;
     ticket_price: number;
     uri: string;
@@ -79,7 +79,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     banner_url: "",
     displayImg: null,
     total_supply: 0,
-    num_mints: 0,
+    collection_size: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
     uri: "",
@@ -304,12 +304,13 @@ class LaunchCollection_Instruction {
 
         readonly nft_uri: string,
         readonly nft_icon: string,
+        readonly nft_name: string,
 
         readonly banner: string,
-        readonly num_mints: number,
-        readonly ticket_price: bignum,
+        readonly collection_size: number,
+        readonly swap_price: bignum,
         readonly page_name: string,
-        readonly transfer_fee: number,
+        readonly swap_fee: number,
         readonly extensions: number,
     ) {}
 
@@ -325,11 +326,12 @@ class LaunchCollection_Instruction {
             ["token_icon", utf8String],
             ["nft_uri", utf8String],
             ["nft_icon", utf8String],
+            ["nft_name", utf8String],
             ["banner", utf8String],
-            ["num_mints", u32],
-            ["ticket_price", u64],
+            ["collection_size", u32],
+            ["swap_price", u64],
             ["page_name", utf8String],
-            ["transfer_fee", u16],
+            ["swap_fee", u16],
             ["extensions", u8],
         ],
         (args) =>
@@ -344,16 +346,51 @@ class LaunchCollection_Instruction {
                 args.token_icon!,
                 args.nft_uri!,
                 args.nft_icon!,
+                args.nft_name!,
                 args.banner!,
-                args.num_mints!,
-                args.ticket_price!,
+                args.collection_size!,
+                args.swap_price!,
                 args.page_name!,
-                args.transfer_fee!,
+                args.swap_fee!,
                 args.extensions!,
             ),
         "LaunchCollection_Instruction",
     );
 }
+
+class EditCollection_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly description: string,
+        readonly website: string,
+        readonly twitter: string,
+        readonly telegram: string,
+        readonly discord: string,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<EditCollection_Instruction>(
+        [
+            ["instruction", u8],
+            ["description", utf8String],
+            ["website", utf8String],
+            ["twitter", utf8String],
+            ["telegram", utf8String],
+            ["discord", utf8String],
+
+        ],
+        (args) =>
+            new EditCollection_Instruction(
+                args.instruction!,
+                args.description!,
+                args.website!,
+                args.twitter!,
+                args.telegram!,
+                args.discord!,
+            ),
+        "EditCollection_Instruction",
+    );
+}
+
 
 export function serialise_LaunchCollection_instruction(new_launch_data: CollectionDataUserInput): Buffer {
     // console.log(new_launch_data);
@@ -376,14 +413,30 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.token_image_url,
         new_launch_data.nft_metadata_url,
         new_launch_data.nft_image_url,
+        new_launch_data.nft_name,
         new_launch_data.banner_url,
-        new_launch_data.num_mints,
+        new_launch_data.collection_size,
         new_launch_data.ticket_price * LAMPORTS_PER_SOL,
         new_launch_data.pagename,
         new_launch_data.swap_rate,
         extensions,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+
+export function serialise_EditCollection_instruction(new_launch_data: CollectionDataUserInput): Buffer {
+    const data = new EditCollection_Instruction(
+        LaunchInstruction.edit_collection,
+        new_launch_data.description,
+        new_launch_data.web_url,
+        new_launch_data.twt_url,
+        new_launch_data.tele_url,
+        new_launch_data.disc_url,
+    );
+    const [buf] = EditCollection_Instruction.struct.serialize(data);
 
     return buf;
 }

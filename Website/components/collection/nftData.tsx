@@ -53,7 +53,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
             }
         }
 
-        newCollectionData.current.num_mints = newCollectionData.current.nft_metadata.length;
+        newCollectionData.current.collection_size = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.nft_name = nft_name;
 

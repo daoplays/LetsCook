@@ -7,17 +7,17 @@ const ShowExtensions = ({ extension_flag }: { extension_flag: number }) => {
         <HStack justify="center">
             {extension_flag && (
                 <>
-                    {extension_flag & Extensions.TransferFee && (
+                    {((extension_flag & Extensions.TransferFee) > 0) && (
                         <Tooltip label="Transfer Fee" hasArrow fontSize="large" offset={[0, 10]}>
                             <div style={{ height: "20px", width: "20px", backgroundColor: "#7BFF70", borderRadius: "50%" }} />
                         </Tooltip>
                     )}
-                    {extension_flag & Extensions.PermanentDelegate && (
+                    {((extension_flag & Extensions.PermanentDelegate) > 0) && (
                         <Tooltip label="Permanent Delegate" hasArrow fontSize="large" offset={[0, 10]}>
                             <div style={{ height: "20px", width: "20px", backgroundColor: "#FF7979", borderRadius: "50%" }} />
                         </Tooltip>
                     )}
-                    {extension_flag & Extensions.TransferHook && (
+                    {((extension_flag & Extensions.TransferHook) > 0) && (
                         <Tooltip label="Transfer Hook" hasArrow fontSize="large" offset={[0, 10]}>
                             <div style={{ height: "20px", width: "20px", backgroundColor: "#72AAFF", borderRadius: "50%" }} />
                         </Tooltip>

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback } from "react";
+import { Dispatch, SetStateAction, useRef, useState, useCallback } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement } from "@chakra-ui/react";
@@ -49,6 +49,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
+import useEditCollection from "../../hooks/collections/useEditCollection";
 
 interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -63,9 +64,7 @@ type Tag = {
     value: string;
 };
 
-function receivedText(e) {
-    return JSON.parse(e.target.result);
-}
+
 
 const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const router = useRouter();
@@ -79,8 +78,9 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const [twitter, setTwitter] = useState(newCollectionData.current.twt_url);
     const [discord, setDiscord] = useState(newCollectionData.current.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
+    const signature_ws_id = useRef<number | null>(null);
 
-    const { launchList } = useAppRoot();
+    const { EditCollection } = useEditCollection();
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -104,6 +104,21 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return set.indexOf(ch) === -1;
         });
     }
+
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                toast.error("Transaction failed, please try again");
+            }
+            if (signature_ws_id.current === 1) {
+                await EditCollection();
+            }
+            signature_ws_id.current = null;
+        },
+        [EditCollection],
+    );
 
     async function setData(e): Promise<boolean> {
         e.preventDefault();
@@ -189,7 +204,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         console.log(newCollectionData.current.banner_url);
         // if this is in edit mode then just call that function
         if (newCollectionData.current.edit_mode === true) {
-            //await EditLaunch();
+            await EditCollection();
             return;
         }
 
@@ -517,7 +532,11 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return;
             }
 
+            signature_ws_id.current = 1;
+
             let signature = transaction_response.result;
+
+
 
             if (DEBUG) {
                 console.log("list signature: ", signature);
@@ -529,6 +548,10 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 isLoading: false,
                 autoClose: 3000,
             });
+
+            connection.onSignature(signature, check_signature_update, "confirmed");
+
+            
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {
