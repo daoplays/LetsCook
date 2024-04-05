@@ -126,8 +126,20 @@ const CollectionSwapPage = () => {
             let account_data = Buffer.from(event_data, "base64");
 
             const [updated_data] = CollectionData.struct.deserialize(account_data);
+/*
+            for (let i = 0; i < updated_data.availability.length/2; i++) {
+                let idx = 1;
+                for (let j = 0; j < 8; j++) {
+                    console.log(j, (idx & updated_data.availability[i]) > 0);
+                    idx *=2
+                }
+            }
 
-            console.log(updated_data);
+            for (let i = updated_data.availability.length/2; i < updated_data.availability.length; i++) {
+                    console.log("left in block", i - updated_data.availability.length/2, updated_data.availability[i]);
+                
+            }
+*/
 
             if (updated_data.num_available !== launch.num_available) {
                 setCollectionData(updated_data);
@@ -135,6 +147,7 @@ const CollectionSwapPage = () => {
         },
         [launch],
     );
+
     const check_assignment_update = useCallback(async (result: any) => {
         console.log("assignment", result);
         // if we have a subscription field check against ws_id

@@ -96,11 +96,11 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
-        let LookupData = NFTLookup.get(launchData.keys[CollectionKeys.CollectionMint].toString());
+        let CollectionLookup = NFTLookup.get(launchData.keys[CollectionKeys.CollectionMint].toString());
         let token_addresses: PublicKey[] = [];
-        for (let i = 0; i < LookupData.length; i++) {
+        for (let i = 0; i < CollectionLookup.length; i++) {
             let token_account = getAssociatedTokenAddressSync(
-                LookupData[i].nft_mint, // mint
+                CollectionLookup[i].nft_mint, // mint
                 wallet.publicKey, // owner
                 true, // allow owner off curve
                 TOKEN_2022_PROGRAM_ID,
@@ -108,6 +108,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             token_addresses.push(token_account);
         }
 
+        console.log(token_addresses.length, " potential nfts found");
         let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
 
         let valid_lookups: LookupData[] = [];
@@ -117,10 +118,15 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             }
             let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
             if (account.amount > 0) {
-                valid_lookups.push(LookupData[i]);
+                valid_lookups.push(CollectionLookup[i]);
             }
         }
         console.log(valid_lookups);
+
+        if (valid_lookups.length === 0) {
+            console.log("no nfts owned by user")
+            return;
+        }
 
         let wrapped_index = Math.floor(Math.random() * valid_lookups.length);
         let wrapped_nft_key = valid_lookups[wrapped_index].nft_mint;
@@ -130,7 +136,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let nft_lookup_account = PublicKey.findProgramAddressSync(
             [
                 launchData.keys[CollectionKeys.CollectionMint].toBytes(),
-                uInt32ToLEBytes(LookupData[wrapped_index].nft_index),
+                uInt32ToLEBytes(valid_lookups[wrapped_index].nft_index),
                 Buffer.from("Lookup"),
             ],
             PROGRAM,
