@@ -31,6 +31,8 @@ function findLaunch(list: CollectionData[], page_name: string | string[]) {
         return item.page_name == page_name;
     });
 
+    if (launchList.length === 0) return null;
+
     return launchList[0];
 }
 
@@ -59,6 +61,10 @@ const CollectionSwapPage = () => {
             return;
 
         let launch = findLaunch(collectionList, pageName);
+
+        if( launch === null)
+            return
+        
         setCollectionData(launch);
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
