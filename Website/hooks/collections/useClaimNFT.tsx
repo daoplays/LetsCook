@@ -74,6 +74,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         if (assignment_data !== null) {
             if (assignment_data.status > 0) {
+                console.log("assignment data found, minting nft")
                 await MintNFT();
                 return;
             }

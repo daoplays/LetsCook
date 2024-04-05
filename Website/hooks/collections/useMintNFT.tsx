@@ -52,7 +52,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
+        //console.log(result);
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
             alert("Transaction failed, please try again");
@@ -65,11 +65,11 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
     }, []);
 
     const MintNFT = async () => {
-        console.log("in mint nft");
+        //console.log("in mint nft");
         setIsLoading(true);
 
         if (wallet.signTransaction === undefined) {
-            console.log(wallet, "invalid wallet");
+            //console.log(wallet, "invalid wallet");
             return;
         }
 
@@ -79,7 +79,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         }
 
         if (signature_ws_id.current !== null) {
-            console.log("signature not null");
+            //console.log("signature not null");
             alert("Transaction pending, please wait");
             return;
         }
@@ -87,7 +87,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (launchData === null) {
-            console.log("launch is null");
+            //console.log("launch is null");
             return;
         }
 
@@ -98,15 +98,15 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             PROGRAM,
         )[0];
 
-        console.log("get assignment data");
+        //console.log("get assignment data");
         let assignment_data = await request_assignment_data(nft_assignment_account);
 
         if (assignment_data === null) {
-            console.log("no assignment data found");
+           // console.log("no assignment data found");
             return;
         }
 
-        console.log(assignment_data);
+        //console.log(assignment_data);
 
         let nft_lookup_account = PublicKey.findProgramAddressSync(
             [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Lookup")],
@@ -119,13 +119,13 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         var nft_pubkey = null;
         var mint_is_signer = false;
         if (lookup_data === null) {
-            console.log("no lookup data found");
+            //console.log("no lookup data found");
             nft_keypair = new Keypair();
             nft_pubkey = nft_keypair.publicKey;
             mint_is_signer = true;
         } else {
             nft_pubkey = lookup_data.nft_mint;
-            console.log(lookup_data);
+            //console.log(lookup_data);
         }
 
 

@@ -1,5 +1,5 @@
 import { VStack, Text, HStack, Progress, Button, Tooltip, Link } from "@chakra-ui/react";
-import { bignum_to_num } from "../../components/Solana/state";
+import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -21,7 +21,7 @@ import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import ShowExtensions from "../../components/Solana/extensions";
-import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate } from "@solana/spl-token";
+import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -46,10 +46,13 @@ const CollectionSwapPage = () => {
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [out_amount, setOutAmount] = useState<number>(0);
+    const [nft_balance, setNFTBalance] = useState<number>(0);
+    const [token_balance, setTokenBalance] = useState<number>(0);
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
     const lookup_account_ws_id = useRef<number | null>(null);
+    const user_token_ws_id = useRef<number | null>(null);
 
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
@@ -57,6 +60,55 @@ const CollectionSwapPage = () => {
     const { ClaimNFT } = useClaimNFT(launch);
     const { MintNFT } = useMintNFT(launch);
     const { WrapNFT } = useWrapNFT(launch);
+
+    const check_nft_balance = useCallback(
+        async () => {
+
+            if( launch === null || NFTLookup === null || wallet === null)
+                return
+
+            console.log("CHECKING NFT BALANCE")
+            const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+
+
+            let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+            let token_addresses: PublicKey[] = [];
+            let token_mints: PublicKey[] = [];
+    
+            let lookup_keys = CollectionLookup.keys()
+            while(true) {
+                let lookup_it = lookup_keys.next();
+                if (lookup_it.done)
+                    break;
+    
+                let nft_mint = new PublicKey(lookup_it.value)
+                let token_account = getAssociatedTokenAddressSync(
+                    nft_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    TOKEN_2022_PROGRAM_ID,
+                );
+                token_addresses.push(token_account);
+                token_mints.push(nft_mint);
+            }
+    
+            let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
+    
+            let valid_lookups: LookupData[] = [];
+            for (let i = 0; i < token_infos.length; i++) {
+                if ( token_infos[i] === null) {
+                    continue;
+                }
+                let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
+                if (account.amount > 0) {
+                    valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
+                }
+            }
+
+            setNFTBalance(valid_lookups.length);
+        },
+        [NFTLookup, launch],
+    );
 
     useEffect(() => {
         if (collectionList === null || mintData === null)
@@ -88,7 +140,11 @@ const CollectionSwapPage = () => {
         console.log(swap_price, final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
-    }, [collectionList, pageName, mintData]);
+        if (NFTLookup !== null) {
+            check_nft_balance();
+        }
+
+    }, [collectionList, pageName, mintData, NFTLookup]);
 
 
 
@@ -118,6 +174,7 @@ const CollectionSwapPage = () => {
             return;
         }
 
+        console.log("CALLING MINT NFT", mint_nft.current)
         MintNFT();
 
         mint_nft.current = false;
@@ -125,12 +182,12 @@ const CollectionSwapPage = () => {
 
     const check_launch_update = useCallback(
         async (result: any) => {
-            console.log("collection", result);
+            //console.log("collection", result);
             // if we have a subscription field check against ws_id
 
             let event_data = result.data;
 
-            console.log("have collection data", event_data, launch_account_ws_id.current);
+            //console.log("have collection data", event_data, launch_account_ws_id.current);
             let account_data = Buffer.from(event_data, "base64");
 
             const [updated_data] = CollectionData.struct.deserialize(account_data);
@@ -157,16 +214,16 @@ const CollectionSwapPage = () => {
     );
 
     const check_assignment_update = useCallback(async (result: any) => {
-        console.log("assignment", result);
+        //console.log("assignment", result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
 
-        console.log("have assignment data", event_data);
+        //console.log("have assignment data", event_data);
         let account_data = Buffer.from(event_data, "base64");
 
         if (account_data.length === 0) {
-            console.log("account deleted");
+            //console.log("account deleted");
             setAssignedNFT(null);
             mint_nft.current = false;
             return;
@@ -174,13 +231,13 @@ const CollectionSwapPage = () => {
 
         const [updated_data] = AssignmentData.struct.deserialize(account_data);
 
-        console.log(updated_data);
+        //console.log(updated_data);
         mint_nft.current = true;
         setAssignedNFT(updated_data);
     }, []);
 
     const check_program_update = useCallback(async (result: any) => {
-        console.log("program data", result);
+        //console.log("program data", result);
         // if we have a subscription field check against ws_id
 
         if (result === undefined)
@@ -188,11 +245,11 @@ const CollectionSwapPage = () => {
 
         let event_data = result.accountInfo.data;
 
-        console.log("have program data", event_data);
+        //console.log("have program data", event_data);
         let account_data = Buffer.from(event_data, "base64");
 
         if (account_data.length === 0) {
-            console.log("account deleted");
+            //console.log("account deleted");
             return;
         }
         if (account_data[0] === 10) {
@@ -203,14 +260,41 @@ const CollectionSwapPage = () => {
             current_map.set(updated_data.nft_mint.toString(), updated_data);
             
             NFTLookup.current.set(launch.keys[CollectionKeys.CollectionMint].toString(), current_map);
+            check_nft_balance();
         }
     }, [launch]);
 
+    const check_user_token_update = useCallback(async (result: any) => {
+        //console.log(result);
+        // if we have a subscription field check against ws_id
+
+        let event_data = result.data;
+        const [token_account] = TokenAccount.struct.deserialize(event_data);
+        let amount = bignum_to_num(token_account.amount);
+        // console.log("update quote amount", amount);
+
+        setTokenBalance(amount);
+    }, []);
+
     const get_assignment_data = useCallback(async () => {
+
+        if (launch === null)
+            return;
 
         if (!check_initial_assignment.current) {
             return;
         }
+
+        let user_token_account_key = getAssociatedTokenAddressSync(
+            launch.keys[CollectionKeys.MintAddress], // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let user_amount = await request_token_amount("", user_token_account_key);
+        setTokenBalance(user_amount);
+
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
@@ -258,6 +342,16 @@ const CollectionSwapPage = () => {
                 PROGRAM,
             )[0];
             nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
+        }
+
+        if (user_token_ws_id.current === null) {
+            let user_token_account_key = getAssociatedTokenAddressSync(
+                launch.keys[CollectionKeys.MintAddress], // mint
+                wallet.publicKey, // owner
+                true, // allow owner off curve
+                TOKEN_2022_PROGRAM_ID,
+            );
+            user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
     }, [wallet, launch, check_launch_update, check_assignment_update]);
 
@@ -338,6 +432,14 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
                                 </HStack>
                                 <ShowExtensions extension_flag={launch.token_extensions}/>
+                                <HStack mt={2}>
+                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                        Token balance:
+                                    </Text>
+                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                                        {token_balance / Math.pow(10, launch.token_decimals)}
+                                    </Text>
+                                </HStack>                            
                             </VStack>
 
                             <VStack spacing={3} margin="auto 0">
@@ -368,6 +470,43 @@ const CollectionSwapPage = () => {
                                 <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     {launch.collection_name}
                                 </Text>
+                                <HStack spacing={2} align="start" justify="start">
+                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                                        CA: {trimAddress(launch.keys[CollectionKeys.CollectionMint].toString())}
+                                    </Text>
+
+                                    <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
+                                        <div
+                                            style={{ cursor: "pointer" }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigator.clipboard.writeText("");
+                                            }}
+                                        >
+                                            <MdOutlineContentCopy color="white" size={lg ? 22 : 22} />
+                                        </div>
+                                    </Tooltip>
+
+                                    <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                                        <Link target="_blank" onClick={(e) => e.stopPropagation()}>
+                                            <Image
+                                                src="/images/solscan.png"
+                                                width={lg ? 22 : 22}
+                                                height={lg ? 22 : 22}
+                                                alt="Solscan icon"
+                                            />
+                                        </Link>
+                                    </Tooltip>
+                                </HStack>
+                                <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]}/>
+                                <HStack mt={2}>
+                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                        NFT balance:
+                                    </Text>
+                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                                        {nft_balance}
+                                    </Text>
+                                </HStack>   
                             </VStack>
                         </HStack>
                         <VStack spacing={0} w="100%" style={{ position: "relative" }}>
