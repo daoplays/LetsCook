@@ -43,6 +43,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
+    const [isLoading, setIsLoading] = useState(false);
 
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
@@ -68,7 +69,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
-
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -113,26 +113,24 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     // Calculate the total sum of all percentages
     const totalPercentage = getTotalPercentage(distribution);
 
-    async function tokenGrind() : Promise<void> {
-        
+    const tokenGrind = async () => {
+        setIsLoading(true);
         if (grind_attempts.current === 0) {
             let est_time = "1s";
             if (tokenStart.length == 2) est_time = "5s";
             if (tokenStart.length === 3) est_time = "5min";
             grind_toast.current = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
             await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-        else {
+        } else {
             toast.update(grind_toast.current, {
                 render: "Grind Attempts: " + grind_attempts.current.toString(),
                 type: "info",
-             });
-             await new Promise((resolve) => setTimeout(resolve, 500));
-
+            });
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
-        let success : boolean = false;
-        for (let i = 0; i < 100000; i++) {
+        let success: boolean = false;
+        for (let i = 0; i < 50000; i++) {
             grind_attempts.current++;
             let seed_buffer = [];
 
@@ -148,10 +146,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                 success = true;
                 break;
             }
-        } 
+        }
 
-        if(success){
-            let key_str = trimAddress(newLaunchData.current.token_keypair.publicKey.toString())
+        if (success) {
+            let key_str = trimAddress(newLaunchData.current.token_keypair.publicKey.toString());
 
             //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
             toast.update(grind_toast.current, {
@@ -162,18 +160,17 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             });
             grind_attempts.current = 0;
             grind_toast.current = null;
-            return;
-        }else{
-             
+            setIsLoading(false);
+            return true;
+        } else {
             // give the CPU a small break to do other things
-            process.nextTick(function(){
+            process.nextTick(function () {
                 // continue working
                 tokenGrind();
             });
+            return false;
         }
-
-        return;
-    }
+    };
 
     async function setData(e): Promise<boolean> {
         e.preventDefault();
@@ -225,16 +222,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
         newLaunchData.current.token_keypair = Keypair.generate();
 
-        if (tokenStart !== "") {
-           
-            
-
-            
-            await tokenGrind();
-
-            
-        }
-
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;
         newLaunchData.current.displayImg = displayImg;
@@ -258,9 +245,16 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID);
         }
 
-        
+        if (tokenStart !== "") {
+            // Call tokenGrind() and wait for it to finish
+            const tokenGrindSuccess: boolean = await tokenGrind();
 
-        return true;
+            // Check if token grind was successful
+            if (tokenGrindSuccess) {
+                // Token grind failed, return false to indicate failure
+                return true;
+            }
+        }
     }
 
     async function nextPage(e) {
@@ -392,7 +386,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             className={styles.inputBox}
-                                            placeholder="Enter Token Prefix Grind (Max 3 Characters)"
+                                            placeholder="Enter Token Prefix Grind (Max 3 Characters) - Optional"
                                             value={tokenStart}
                                             onChange={(e) => {
                                                 setTokenStart(e.target.value);
@@ -958,15 +952,18 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
-                            
+
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    nextPage(e);
+                                    if (!isLoading) {
+                                        nextPage(e);
+                                    }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
-                                NEXT (1/3)
+                                {isLoading ? "Please Wait" : "NEXT (1/3)"}
                             </button>
                         </HStack>
                     </VStack>
