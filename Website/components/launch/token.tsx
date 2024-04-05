@@ -250,11 +250,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             const tokenGrindSuccess: boolean = await tokenGrind();
 
             // Check if token grind was successful
-            if (tokenGrindSuccess) {
+            if (!tokenGrindSuccess) {
                 // Token grind failed, return false to indicate failure
-                return true;
+                return false;
             }
         }
+
+        return true;
     }
 
     async function nextPage(e) {

@@ -24,12 +24,14 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [tokenStart, setTokenStart] = useState<string>("");
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
+    const [isLoading, setIsLoading] = useState(false);
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
 
-    async function tokenGrind() : Promise<void> {
-        
+    const tokenGrind = async () => {   
+        setIsLoading(true);
+
         if (grind_attempts.current === 0) {
             let est_time = "1s";
             if (tokenStart.length == 2) est_time = "5s";
@@ -47,7 +49,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         }
 
         let success : boolean = false;
-        for (let i = 0; i < 100000; i++) {
+        for (let i = 0; i < 50000; i++) {
             grind_attempts.current++;
             let seed_buffer = [];
 
@@ -76,7 +78,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             });
             grind_attempts.current = 0;
             grind_toast.current = null;
-            return;
+            setIsLoading(false);
+            return true;
         }else{
              
             // give the CPU a small break to do other things
@@ -84,10 +87,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 // continue working
                 tokenGrind();
             });
+            return false;
         }
-
-        return;
-    }
+    };
 
     async function setData(e): Promise<boolean> {
         e.preventDefault();
@@ -114,14 +116,24 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
         newCollectionData.current.token_keypair = Keypair.generate();
 
-        if (tokenStart !== "") {
-            await tokenGrind();
-        }
 
         newCollectionData.current.collection_name = name;
         newCollectionData.current.collection_symbol = symbol;
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
+
+
+        if (tokenStart !== "") {
+            // Call tokenGrind() and wait for it to finish
+            const tokenGrindSuccess: boolean = await tokenGrind();
+
+            // Check if token grind was successful
+            if (!tokenGrindSuccess) {
+                // Token grind failed, return false to indicate failure
+                return false;
+            }
+        }
+    
 
         return true;
     }
@@ -324,11 +336,15 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    nextPage(e);
+                                    if (!isLoading) {
+                                        nextPage(e);
+                                    }
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
-                                NEXT (1/4)
+                                {isLoading ? "Please Wait" : "NEXT (1/4)"}
+                            
                             </button>
                         </HStack>
                     </VStack>

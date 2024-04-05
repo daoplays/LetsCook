@@ -90,8 +90,8 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                        ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
+                                                    featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
+                                                        ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
                                                         : "",
                                                 );
                                             }}
@@ -103,8 +103,8 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://solscan.io/account/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                    ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
+                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
+                                                    ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
                                                     : ""
                                             }`}
                                             target="_blank"
@@ -122,8 +122,8 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                    ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
+                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.MintAddress]
+                                                    ? featuredLaunch.keys[CollectionKeys.MintAddress].toString()
                                                     : ""
                                             }`}
                                             target="_blank"

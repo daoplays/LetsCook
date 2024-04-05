@@ -258,7 +258,17 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
         if (transfer_hook_program_account !== null) {
+            
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
+
+            if (transfer_hook_program_account.equals(FEES_PROGRAM)) {
+                account_vector.push({
+                    pubkey: extra_hook_accounts[0].pubkey,
+                    isSigner: extra_hook_accounts[0].isSigner,
+                    isWritable: true,
+                });
+            }
+            
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
 
             for (let i = 0; i < extra_hook_accounts.length; i++) {
