@@ -48,6 +48,7 @@ import {
     PYTH_SOL,
     CollectionKeys,
     METAPLEX_META,
+    FEES_PROGRAM,
 } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
@@ -228,6 +229,10 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                 console.log(meta);
                 extra_hook_accounts.push(meta);
             }
+
+            if (transfer_hook_program_account === FEES_PROGRAM) {
+                extra_hook_accounts[0].isWritable = true;
+            }
         }
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.wrap_nft);
@@ -263,6 +268,8 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                     isWritable: extra_hook_accounts[i].isWritable,
                 });
             }
+
+            
         }
 
         const list_instruction = new TransactionInstruction({
