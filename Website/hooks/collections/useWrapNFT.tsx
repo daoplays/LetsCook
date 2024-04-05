@@ -6,6 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
+    request_raw_account_data
 } from "../../components/Solana/state";
 import {
     CollectionData,
@@ -22,6 +23,7 @@ import {
     TransactionInstruction,
     Connection,
     Keypair,
+    AccountMeta
 } from "@solana/web3.js";
 import {
     TOKEN_2022_PROGRAM_ID,
@@ -30,6 +32,9 @@ import {
     getAssociatedTokenAddressSync,
     unpackAccount,
     Account,
+    getTransferHook,
+    resolveExtraAccountMeta,
+    ExtraAccountMetaAccountDataLayout
 } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
@@ -51,7 +56,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData, NFTLookup } = useAppRoot();
+    const { checkProgramData, NFTLookup, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -172,6 +177,59 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             PROGRAM,
         )[0];
 
+        let token_mint = launchData.keys[CollectionKeys.MintAddress];
+
+        let user_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let pda_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            program_sol_account, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+
+        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString())
+        let transfer_hook = getTransferHook(mint_account);
+
+        let transfer_hook_program_account: PublicKey | null = null;
+        let transfer_hook_validation_account: PublicKey | null = null;
+        let extra_hook_accounts: AccountMeta[] = [];
+        if (transfer_hook !== null) {
+            console.log(transfer_hook.programId.toString());
+
+            transfer_hook_program_account = transfer_hook.programId;
+            transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+                [Buffer.from("extra-account-metas"), launchData.keys[CollectionKeys.MintAddress].toBuffer()],
+                transfer_hook_program_account,
+            )[0];
+
+            // check if the validation account exists
+            console.log("check extra accounts");
+            let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
+
+            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
+            console.log(extra_account_metas);
+            for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
+                console.log(extra_account_metas.extraAccountsList.extraAccounts[i]);
+                let extra = extra_account_metas.extraAccountsList.extraAccounts[i];
+                let meta = await resolveExtraAccountMeta(
+                    connection,
+                    extra,
+                    extra_hook_accounts,
+                    Buffer.from([]),
+                    transfer_hook_program_account,
+                );
+                console.log(meta);
+                extra_hook_accounts.push(meta);
+            }
+        }
+
         const instruction_data = serialise_basic_instruction(LaunchInstruction.wrap_nft);
 
         var account_vector = [
@@ -181,6 +239,10 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
+            { pubkey: token_mint, isSigner: false, isWritable: true },
+            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+
             { pubkey: wrapped_nft_key, isSigner: false, isWritable: true },
             { pubkey: nft_token_account, isSigner: false, isWritable: true },
             { pubkey: nft_escrow_account, isSigner: false, isWritable: true },
@@ -189,6 +251,19 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+
+        if (transfer_hook_program_account !== null) {
+            account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
+            account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+
+            for (let i = 0; i < extra_hook_accounts.length; i++) {
+                account_vector.push({
+                    pubkey: extra_hook_accounts[i].pubkey,
+                    isSigner: extra_hook_accounts[i].isSigner,
+                    isWritable: extra_hook_accounts[i].isWritable,
+                });
+            }
+        }
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
