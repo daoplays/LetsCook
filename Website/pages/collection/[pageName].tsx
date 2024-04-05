@@ -91,6 +91,8 @@ const CollectionSwapPage = () => {
                 token_addresses.push(token_account);
                 token_mints.push(nft_mint);
             }
+
+            console.log("have ", token_addresses.length, "addresses to check")
     
             let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
     
@@ -104,6 +106,8 @@ const CollectionSwapPage = () => {
                     valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
                 }
             }
+            console.log("have ", valid_lookups.length, "addresses with balance")
+
 
             setNFTBalance(valid_lookups.length);
         },
