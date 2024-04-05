@@ -48,6 +48,7 @@ import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
+
 const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData, NFTLookup } = useAppRoot();
@@ -96,16 +97,25 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
-        let CollectionLookup = NFTLookup.get(launchData.keys[CollectionKeys.CollectionMint].toString());
+        let CollectionLookup = NFTLookup.current.get(launchData.keys[CollectionKeys.CollectionMint].toString());
         let token_addresses: PublicKey[] = [];
-        for (let i = 0; i < CollectionLookup.length; i++) {
+        let token_mints: PublicKey[] = [];
+
+        let lookup_keys = CollectionLookup.keys()
+        while(true) {
+            let lookup_it = lookup_keys.next();
+            if (lookup_it.done)
+                break;
+
+            let nft_mint = new PublicKey(lookup_it.value)
             let token_account = getAssociatedTokenAddressSync(
-                CollectionLookup[i].nft_mint, // mint
+                nft_mint, // mint
                 wallet.publicKey, // owner
                 true, // allow owner off curve
                 TOKEN_2022_PROGRAM_ID,
             );
             token_addresses.push(token_account);
+            token_mints.push(nft_mint);
         }
 
         console.log(token_addresses.length, " potential nfts found");
@@ -117,8 +127,9 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                 continue;
             }
             let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
+            console.log(account, token_mints[i].toString())
             if (account.amount > 0) {
-                valid_lookups.push(CollectionLookup[i]);
+                valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
             }
         }
         console.log(valid_lookups);

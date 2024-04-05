@@ -29,7 +29,7 @@ interface AppRootTypes {
     mintData: Map<String, Mint>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
     collectionList: CollectionData[];
-    NFTLookup: Map<String, LookupData[]>;
+    NFTLookup: MutableRefObject<Map<String, Map<String, LookupData>>>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);

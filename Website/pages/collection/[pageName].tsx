@@ -11,7 +11,7 @@ import Head from "next/head";
 import { MdOutlineContentCopy } from "react-icons/md";
 import trimAddress from "../../utils/trimAddress";
 import useAppRoot from "../../context/useAppRoot";
-import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
+import { AssignmentData, CollectionData, LookupData, request_assignment_data } from "../../components/collection/collectionState";
 import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
@@ -42,13 +42,15 @@ const CollectionSwapPage = () => {
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
-    const { collectionList, mintData } = useAppRoot();
+    const { collectionList, mintData, NFTLookup } = useAppRoot();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [out_amount, setOutAmount] = useState<number>(0);
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
+    const lookup_account_ws_id = useRef<number | null>(null);
+
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
 
@@ -64,7 +66,7 @@ const CollectionSwapPage = () => {
 
         if( launch === null)
             return
-        
+
         setCollectionData(launch);
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
@@ -177,6 +179,33 @@ const CollectionSwapPage = () => {
         setAssignedNFT(updated_data);
     }, []);
 
+    const check_program_update = useCallback(async (result: any) => {
+        console.log("program data", result);
+        // if we have a subscription field check against ws_id
+
+        if (result === undefined)
+            return;
+
+        let event_data = result.accountInfo.data;
+
+        console.log("have program data", event_data);
+        let account_data = Buffer.from(event_data, "base64");
+
+        if (account_data.length === 0) {
+            console.log("account deleted");
+            return;
+        }
+        if (account_data[0] === 10) {
+            const [updated_data] = LookupData.struct.deserialize(account_data);
+            console.log(updated_data);
+            let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+
+            current_map.set(updated_data.nft_mint.toString(), updated_data);
+            
+            NFTLookup.current.set(launch.keys[CollectionKeys.CollectionMint].toString(), current_map);
+        }
+    }, [launch]);
+
     const get_assignment_data = useCallback(async () => {
 
         if (!check_initial_assignment.current) {
@@ -212,6 +241,11 @@ const CollectionSwapPage = () => {
             )[0];
 
             launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
+        }
+
+        if (lookup_account_ws_id.current === null) {
+            lookup_account_ws_id.current = connection.onProgramAccountChange(PROGRAM, check_program_update, "confirmed");
+
         }
 
         if (wallet === null || wallet.publicKey === null) {

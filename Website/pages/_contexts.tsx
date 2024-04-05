@@ -18,6 +18,7 @@ import {
     request_current_balance,
     requestMultipleAccounts,
     Token22MintAccount,
+    uInt32ToLEBytes
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
@@ -111,7 +112,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [collection_data, setCollectionData] = useState<CollectionData[] | null>(null);
-    const [nft_lookup, setNFTLookup] = useState<Map<String, LookupData[]> | null>(null);
+    const nft_lookup = useRef<Map<String, Map<String, LookupData>> | null>(null);
 
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
@@ -282,7 +283,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
         let amm_data: AMMData[] = [];
         let collections: CollectionData[] = [];
-        let NFTLookups: Map<String, LookupData[]> = new Map();
+        let NFTLookups: Map<String, Map<String, LookupData>> = new Map();
 
         console.log("program_data", program_data.length);
 
@@ -331,12 +332,23 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 10) {
                 const [lookup] = LookupData.struct.deserialize(data);
                 let collection = lookup.colection_mint.toString();
+                let nft_lookup_account = PublicKey.findProgramAddressSync(
+                    [
+                        lookup.colection_mint.toBytes(),
+                        uInt32ToLEBytes(lookup.nft_index),
+                        Buffer.from("Lookup"),
+                    ],
+                    PROGRAM,
+                )[0];
                 if (NFTLookups.has(collection)) {
                     let existing = NFTLookups.get(collection);
-                    existing.push(lookup);
+                    existing.set(lookup.nft_mint.toString(), lookup)
                     NFTLookups.set(collection, existing);
                 } else {
-                    NFTLookups.set(collection, [lookup]);
+                    let map = new Map<String, LookupData>()
+                    
+                    map.set(lookup.nft_mint.toString(), lookup)
+                    NFTLookups.set(collection, map);
                 }
             }
             // other data depends on a wallet
@@ -377,7 +389,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMUserData(mm_user_data);
         setAMMData(amm_data);
         setCollectionData(collections);
-        setNFTLookup(NFTLookups);
+        nft_lookup.current = NFTLookups;
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
