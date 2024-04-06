@@ -9,9 +9,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { LaunchKeys } from "./Solana/constants";
+import { LaunchKeys, PROD } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
+import { getSolscanLink } from "../utils/getSolscanLink";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -114,11 +115,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={`https://solscan.io/account/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                    ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
-                                                    : ""
-                                            }`}
+                                            href={getSolscanLink(featuredLaunch, "Token")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >

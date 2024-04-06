@@ -9,10 +9,11 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { CollectionKeys, LaunchKeys } from "./Solana/constants";
+import { CollectionKeys, LaunchKeys, PROD } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { CollectionData } from "./collection/collectionState";
+import { getSolscanLink } from "../utils/getSolscanLink";
 
 interface CollectionFeaturedBannerProps {
     featuredLaunch: CollectionData;
@@ -90,7 +91,9 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
+                                                    featuredLaunch &&
+                                                        featuredLaunch.keys &&
+                                                        featuredLaunch.keys[CollectionKeys.CollectionMint]
                                                         ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
                                                         : "",
                                                 );
@@ -102,11 +105,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={`https://solscan.io/account/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
-                                                    ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
-                                                    : ""
-                                            }`}
+                                            href={getSolscanLink(featuredLaunch, "Collection")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -115,26 +114,6 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                                 width={lg ? 25 : 35}
                                                 height={lg ? 25 : 35}
                                                 alt="Solscan icon"
-                                            />
-                                        </Link>
-                                    </Tooltip>
-
-                                    <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link
-                                            href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.MintAddress]
-                                                    ? featuredLaunch.keys[CollectionKeys.MintAddress].toString()
-                                                    : ""
-                                            }`}
-                                            target="_blank"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <Image
-                                                src="/images/rugcheck.jpeg"
-                                                width={lg ? 25 : 35}
-                                                height={lg ? 25 : 35}
-                                                alt="Rugcheck icon"
-                                                style={{ borderRadius: "100%" }}
                                             />
                                         </Link>
                                     </Tooltip>
