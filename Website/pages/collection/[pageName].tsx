@@ -30,6 +30,7 @@ import {
     getAssociatedTokenAddressSync,
     calculateFee,
 } from "@solana/spl-token";
+import { getSolscanLink } from "../../utils/getSolscanLink";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -366,8 +367,7 @@ const CollectionSwapPage = () => {
 
     if (!launch) return <PageNotFound />;
 
-    const enoughTokenBalance =
-        token_balance / Math.pow(10, launch.token_decimals) >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
+    const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price);
 
     return (
         <>
@@ -418,15 +418,7 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link
-                                            href={`https://solscan.io/account/${
-                                                launch && launch.keys && launch.keys[LaunchKeys.MintAddress]
-                                                    ? launch.keys[LaunchKeys.MintAddress].toString()
-                                                    : ""
-                                            }${PROD ? "" : `?cluster=devnet`}`}
-                                            target="_blank"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
+                                        <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
                                             <Image
                                                 src="/images/solscan.png"
                                                 width={lg ? 22 : 22}
@@ -555,11 +547,7 @@ const CollectionSwapPage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={`https://solscan.io/account/${
-                                                launch && launch.keys && launch.keys[CollectionKeys.CollectionMint]
-                                                    ? launch.keys[CollectionKeys.CollectionMint].toString()
-                                                    : ""
-                                            }${PROD ? "" : `?cluster=devnet`}`}
+                                            href={getSolscanLink(launch, "Collection")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -572,7 +560,7 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
-                                {/* <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} /> */}
+                                <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
                                 <HStack mt={2}>
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                                         NFT balance:

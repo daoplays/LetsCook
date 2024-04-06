@@ -13,6 +13,7 @@ import { CollectionKeys, LaunchKeys, PROD } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { CollectionData } from "./collection/collectionState";
+import { getSolscanLink } from "../utils/getSolscanLink";
 
 interface CollectionFeaturedBannerProps {
     featuredLaunch: CollectionData;
@@ -104,11 +105,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={`https://solscan.io/account/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
-                                                    ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
-                                                    : ""
-                                            }${PROD ? "" : `?cluster=devnet`}`}
+                                            href={getSolscanLink(featuredLaunch, "Collection")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >

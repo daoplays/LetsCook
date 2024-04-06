@@ -279,7 +279,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         {/* </InputGroup> */}
                                     </HStack>
 
-                                    {/* <HStack spacing={0} className={styles.eachField}>
+                                    <HStack spacing={0} className={styles.eachField}>
                                         <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                                             Token Prefix:
                                         </div>
@@ -297,7 +297,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                 }}
                                             />
                                         </div>
-                                    </HStack> */}
+                                    </HStack>
                                 </Flex>
 
                                 {!lg && <Browse />}

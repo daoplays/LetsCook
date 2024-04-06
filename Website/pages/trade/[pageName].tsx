@@ -60,6 +60,7 @@ import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
 import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
+import { getSolscanLink } from "../../utils/getSolscanLink";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -498,13 +499,7 @@ const TradePage = () => {
                                     </Tooltip>
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link
-                                            href={`https://solscan.io/account/${launch.keys[LaunchKeys.MintAddress].toString()}${
-                                                PROD ? "" : "?cluster=devnet"
-                                            }`}
-                                            target="_blank"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
+                                        <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
                                             <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
                                         </Link>
                                     </Tooltip>
