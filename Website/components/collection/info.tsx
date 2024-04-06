@@ -29,7 +29,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
 
-    const tokenGrind = async () => {   
+    const tokenGrind = async () => {
         setIsLoading(true);
 
         if (grind_attempts.current === 0) {
@@ -38,17 +38,15 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             if (tokenStart.length === 3) est_time = "5min";
             grind_toast.current = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
             await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-        else {
+        } else {
             toast.update(grind_toast.current, {
                 render: "Grind Attempts: " + grind_attempts.current.toString(),
                 type: "info",
-             });
-             await new Promise((resolve) => setTimeout(resolve, 500));
-
+            });
+            await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
-        let success : boolean = false;
+        let success: boolean = false;
         for (let i = 0; i < 50000; i++) {
             grind_attempts.current++;
             let seed_buffer = [];
@@ -65,10 +63,10 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 success = true;
                 break;
             }
-        } 
+        }
 
-        if(success){
-            let key_str = trimAddress(newCollectionData.current.token_keypair.publicKey.toString())
+        if (success) {
+            let key_str = trimAddress(newCollectionData.current.token_keypair.publicKey.toString());
             //console.log("Took ", attempts, "to get pubkey", newLaunchData.current.token_keypair.publicKey.toString());
             toast.update(grind_toast.current, {
                 render: "Token " + key_str + " found after " + grind_attempts.current.toString() + " attempts!",
@@ -80,10 +78,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             grind_toast.current = null;
             setIsLoading(false);
             return true;
-        }else{
-             
+        } else {
             // give the CPU a small break to do other things
-            process.nextTick(function(){
+            process.nextTick(function () {
                 // continue working
                 tokenGrind();
             });
@@ -116,12 +113,10 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
         newCollectionData.current.token_keypair = Keypair.generate();
 
-
         newCollectionData.current.collection_name = name;
         newCollectionData.current.collection_symbol = symbol;
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
-
 
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
@@ -133,7 +128,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 return false;
             }
         }
-    
 
         return true;
     }
@@ -285,7 +279,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         {/* </InputGroup> */}
                                     </HStack>
 
-                                    <HStack spacing={0} className={styles.eachField}>
+                                    {/* <HStack spacing={0} className={styles.eachField}>
                                         <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                                             Token Prefix:
                                         </div>
@@ -303,7 +297,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                 }}
                                             />
                                         </div>
-                                    </HStack>
+                                    </HStack> */}
                                 </Flex>
 
                                 {!lg && <Browse />}
@@ -344,7 +338,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
                                 {isLoading ? "Please Wait" : "NEXT (1/4)"}
-                            
                             </button>
                         </HStack>
                     </VStack>
