@@ -21,7 +21,15 @@ import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import ShowExtensions from "../../components/Solana/extensions";
-import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
+import {
+    unpackMint,
+    Mint,
+    TOKEN_2022_PROGRAM_ID,
+    unpackAccount,
+    getTransferFeeConfig,
+    getAssociatedTokenAddressSync,
+    calculateFee,
+} from "@solana/spl-token";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -61,82 +69,72 @@ const CollectionSwapPage = () => {
     const { MintNFT } = useMintNFT(launch);
     const { WrapNFT } = useWrapNFT(launch);
 
-    const check_nft_balance = useCallback(
-        async () => {
+    const check_nft_balance = useCallback(async () => {
+        if (launch === null || NFTLookup === null || wallet === null) return;
 
-            if( launch === null || NFTLookup === null || wallet === null)
-                return
+        console.log("CHECKING NFT BALANCE");
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-            console.log("CHECKING NFT BALANCE")
-            const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+        let token_addresses: PublicKey[] = [];
+        let token_mints: PublicKey[] = [];
 
+        let lookup_keys = CollectionLookup.keys();
+        while (true) {
+            let lookup_it = lookup_keys.next();
+            if (lookup_it.done) break;
 
-            let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
-            let token_addresses: PublicKey[] = [];
-            let token_mints: PublicKey[] = [];
-    
-            let lookup_keys = CollectionLookup.keys()
-            while(true) {
-                let lookup_it = lookup_keys.next();
-                if (lookup_it.done)
-                    break;
-    
-                let nft_mint = new PublicKey(lookup_it.value)
-                let token_account = getAssociatedTokenAddressSync(
-                    nft_mint, // mint
-                    wallet.publicKey, // owner
-                    true, // allow owner off curve
-                    TOKEN_2022_PROGRAM_ID,
-                );
-                token_addresses.push(token_account);
-                token_mints.push(nft_mint);
+            let nft_mint = new PublicKey(lookup_it.value);
+            let token_account = getAssociatedTokenAddressSync(
+                nft_mint, // mint
+                wallet.publicKey, // owner
+                true, // allow owner off curve
+                TOKEN_2022_PROGRAM_ID,
+            );
+            token_addresses.push(token_account);
+            token_mints.push(nft_mint);
+        }
+
+        console.log("have ", token_addresses.length, "addresses to check");
+
+        let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
+
+        let valid_lookups: LookupData[] = [];
+        for (let i = 0; i < token_infos.length; i++) {
+            if (token_infos[i] === null) {
+                continue;
             }
-
-            console.log("have ", token_addresses.length, "addresses to check")
-    
-            let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
-    
-            let valid_lookups: LookupData[] = [];
-            for (let i = 0; i < token_infos.length; i++) {
-                if ( token_infos[i] === null) {
-                    continue;
-                }
-                let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
-                if (account.amount > 0) {
-                    valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
-                }
+            let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
+            if (account.amount > 0) {
+                valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
             }
-            console.log("have ", valid_lookups.length, "addresses with balance")
+        }
+        console.log("have ", valid_lookups.length, "addresses with balance");
 
-
-            setNFTBalance(valid_lookups.length);
-        },
-        [NFTLookup, launch],
-    );
+        setNFTBalance(valid_lookups.length);
+    }, [NFTLookup, launch, wallet]);
 
     useEffect(() => {
-        if (collectionList === null || mintData === null)
-            return;
+        if (collectionList === null || mintData === null) return;
 
         let launch = findLaunch(collectionList, pageName);
 
-        if( launch === null)
-            return
+        if (launch === null) return;
 
         setCollectionData(launch);
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
         let transfer_fee_config = getTransferFeeConfig(mint);
-        let input_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)))
+        let input_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)));
         let swap_price = bignum_to_num(launch.swap_price);
 
         let input_amount = swap_price - input_fee;
 
-        let swap_fee = Math.floor(input_amount * launch.swap_fee / 100 / 100);
+        let swap_fee = Math.floor((input_amount * launch.swap_fee) / 100 / 100);
 
         let output = input_amount - swap_fee;
 
-        let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(output)))
+        let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(output)));
 
         let final_output = output - output_fee;
 
@@ -146,10 +144,7 @@ const CollectionSwapPage = () => {
         if (NFTLookup !== null) {
             check_nft_balance();
         }
-
-    }, [collectionList, pageName, mintData, NFTLookup]);
-
-
+    }, [collectionList, pageName, mintData, NFTLookup, check_nft_balance]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -171,13 +166,12 @@ const CollectionSwapPage = () => {
         };
     }, []);
 
-
     useEffect(() => {
         if (assigned_nft === null || !mint_nft.current) {
             return;
         }
 
-        console.log("CALLING MINT NFT", mint_nft.current)
+        console.log("CALLING MINT NFT", mint_nft.current);
         MintNFT();
 
         mint_nft.current = false;
@@ -194,7 +188,7 @@ const CollectionSwapPage = () => {
             let account_data = Buffer.from(event_data, "base64");
 
             const [updated_data] = CollectionData.struct.deserialize(account_data);
-/*
+            /*
             for (let i = 0; i < updated_data.availability.length/2; i++) {
                 let idx = 1;
                 for (let j = 0; j < 8; j++) {
@@ -239,33 +233,35 @@ const CollectionSwapPage = () => {
         setAssignedNFT(updated_data);
     }, []);
 
-    const check_program_update = useCallback(async (result: any) => {
-        //console.log("program data", result);
-        // if we have a subscription field check against ws_id
+    const check_program_update = useCallback(
+        async (result: any) => {
+            //console.log("program data", result);
+            // if we have a subscription field check against ws_id
 
-        if (result === undefined)
-            return;
+            if (result === undefined) return;
 
-        let event_data = result.accountInfo.data;
+            let event_data = result.accountInfo.data;
 
-        //console.log("have program data", event_data);
-        let account_data = Buffer.from(event_data, "base64");
+            //console.log("have program data", event_data);
+            let account_data = Buffer.from(event_data, "base64");
 
-        if (account_data.length === 0) {
-            //console.log("account deleted");
-            return;
-        }
-        if (account_data[0] === 10) {
-            const [updated_data] = LookupData.struct.deserialize(account_data);
-            console.log(updated_data);
-            let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+            if (account_data.length === 0) {
+                //console.log("account deleted");
+                return;
+            }
+            if (account_data[0] === 10) {
+                const [updated_data] = LookupData.struct.deserialize(account_data);
+                console.log(updated_data);
+                let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
 
-            current_map.set(updated_data.nft_mint.toString(), updated_data);
-            
-            NFTLookup.current.set(launch.keys[CollectionKeys.CollectionMint].toString(), current_map);
-            check_nft_balance();
-        }
-    }, [launch]);
+                current_map.set(updated_data.nft_mint.toString(), updated_data);
+
+                NFTLookup.current.set(launch.keys[CollectionKeys.CollectionMint].toString(), current_map);
+                check_nft_balance();
+            }
+        },
+        [launch],
+    );
 
     const check_user_token_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -280,9 +276,7 @@ const CollectionSwapPage = () => {
     }, []);
 
     const get_assignment_data = useCallback(async () => {
-
-        if (launch === null)
-            return;
+        if (launch === null) return;
 
         if (!check_initial_assignment.current) {
             return;
@@ -306,13 +300,11 @@ const CollectionSwapPage = () => {
         let assignment_data = await request_assignment_data(nft_assignment_account);
         check_initial_assignment.current = false;
         if (assignment_data === null) {
-          
             return;
         }
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-
     }, [launch, wallet]);
 
     useEffect(() => {
@@ -332,7 +324,6 @@ const CollectionSwapPage = () => {
 
         if (lookup_account_ws_id.current === null) {
             lookup_account_ws_id.current = connection.onProgramAccountChange(PROGRAM, check_program_update, "confirmed");
-
         }
 
         if (wallet === null || wallet.publicKey === null) {
@@ -366,14 +357,16 @@ const CollectionSwapPage = () => {
         }
         console.log("get initial assignment data");
         get_assignment_data();
-
     }, [launch, wallet, get_assignment_data]);
-    
+
     if (!pageName) return;
 
     if (launch === null) return <Loader />;
 
     if (!launch) return <PageNotFound />;
+
+    const enoughTokenBalance =
+        token_balance / Math.pow(10, launch.token_decimals) >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
 
     return (
         <>
@@ -388,7 +381,7 @@ const CollectionSwapPage = () => {
                         bg="rgba(225, 225, 225, 0.20)"
                         borderRadius={12}
                         border="1px solid white"
-                        h="500px"
+                        h="fit-content"
                         justifyContent="space-between"
                     >
                         <Text m={0} align="start" className="font-face-kg" color={"white"} fontSize="xx-large">
@@ -434,7 +427,7 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
-                                <ShowExtensions extension_flag={launch.token_extensions}/>
+                                <ShowExtensions extension_flag={launch.token_extensions} />
                                 <HStack mt={2}>
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                                         Token balance:
@@ -442,25 +435,62 @@ const CollectionSwapPage = () => {
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                         {token_balance / Math.pow(10, launch.token_decimals)}
                                     </Text>
-                                </HStack>                            
+                                </HStack>
                             </VStack>
 
-                            <VStack spacing={3} margin="auto 0">
-                                {assigned_nft === null ?
-                                    <Button 
-                                        onClick={() => ClaimNFT()} 
+                            {wallet.connected ? (
+                                <VStack spacing={3} margin="auto 0">
+                                    {assigned_nft === null ? (
+                                        <Tooltip
+                                            label="You don't have enough token balance"
+                                            hasArrow
+                                            offset={[0, 10]}
+                                            isDisabled={enoughTokenBalance}
+                                        >
+                                            <Button
+                                                onClick={() => {
+                                                    if (!wallet.connected) {
+                                                        handleConnectWallet();
+                                                    }
+
+                                                    if (wallet.connected && enoughTokenBalance) {
+                                                        ClaimNFT();
+                                                    }
+                                                }}
+                                                isDisabled={!enoughTokenBalance}
+                                            >
+                                                {bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)}{" "}
+                                                {launch.token_symbol} = 1 NFT
+                                            </Button>
+                                        </Tooltip>
+                                    ) : (
+                                        <Button onClick={() => MintNFT()}>Claim NFT {assigned_nft.nft_index + 1}</Button>
+                                    )}
+                                    <Tooltip
+                                        label={`You don't have ${launch.collection_name} NFTs`}
+                                        hasArrow
+                                        offset={[0, 10]}
+                                        isDisabled={nft_balance > 0}
                                     >
-                                            {bignum_to_num(launch.swap_price)/Math.pow(10, launch.token_decimals) } {launch.token_symbol}  = 1 NFT
-                                    </Button>
-                                :
-                                    <Button onClick={() => MintNFT()}>
-                                        Claim NFT {assigned_nft.nft_index + 1}
-                                    </Button>
-                                }
-                                <Button onClick={() => WrapNFT()}>
-                                    1 NFT = {out_amount.toFixed(Math.min(3, launch.token_decimals))}  {launch.token_symbol}
+                                        <Button
+                                            onClick={() => {
+                                                if (wallet.connected) {
+                                                    WrapNFT();
+                                                } else {
+                                                    handleConnectWallet();
+                                                }
+                                            }}
+                                            isDisabled={nft_balance <= 0}
+                                        >
+                                            1 NFT = {out_amount.toFixed(Math.min(3, launch.token_decimals))} {launch.token_symbol}
+                                        </Button>
+                                    </Tooltip>
+                                </VStack>
+                            ) : (
+                                <Button margin="auto 0" onClick={() => handleConnectWallet()}>
+                                    Connect your wallet
                                 </Button>
-                            </VStack>
+                            )}
 
                             <VStack>
                                 <Image
@@ -501,7 +531,7 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
-                                <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]}/>
+                                {/* <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} /> */}
                                 <HStack mt={2}>
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                                         NFT balance:
@@ -509,7 +539,7 @@ const CollectionSwapPage = () => {
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                         {nft_balance}
                                     </Text>
-                                </HStack>   
+                                </HStack>
                             </VStack>
                         </HStack>
                         <VStack spacing={0} w="100%" style={{ position: "relative" }}>
