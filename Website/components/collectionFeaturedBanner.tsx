@@ -90,7 +90,9 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
+                                                    featuredLaunch &&
+                                                        featuredLaunch.keys &&
+                                                        featuredLaunch.keys[CollectionKeys.CollectionMint]
                                                         ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
                                                         : "",
                                                 );
@@ -115,26 +117,6 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                                 width={lg ? 25 : 35}
                                                 height={lg ? 25 : 35}
                                                 alt="Solscan icon"
-                                            />
-                                        </Link>
-                                    </Tooltip>
-
-                                    <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link
-                                            href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.MintAddress]
-                                                    ? featuredLaunch.keys[CollectionKeys.MintAddress].toString()
-                                                    : ""
-                                            }`}
-                                            target="_blank"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <Image
-                                                src="/images/rugcheck.jpeg"
-                                                width={lg ? 25 : 35}
-                                                height={lg ? 25 : 35}
-                                                alt="Rugcheck icon"
-                                                style={{ borderRadius: "100%" }}
                                             />
                                         </Link>
                                     </Tooltip>
