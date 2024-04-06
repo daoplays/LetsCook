@@ -47,6 +47,7 @@ function findLaunch(list: CollectionData[], page_name: string | string[]) {
 const CollectionSwapPage = () => {
     const wallet = useWallet();
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
@@ -65,9 +66,9 @@ const CollectionSwapPage = () => {
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
 
-    const { ClaimNFT } = useClaimNFT(launch);
-    const { MintNFT } = useMintNFT(launch);
-    const { WrapNFT } = useWrapNFT(launch);
+    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
+    const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
 
     const check_nft_balance = useCallback(async () => {
         if (launch === null || NFTLookup === null || wallet === null) return;
@@ -144,7 +145,7 @@ const CollectionSwapPage = () => {
         if (NFTLookup !== null) {
             check_nft_balance();
         }
-    }, [collectionList, pageName, mintData, NFTLookup, check_nft_balance]);
+    }, [collectionList, pageName, mintData, NFTLookup, check_nft_balance, wallet]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -426,6 +427,26 @@ const CollectionSwapPage = () => {
                                             />
                                         </Link>
                                     </Tooltip>
+
+                                    <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
+                                        <Link
+                                            href={`https://rugcheck.xyz/tokens/${
+                                                launch && launch.keys && launch.keys[CollectionKeys.MintAddress]
+                                                    ? launch.keys[CollectionKeys.MintAddress].toString()
+                                                    : ""
+                                            }`}
+                                            target="_blank"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <Image
+                                                src="/images/rugcheck.jpeg"
+                                                width={22}
+                                                height={22}
+                                                alt="Rugcheck icon"
+                                                style={{ borderRadius: "100%" }}
+                                            />
+                                        </Link>
+                                    </Tooltip>
                                 </HStack>
                                 <ShowExtensions extension_flag={launch.token_extensions} />
                                 <HStack mt={2}>
@@ -457,7 +478,7 @@ const CollectionSwapPage = () => {
                                                         ClaimNFT();
                                                     }
                                                 }}
-                                                isDisabled={!enoughTokenBalance}
+                                                isDisabled={!enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading}
                                             >
                                                 {bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)}{" "}
                                                 {launch.token_symbol} = 1 NFT
@@ -470,7 +491,7 @@ const CollectionSwapPage = () => {
                                         label={`You don't have ${launch.collection_name} NFTs`}
                                         hasArrow
                                         offset={[0, 10]}
-                                        isDisabled={nft_balance > 0}
+                                        isDisabled={nft_balance > 0 || isClaimLoading || isMintLoading || isWrapLoading}
                                     >
                                         <Button
                                             onClick={() => {
@@ -480,7 +501,7 @@ const CollectionSwapPage = () => {
                                                     handleConnectWallet();
                                                 }
                                             }}
-                                            isDisabled={nft_balance <= 0}
+                                            isDisabled={nft_balance <= 0 || isClaimLoading || isMintLoading || isWrapLoading}
                                         >
                                             1 NFT = {out_amount.toFixed(Math.min(3, launch.token_decimals))} {launch.token_symbol}
                                         </Button>
