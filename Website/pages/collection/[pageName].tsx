@@ -416,7 +416,7 @@ const CollectionSwapPage = () => {
                                             style={{ cursor: "pointer" }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigator.clipboard.writeText("");
+                                                navigator.clipboard.writeText(launch.keys[CollectionKeys.MintAddress].toString());
                                             }}
                                         >
                                             <MdOutlineContentCopy color="white" size={lg ? 22 : 22} />

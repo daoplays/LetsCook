@@ -40,6 +40,9 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
             return;
         }
 
+        let meta_check = new Array(newCollectionData.current.nft_metadata.length).fill(0);
+        let image_check = new Array(newCollectionData.current.nft_metadata.length).fill(0);
+
         let image_type = newCollectionData.current.nft_images[0].type;
         for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
             if (newCollectionData.current.nft_metadata[i].type !== "application/json") {
@@ -51,7 +54,31 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 toast.error("all images must be of the same type");
                 return;
             }
+            let meta_idx = parseInt(newCollectionData.current.nft_metadata[i].name)
+            let img_idx = parseInt(newCollectionData.current.nft_images[i].name)
+
+            meta_check[meta_idx] += 1
+            image_check[img_idx] += 1
         }
+        for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
+            if (meta_check[i] == 0) {
+                toast.error("missing meta data for index " + i);
+                return;
+            }
+            if (meta_check[i] > 1) {
+                toast.error("duplicate meta data for index "+ i);
+                return;
+            }
+            if (image_check[i] == 0) {
+                toast.error("missing image data for index " + i);
+                return;
+            }
+            if (image_check[i] > 1) {
+                toast.error("duplicate image data for index "+ i);
+                return;
+            }
+        }
+
 
         newCollectionData.current.collection_size = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
