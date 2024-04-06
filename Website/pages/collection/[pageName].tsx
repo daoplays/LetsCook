@@ -16,7 +16,7 @@ import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys, WSS_NODE, RPC_NODE, PROGRAM, Extensions, LaunchFlags } from "../../components/Solana/constants";
+import { CollectionKeys, WSS_NODE, RPC_NODE, PROGRAM, Extensions, LaunchFlags, PROD, LaunchKeys } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
@@ -418,7 +418,15 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link target="_blank" onClick={(e) => e.stopPropagation()}>
+                                        <Link
+                                            href={`https://solscan.io/account/${
+                                                launch && launch.keys && launch.keys[LaunchKeys.MintAddress]
+                                                    ? launch.keys[LaunchKeys.MintAddress].toString()
+                                                    : ""
+                                            }${PROD ? "" : `?cluster=devnet`}`}
+                                            target="_blank"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <Image
                                                 src="/images/solscan.png"
                                                 width={lg ? 22 : 22}
@@ -534,7 +542,11 @@ const CollectionSwapPage = () => {
                                             style={{ cursor: "pointer" }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigator.clipboard.writeText("");
+                                                navigator.clipboard.writeText(
+                                                    launch && launch.keys && launch.keys[CollectionKeys.CollectionMint]
+                                                        ? launch.keys[CollectionKeys.CollectionMint].toString()
+                                                        : "",
+                                                );
                                             }}
                                         >
                                             <MdOutlineContentCopy color="white" size={lg ? 22 : 22} />
@@ -542,7 +554,15 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link target="_blank" onClick={(e) => e.stopPropagation()}>
+                                        <Link
+                                            href={`https://solscan.io/account/${
+                                                launch && launch.keys && launch.keys[CollectionKeys.CollectionMint]
+                                                    ? launch.keys[CollectionKeys.CollectionMint].toString()
+                                                    : ""
+                                            }${PROD ? "" : `?cluster=devnet`}`}
+                                            target="_blank"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <Image
                                                 src="/images/solscan.png"
                                                 width={lg ? 22 : 22}

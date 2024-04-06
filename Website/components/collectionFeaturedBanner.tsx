@@ -9,7 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { CollectionKeys, LaunchKeys } from "./Solana/constants";
+import { CollectionKeys, LaunchKeys, PROD } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { CollectionData } from "./collection/collectionState";
@@ -108,7 +108,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                                 featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[CollectionKeys.CollectionMint]
                                                     ? featuredLaunch.keys[CollectionKeys.CollectionMint].toString()
                                                     : ""
-                                            }`}
+                                            }${PROD ? "" : `?cluster=devnet`}`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >

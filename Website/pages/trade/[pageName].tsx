@@ -18,7 +18,7 @@ import {
     TokenAccount,
     RequestTokenHolders,
 } from "../../components/Solana/state";
-import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
+import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM, LaunchFlags, PROD } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, Mint, getTransferFeeConfig } from "@solana/spl-token";
@@ -122,7 +122,6 @@ const TradePage = () => {
         setSelectedTab(tab);
     };
 
-
     const [market_data, setMarketData] = useState<MarketData[]>([]);
     const [daily_data, setDailyData] = useState<MarketData[]>([]);
 
@@ -145,7 +144,6 @@ const TradePage = () => {
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<Mint | null>(null);
 
-
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
     const price_ws_id = useRef<number | null>(null);
@@ -156,8 +154,6 @@ const TradePage = () => {
 
     const check_mm_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
-
-
 
     // when page unloads unsub from any active websocket listeners
     useEffect(() => {
@@ -179,18 +175,16 @@ const TradePage = () => {
     }, []);
 
     useEffect(() => {
-        if (ammData === null || launchList === null || mintData === null)
-            return;
+        if (ammData === null || launchList === null || mintData === null) return;
 
         let launch = findLaunch(launchList, pageName);
         setLaunch(launch);
-    
+
         let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
         setAMM(amm);
 
         let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
-        setBaseMint(base_mint)
-
+        setBaseMint(base_mint);
     }, [launchList, ammData, mintData]);
 
     useEffect(() => {
@@ -205,7 +199,7 @@ const TradePage = () => {
         last_base_amount.current = base_amount;
         last_quote_amount.current = quote_amount;
     }, [base_amount, quote_amount, market_data]);
-    
+
     const check_base_update = useCallback(async (result: any) => {
         //console.log(result);
         // if we have a subscription field check against ws_id
@@ -445,11 +439,10 @@ const TradePage = () => {
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-        );    
+        );
     }
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
-
 
     return (
         <>
@@ -506,7 +499,9 @@ const TradePage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={`https://solscan.io/account/` + launch.keys[LaunchKeys.MintAddress].toString()}
+                                            href={`https://solscan.io/account/${launch.keys[LaunchKeys.MintAddress].toString()}${
+                                                PROD ? "" : "?cluster=devnet"
+                                            }`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
