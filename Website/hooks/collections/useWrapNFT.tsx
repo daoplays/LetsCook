@@ -124,7 +124,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             token_mints.push(nft_mint);
         }
 
-        console.log(token_addresses.length, " potential nfts found");
+        //console.log(token_addresses.length, " potential nfts found");
         let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
 
         let valid_lookups: LookupData[] = [];
@@ -133,12 +133,12 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                 continue;
             }
             let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
-            console.log(account, token_mints[i].toString())
+            //console.log(account, token_mints[i].toString())
             if (account.amount > 0) {
                 valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
             }
         }
-        console.log(valid_lookups);
+        //console.log(valid_lookups);
 
         if (valid_lookups.length === 0) {
             console.log("no nfts owned by user")
@@ -190,6 +190,13 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let team_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            launchData.keys[CollectionKeys.TeamWallet], // owner
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
         );
@@ -247,6 +254,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: team_token_account_key, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_nft_key, isSigner: false, isWritable: true },
             { pubkey: nft_token_account, isSigner: false, isWritable: true },

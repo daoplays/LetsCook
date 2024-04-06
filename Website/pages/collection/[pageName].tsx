@@ -21,7 +21,7 @@ import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import ShowExtensions from "../../components/Solana/extensions";
-import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -126,22 +126,21 @@ const CollectionSwapPage = () => {
         setCollectionData(launch);
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-
         let transfer_fee_config = getTransferFeeConfig(mint);
-        let max_fee = transfer_fee_config !== null ?  Number(transfer_fee_config.newerTransferFee.maximumFee) : 1e16;
-        let transfer_fee = transfer_fee_config !== null ? transfer_fee_config.newerTransferFee.transferFeeBasisPoints : 0;
+        let input_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)))
         let swap_price = bignum_to_num(launch.swap_price);
 
-        let input_transfer_fee = Math.min(max_fee, swap_price * transfer_fee / 100 / 100);
-        let input_amount = swap_price - input_transfer_fee;
+        let input_amount = swap_price - input_fee;
 
-        let swap_fee = input_amount * launch.swap_fee / 100 / 100;
+        let swap_fee = Math.floor(input_amount * launch.swap_fee / 100 / 100);
 
-        let output_fee = Math.min((input_amount - swap_fee) * transfer_fee / 100 / 100, max_fee);
+        let output = input_amount - swap_fee;
 
-        let final_output = input_amount - output_fee;
-        
-        console.log(swap_price, final_output);
+        let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(output)))
+
+        let final_output = output - output_fee;
+
+        //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
         if (NFTLookup !== null) {
