@@ -161,7 +161,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return false;
         }
 
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Collection")], PROGRAM)[0];
 
         let balance = 0;
 
@@ -265,6 +265,11 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
     
                 var transaction_response = await send_transaction("", encoded_transaction);
+                let signature = transaction_response.result;
+
+                let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                console.log(fund_check, fund_check.data);
 
                 //await irys.fund(price);
                 toast.update(uploadImageToArweave, {
@@ -282,6 +287,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 });
                 return;
             }
+
+            
         
             let tags: Tag[] = [];
 
@@ -386,6 +393,12 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
     
                 var transaction_response = await send_transaction("", encoded_transaction);
+
+                let signature = transaction_response.result;
+
+                let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                console.log(fund_check, fund_check.data["confirmed"]);
 
                 //await irys.fund(json_price);
                 toast.update(fundMetadata, {
@@ -562,7 +575,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             });
             return;
         }
-    }, [wallet, newCollectionData]);
+    }, [wallet, newCollectionData, EditCollection, check_signature_update]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">

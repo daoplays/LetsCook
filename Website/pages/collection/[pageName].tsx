@@ -262,7 +262,7 @@ const CollectionSwapPage = () => {
                 check_nft_balance();
             }
         },
-        [launch],
+        [launch, NFTLookup, check_nft_balance],
     );
 
     const check_user_token_update = useCallback(async (result: any) => {
@@ -349,7 +349,7 @@ const CollectionSwapPage = () => {
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
-    }, [wallet, launch, check_launch_update, check_assignment_update]);
+    }, [wallet, launch, check_launch_update, check_assignment_update, check_program_update, check_user_token_update]);
 
     useEffect(() => {
         if (launch === null) return;

@@ -250,6 +250,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     
                 var transaction_response = await send_transaction("", encoded_transaction);
                 console.log(transaction_response);
+
+
+                let signature = transaction_response.result;
+
+                let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                console.log(fund_check, fund_check.data["confirmed"]);
+
                 toast.update(uploadImageToArweave, {
                     render: "Your account has been successfully funded.",
                     type: "success",
@@ -340,6 +348,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         
                     var transaction_response = await send_transaction("", encoded_transaction);
                     console.log(transaction_response);
+
+
+                    let signature = transaction_response.result;
+
+                    let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                    console.log(fund_check, fund_check.data["confirmed"]);
+                    
                 //await irys.fund(json_price);
                 toast.update(fundMetadata, {
                     render: "Your account has been successfully funded.",
