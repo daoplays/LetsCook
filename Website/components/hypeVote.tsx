@@ -11,7 +11,7 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 
-export function HypeVote({ launch_data }: { launch_data?: LaunchData }) {
+export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchData; isTradePage?: boolean }) {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
     const { checkProgramData, currentUserData } = useAppRoot();
@@ -170,8 +170,8 @@ export function HypeVote({ launch_data }: { launch_data?: LaunchData }) {
                             }
                         }}
                         src="/images/thumbs-up.svg"
-                        width={40}
-                        height={40}
+                        width={isTradePage ? 30 : 40}
+                        height={isTradePage ? 30 : 40}
                         alt="Thumbs Up"
                     />
                 </Tooltip>
@@ -185,8 +185,8 @@ export function HypeVote({ launch_data }: { launch_data?: LaunchData }) {
                             }
                         }}
                         src="/images/thumbs-down.svg"
-                        width={40}
-                        height={40}
+                        width={isTradePage ? 30 : 40}
+                        height={isTradePage ? 30 : 40}
                         alt="Thumbs Down"
                     />
                 </Tooltip>

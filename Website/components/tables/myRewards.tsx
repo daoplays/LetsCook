@@ -147,8 +147,10 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
                             </th>
                         ))}
 
-                        <th style={{ minWidth: sm ? "90px" : "120px" }}>
-                            <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: "pointer" }}></HStack>
+                        <th>
+                            <Box mt={1} as="button">
+                                <TfiReload size={sm ? 18 : 20} />
+                            </Box>
                         </th>
                     </tr>
                 </thead>
@@ -212,51 +214,51 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                                 style={{ borderRadius: "8px", backgroundSize: "cover" }}
                             />
                         </Box>
-                        <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                        <Text fontSize={"large"} m={0}>
                             {reward.launch.symbol}
                         </Text>
                     </HStack>
                 </td>
             )}
             <td style={{ minWidth: "120px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {reward.launch_reward.date}
+                <Text fontSize={"large"} m={0}>
+                    {reward.launch_reward.date.toLocaleString()}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {days_rewards}
+                <Text fontSize={"large"} m={0}>
+                    {days_rewards.toLocaleString()}
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {total_traded}
+                <Text fontSize={"large"} m={0}>
+                    {total_traded.toLocaleString()}
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {user_traded}
+                <Text fontSize={"large"} m={0}>
+                    {user_traded.toLocaleString()}
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {user_percent.toFixed(2)}
+                <Text fontSize={"large"} m={0}>
+                    {user_percent.toFixed(2)}%
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                    {user_amount.toFixed(2)}
+                <Text fontSize={"large"} m={0}>
+                    {user_amount.toLocaleString()}
                 </Text>
             </td>
 
             <td style={{ minWidth: md ? "120px" : "" }}>
                 {current_date === reward.launch_reward.date && (
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        Wait {time_left.toFixed(1)}h
+                    <Text fontSize={"large"} m={0}>
+                        Claim in {time_left.toFixed(1)}h
                     </Text>
                 )}
                 {current_date > reward.launch_reward.date && (

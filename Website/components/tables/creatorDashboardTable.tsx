@@ -72,7 +72,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
         return 0;
     });
 
-    console.log(sortedLaunches)
+    console.log(sortedLaunches);
 
     const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
@@ -267,7 +267,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
 
     const timeDifference = launchData.launch_date - current_time;
     const isEditable = timeDifference > 48 * 60 * 60 * 1000 || launchData.description === ""; // 48 hours
-    console.log(launchData)
+    console.log(launchData);
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cook_state);
@@ -333,7 +333,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {launch.symbol}
                     </Text>
                 </HStack>
@@ -369,14 +369,14 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
 
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <VStack>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {(Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL}/
                         {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>
             </td>
             <td style={{ minWidth: sm ? "150px" : "200px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {date}
                 </Text>
             </td>

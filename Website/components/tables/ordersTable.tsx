@@ -140,18 +140,18 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
             // onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
             <td style={{ minWidth: "180px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {launch.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {is_buy ? "BUY" : "SELL"}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {cost}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -160,7 +160,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {sol_amount}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -169,7 +169,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {token_amount}
                     </Text>
                     <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -177,13 +177,13 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     --
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     --
                 </Text>
             </td>
@@ -230,18 +230,18 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
             // onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
             <td style={{ minWidth: "180px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {launch.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {is_buy ? "BUY" : "SELL"}
                 </Text>
             </td>
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {cost}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -250,7 +250,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {price}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -259,7 +259,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
 
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {token_amount}
                     </Text>
                     <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -267,13 +267,13 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     --
                 </Text>
             </td>
 
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     --
                 </Text>
             </td>

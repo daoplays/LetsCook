@@ -24,7 +24,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     function setLaunchData(e) {
         e.preventDefault();
 
-        if (newCollectionData.current.nft_metadata === null ||  newCollectionData.current.nft_images === null) {
+        if (newCollectionData.current.nft_metadata === null || newCollectionData.current.nft_images === null) {
             toast.error("missing nft data");
             return;
         }
@@ -33,7 +33,6 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
             toast.error("number of metadata and image files do not match");
             return;
         }
-
 
         if (newCollectionData.current.nft_metadata.length === 0) {
             toast.error("number of metadata and image files must be greater than zero");
@@ -45,26 +44,26 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
         let image_type = newCollectionData.current.nft_images[0].type;
 
-        if (image_type !== "image/png") {
-            toast.error("images must be of type png");
-            return;
-        }
+        // if (image_type !== "image/png") {
+        //     toast.error("images must be of type png");
+        //     return;
+        // }
 
         for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
             if (newCollectionData.current.nft_metadata[i].type !== "application/json") {
                 toast.error("meta data must be of type json");
-                console.log(newCollectionData.current.nft_metadata[i].type)
+                console.log(newCollectionData.current.nft_metadata[i].type);
                 return;
             }
             if (newCollectionData.current.nft_images[i].type !== image_type) {
                 toast.error("all images must be of the same type");
                 return;
             }
-            let meta_idx = parseInt(newCollectionData.current.nft_metadata[i].name)
-            let img_idx = parseInt(newCollectionData.current.nft_images[i].name)
+            let meta_idx = parseInt(newCollectionData.current.nft_metadata[i].name);
+            let img_idx = parseInt(newCollectionData.current.nft_images[i].name);
 
-            meta_check[meta_idx] += 1
-            image_check[img_idx] += 1
+            meta_check[meta_idx] += 1;
+            image_check[img_idx] += 1;
         }
         for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
             if (meta_check[i] == 0) {
@@ -72,7 +71,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 return;
             }
             if (meta_check[i] > 1) {
-                toast.error("duplicate meta data for index "+ i);
+                toast.error("duplicate meta data for index " + i);
                 return;
             }
             if (image_check[i] == 0) {
@@ -80,11 +79,10 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 return;
             }
             if (image_check[i] > 1) {
-                toast.error("duplicate image data for index "+ i);
+                toast.error("duplicate image data for index " + i);
                 return;
             }
         }
-
 
         newCollectionData.current.collection_size = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
@@ -106,7 +104,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     const BrowseImages = () => (
         <HStack spacing={0} className={styles.eachField}>
             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Icons:
+                Images:
             </div>
             <div>
                 <label className={styles.label}>
@@ -178,14 +176,16 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            placeholder="Enter NFT Name, will be followed by #number"
+                                            placeholder="Enter NFT Name. It will be previewed as: Name #1, Name #2, and so on..."
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
                                             className={styles.inputBox}
                                             type="text"
                                             value={nft_name}
-                                            onChange={(e) => {setNFTName(e.target.value)}}
+                                            onChange={(e) => {
+                                                setNFTName(e.target.value);
+                                            }}
                                         />
                                     </div>
                                 </HStack>

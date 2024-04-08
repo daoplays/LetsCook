@@ -113,7 +113,7 @@ const TradePage = () => {
     const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData } = useAppRoot();
     const { pageName } = router.query;
 
-    const [leftPanel, setLeftPanel] = useState("Info");
+    const [leftPanel, setLeftPanel] = useState("Trade");
 
     const [additionalPixels, setAdditionalPixels] = useState(0);
 
@@ -713,7 +713,13 @@ const BuyAndSell = ({
     let quote_output_string = base_output === 0 ? "0" : quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
     quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
-    let base_output_string = base_output === 0 ? "0" : base_output <= 1e-3 ? base_output.toExponential(3) : base_output.toFixed(3);
+    let base_output_string =
+        base_output === 0
+            ? "0"
+            : base_output <= 1e-3
+              ? base_output.toExponential(3)
+              : base_output.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
     return (
@@ -762,7 +768,11 @@ const BuyAndSell = ({
                     Available Balance:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {selected === "Buy" ? userSOLBalance.toFixed(2) : (user_balance / Math.pow(10, launch.decimals)).toFixed(2)}{" "}
+                    {selected === "Buy"
+                        ? userSOLBalance.toFixed(5)
+                        : (user_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                          })}{" "}
                     {selected === "Buy" ? "SOL" : launch.symbol}
                 </Text>
             </HStack>
@@ -792,9 +802,55 @@ const BuyAndSell = ({
             </HStack>
 
             <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Swap:
-                </Text>
+                <HStack w="100%" justify="space-between">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        Swap:
+                    </Text>
+
+                    <HStack spacing={2}>
+                        <Text
+                            m={0}
+                            color={"white"}
+                            fontFamily="ReemKufiRegular"
+                            fontSize={"medium"}
+                            opacity={0.5}
+                            style={{ cursor: "pointer" }}
+                            onClick={() => {
+                                if (selected === "Buy") {
+                                    setSOLAmount(parseFloat(userSOLBalance.toFixed(5)) / 2);
+                                }
+
+                                if (selected === "Sell") {
+                                    setTokenAmount(user_balance / Math.pow(10, launch.decimals) / 2);
+                                }
+                            }}
+                        >
+                            Half
+                        </Text>
+                        <Center height="15px">
+                            <Divider orientation="vertical" opacity={0.25} />
+                        </Center>
+                        <Text
+                            m={0}
+                            color={"white"}
+                            fontFamily="ReemKufiRegular"
+                            fontSize={"medium"}
+                            opacity={0.5}
+                            style={{ cursor: "pointer" }}
+                            onClick={() => {
+                                if (selected === "Buy") {
+                                    setSOLAmount(parseFloat(userSOLBalance.toFixed(5)));
+                                }
+
+                                if (selected === "Sell") {
+                                    setTokenAmount(user_balance / Math.pow(10, launch.decimals));
+                                }
+                            }}
+                        >
+                            Max
+                        </Text>
+                    </HStack>
+                </HStack>
                 {selected === "Buy" ? (
                     <InputGroup size="md">
                         <Input
@@ -803,7 +859,9 @@ const BuyAndSell = ({
                             borderColor="rgba(134, 142, 150, 0.5)"
                             value={sol_amount}
                             onChange={(e) => {
-                                setSOLAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
+                                setSOLAmount(
+                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : sol_amount,
+                                );
                             }}
                             type="number"
                             min="0"
@@ -820,7 +878,9 @@ const BuyAndSell = ({
                             borderColor="rgba(134, 142, 150, 0.5)"
                             value={token_amount}
                             onChange={(e) => {
-                                setTokenAmount(!isNaN(parseFloat(e.target.value)) ? parseFloat(e.target.value) : 0);
+                                setTokenAmount(
+                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : token_amount,
+                                );
                             }}
                             type="number"
                             min="0"
@@ -843,7 +903,7 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={base_output_string}
+                            value={base_output_string === "NaN" ? "0" : base_output_string}
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
@@ -857,7 +917,7 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={quote_output_string}
+                            value={quote_output_string === "NaN" ? "0" : quote_output_string}
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
@@ -886,7 +946,7 @@ const BuyAndSell = ({
             <Card bg="transparent">
                 <CardBody>
                     <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        <br /> MM Rewards are only granted on Buys through Let&apos;s Cook.
+                        MM Rewards are only granted on Buys through Let&apos;s Cook.
                     </Text>
                 </CardBody>
             </Card>
@@ -942,7 +1002,7 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {volume.toFixed(Math.min(launch.decimals, 3))}
+                        {volume.toLocaleString()}
                     </Text>
                     <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
                 </HStack>
@@ -954,7 +1014,7 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {reward}
+                        {reward.toLocaleString()}
                     </Text>
                     <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
                 </HStack>
@@ -965,7 +1025,7 @@ const InfoContent = ({
                     MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? bignum_to_num(mm_data.buy_amount) / Math.pow(10, launch.decimals) : 0}
+                    {mm_data !== null ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, launch.decimals)).toLocaleString() : 0}
                 </Text>
             </HStack>
 
@@ -974,7 +1034,7 @@ const InfoContent = ({
                     SUPPLY:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {total_supply}
+                    {total_supply.toLocaleString()}
                 </Text>
             </HStack>
 
@@ -983,7 +1043,11 @@ const InfoContent = ({
                     FDMC:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {(total_supply * price * sol_price).toFixed(2)} USDC
+                    {(total_supply * price * sol_price).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })}{" "}
+                    USDC
                 </Text>
             </HStack>
 
@@ -992,7 +1056,11 @@ const InfoContent = ({
                     TVL:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {((quote_amount / Math.pow(10, 9)) * sol_price).toFixed(2)} USDC
+                    {((quote_amount / Math.pow(10, 9)) * sol_price).toLocaleString("en-US", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                    })}{" "}
+                    USDC
                 </Text>
             </HStack>
 
@@ -1000,14 +1068,14 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     HYPE:
                 </Text>
-                <HypeVote launch_data={launch} />
+                <HypeVote launch_data={launch} isTradePage={true} />
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     SOCIALS:
                 </Text>
-                <Links socials={launch.socials} />
+                <Links socials={launch.socials} isTradePage={true} />
             </HStack>
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>

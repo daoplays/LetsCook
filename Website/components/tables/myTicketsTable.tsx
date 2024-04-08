@@ -188,7 +188,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {launch.launch_data.symbol}
                     </Text>
                 </HStack>
@@ -224,7 +224,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
             <td style={{ minWidth: "150px" }}>
                 {MINT_FAILED && (
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {launch.join_data.num_tickets}
                     </Text>
                 )}
@@ -238,13 +238,13 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
             <td style={{ minWidth: "50px" }}>
                 <VStack>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {ACTIVE || MINT_FAILED || cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK ? "--" : `${formattedWinRate}%`}
                     </Text>
                 </VStack>
             </td>
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {date}
                 </Text>
             </td>

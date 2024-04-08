@@ -80,6 +80,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
+        if (!file.type.startsWith("image")) {
+            toast.error("Please upload an image file.");
+            return;
+        }
+
         if (file) {
             if (file.size <= 1048576) {
                 const dimensions = await getImageDimensions(file);

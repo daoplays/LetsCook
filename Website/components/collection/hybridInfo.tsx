@@ -31,13 +31,34 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const [token_extensions, setTokenExtensions] = useState<number>(0);
 
     const [team_wallet, setTeamWallet] = useState<string>(newCollectionData.current.team_wallet);
-    const [swap_fee, setSwapFee] = useState<string>(newCollectionData.current.swap_fee > 0 ? newCollectionData.current.swap_fee.toString() : "");
-    const [swap_rate, setSwapRate] = useState<string>(newCollectionData.current.swap_rate > 0 ? newCollectionData.current.swap_rate.toString() : "");
+    const [swap_fee, setSwapFee] = useState<string>(
+        newCollectionData.current.swap_fee > 0 ? newCollectionData.current.swap_fee.toString() : "",
+    );
+    const [swap_rate, setSwapRate] = useState<string>(
+        newCollectionData.current.swap_rate > 0 ? newCollectionData.current.swap_rate.toString() : "",
+    );
 
     async function setMintData(e): Promise<void> {
         e.preventDefault();
 
-        let token_key = new PublicKey(token_mint);
+        if (token_mint === "" || !token_mint) {
+            toast.error("Please enter token address");
+            return;
+        }
+
+        let token_key;
+
+        try {
+            // Attempt to create a PublicKey instance
+            token_key = new PublicKey(token_mint);
+            // If no error is thrown, input is a valid public key
+        } catch (error) {
+            toast.error("Invalid token address");
+            return;
+        }
+
+        const searchToken = toast.loading("Searching Token...");
+
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
             METAPLEX_META,
@@ -45,20 +66,29 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         let raw_meta_data = await request_raw_account_data("", token_meta_key);
 
         if (raw_meta_data === null) {
-            toast.error("Token metadata not found");
+            toast.update(searchToken, {
+                render: `Token Metadata Not Found!`,
+                type: "error",
+                isLoading: false,
+                autoClose: 2000,
+            });
             return;
         }
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
         let result = await connection.getAccountInfo(token_key, "confirmed");
-    
-        let mint : Mint;
+
+        let mint: Mint;
         try {
             mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
             console.log(mint);
-        }
-        catch(error){
-            toast.error("Token not using Token2022 program");
+        } catch (error) {
+            toast.update(searchToken, {
+                render: `Token is not using Token2022 program`,
+                type: "error",
+                isLoading: false,
+                autoClose: 2000,
+            });
             return;
         }
 
@@ -68,10 +98,10 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         let permanent_delegate = getPermanentDelegate(mint);
 
         let extensions =
-        (Extensions.TransferFee * Number(transfer_fee_config !== null)) |
-        (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
-        (Extensions.TransferHook * Number(transfer_hook !== null));
-        console.log("extensions", extensions)
+            (Extensions.TransferFee * Number(transfer_fee_config !== null)) |
+            (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
+            (Extensions.TransferHook * Number(transfer_hook !== null));
+        console.log("extensions", extensions);
 
         //console.log("deserialize meta data");
         let meta_data = Metadata.deserialize(raw_meta_data);
@@ -84,6 +114,13 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         setTokenSymbol(meta_data[0].data.symbol);
         setTokenDecimals(mint.decimals);
         setTokenExtensions(extensions);
+
+        toast.update(searchToken, {
+            render: `Successfully found and retrieved token metadata`,
+            type: "success",
+            isLoading: false,
+            autoClose: 2000,
+        });
         return;
     }
 
@@ -105,7 +142,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.token_decimals = token_decimals;
         newCollectionData.current.token_extensions = token_extensions;
 
-
         setScreen("step 4");
     }
 
@@ -119,48 +155,17 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
-                                        Token:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            placeholder="Search Token"
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={token_mint}
-                                            onChange={(e) => {
-                                                setTokenMint(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div style={{ marginLeft: "12px" }}>
-                                        <label className={styles.label}>
-                                            <button
-                                                onClick={(e) => setMintData(e)}
-                                                className={styles.browse}
-                                                style={{ cursor: "pointer", padding: "5px 10px" }}
-                                            >
-                                                Search
-                                            </button>
-                                        </label>
-                                    </div>
-                                </HStack>
                                 <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                                     {token_icon_url ? (
-                                        <VStack>
-                                        <Image
-                                            src={token_icon_url}
-                                            width={lg ? 180 : 235}
-                                            height={lg ? 180 : 235}
-                                            alt="Image Frame"
-                                            style={{ backgroundSize: "cover", borderRadius: 12 }}
-                                        />
-                                        <ShowExtensions extension_flag={token_extensions}/>
+                                        <VStack spacing={3}>
+                                            <Image
+                                                src={token_icon_url}
+                                                width={lg ? 180 : 235}
+                                                height={lg ? 180 : 235}
+                                                alt="Image Frame"
+                                                style={{ backgroundSize: "cover", borderRadius: 12 }}
+                                            />
+                                            <ShowExtensions extension_flag={token_extensions} />
                                         </VStack>
                                     ) : (
                                         <VStack
@@ -184,6 +189,40 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                                 className={`${styles.textLabel} font-face-kg`}
                                                 style={{ minWidth: lg ? "100px" : "132px" }}
                                             >
+                                                Token:
+                                            </div>
+
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    placeholder="Search Token"
+                                                    size={lg ? "md" : "lg"}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                    value={token_mint}
+                                                    onChange={(e) => {
+                                                        setTokenMint(e.target.value);
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div style={{ marginLeft: "12px" }}>
+                                                <label className={styles.label}>
+                                                    <button
+                                                        onClick={(e) => setMintData(e)}
+                                                        className={styles.browse}
+                                                        style={{ cursor: "pointer", padding: "5px 10px" }}
+                                                    >
+                                                        Search
+                                                    </button>
+                                                </label>
+                                            </div>
+                                        </HStack>
+                                        <HStack spacing={0} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "100px" : "132px" }}
+                                            >
                                                 Name:
                                             </div>
 
@@ -191,6 +230,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                                 <Input
                                                     placeholder="Token Name"
                                                     readOnly={true}
+                                                    disabled
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     type="text"
@@ -213,6 +253,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                                         bg="#494949"
                                                         placeholder="Token Symbol"
                                                         readOnly={true}
+                                                        disabled
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         type="text"
@@ -265,7 +306,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                                 setSwapFee(e.target.value);
                                             }}
                                         />
-                                        
                                     </div>
                                 </HStack>
 
