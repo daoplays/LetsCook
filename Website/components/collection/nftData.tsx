@@ -44,10 +44,10 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
         let image_type = newCollectionData.current.nft_images[0].type;
 
-        // if (image_type !== "image/png") {
-        //     toast.error("images must be of type png");
-        //     return;
-        // }
+        if (image_type !== "image/png") {
+            toast.error("images must be of type png");
+            return;
+        }
 
         for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
             if (newCollectionData.current.nft_metadata[i].type !== "application/json") {
