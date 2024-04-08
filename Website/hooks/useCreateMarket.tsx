@@ -1,20 +1,26 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
-
+import {
+    LaunchData,
+    LaunchInstruction,
+    get_current_blockhash,
+    myU64,
+    send_transaction,
+    serialise_basic_instruction,
+    request_current_balance,
+} from "../components/Solana/state";
+import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { useCallback, useRef, useState } from "react";
+import bs58 from "bs58";
 import BN from "bn.js";
-import Decimal from "decimal.js";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { Center, VStack, Text, Box, HStack, FormControl, Input } from "@chakra-ui/react";
-import { sha256 } from "@noble/hashes/sha256";
+import { toast } from "react-toastify";
 
 import {
     Token,
     DEVNET_PROGRAM_ID,
     MAINNET_PROGRAM_ID,
     RAYDIUM_MAINNET,
-    Currency,
-    Liquidity,
-    SYSTEM_PROGRAM_ID,
-    RENT_PROGRAM_ID,
     LOOKUP_TABLE_CACHE,
     splitTxAndSigners,
     InnerSimpleTransaction,
@@ -24,11 +30,7 @@ import {
 
 import {
     Keypair,
-    PublicKey,
     SystemProgram,
-    TransactionInstruction,
-    Transaction,
-    Connection,
     ComputeBudgetProgram,
     LAMPORTS_PER_SOL,
     SYSVAR_RENT_PUBKEY,
@@ -38,35 +40,14 @@ import {
     TransactionMessage,
 } from "@solana/web3.js";
 
-import {
-    getAssociatedTokenAddress,
-    AccountLayout,
-    getAssociatedTokenAddressSync,
-    createAssociatedTokenAccountInstruction,
-    createSyncNativeInstruction,
-    TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    createInitializeAccount3Instruction,
-} from "@solana/spl-token";
+import { createInitializeAccount3Instruction } from "@solana/spl-token";
 
-import bs58 from "bs58";
+import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
+import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
+import useCreateAMM from "./useCreateAMM";
 
-import {
-    send_transaction,
-    get_current_blockhash,
-    serialise_RaydiumCreatePool_Instruction,
-    serialise_basic_instruction,
-    serialise_RaydiumInitMarket_Instruction,
-    MarketStateLayoutV2,
-    bignum_to_num,
-    serialise_InitMarket_Instruction,
-    LaunchData,
-    LaunchInstruction,
-} from "./state";
-import { RPC_NODE, PROGRAM } from "./constants";
-
-const PROGRAMIDS = DEVNET_PROGRAM_ID;
-const addLookupTableInfo = LOOKUP_TABLE_CACHE;
+const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
+const addLookupTableInfo = PROD ? LOOKUP_TABLE_CACHE : undefined;
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -155,8 +136,29 @@ const DEFAULT_TOKEN = {
     WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
 };
 
-export function Raydium({ launch_data }: { launch_data: LaunchData }) {
+const useCreateMarket = (launchData: LaunchData) => {
     const wallet = useWallet();
+    const { CreateAMM } = useCreateAMM(launchData);
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const signature_ws_id = useRef<number | null>(null);
+
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
+            if (result.err !== null) {
+                alert("Transaction failed, please try again");
+            }
+
+            if (signature_ws_id.current === 2) {
+                await CreateAMM();
+            }
+            signature_ws_id.current = null;
+        },
+        [CreateAMM],
+    );
 
     function initializeMarketInstruction({
         programId,
@@ -270,218 +272,45 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         return { publicKey, seed };
     }
 
-    const createPool = useCallback(async () => {
-        const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
-        const addBaseAmount = new BN(10000); // 10000 / 10 ** 6,
-        const addQuoteAmount = new BN(10000); // 10000 / 10 ** 6,
-        const startTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7; // start from 7 days later
+    const CreateMarket = async () => {
+        // if we have already done this then just skip this step
+        console.log(launchData);
+        if (launchData.flags[LaunchFlags.LPState] > 0) {
+            console.log("Market already exists");
+            await CreateAMM();
+            return;
+        }
 
-        const seed_base = launch_data.mint_address.toBase58().slice(0, 31);
-        const targetMargetId = await generatePubKey({
-            fromPublicKey: wallet.publicKey,
-            seed: seed_base + "1",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-
-        /*
-        const associatedToken = getAssociatedTokenAddressSync(quoteToken.mint, wallet.publicKey, false, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
-
-        let ata_txArgs = await get_current_blockhash("");
-
-
-        const ata_transaction = new Transaction(ata_txArgs).add(
-            createAssociatedTokenAccountInstruction(
-                wallet.publicKey,
-                associatedToken,
-                wallet.publicKey,
-                quoteToken.mint,
-                TOKEN_PROGRAM_ID,
-                ASSOCIATED_TOKEN_PROGRAM_ID,
-            ),
-            SystemProgram.transfer({
-                fromPubkey: wallet.publicKey,
-                toPubkey: associatedToken,
-                lamports: LAMPORTS_PER_SOL,
-              }),
-              // sync wrapped SOL balance
-              createSyncNativeInstruction(associatedToken)
-        );
-
-        ata_transaction.feePayer = wallet.publicKey;
-
-          
-        let signed_ata_transaction = await wallet.signTransaction(ata_transaction);
-        const encoded_ata_transaction = bs58.encode(signed_ata_transaction.serialize());
-
-        var transaction_response = await send_transaction("", encoded_ata_transaction);
-*/
-
-        const poolInfo = Liquidity.getAssociatedPoolKeys({
-            version: 4,
-            marketVersion: 3,
-            marketId: targetMargetId.publicKey,
-            baseMint: launch_data.mint_address,
-            quoteMint: quoteToken.mint,
-            baseDecimals: launch_data.decimals,
-            quoteDecimals: quoteToken.decimals,
-            programId: PROGRAMIDS.AmmV4,
-            marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-
-        //console.log(poolInfo);
-        let arena_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
-        let sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
-
-        let createPool_data = serialise_RaydiumCreatePool_Instruction(poolInfo.nonce, startTime, addBaseAmount, addQuoteAmount);
-
-        let program_base_account = await getAssociatedTokenAddress(
-            launch_data.mint_address, // mint
-            sol_account, // owner
-            true, // allow owner off curve
-        );
-
-        let program_quote_account = await getAssociatedTokenAddress(
-            quoteToken.mint, // mint
-            sol_account, // owner
-            true, // allow owner off curve
-        );
-
-        let program_lp_account = await getAssociatedTokenAddress(
-            poolInfo.lpMint, // mint
-            sol_account, // owner
-            true, // allow owner off curve
-        );
-
-        let user_base_account = await getAssociatedTokenAddress(
-            launch_data.mint_address, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        let user_quote_account = await getAssociatedTokenAddress(
-            quoteToken.mint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        let user_lp_account = await getAssociatedTokenAddress(
-            poolInfo.lpMint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        console.log(user_base_account.toString());
-        console.log(user_quote_account.toString());
-        console.log(user_lp_account.toString());
-        console.log(program_quote_account.toString());
-        console.log(program_base_account.toString());
-
-        //https://github.com/raydium-io/raydium-amm
-        let feeAccount = new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR");
-
-        const keys = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: poolInfo.id, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.authority, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.openOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.baseMint, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.quoteMint, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.configId, isSigner: false, isWritable: false },
-            { pubkey: feeAccount, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
-
-            { pubkey: program_base_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data.sol_address, isSigner: false, isWritable: true },
-            { pubkey: program_lp_account, isSigner: false, isWritable: true },
-
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: RENT_PROGRAM_ID, isSigner: false, isWritable: false },
-
-            { pubkey: arena_account, isSigner: false, isWritable: true },
-            { pubkey: sol_account, isSigner: false, isWritable: true },
-            { pubkey: PROGRAMIDS.AmmV4, isSigner: false, isWritable: false },
-        ];
-
-        /*
-        const keys = [
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: RENT_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.id, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.openOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.baseMint, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.quoteMint, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.configId, isSigner: false, isWritable: false },
-            { pubkey: feeAccount, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_base_account, isSigner: false, isWritable: true },
-            { pubkey: user_quote_account, isSigner: false, isWritable: true },
-            { pubkey: user_lp_account, isSigner: false, isWritable: true },
-        ];
-*/
-        console.log("id", poolInfo.id.toString());
-        console.log("authority", poolInfo.authority.toString());
-        console.log("openOrders", poolInfo.openOrders.toString());
-        console.log("withdrawQueue", poolInfo.withdrawQueue.toString());
-        console.log("targetOrders", poolInfo.targetOrders.toString());
-
-        let create_amm_data = serialise_basic_instruction(LaunchInstruction.init_amm);
-
-        const list_instruction = new TransactionInstruction({
-            keys: keys,
-            programId: PROGRAM,
-            data: create_amm_data,
-        });
-        /*
-        const list_instruction = new TransactionInstruction({
-            keys: keys,
-            programId: PROGRAMIDS.AmmV4,
-            data: createPool_data,
-        });
-*/
-        console.log(list_instruction);
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300_000 }));
-
-        transaction.add(list_instruction);
-
-        let signed_transaction = await wallet.signTransaction(transaction);
-        const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-        var transaction_response = await send_transaction("", encoded_transaction);
-
-        console.log(transaction_response);
-    }, [wallet, launch_data.decimals, launch_data.mint_address, launch_data.sol_address]);
-
-    const createMarket = useCallback(async () => {
         const connection = new Connection(RPC_NODE);
+
+        const createMarketToast = toast.loading("(1/4) Creating the market token accounts");
+
+        // simple heuristic for calculating min order size
+        let total_liquidity = (launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL;
+        let LP_tokens = bignum_to_num(launchData.total_supply) * (launchData.distribution[1] / 100);
+        let initial_size = 1;
+        let initial_tick_size = 1e-6;
+        let ticks_per_token = (initial_size * total_liquidity) / LP_tokens / initial_tick_size;
+
+        console.log("total liquidity: " + total_liquidity);
+        console.log("LP tokens: ", LP_tokens);
+        console.log("ticks per token", ticks_per_token);
+
+        while (ticks_per_token < 100) {
+            initial_size *= 10;
+            initial_tick_size /= 10;
+            if (initial_tick_size < 1e-9) initial_tick_size = 1e-9;
+
+            ticks_per_token = (initial_size * total_liquidity) / LP_tokens / initial_tick_size;
+            console.log("ticks per token", initial_size, initial_tick_size, ticks_per_token);
+        }
 
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
         const makeTxVersion = TxVersion.V0;
-        let min_order_size = 1;
-        let tick_size = 0.01;
+        let min_order_size = initial_size;
+        let tick_size = initial_tick_size;
 
-        const seed_base = launch_data.mint_address.toBase58().slice(0, 31);
+        const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
 
         const market = await generatePubKey({
             fromPublicKey: wallet.publicKey,
@@ -508,10 +337,14 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
             seed: seed_base + "5",
             programId: PROGRAMIDS.OPENBOOK_MARKET,
         });
-        const baseVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "6", programId: TOKEN_PROGRAM_ID });
+        const baseVault = await generatePubKey({
+            fromPublicKey: wallet.publicKey,
+            seed: seed_base + "6",
+            programId: TOKEN_2022_PROGRAM_ID,
+        });
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
 
-        console.log("mint", launch_data.mint_address.toString());
+        console.log("mint", launchData.keys[LaunchKeys.MintAddress].toString());
         console.log("market", market.publicKey.toString());
 
         const feeRateBps = 0;
@@ -535,7 +368,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         }
         const { vaultOwner, vaultSignerNonce } = getVaultOwnerAndNonce();
 
-        const baseLotSize = new BN(Math.round(10 ** launch_data.decimals * min_order_size));
+        const baseLotSize = new BN(Math.round(10 ** launchData.decimals * min_order_size));
         const quoteLotSize = new BN(Math.round(min_order_size * 10 ** quoteToken.decimals * tick_size));
 
         console.log("lot sizes", bignum_to_num(baseLotSize), bignum_to_num(quoteLotSize));
@@ -549,7 +382,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                 newAccountPubkey: baseVault.publicKey,
                 lamports: accountLamports,
                 space: 165,
-                programId: TOKEN_PROGRAM_ID,
+                programId: TOKEN_2022_PROGRAM_ID,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
@@ -560,7 +393,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                 space: 165,
                 programId: TOKEN_PROGRAM_ID,
             }),
-            createInitializeAccount3Instruction(baseVault.publicKey, launch_data.mint_address, vaultOwner),
+            createInitializeAccount3Instruction(baseVault.publicKey, launchData.keys[LaunchKeys.MintAddress], vaultOwner),
             createInitializeAccount3Instruction(quoteVault.publicKey, quoteToken.mint, vaultOwner),
         );
 
@@ -572,13 +405,35 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         for (let i = 0; i < ins1.length; i++) {
             transaction.add(ins1[i]);
         }
+        try {
+            let base_balance = await request_current_balance("", baseVault.publicKey);
+            console.log("base balance", base_balance);
+            if (base_balance == 0) {
+                let signed_transaction = await wallet.signTransaction(transaction);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-        let signed_transaction = await wallet.signTransaction(transaction);
-        const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                var transaction_response = await send_transaction("", encoded_transaction);
+                console.log("init market accounts");
+                console.log(transaction_response);
+            }
 
-        var transaction_response = await send_transaction("", encoded_transaction);
-        console.log("init market accounts");
-        console.log(transaction_response);
+            toast.update(createMarketToast, {
+                render: "Token accounts created",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        } catch (error) {
+            console.log(error);
+            toast.update(createMarketToast, {
+                render: "Token account creation failed.  Please try later",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        }
+
+        const createMarketAccountsToast = toast.loading("(2/4) Create market accounts...");
 
         const ins2: TransactionInstruction[] = [];
         ins2.push(
@@ -637,7 +492,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                     asks: asks.publicKey,
                     baseVault: baseVault.publicKey,
                     quoteVault: quoteVault.publicKey,
-                    baseMint: launch_data.mint_address,
+                    baseMint: launchData.keys[LaunchKeys.MintAddress],
                     quoteMint: quoteToken.mint,
 
                     baseLotSize: baseLotSize,
@@ -658,7 +513,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                 asks: asks.publicKey,
                 baseVault: baseVault.publicKey,
                 quoteVault: quoteVault.publicKey,
-                baseMint: launch_data.mint_address,
+                baseMint: launchData.keys[LaunchKeys.MintAddress],
                 quoteMint: quoteToken.mint,
             },
             innerTransactions: [
@@ -685,7 +540,7 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
                 computeBudgetConfig: undefined,
                 payer: wallet.publicKey,
                 innerTransaction: ins.innerTransactions,
-                lookupTableCache: undefined,
+                lookupTableCache: addLookupTableInfo,
             }),
         };
 
@@ -702,27 +557,99 @@ export function Raydium({ launch_data }: { launch_data: LaunchData }) {
         console.log("market tx:");
         console.log(market_tx.length, market_tx[0]);
 
-        for (let i = 0; i < market_tx.length; i++) {
-            let market_transaction = await wallet.signTransaction(market_tx[i]);
-            const encoded_market_transaction = bs58.encode(market_transaction.serialize());
+        try {
+            let market_balance = await request_current_balance("", market.publicKey);
+            console.log("market balance", market_balance);
+            if (market_balance == 0) {
+                for (let i = 0; i < market_tx.length; i++) {
+                    let market_transaction = await wallet.signTransaction(market_tx[i]);
+                    const encoded_market_transaction = bs58.encode(market_transaction.serialize());
 
-            var market_transaction_response = await send_transaction("", encoded_market_transaction);
-            console.log(market_transaction_response);
+                    var market_transaction_response = await send_transaction("", encoded_market_transaction);
+                    console.log(market_transaction_response);
+                }
+            }
+
+            toast.update(createMarketAccountsToast, {
+                render: "Market accounts created",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        } catch (error) {
+            toast.update(createMarketAccountsToast, {
+                render: "Market account creation failed, please try again later",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
         }
 
-        await createPool();
-    }, [wallet, createPool, launch_data.decimals, launch_data.mint_address]);
+        const updateCookAccountsToast = toast.loading("(3/4) Update Cook accounts...");
 
-    return (
-        <Box
-            as="button"
-            onClick={() => {
-                createPool();
-            }}
-        >
-            <Text m="0" color={"white"}>
-                Launch LP
-            </Text>
-        </Box>
-    );
-}
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
+
+        var account_vector = [
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: baseVault.publicKey, isSigner: false, isWritable: true },
+            { pubkey: quoteVault.publicKey, isSigner: false, isWritable: true },
+            { pubkey: market.publicKey, isSigner: false, isWritable: true },
+            { pubkey: requestQueue.publicKey, isSigner: false, isWritable: true },
+            { pubkey: eventQueue.publicKey, isSigner: false, isWritable: true },
+            { pubkey: bids.publicKey, isSigner: false, isWritable: true },
+            { pubkey: asks.publicKey, isSigner: false, isWritable: true },
+        ];
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: PROGRAMIDS.OPENBOOK_MARKET, isSigner: false, isWritable: true });
+
+        const list_instruction = new TransactionInstruction({
+            keys: account_vector,
+            programId: PROGRAM,
+            data: instruction_data,
+        });
+
+        let list_txArgs = await get_current_blockhash("");
+
+        let list_transaction = new Transaction(list_txArgs);
+        list_transaction.feePayer = wallet.publicKey;
+
+        list_transaction.add(list_instruction);
+
+        try {
+            let signed_transaction = await wallet.signTransaction(list_transaction);
+            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+
+            var transaction_response = await send_transaction("", encoded_transaction);
+
+            let signature = transaction_response.result;
+
+            console.log("list sig: ", signature);
+
+            signature_ws_id.current = 2;
+            connection.onSignature(signature, check_signature_update, "confirmed");
+
+            toast.update(updateCookAccountsToast, {
+                render: "Cook accounts updated",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        } catch (error) {
+            console.log(error);
+            toast.update(updateCookAccountsToast, {
+                render: "Cook account update failed, please try again later",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+    };
+
+    return { CreateMarket, isLoading };
+};
+
+export default useCreateMarket;

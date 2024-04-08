@@ -1,198 +1,422 @@
-import { Dispatch, SetStateAction, MutableRefObject, useState, MouseEventHandler, useCallback, useRef } from "react";
-import { Center, VStack, Text } from "@chakra-ui/react";
-import { useMediaQuery } from "react-responsive";
+import {
+    METAPLEX_META,
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    DEFAULT_FONT_SIZE,
+    RPC_NODE,
+    WSS_NODE,
+    LaunchKeys,
+    PROD,
+    SOL_ACCOUNT_SEED,
+    DATA_ACCOUNT_SEED,
+    FEES_PROGRAM,
+} from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
     get_current_blockhash,
     send_transaction,
     serialise_CreateLaunch_instruction,
-    serialise_EditLaunch_instruction,
+    create_LaunchData,
+    LaunchData,
+    bignum_to_num,
+    request_current_balance,
+    uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { METAPLEX_META, DEBUG, SYSTEM_KEY, PROGRAM, Screen, DEFAULT_FONT_SIZE, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
+import {
+    Center,
+    VStack,
+    Text,
+    useDisclosure,
+    Input,
+    HStack,
+    Popover,
+    Button,
+    PopoverTrigger,
+    PopoverContent,
+    PopoverArrow,
+    PopoverCloseButton,
+    PopoverHeader,
+    PopoverBody,
+    IconButton,
+} from "@chakra-ui/react";
+import { useMediaQuery } from "react-responsive";
+import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { arweave_json_upload, arweave_upload } from "../../components/Solana/arweave";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import Image from "next/image";
+import {
+    Keypair,
+    PublicKey,
+    Transaction,
+    TransactionInstruction,
+    Connection,
+    ComputeBudgetProgram,
+    SYSVAR_RENT_PUBKEY,
+    SystemProgram,
+    LAMPORTS_PER_SOL
+} from "@solana/web3.js";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
 import styles from "../../styles/LaunchBook.module.css";
-import TimePicker from "react-time-picker";
+import bs58 from "bs58";
+import useEditLaunch from "../../hooks/useEditLaunch";
+import useResponsive from "../../hooks/useResponsive";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
-import bs58 from "bs58";
+import LaunchPreviewModal from "../launchPreview/modal";
+import useAppRoot from "../../context/useAppRoot";
+import { toast } from "react-toastify";
+import { useRouter } from "next/router";
+import React from "react";
+import { FaCalendarAlt } from "react-icons/fa";
+
+let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
+let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
+// Define the Tag type
+type Tag = {
+    name: string;
+    value: string;
+};
 
 interface BookPageProps {
-    newLaunchData: MutableRefObject<LaunchDataUserInput>;
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
+const BookPage = ({ setScreen }: BookPageProps) => {
+    const router = useRouter();
     const wallet = useWallet();
-    const [openDate, setOpenDate] = useState<Date>(newLaunchData.current.opendate);
-    const [closeDate, setcloseDate] = useState<Date>(newLaunchData.current.closedate);
+    const { sm, md, lg } = useResponsive();
+    const { newLaunchData } = useAppRoot();
+
+    const [localOpenDate, setLocalOpenDate] = useState<Date>(newLaunchData.current.opendate);
+    const [localCloseDate, setLocalCloseDate] = useState<Date>(newLaunchData.current.closedate);
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
+    const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
 
     const signature_ws_id = useRef<number | null>(null);
+
+    const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
+    const [closeDateAndTime, setCloseDateAndTime] = useState("-- --");
+    const { EditLaunch } = useEditLaunch();
+
+    const local_date = useMemo(() => new Date(), []);
+    var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
+    //console.log(zone);
+
+    useEffect(() => {
+        let splitLaunchDate = localOpenDate.toString().split(" ");
+        let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+        let splitLaunchTime = splitLaunchDate[4].split(":");
+        let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
+        setLaunchDateAndTime(`${launchDateString} ${launchTimeString}`);
+
+
+    }, [localOpenDate, local_date, zone]);
+
+    useEffect(() => {
+        let splitEndDate = localCloseDate.toString().split(" ");
+        let endDateString = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
+        let splitEndTime = splitEndDate[4].split(":");
+        let endTimeString = splitEndTime[0] + ":" + splitEndTime[1] + " " + zone;
+       
+        setCloseDateAndTime(`${endDateString} ${endTimeString}`);
+
+    }, [localCloseDate, local_date, zone]);
 
     const check_signature_update = useCallback(
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
-                alert("Transaction failed, please try again")
+                toast.error("Transaction failed, please try again");
+            }
+            if (signature_ws_id.current === 1) {
+                await EditLaunch();
             }
             signature_ws_id.current = null;
         },
-        [],
+        [EditLaunch],
     );
-    
-
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
 
-    function setData(): boolean {
-        console.log(openDate.toString());
-        console.log(closeDate.toString());
-
+    async function setData(e): Promise<boolean> {
+        console.log("in set data");
         let balance = 1;
         try {
             let teamPubKey = new PublicKey(teamWallet);
-            //balance = await request_current_balance("", teamPubKey);
+            balance = await request_current_balance("", teamPubKey);
 
-            console.log("check balance", teamPubKey.toString(), balance);
+            //console.log("check balance", teamPubKey.toString(), balance);
 
             if (balance == 0) {
-                alert("Team Wallet does not exist");
+                toast.error("Team wallet does not exist");
                 return false;
             }
         } catch (error) {
-            alert("Invalid Team Wallet");
+            toast.error("Invalid team wallet");
             return false;
         }
 
-        if (closeDate.getTime() < openDate.getTime()) {
-            alert("Close date must be after launch date");
+        if (!newLaunchData.current.edit_mode && localCloseDate.getTime() <= localOpenDate.getTime()) {
+            toast.error("Close date must be set after launch date");
             return false;
         }
 
-        newLaunchData.current.opendate = openDate;
-        newLaunchData.current.closedate = closeDate;
+        if (!newLaunchData.current.edit_mode && localOpenDate.getTime() < new Date().getTime()) {
+            toast.error("Open date must be set after now");
+            return false;
+        }
+
+        
+        newLaunchData.current.opendate = localOpenDate;
+        newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
+        newLaunchData.current.amm_fee = parseInt(amm_fee);
 
         return true;
     }
 
-    function setLaunchData(e) {
-        if (setData()) setScreen("details");
+    async function prevPage(e) {
+        console.log("check previous");
+        if (await setData(e)) setScreen("details");
     }
 
-    function Launch(e) {
-        if (setData()) CreateLaunch();
+    async function Launch(e) {
+        if (await setData(e)) CreateLaunch();
     }
-
-    const EditLaunch = useCallback(async () => {
-        if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
-
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
-        let launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
-
-        const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-        ];
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        transaction.add(list_instruction);
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            if (transaction_response.result === "INVALID") {
-                console.log(transaction_response);
-                alert("Transaction error, please try again");
-                return;
-            }
-
-            let signature = transaction_response.result;
-
-            if (DEBUG) {
-                console.log("list signature: ", signature);
-            }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");  
-
-        } catch (error) {
-            console.log(error);
-            return;
-        }
-    }, [wallet, newLaunchData]);
 
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
-
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
+        console.log(newLaunchData.current.icon_url);
+        console.log(newLaunchData.current.banner_url);
+        // if this is in edit mode then just call that function
+        if (newLaunchData.current.edit_mode === true) {
+            await EditLaunch();
             return;
         }
 
-        console.log(newLaunchData.current);
+        // check if the launch account already exists, if so just skip all this
+        let test_launch_data_account = PublicKey.findProgramAddressSync(
+            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
+            PROGRAM,
+        )[0];
 
-        // first upload the png file to arweave and get the url
-        let image_url = await arweave_upload(newLaunchData.current.icon_data);
-        let meta_data_url = await arweave_json_upload(
-            newLaunchData.current.name,
-            newLaunchData.current.symbol,
-            newLaunchData.current.description,
-            image_url,
-        );
-        console.log("list game with url", image_url, meta_data_url);
+        let account_balance = await request_current_balance("", test_launch_data_account);
+        if (account_balance > 0) {
+            await EditLaunch();
+            return;
+        }
 
-        newLaunchData.current.uri = meta_data_url;
-        newLaunchData.current.icon_url = image_url;
+        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-        let program_data_account = PublicKey.findProgramAddressSync([Buffer.from("arena_account")], PROGRAM)[0];
-        let program_sol_account = PublicKey.findProgramAddressSync([Buffer.from("sol_account")], PROGRAM)[0];
+        const irys_wallet = { name: "phantom", provider: wallet };
+        const irys = new WebIrys({
+            url: IRYS_URL,
+            token: "solana",
+            wallet: irys_wallet,
+            config: {
+                providerUrl: RPC_NODE,
+            },
+        });
+
+        if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
+            const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
+
+            
+            let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
+  
+             console.log("price", Number(price));
+
+            try {
+                //await irys.fund(price);
+
+                let txArgs = await get_current_blockhash("");
+    
+                var tx = new Transaction(txArgs).add(
+                    SystemProgram.transfer({
+                        fromPubkey: wallet.publicKey,
+                        toPubkey: new PublicKey(IRYS_WALLET),
+                        lamports: Number(price),
+                    })
+                );
+                tx.feePayer = wallet.publicKey;
+                let signed_transaction = await wallet.signTransaction(tx);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+    
+                var transaction_response = await send_transaction("", encoded_transaction);
+                console.log(transaction_response);
+
+
+                let signature = transaction_response.result;
+
+                let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                console.log(fund_check, fund_check.data["confirmed"]);
+
+                toast.update(uploadImageToArweave, {
+                    render: "Your account has been successfully funded.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } catch (error) {
+                toast.update(uploadImageToArweave, {
+                    render: "Oops! Something went wrong during funding. Please try again later. ",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
+            }
+
+            const tags: Tag[] = [
+                { name: "Content-Type", value: newLaunchData.current.icon_file.type },
+                { name: "Content-Type", value: newLaunchData.current.banner_file.type },
+            ];
+
+            const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
+
+            let receipt;
+
+            try {
+                receipt = await irys.uploadFolder([newLaunchData.current.icon_file, newLaunchData.current.banner_file], {
+                    //@ts-ignore
+                    tags,
+                });
+                toast.update(uploadToArweave, {
+                    render: `Images have been uploaded successfully!
+                    View: https://gateway.irys.xyz/${receipt.id}`,
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } catch (error) {
+                toast.update(uploadToArweave, {
+                    render: `Failed to upload images, please try again later.`,
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+
+                return;
+            }
+
+            console.log(receipt);
+
+            let icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
+            let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.banner_file.name].id;
+
+            newLaunchData.current.icon_url = icon_url;
+            newLaunchData.current.banner_url = banner_url;
+        }
+
+        if (newLaunchData.current.uri == "") {
+            // console.log(icon_url, banner_url);
+            var metadata = {
+                name: newLaunchData.current.name,
+                symbol: newLaunchData.current.symbol,
+                description: newLaunchData.current.description,
+                image: newLaunchData.current.icon_url,
+            };
+
+            const jsn = JSON.stringify(metadata);
+            const blob = new Blob([jsn], { type: "application/json" });
+            const json_file = new File([blob], "metadata.json");
+
+            const json_price = await irys.getPrice(json_file.size);
+
+            const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
+
+            try {
+                let txArgs = await get_current_blockhash("");
+        
+                    var tx = new Transaction(txArgs).add(
+                        SystemProgram.transfer({
+                            fromPubkey: wallet.publicKey,
+                            toPubkey: new PublicKey(IRYS_WALLET),
+                            lamports: Number(json_price),
+                        })
+                    );
+                    tx.feePayer = wallet.publicKey;
+                    let signed_transaction = await wallet.signTransaction(tx);
+                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
+        
+                    var transaction_response = await send_transaction("", encoded_transaction);
+                    console.log(transaction_response);
+
+
+                    let signature = transaction_response.result;
+
+                    let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                    console.log(fund_check, fund_check.data["confirmed"]);
+                    
+                //await irys.fund(json_price);
+                toast.update(fundMetadata, {
+                    render: "Your account has been successfully funded.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+            } catch (error) {
+                toast.update(fundMetadata, {
+                    render: "Something went wrong. Please try again later. ",
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
+            }
+
+            const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
+
+            const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
+
+            let json_receipt;
+
+            try {
+                json_receipt = await irys.uploadFile(json_file, {
+                    tags: json_tags,
+                });
+
+                toast.update(uploadMetadata, {
+                    render: `Token metadata has been uploaded successfully!
+                    View: https://gateway.irys.xyz/${json_receipt.id}`,
+                    type: "success",
+                    isLoading: false,
+                    pauseOnFocusLoss: false,
+                    autoClose: 2000,
+                });
+            } catch (error) {
+                toast.update(uploadMetadata, {
+                    render: `Failed to upload token metadata, please try again later.`,
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+
+                return;
+            }
+
+            newLaunchData.current.uri = "https://gateway.irys.xyz/" + json_receipt.id;
+        }
+
+        let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
+        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
             PROGRAM,
         )[0];
 
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
 
-        let fees_account = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
-
-        const token_mint_keypair = Keypair.generate();
-        var token_mint_pubkey = token_mint_keypair.publicKey;
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
             METAPLEX_META,
@@ -202,50 +426,64 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-        );
-
-        let user_token_account_key = await getAssociatedTokenAddress(
-            token_mint_pubkey, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
-        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         if (DEBUG) {
             console.log("arena: ", program_data_account.toString());
             console.log("game_data_account: ", launch_data_account.toString());
-            console.log("sol_data_account: ", fees_account.toString());
             console.log("wsol seed", wrapped_sol_seed);
             console.log("mint", token_mint_pubkey.toString());
         }
+
+        let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
 
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: fees_account, isSigner: false, isWritable: true },
             { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
-            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
+
+            { pubkey: team_wallet, isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
+
+        if (newLaunchData.current.permanent_delegate !== null) {
+            console.log("add PD");
+            account_vector.push({ pubkey: newLaunchData.current.permanent_delegate, isSigner: false, isWritable: false });
+        }
+        if (newLaunchData.current.transfer_hook_program !== null) {
+            console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
+            account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
+
+            if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
+                console.log("add hook extra");
+                let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
+                    [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
+                    FEES_PROGRAM,
+                )[0];
+                account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
+            }
+        }
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -259,8 +497,11 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
-        transaction.partialSign(token_mint_keypair);
+        transaction.partialSign(newLaunchData.current.token_keypair);
+
+        const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -270,7 +511,7 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
 
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
-                alert("Transaction error, please try again")
+                toast.error("Transaction failed, please try again");
                 return;
             }
 
@@ -279,113 +520,201 @@ const BookPage = ({ newLaunchData, setScreen }: BookPageProps) => {
             if (DEBUG) {
                 console.log("list signature: ", signature);
             }
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");    
+            signature_ws_id.current = 1;
 
+            toast.update(createLaunch, {
+                render: "Launch account is ready",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
+            connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
+            toast.update(createLaunch, {
+                render: "We couldn't create your launch accounts. Please try again.",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
+    }, [wallet, newLaunchData, EditLaunch, check_signature_update]);
 
-        await EditLaunch();
-    }, [wallet, EditLaunch, newLaunchData]);
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
-    function confirm(e) {
-        e.preventDefault();
-        if (closeDate && openDate && teamWallet) {
-            Launch(e);
-        } else {
-            alert("Please fill all the details on this page.");
-        }
-    }
+    const { isOpen: isStartOpen, onToggle: onToggleStart, onClose: onCloseStart } = useDisclosure();
+    const { isOpen: isEndOpen, onToggle: onToggleEnd, onClose: OnCloseEnd } = useDisclosure();
+
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} pt="20px" width="100%">
-            <VStack>
-                <Text color="white" className="font-face-kg" textAlign={"center"} fontSize={DEFAULT_FONT_SIZE}>
-                    Launch - BOOK
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+            <VStack pb={150} w="100%">
+                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                    Book Token Raffle
                 </Text>
-                <form onSubmit={confirm} className={styles.launchBody}>
-                    <div className={styles.launchBodyUpper}>
-                        <div className={styles.launchBodyUpperFields}>
-                            <div className={`${styles.textLabel} font-face-kg`}>TOKEN RAFFLE</div>
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>OPEN DATE:</div>
-
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker
-                                            showTimeSelect
-                                            timeFormat="HH:mm"
-                                            timeIntervals={15}
-                                            selected={openDate}
-                                            onChange={(date) => setOpenDate(date)}
-                                        />
-                                    </div>
-                                </div>
+                <form style={{ width: lg ? "100%" : "1200px" }}>
+                    <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
+                        <HStack spacing={15}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                OPEN DATE:
                             </div>
 
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`}>CLOSE DATE:</div>
+                            <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                <HStack spacing={5}>
+                                    <Popover isOpen={isStartOpen} onClose={onCloseStart} placement="bottom" closeOnBlur={false}>
+                                        <PopoverTrigger>
+                                            <IconButton
+                                                onClick={onToggleStart}
+                                                aria-label="FaCalendarAlt"
+                                                icon={<FaCalendarAlt size={22} />}
+                                            />
+                                        </PopoverTrigger>
+                                        <PopoverContent width="fit-content">
+                                            <PopoverArrow />
+                                            <PopoverCloseButton />
+                                            <PopoverHeader h={34} />
+                                            <PopoverBody>
+                                                <DatePicker
+                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    showTimeSelect
+                                                    timeFormat="HH:mm"
+                                                    timeIntervals={15}
+                                                    selected={localOpenDate}
+                                                    onChange={(date) => {
+                                                        setLocalOpenDate(date);
+                                                        //onCloseStart();
+                                                    }}
+                                                    onClickOutside={() => onCloseStart()}
+                                                    inline
+                                                />
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Popover>
 
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <DatePicker
-                                            showTimeSelect
-                                            timeFormat="HH:mm"
-                                            timeIntervals={15}
-                                            selected={closeDate}
-                                            onChange={(date) => setcloseDate(date)}
-                                        />
-                                    </div>
-                                </div>
+                                    <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
+                                        {launchDateAndTime}
+                                    </Text>
+                                </HStack>
                             </div>
+                        </HStack>
 
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachFieldLong}>
-                                    <div
-                                        style={{ width: isDesktopOrLaptop ? "100%" : "20%" }}
-                                        className={`${styles.textLabel} font-face-kg`}
-                                    >
-                                        TEAM WALLET:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            required
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={teamWallet}
-                                            onChange={(e) => {
-                                                setTeamWallet(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
+                        <HStack spacing={15}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                CLOSE DATE:
                             </div>
-                        </div>
-                    </div>
+                            <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                <HStack spacing={5}>
+                                    <Popover isOpen={isEndOpen} onClose={OnCloseEnd} placement="bottom" closeOnBlur={false}>
+                                        <PopoverTrigger>
+                                            <IconButton
+                                                onClick={onToggleEnd}
+                                                aria-label="FaCalendarAlt"
+                                                icon={<FaCalendarAlt size={22} />}
+                                            />
+                                        </PopoverTrigger>
+                                        <PopoverContent width="fit-content">
+                                            <PopoverArrow />
+                                            <PopoverCloseButton />
+                                            <PopoverHeader h={34} />
+                                            <PopoverBody>
+                                                <DatePicker
+                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    showTimeSelect
+                                                    keepOpen
+                                                    timeFormat="HH:mm"
+                                                    timeIntervals={15}
+                                                    selected={localCloseDate}
+                                                    onChange={(date) => {
+                                                        setLocalCloseDate(date);
+                                                        //OnCloseEnd();
+                                                    }}
+                                                    onClickOutside={() => OnCloseEnd()}
+                                                    inline
+                                                />
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Popover>
 
-                    <br></br>
+                                    <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
+                                        {closeDateAndTime}
+                                    </Text>
+                                </HStack>
+                            </div>
+                        </HStack>
 
-                    <div>
-                        <button className={`${styles.nextBtn} font-face-kg `}>PREVIEW</button>
-                    </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: 20,
-                        }}
-                    >
-                        <button onClick={setLaunchData} className={`${styles.nextBtn} font-face-kg `}>
-                            PREVIOUS
-                        </button>
-                        <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
-                            CONFIRM
-                        </button>
-                    </div>
+                        <HStack spacing={15} w="100%">
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                AMM Fee:
+                            </div>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    disabled={newLaunchData.current.edit_mode === true}
+                                    size={sm ? "medium" : "lg"}
+                                    required
+                                    placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    value={parseInt(amm_fee) > 0 ? amm_fee : ""}
+                                    onChange={(e) => {
+                                        setAMMFee(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        </HStack>
+
+                        <HStack spacing={15} w="100%">
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                TEAM WALLET:
+                            </div>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    disabled={newLaunchData.current.edit_mode === true}
+                                    size={sm ? "medium" : "lg"}
+                                    required
+                                    placeholder="Enter Solana Wallet Address"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    value={teamWallet}
+                                    onChange={(e) => {
+                                        setTeamWallet(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        </HStack>
+
+                        <VStack spacing={3} align="center" justify="center" w="100%">
+                            <HStack>
+                                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                                    PREVIEW
+                                </button>
+                            </HStack>
+                            <HStack spacing={3}>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        prevPage(e);
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    Go Back
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        Launch(e);
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    CONFIRM
+                                </button>
+                            </HStack>
+                        </VStack>
+                    </VStack>
                 </form>
             </VStack>
+
+            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
         </Center>
     );
 };

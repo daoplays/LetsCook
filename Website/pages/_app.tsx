@@ -1,33 +1,48 @@
-import { ChakraProvider, HStack } from "@chakra-ui/react";
-import { theme } from "../chakra";
-
-import { useMemo } from "react";
-import { clusterApiUrl } from "@solana/web3.js";
+import { ChakraProvider } from "@chakra-ui/react";
 import { WalletProvider } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-
-import "bootstrap/dist/css/bootstrap.css";
-import "../styles/fonts.css";
-import "../styles/table.css";
+import { theme } from "../chakra";
+import { useMemo } from "react";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
 import NoSSR from "../utils/NoSSR";
+import ContextProviders from "./_contexts";
+import { ToastContainer } from "react-toastify";
+import NextTopLoader from "nextjs-toploader";
+import "bootstrap/dist/css/bootstrap.css";
+import "react-toastify/dist/ReactToastify.css";
+import "../styles/fonts.css";
+import "../styles/table.css";
 
 function MyApp({ Component, pageProps }) {
-    //console.log({ theme });
-    const wallets = useMemo(() => [new PhantomWalletAdapter(), new SolflareWalletAdapter()], []);
+    const wallets = useMemo(() => [], []);
 
     return (
         <NoSSR>
+            <ToastContainer
+                position="bottom-right"
+                autoClose={4000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                pauseOnFocusLoss={false}
+                pauseOnHover={false}
+                rtl={false}
+                draggable
+                theme="light"
+            />
             <ChakraProvider theme={theme}>
+                <NextTopLoader />
                 <WalletProvider wallets={wallets} autoConnect>
                     <WalletModalProvider>
-                        <Navigation />
-                        <div style={{ minHeight: "90vh" }}>
-                            <Component {...pageProps} />
-                        </div>
-                        <Footer />
+                        <ContextProviders>
+                            <Navigation />
+                            <div style={{ minHeight: "90vh" }}>
+                                <Component {...pageProps} />
+                            </div>
+                            <Footer />
+                        </ContextProviders>
                     </WalletModalProvider>
                 </WalletProvider>
             </ChakraProvider>

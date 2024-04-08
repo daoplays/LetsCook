@@ -1,47 +1,58 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Keypair, PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Center, VStack, Text, Box, HStack, Tooltip } from "@chakra-ui/react";
-
-import { DEFAULT_FONT_SIZE, DUNGEON_FONT_SIZE, PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE } from "./Solana/constants";
-import {
-    LaunchData,
-    bignum_to_num,
-    get_current_blockhash,
-    send_transaction,
-    serialise_HypeVote_instruction,
-    myU64,
-    UserData,
-} from "./Solana/state";
-import { Raydium } from "./Solana/raydium";
+import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
+import { Text, HStack, Tooltip } from "@chakra-ui/react";
+import { PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE, LaunchKeys } from "./Solana/constants";
+import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
 import bs58 from "bs58";
-import BN from "bn.js";
 import Image from "next/image";
+import UseWalletConnection from "../hooks/useWallet";
+import useAppRoot from "../context/useAppRoot";
+import { toast } from "react-toastify";
+import useResponsive from "../hooks/useResponsive";
 
-export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; user_data: UserData }) {
+export function HypeVote({ launch_data }: { launch_data?: LaunchData }) {
     const wallet = useWallet();
+    const { handleConnectWallet } = UseWalletConnection();
+    const { checkProgramData, currentUserData } = useAppRoot();
+    const { lg } = useResponsive();
     const hype_vote_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(
         async (result: any) => {
             console.log(result);
+            hype_vote_ws_id.current = null;
+
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
-                alert("Hype vote transaction failed, please try again")
+                alert("Hype vote transaction failed, please try again");
+                return;
+            } else {
+                await checkProgramData();
             }
-            hype_vote_ws_id.current = null;
-        },
-        [],
-    );
 
+            /*toast.success("First Hype Vote!",
+            {
+                position: "bottom-center",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+                icon: ({theme, type}) =>  <img src="/images/thumbs-up.svg"/>
+            });*/
+        },
+        [checkProgramData],
+    );
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             if (hype_vote_ws_id.current !== null) {
-                alert("Hype vote pending, please wait")
+                alert("Hype vote pending, please wait");
                 return;
             }
 
@@ -95,9 +106,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     );
 
     let has_voted: boolean = false;
-    if (user_data !== null) {
-        for (let i = 0; i < user_data.votes.length; i++) {
-            if (user_data.votes[i].toString() == launch_data.game_id.toString()) {
+    //console.log("check user vote", currentUserData === null)
+    if (currentUserData !== null) {
+        for (let i = 0; i < currentUserData.votes.length; i++) {
+            //console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
+            if (currentUserData.votes[i].toString() == launch_data.game_id.toString()) {
                 has_voted = true;
                 break;
             }
@@ -108,26 +121,26 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     let vote_ratio = 0;
     let vote_color = "";
     if (total_votes > 0) {
-        vote_ratio = (100 * launch_data.positive_votes) / total_votes;
-        if (vote_ratio >= 70) {
-            vote_color = "green";
-        } else if (vote_ratio > 50 && vote_ratio < 70) {
-            vote_color = "yellow";
+        vote_ratio = launch_data.positive_votes - launch_data.negative_votes;
+        if (vote_ratio > 0) {
+            vote_color = "#83FF81";
+        } else if (vote_ratio == 0) {
+            vote_color = "#FFEE59";
         } else {
-            vote_color = "red";
+            vote_color = "#FF6E6E";
         }
     }
 
-    if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.seller.toString()) {
+    if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.keys[LaunchKeys.Seller].toString()) {
         return (
             <>
                 {total_votes > 0 && (
-                    <Text m="0" fontSize="large" color={vote_color}>
-                        {vote_ratio.toFixed(0) + "%"}
+                    <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                        {vote_ratio}
                     </Text>
                 )}
                 {total_votes === 0 && (
-                    <Text m="0" fontSize="large" color="white">
+                    <Text m="0" fontSize={lg ? "large" : "x-large"} color="white">
                         --
                     </Text>
                 )}
@@ -138,8 +151,8 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
     if (has_voted) {
         return (
             <>
-                <Text m="0" fontSize="large" color={vote_color}>
-                    {vote_ratio.toFixed(0) + "%"}
+                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                    {vote_ratio}
                 </Text>
             </>
         );
@@ -150,7 +163,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            Vote({ vote: 1 });
+                            if (wallet !== null) {
+                                Vote({ vote: 1 });
+                            } else {
+                                handleConnectWallet();
+                            }
                         }}
                         src="/images/thumbs-up.svg"
                         width={40}
@@ -161,7 +178,11 @@ export function HypeVote({ launch_data, user_data }: { launch_data: LaunchData; 
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            Vote({ vote: 2 });
+                            if (wallet !== null) {
+                                Vote({ vote: 2 });
+                            } else {
+                                handleConnectWallet();
+                            }
                         }}
                         src="/images/thumbs-down.svg"
                         width={40}
