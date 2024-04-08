@@ -118,7 +118,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         if (grind_attempts.current === 0) {
             let est_time = "1s";
             if (tokenStart.length == 2) est_time = "5s";
-            if (tokenStart.length === 3) est_time = "5min";
+            if (tokenStart.length === 3) est_time = "5-20min";
             grind_toast.current = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
             await new Promise((resolve) => setTimeout(resolve, 500));
         } else {
@@ -132,18 +132,19 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         let success: boolean = false;
         for (let i = 0; i < 50000; i++) {
             grind_attempts.current++;
-            let seed_buffer = [];
+            /*let seed_buffer = [];
 
             for (let i = 0; i < 32; i++) {
                 seed_buffer.push(Math.floor(Math.random() * 255));
             }
-
+            
             let seed = new Uint8Array(seed_buffer);
-
-            newLaunchData.current.token_keypair = Keypair.fromSeed(seed);
-
+*/
+            newLaunchData.current.token_keypair = new Keypair()//.fromSeed(seed);
+            //console.log(newLaunchData.current.token_keypair.publicKey.toString(), tokenStart);
             if (newLaunchData.current.token_keypair.publicKey.toString().startsWith(tokenStart)) {
                 success = true;
+                console.log("have found key", newLaunchData.current.token_keypair.publicKey.toString())
                 break;
             }
         }
@@ -161,6 +162,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             grind_attempts.current = 0;
             grind_toast.current = null;
             setIsLoading(false);
+            console.log("returning true");
             return true;
         } else {
             // give the CPU a small break to do other things
@@ -171,6 +173,43 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return false;
         }
     };
+
+    function containsNone(str: string, set: string[]) {
+        return str.split("").every(function (ch) {
+            return set.indexOf(ch) === -1;
+        });
+    }
+
+    let invalid_prefix_chars = [
+        ":",
+        "/",
+        "?",
+        "#",
+        "[",
+        "]",
+        "@",
+        "&",
+        "=",
+        "+",
+        "$",
+        ",",
+        "{",
+        "}",
+        "|",
+        "\\",
+        "^",
+        "~",
+        "`",
+        "<",
+        ">",
+        "%",
+        " ",
+        '"',
+        "I",
+        "l",
+        "0",
+        "O"
+    ];
 
     async function setData(e): Promise<boolean> {
         e.preventDefault();
@@ -220,6 +259,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return false;
         }
 
+        if (!containsNone(tokenStart, invalid_prefix_chars)) {
+            toast.error("Prefix contains invalid characters for token");
+            return false;
+        }
+
         newLaunchData.current.token_keypair = Keypair.generate();
 
         newLaunchData.current.name = name;
@@ -247,20 +291,21 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
-            const tokenGrindSuccess: boolean = await tokenGrind();
+            await tokenGrind();
 
-            // Check if token grind was successful
-            if (!tokenGrindSuccess) {
-                // Token grind failed, return false to indicate failure
-                return false;
-            }
+           
         }
 
+        console.log("returning true");
         return true;
     }
 
     async function nextPage(e) {
-        if (await setData(e)) setScreen("details");
+        console.log("in next page")
+        if (await setData(e)) {setScreen("details");}
+        else {
+            console.log("not advancing")
+        }
     }
 
     const Browse = () => (
@@ -958,6 +1003,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
+
                                     if (!isLoading) {
                                         nextPage(e);
                                     }

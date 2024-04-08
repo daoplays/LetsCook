@@ -35,7 +35,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         if (grind_attempts.current === 0) {
             let est_time = "1s";
             if (tokenStart.length == 2) est_time = "5s";
-            if (tokenStart.length === 3) est_time = "5min";
+            if (tokenStart.length === 3) est_time = "5-20min";
             grind_toast.current = toast.loading("Performing token prefix grind.. Est. time:  " + est_time);
             await new Promise((resolve) => setTimeout(resolve, 500));
         } else {
