@@ -839,7 +839,7 @@ const BuyAndSell = ({
                             style={{ cursor: "pointer" }}
                             onClick={() => {
                                 if (selected === "Buy") {
-                                    setSOLAmount(parseFloat(userSOLBalance.toFixed(5)));
+                                    setSOLAmount(parseFloat(userSOLBalance.toFixed(5)) - 0.01);
                                 }
 
                                 if (selected === "Sell") {

@@ -1020,8 +1020,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 type="button"
                                 onClick={(e) => {
 
-                                    nextPage(e);
-                                    
+                                    if (!isLoading) {
+                                        nextPage(e);
+                                    }                                    
                                 }}
                                 className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}

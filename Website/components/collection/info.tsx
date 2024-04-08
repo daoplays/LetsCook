@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState, useRef } from "react";
+import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
 import { Center, VStack, Text, HStack, Input, chakra, Flex } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -25,6 +25,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
     const [isLoading, setIsLoading] = useState(false);
+    const [grindComplete, setGrindComplete] = useState(false);
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -88,6 +89,43 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         }
     };
 
+    function containsNone(str: string, set: string[]) {
+        return str.split("").every(function (ch) {
+            return set.indexOf(ch) === -1;
+        });
+    }
+
+    let invalid_prefix_chars = [
+        ":",
+        "/",
+        "?",
+        "#",
+        "[",
+        "]",
+        "@",
+        "&",
+        "=",
+        "+",
+        "$",
+        ",",
+        "{",
+        "}",
+        "|",
+        "\\",
+        "^",
+        "~",
+        "`",
+        "<",
+        ">",
+        "%",
+        " ",
+        '"',
+        "I",
+        "l",
+        "0",
+        "O"
+    ];
+
     async function setData(e): Promise<boolean> {
         e.preventDefault();
 
@@ -111,6 +149,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             return false;
         }
 
+        if (!containsNone(tokenStart, invalid_prefix_chars)) {
+            toast.error("Prefix contains invalid characters for token");
+            return false;
+        }
+
         newCollectionData.current.token_keypair = Keypair.generate();
 
         newCollectionData.current.collection_name = name;
@@ -118,22 +161,31 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
 
+
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
-            const tokenGrindSuccess: boolean = await tokenGrind();
+            await tokenGrind();
 
-            // Check if token grind was successful
-            if (!tokenGrindSuccess) {
-                // Token grind failed, return false to indicate failure
-                return false;
-            }
+           
+        }
+        else {
+            setGrindComplete(true);
         }
 
         return true;
     }
 
+
+    useEffect(() => {
+        if (!grindComplete) {
+            return;
+        }
+
+        setScreen("step 2");
+    }, [grindComplete]);
+
     async function nextPage(e) {
-        if (await setData(e)) setScreen("step 2");
+        await setData(e)
     }
 
     const handleNameChange = (e) => {
