@@ -50,18 +50,19 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         let success: boolean = false;
         for (let i = 0; i < 50000; i++) {
             grind_attempts.current++;
-            let seed_buffer = [];
+            /*let seed_buffer = [];
 
             for (let i = 0; i < 32; i++) {
                 seed_buffer.push(Math.floor(Math.random() * 255));
             }
-
+            
             let seed = new Uint8Array(seed_buffer);
-
-            newCollectionData.current.token_keypair = Keypair.fromSeed(seed);
-
+*/
+            newCollectionData.current.token_keypair = new Keypair()//.fromSeed(seed);
+            //console.log(newLaunchData.current.token_keypair.publicKey.toString(), tokenStart);
             if (newCollectionData.current.token_keypair.publicKey.toString().startsWith(tokenStart)) {
                 success = true;
+                console.log("have found key", newCollectionData.current.token_keypair.publicKey.toString())
                 break;
             }
         }
@@ -78,6 +79,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             grind_attempts.current = 0;
             grind_toast.current = null;
             setIsLoading(false);
+            setGrindComplete(true);
             return true;
         } else {
             // give the CPU a small break to do other things
@@ -391,10 +393,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         nextPage(e);
                                     }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
                                 {isLoading ? "Please Wait" : "NEXT (1/4)"}
+                                
+                                
                             </button>
                         </HStack>
                     </VStack>

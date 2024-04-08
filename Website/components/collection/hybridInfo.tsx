@@ -23,7 +23,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const { newCollectionData } = useAppRoot();
 
     const { sm, md, lg } = useResponsive();
-    const [token_mint, setTokenMint] = useState<string>(newCollectionData.current.token_mint?.toString());
+    const [token_mint, setTokenMint] = useState<string>(newCollectionData.current.token_mint !== null ? newCollectionData.current.token_mint?.toString() : "");
     const [token_name, setTokenName] = useState<string>(newCollectionData.current.token_symbol);
     const [token_icon_url, setTokenIconURL] = useState<string>(newCollectionData.current.token_image_url);
     const [token_symbol, setTokenSymbol] = useState<string>(newCollectionData.current.token_symbol);
