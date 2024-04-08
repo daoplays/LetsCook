@@ -163,7 +163,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {amm_launch.launch_data.symbol}
                     </Text>
                 </HStack>
@@ -171,7 +171,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
 
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch_data.decimals, 3))}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
@@ -180,27 +180,39 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
 
             <td style={{ minWidth: "120px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {market_cap.toFixed(2)}
+                    <Text fontSize={"large"} m={0}>
+                        {market_cap.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        })}
                     </Text>
                     <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "150px" }}>
+            <td style={{ minWidth: "140px" }}>
                 <HStack justify="center">
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
-                        {mm_rewards}
+                    <Text fontSize={"large"} m={0}>
+                        {mm_rewards.toLocaleString()}
                     </Text>
-                    <Image src={amm_launch.launch_data.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image
+                        src={amm_launch.launch_data.icon}
+                        width={30}
+                        height={30}
+                        alt="SOL Icon"
+                        style={{ marginLeft: -3, borderRadius: "5px" }}
+                    />
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "150px" }}>
+            <td style={{ minWidth: "120px" }}>
                 <ShowExtensions extension_flag={amm_launch.launch_data.flags[LaunchFlags.Extensions]} />
             </td>
-
-            <td />
+            <td style={{ minWidth: "100px" }}>
+                <Button onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)} style={{ textDecoration: "none" }}>
+                    View
+                </Button>
+            </td>
         </tr>
     );
 };

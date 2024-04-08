@@ -38,6 +38,11 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
+        if (!file.type.startsWith("image")) {
+            toast.error("Please upload an image file.");
+            return;
+        }
+
         if (file) {
             if (file.size <= 4194304) {
                 newLaunchData.current.banner_file = file;

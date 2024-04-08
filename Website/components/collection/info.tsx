@@ -146,6 +146,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
+        if (!file.type.startsWith("image")) {
+            toast.error("Please upload an image file.");
+            return;
+        }
+
         if (file) {
             if (file.size <= 1048576) {
                 const dimensions = await getImageDimensions(file);
@@ -290,7 +295,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                 disabled={newCollectionData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 className={styles.inputBox}
-                                                placeholder="Enter Token Prefix Grind (Max 3 Characters)"
+                                                placeholder="Enter Token Prefix (Max 3 Characters) - Optional"
                                                 value={tokenStart}
                                                 onChange={(e) => {
                                                     setTokenStart(e.target.value);

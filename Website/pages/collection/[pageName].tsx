@@ -454,7 +454,7 @@ const CollectionSwapPage = () => {
                                         Token balance:
                                     </Text>
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                        {token_balance / Math.pow(10, launch.token_decimals)}
+                                        {(token_balance / Math.pow(10, launch.token_decimals)).toLocaleString()}
                                     </Text>
                                 </HStack>
                             </VStack>
@@ -480,7 +480,7 @@ const CollectionSwapPage = () => {
                                                 }}
                                                 isDisabled={!enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading}
                                             >
-                                                {bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)}{" "}
+                                                {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}{" "}
                                                 {launch.token_symbol} = 1 NFT
                                             </Button>
                                         </Tooltip>
@@ -503,7 +503,7 @@ const CollectionSwapPage = () => {
                                             }}
                                             isDisabled={nft_balance <= 0 || isClaimLoading || isMintLoading || isWrapLoading}
                                         >
-                                            1 NFT = {out_amount.toFixed(Math.min(3, launch.token_decimals))} {launch.token_symbol}
+                                            1 NFT = {out_amount.toLocaleString()} {launch.token_symbol}
                                         </Button>
                                     </Tooltip>
                                 </VStack>

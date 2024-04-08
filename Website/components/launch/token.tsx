@@ -44,6 +44,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
+    const [grindComplete, setGrindComplete] = useState(false);
 
     const [name, setName] = useState<string>(newLaunchData.current.name);
     const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
@@ -79,6 +80,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
+
+        if (!file.type.startsWith("image")) {
+            toast.error("Please upload an image file.");
+            return;
+        }
 
         if (file) {
             if (file.size <= 1048576) {
@@ -162,6 +168,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             grind_attempts.current = 0;
             grind_toast.current = null;
             setIsLoading(false);
+            setGrindComplete(true);
+
             console.log("returning true");
             return true;
         } else {
@@ -295,17 +303,25 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
            
         }
+        else {
+            setGrindComplete(true);
+        }
 
         console.log("returning true");
         return true;
     }
 
+    useEffect(() => {
+        if (!grindComplete) {
+            return;
+        }
+
+        setScreen("details");
+    }, [grindComplete]);
+
     async function nextPage(e) {
         console.log("in next page")
-        if (await setData(e)) {setScreen("details");}
-        else {
-            console.log("not advancing")
-        }
+        await setData(e)
     }
 
     const Browse = () => (
@@ -1004,9 +1020,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 type="button"
                                 onClick={(e) => {
 
-                                    if (!isLoading) {
-                                        nextPage(e);
-                                    }
+                                    nextPage(e);
+                                    
                                 }}
                                 className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}

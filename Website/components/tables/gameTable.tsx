@@ -183,7 +183,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {launch.symbol}
                     </Text>
                 </HStack>
@@ -192,7 +192,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 {socialsExist ? (
                     <Links socials={launch.socials} />
                 ) : (
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         No Socials
                     </Text>
                 )}
@@ -201,17 +201,17 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 <HypeVote launch_data={launch} />
             </td>
             <td style={{ minWidth: "170px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {bignum_to_num(launch.minimum_liquidity) / LAMPORTS_PER_SOL} SOL
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>
-                <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                <Text fontSize={"large"} m={0}>
                     {date}
                 </Text>
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button as={Link} href={`/launch/${launch.page_name}`} style={{ textDecoration: "none" }}>
+                <Button onClick={() => router.push(`/launch/` + launch.page_name)} style={{ textDecoration: "none" }}>
                     View
                 </Button>
             </td>

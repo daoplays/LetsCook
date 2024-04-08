@@ -12,31 +12,37 @@ import addHttpsIfMissing from "../../utils/addHttpsIfMissing";
 
 interface LinksProps {
     socials: string[] | null;
+    isTradePage?: boolean;
 }
 
-const Links = ({ socials }: LinksProps) => {
+const Links = ({ socials, isTradePage }: LinksProps) => {
     const { lg } = useResponsive();
 
     return (
         <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
             {socials[Socials.Twitter] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Twitter]) : "#"} target="_blank">
-                    <Image src={twitter.src} alt="Twitter Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                    <Image src={twitter.src} alt="Twitter Icon" width={lg || isTradePage ? 30 : 40} height={lg || isTradePage ? 30 : 40} />
                 </Link>
             )}
             {socials[Socials.Telegram] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Telegram]) : "#"} target="_blank">
-                    <Image src={telegram.src} alt="Telegram Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                    <Image
+                        src={telegram.src}
+                        alt="Telegram Icon"
+                        width={lg || isTradePage ? 30 : 40}
+                        height={lg || isTradePage ? 30 : 40}
+                    />
                 </Link>
             )}
             {socials[Socials.Discord] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Discord]) : "#"} target="_blank">
-                    <Image src={discord.src} alt="Discord Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                    <Image src={discord.src} alt="Discord Icon" width={lg || isTradePage ? 30 : 40} height={lg || isTradePage ? 30 : 40} />
                 </Link>
             )}
             {socials[Socials.Website] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Website]) : "#"} target="_blank">
-                    <Image src={website.src} alt="Website Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                    <Image src={website.src} alt="Website Icon" width={lg || isTradePage ? 30 : 40} height={lg || isTradePage ? 30 : 40} />
                 </Link>
             )}
         </HStack>

@@ -123,7 +123,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {launch.collection_symbol}
                     </Text>
                 </HStack>
@@ -139,16 +139,28 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0}>
+                    <Text fontSize={"large"} m={0}>
                         {launch.token_symbol}
                     </Text>
                 </HStack>
             </td>
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>{bignum_to_num(launch.swap_price)/Math.pow(10, launch.token_decimals)}</td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>{launch.swap_fee / 100}</td>
-            <td style={{ minWidth: md ? "230px" : "" }}>{launch.total_supply}</td>
+            <td style={{ minWidth: sm ? "170px" : "200px" }}>
+                <Text fontSize={"large"} m={0}>
+                    {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}
+                </Text>
+            </td>
+            <td style={{ minWidth: "150px" }}>
+                <Text fontSize={"large"} m={0}>
+                    {launch.swap_fee / 100}{" "}
+                </Text>
+            </td>
+            <td style={{ minWidth: md ? "230px" : "" }}>
+                <Text fontSize={"large"} m={0}>
+                    {launch.total_supply}
+                </Text>
+            </td>
             <td style={{ minWidth: "100px" }}>
-                <Button as={Link} href={`/collection/${launch.page_name}`} style={{ textDecoration: "none" }}>
+                <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>
                     View
                 </Button>
             </td>
