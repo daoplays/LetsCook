@@ -481,7 +481,7 @@ const CollectionSwapPage = () => {
                                                 isDisabled={!enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading}
                                             >
                                                 {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}{" "}
-                                                {launch.token_symbol.replace(/[^a-zA-Z0-9$]/g, "")} = 1 NFT
+                                                {launch.token_symbol} = 1 NFT
                                             </Button>
                                         </Tooltip>
                                     ) : (
@@ -503,7 +503,7 @@ const CollectionSwapPage = () => {
                                             }}
                                             isDisabled={nft_balance <= 0 || isClaimLoading || isMintLoading || isWrapLoading}
                                         >
-                                            1 NFT = {out_amount.toLocaleString()} {launch.token_symbol.replace(/[^a-zA-Z0-9$]/g, "")}
+                                            1 NFT = {out_amount.toLocaleString()} {launch.token_symbol}
                                         </Button>
                                     </Tooltip>
                                 </VStack>
