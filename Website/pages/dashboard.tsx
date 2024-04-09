@@ -50,11 +50,21 @@ const DashboardPage = () => {
                 <Flex
                     px={4}
                     py={18}
-                    gap={2}
+                    gap={4}
                     alignItems="center"
                     justifyContent="space-between"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
                 >
+                    <Text
+                        fontSize={sm ? 25 : 35}
+                        color="white"
+                        className="font-face-kg"
+                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        align={"center"}
+                        hidden={!sm}
+                    >
+                        Creator Dashboard
+                    </Text>
                     <HStack spacing={3} zIndex={99}>
                         {["Tokens", "Collections"].map((name, i) => {
                             const isActive = selected === name;
@@ -101,11 +111,12 @@ const DashboardPage = () => {
                         className="font-face-kg"
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
+                        hidden={sm}
                     >
                         Creator Dashboard
                     </Text>
                     {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
-                    <HStack>
+                    <HStack w={sm ? "100%" : ""}>
                         <Button
                             w={sm ? "100%" : "fit-content"}
                             onClick={() => {

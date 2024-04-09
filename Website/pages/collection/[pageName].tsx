@@ -1,4 +1,4 @@
-import { VStack, Text, HStack, Progress, Button, Tooltip, Link } from "@chakra-ui/react";
+import { VStack, Text, HStack, Progress, Button, Tooltip, Link, Flex } from "@chakra-ui/react";
 import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -385,10 +385,10 @@ const CollectionSwapPage = () => {
                         h="fit-content"
                         justifyContent="space-between"
                     >
-                        <Text m={0} align="start" className="font-face-kg" color={"white"} fontSize="xx-large">
+                        <Text m={0} align={sm ? "center" : "start"} className="font-face-kg" color={"white"} fontSize="xx-large">
                             Hybrid Wrap
                         </Text>
-                        <HStack spacing={24} alignItems="start">
+                        <Flex gap={sm ? 12 : 24} direction={sm ? "column" : "row"} alignItems={sm ? "center" : "start"}>
                             <VStack>
                                 <Image
                                     src={launch.token_icon_url}
@@ -481,7 +481,7 @@ const CollectionSwapPage = () => {
                                                 isDisabled={!enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading}
                                             >
                                                 {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}{" "}
-                                                {launch.token_symbol} = 1 NFT
+                                                {launch.token_symbol.replace(/[^a-zA-Z0-9$]/g, "")} = 1 NFT
                                             </Button>
                                         </Tooltip>
                                     ) : (
@@ -503,7 +503,7 @@ const CollectionSwapPage = () => {
                                             }}
                                             isDisabled={nft_balance <= 0 || isClaimLoading || isMintLoading || isWrapLoading}
                                         >
-                                            1 NFT = {out_amount.toLocaleString()} {launch.token_symbol}
+                                            1 NFT = {out_amount.toLocaleString()} {launch.token_symbol.replace(/[^a-zA-Z0-9$]/g, "")}
                                         </Button>
                                     </Tooltip>
                                 </VStack>
@@ -570,8 +570,8 @@ const CollectionSwapPage = () => {
                                     </Text>
                                 </HStack>
                             </VStack>
-                        </HStack>
-                        <VStack spacing={0} w="100%" style={{ position: "relative" }}>
+                        </Flex>
+                        <VStack mt={5} spacing={0} w="100%" style={{ position: "relative" }}>
                             <Text color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                 Available Supply
                             </Text>
