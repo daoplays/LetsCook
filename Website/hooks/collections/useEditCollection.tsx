@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import {serialise_EditCollection_instruction} from "../../components/collection/collectionState";
+import { serialise_EditCollection_instruction } from "../../components/collection/collectionState";
 
 const useEditCollection = () => {
     const wallet = useWallet();
@@ -56,8 +56,6 @@ const useEditCollection = () => {
             PROGRAM,
         )[0];
 
-    
-
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
@@ -93,7 +91,6 @@ const useEditCollection = () => {
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: team_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
-
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },

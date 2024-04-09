@@ -17,12 +17,9 @@ import {
     Connection,
     Keypair,
     SYSVAR_RENT_PUBKEY,
-    AccountMeta
+    AccountMeta,
 } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID,
-    getTransferHook,
-    resolveExtraAccountMeta,
-    ExtraAccountMetaAccountDataLayout, } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
     PROGRAM,
@@ -64,7 +61,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         }
     }, []);
 
-
     const ClaimNFT = async () => {
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -74,7 +70,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         if (assignment_data !== null) {
             if (assignment_data.status > 0) {
-                console.log("assignment data found, minting nft")
+                console.log("assignment data found, minting nft");
                 await MintNFT();
                 return;
             }
@@ -129,13 +125,12 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-
         let collection_metadata_account = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), launchData.keys[CollectionKeys.CollectionMint].toBuffer()],
             METAPLEX_META,
         )[0];
 
-        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString())
+        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
         let transfer_hook = getTransferHook(mint_account);
 
         let transfer_hook_program_account: PublicKey | null = null;
@@ -171,7 +166,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             }
         }
 
-
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_nft);
 
         var account_vector = [
@@ -185,8 +179,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
 
-
-
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: collection_metadata_account, isSigner: false, isWritable: true },
 
@@ -195,7 +187,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
-
         ];
 
         if (transfer_hook_program_account !== null) {

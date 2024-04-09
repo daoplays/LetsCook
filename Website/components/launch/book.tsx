@@ -53,7 +53,7 @@ import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
     SystemProgram,
-    LAMPORTS_PER_SOL
+    LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
@@ -72,7 +72,7 @@ import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 
 let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
-let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
+let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS";
 // Define the Tag type
 type Tag = {
     name: string;
@@ -111,8 +111,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let splitLaunchTime = splitLaunchDate[4].split(":");
         let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
         setLaunchDateAndTime(`${launchDateString} ${launchTimeString}`);
-
-
     }, [localOpenDate, local_date, zone]);
 
     useEffect(() => {
@@ -120,9 +118,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let endDateString = splitEndDate[0] + " " + splitEndDate[1] + " " + splitEndDate[2] + " " + splitEndDate[3];
         let splitEndTime = splitEndDate[4].split(":");
         let endTimeString = splitEndTime[0] + ":" + splitEndTime[1] + " " + zone;
-       
-        setCloseDateAndTime(`${endDateString} ${endTimeString}`);
 
+        setCloseDateAndTime(`${endDateString} ${endTimeString}`);
     }, [localCloseDate, local_date, zone]);
 
     const check_signature_update = useCallback(
@@ -171,7 +168,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
-        
         newLaunchData.current.opendate = localOpenDate;
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
@@ -227,30 +223,28 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
-            
             let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
-  
-             console.log("price", Number(price));
+
+            console.log("price", Number(price));
 
             try {
                 //await irys.fund(price);
 
                 let txArgs = await get_current_blockhash("");
-    
+
                 var tx = new Transaction(txArgs).add(
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(IRYS_WALLET),
                         lamports: Number(price),
-                    })
+                    }),
                 );
                 tx.feePayer = wallet.publicKey;
                 let signed_transaction = await wallet.signTransaction(tx);
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
-    
+
                 var transaction_response = await send_transaction("", encoded_transaction);
                 console.log(transaction_response);
-
 
                 let signature = transaction_response.result;
 
@@ -334,28 +328,27 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             try {
                 let txArgs = await get_current_blockhash("");
-        
-                    var tx = new Transaction(txArgs).add(
-                        SystemProgram.transfer({
-                            fromPubkey: wallet.publicKey,
-                            toPubkey: new PublicKey(IRYS_WALLET),
-                            lamports: Number(json_price),
-                        })
-                    );
-                    tx.feePayer = wallet.publicKey;
-                    let signed_transaction = await wallet.signTransaction(tx);
-                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
-        
-                    var transaction_response = await send_transaction("", encoded_transaction);
-                    console.log(transaction_response);
 
+                var tx = new Transaction(txArgs).add(
+                    SystemProgram.transfer({
+                        fromPubkey: wallet.publicKey,
+                        toPubkey: new PublicKey(IRYS_WALLET),
+                        lamports: Number(json_price),
+                    }),
+                );
+                tx.feePayer = wallet.publicKey;
+                let signed_transaction = await wallet.signTransaction(tx);
+                const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-                    let signature = transaction_response.result;
+                var transaction_response = await send_transaction("", encoded_transaction);
+                console.log(transaction_response);
 
-                    let fund_check = await irys.funder.submitFundTransaction(signature);
+                let signature = transaction_response.result;
 
-                    console.log(fund_check, fund_check.data["confirmed"]);
-                    
+                let fund_check = await irys.funder.submitFundTransaction(signature);
+
+                console.log(fund_check, fund_check.data["confirmed"]);
+
                 //await irys.fund(json_price);
                 toast.update(fundMetadata, {
                     render: "Your account has been successfully funded.",

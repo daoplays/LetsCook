@@ -38,7 +38,7 @@ import {
     Connection,
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
-    SystemProgram
+    SystemProgram,
 } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import bs58 from "bs58";
@@ -56,15 +56,13 @@ interface CollectionPageProps {
 }
 
 let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
-let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
+let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS";
 
 // Define the Tag type
 type Tag = {
     name: string;
     value: string;
 };
-
-
 
 const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const router = useRouter();
@@ -252,18 +250,18 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             try {
                 let txArgs = await get_current_blockhash("");
-    
+
                 var tx = new Transaction(txArgs).add(
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(IRYS_WALLET),
                         lamports: Number(price),
-                    })
+                    }),
                 );
                 tx.feePayer = wallet.publicKey;
                 let signed_transaction = await wallet.signTransaction(tx);
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
-    
+
                 var transaction_response = await send_transaction("", encoded_transaction);
                 let signature = transaction_response.result;
 
@@ -288,8 +286,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return;
             }
 
-            
-        
             let tags: Tag[] = [];
 
             for (let i = 0; i < file_list.length; i++) {
@@ -380,18 +376,18 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             try {
                 let txArgs = await get_current_blockhash("");
-    
+
                 var tx = new Transaction(txArgs).add(
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(IRYS_WALLET),
                         lamports: Number(json_price),
-                    })
+                    }),
                 );
                 tx.feePayer = wallet.publicKey;
                 let signed_transaction = await wallet.signTransaction(tx);
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
-    
+
                 var transaction_response = await send_transaction("", encoded_transaction);
 
                 let signature = transaction_response.result;
@@ -549,8 +545,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             let signature = transaction_response.result;
 
-
-
             if (DEBUG) {
                 console.log("list signature: ", signature);
             }
@@ -563,8 +557,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             });
 
             connection.onSignature(signature, check_signature_update, "confirmed");
-
-            
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {

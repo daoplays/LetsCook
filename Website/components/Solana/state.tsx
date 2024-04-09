@@ -568,7 +568,7 @@ export const enum LaunchInstruction {
     claim_nft = 17,
     mint_nft = 18,
     wrap_nft = 19,
-    edit_collection = 20
+    edit_collection = 20,
 }
 
 export interface LaunchDataUserInput {
@@ -598,7 +598,7 @@ export interface LaunchDataUserInput {
     closedate: Date;
     team_wallet: string;
     token_keypair: Keypair | null;
-    amm_fee : number;
+    amm_fee: number;
     // extension data
     transfer_fee: number;
     max_transfer_fee: number;
@@ -850,7 +850,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
-        amm_fee : 0,
+        amm_fee: 0,
         transfer_fee: 0,
         max_transfer_fee: 0,
         permanent_delegate: null,
@@ -1093,7 +1093,7 @@ class EditLaunch_Instruction {
         readonly twitter: string,
         readonly telegram: string,
         readonly discord: string,
-        readonly amm_fee: number
+        readonly amm_fee: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<EditLaunch_Instruction>(
@@ -1106,7 +1106,6 @@ class EditLaunch_Instruction {
             ["telegram", utf8String],
             ["discord", utf8String],
             ["amm_fee", u16],
-
         ],
         (args) =>
             new EditLaunch_Instruction(
@@ -1117,7 +1116,7 @@ class EditLaunch_Instruction {
                 args.twitter!,
                 args.telegram!,
                 args.discord!,
-                args.amm_fee!
+                args.amm_fee!,
             ),
         "EditLaunch_Instruction",
     );
@@ -1132,7 +1131,7 @@ export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUser
         new_launch_data.twt_url,
         new_launch_data.tele_url,
         new_launch_data.disc_url,
-        new_launch_data.amm_fee
+        new_launch_data.amm_fee,
     );
     const [buf] = EditLaunch_Instruction.struct.serialize(data);
 

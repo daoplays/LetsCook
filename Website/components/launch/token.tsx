@@ -146,11 +146,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             
             let seed = new Uint8Array(seed_buffer);
 */
-            newLaunchData.current.token_keypair = new Keypair()//.fromSeed(seed);
+            newLaunchData.current.token_keypair = new Keypair(); //.fromSeed(seed);
             //console.log(newLaunchData.current.token_keypair.publicKey.toString(), tokenStart);
             if (newLaunchData.current.token_keypair.publicKey.toString().startsWith(tokenStart)) {
                 success = true;
-                console.log("have found key", newLaunchData.current.token_keypair.publicKey.toString())
+                console.log("have found key", newLaunchData.current.token_keypair.publicKey.toString());
                 break;
             }
         }
@@ -216,7 +216,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         "I",
         "l",
         "0",
-        "O"
+        "O",
     ];
 
     async function setData(e): Promise<boolean> {
@@ -300,10 +300,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
             await tokenGrind();
-
-           
-        }
-        else {
+        } else {
             setGrindComplete(true);
         }
 
@@ -317,11 +314,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         setScreen("details");
-    }, [grindComplete]);
+    }, [grindComplete, setScreen]);
 
     async function nextPage(e) {
-        console.log("in next page")
-        await setData(e)
+        console.log("in next page");
+        await setData(e);
     }
 
     const Browse = () => (
@@ -1019,10 +1016,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-
                                     if (!isLoading) {
                                         nextPage(e);
-                                    }                                    
+                                    }
                                 }}
                                 className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}

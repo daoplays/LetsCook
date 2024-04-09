@@ -58,11 +58,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             
             let seed = new Uint8Array(seed_buffer);
 */
-            newCollectionData.current.token_keypair = new Keypair()//.fromSeed(seed);
+            newCollectionData.current.token_keypair = new Keypair(); //.fromSeed(seed);
             //console.log(newLaunchData.current.token_keypair.publicKey.toString(), tokenStart);
             if (newCollectionData.current.token_keypair.publicKey.toString().startsWith(tokenStart)) {
                 success = true;
-                console.log("have found key", newCollectionData.current.token_keypair.publicKey.toString())
+                console.log("have found key", newCollectionData.current.token_keypair.publicKey.toString());
                 break;
             }
         }
@@ -125,7 +125,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         "I",
         "l",
         "0",
-        "O"
+        "O",
     ];
 
     async function setData(e): Promise<boolean> {
@@ -163,20 +163,15 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
 
-
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
             await tokenGrind();
-
-           
-        }
-        else {
+        } else {
             setGrindComplete(true);
         }
 
         return true;
     }
-
 
     useEffect(() => {
         if (!grindComplete) {
@@ -184,10 +179,10 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         }
 
         setScreen("step 2");
-    }, [grindComplete]);
+    }, [grindComplete, setScreen]);
 
     async function nextPage(e) {
-        await setData(e)
+        await setData(e);
     }
 
     const handleNameChange = (e) => {
@@ -397,8 +392,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
                                 {isLoading ? "Please Wait" : "NEXT (1/4)"}
-                                
-                                
                             </button>
                         </HStack>
                     </VStack>

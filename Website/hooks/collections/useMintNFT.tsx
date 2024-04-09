@@ -6,7 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
-    request_raw_account_data
+    request_raw_account_data,
 } from "../../components/Solana/state";
 import {
     CollectionData,
@@ -23,7 +23,7 @@ import {
     TransactionInstruction,
     Connection,
     Keypair,
-    AccountMeta
+    AccountMeta,
 } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -102,7 +102,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let assignment_data = await request_assignment_data(nft_assignment_account);
 
         if (assignment_data === null) {
-           // console.log("no assignment data found");
+            // console.log("no assignment data found");
             return;
         }
 
@@ -127,7 +127,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             nft_pubkey = lookup_data.nft_mint;
             //console.log(lookup_data);
         }
-
 
         let token_meta_key = PublicKey.findProgramAddressSync(
             [Buffer.from("metadata"), METAPLEX_META.toBuffer(), nft_pubkey.toBuffer()],
@@ -174,8 +173,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             ],
             METAPLEX_META,
         )[0];
-        
-
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.mint_nft);
 

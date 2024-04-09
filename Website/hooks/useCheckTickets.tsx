@@ -17,7 +17,7 @@ import useInitAMM from "./useInitAMM";
 const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData } = useAppRoot();
-    const {GetInitAMMInstruction} = useInitAMM(launchData);
+    const { GetInitAMMInstruction } = useInitAMM(launchData);
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -105,8 +105,6 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         }
 
         transaction.add(list_instruction);
-
-
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

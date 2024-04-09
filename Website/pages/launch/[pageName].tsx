@@ -423,7 +423,7 @@ const TokenMintPage = () => {
                                                 handleConnectWallet();
                                             } else {
                                                 if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
-                                                    //InitAMM(); 
+                                                    //InitAMM();
                                                     CheckTickets();
                                                 } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
                                                     return;

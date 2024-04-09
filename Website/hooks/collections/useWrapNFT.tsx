@@ -6,7 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
-    request_raw_account_data
+    request_raw_account_data,
 } from "../../components/Solana/state";
 import {
     CollectionData,
@@ -23,7 +23,7 @@ import {
     TransactionInstruction,
     Connection,
     Keypair,
-    AccountMeta
+    AccountMeta,
 } from "@solana/web3.js";
 import {
     TOKEN_2022_PROGRAM_ID,
@@ -34,7 +34,7 @@ import {
     Account,
     getTransferHook,
     resolveExtraAccountMeta,
-    ExtraAccountMetaAccountDataLayout
+    ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
@@ -107,13 +107,12 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let token_addresses: PublicKey[] = [];
         let token_mints: PublicKey[] = [];
 
-        let lookup_keys = CollectionLookup.keys()
-        while(true) {
+        let lookup_keys = CollectionLookup.keys();
+        while (true) {
             let lookup_it = lookup_keys.next();
-            if (lookup_it.done)
-                break;
+            if (lookup_it.done) break;
 
-            let nft_mint = new PublicKey(lookup_it.value)
+            let nft_mint = new PublicKey(lookup_it.value);
             let token_account = getAssociatedTokenAddressSync(
                 nft_mint, // mint
                 wallet.publicKey, // owner
@@ -129,7 +128,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         let valid_lookups: LookupData[] = [];
         for (let i = 0; i < token_infos.length; i++) {
-            if ( token_infos[i] === null) {
+            if (token_infos[i] === null) {
                 continue;
             }
             let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
@@ -141,7 +140,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         //console.log(valid_lookups);
 
         if (valid_lookups.length === 0) {
-            console.log("no nfts owned by user")
+            console.log("no nfts owned by user");
             return;
         }
 
@@ -201,8 +200,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             TOKEN_2022_PROGRAM_ID,
         );
 
-
-        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString())
+        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
         let transfer_hook = getTransferHook(mint_account);
 
         let transfer_hook_program_account: PublicKey | null = null;
@@ -266,7 +264,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
         if (transfer_hook_program_account !== null) {
-            
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
 
             if (transfer_hook_program_account.equals(FEES_PROGRAM)) {
@@ -276,7 +273,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                     isWritable: true,
                 });
             }
-            
+
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
 
             for (let i = 0; i < extra_hook_accounts.length; i++) {
@@ -286,8 +283,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                     isWritable: extra_hook_accounts[i].isWritable,
                 });
             }
-
-            
         }
 
         const list_instruction = new TransactionInstruction({

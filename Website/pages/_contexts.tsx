@@ -18,7 +18,7 @@ import {
     request_current_balance,
     requestMultipleAccounts,
     Token22MintAccount,
-    uInt32ToLEBytes
+    uInt32ToLEBytes,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
@@ -323,7 +323,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
             if (data[0] === 8) {
                 //CloseAccount({account: program_data[i].pubkey});
-                
+
                 const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
                 continue;
@@ -333,21 +333,17 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 const [lookup] = LookupData.struct.deserialize(data);
                 let collection = lookup.colection_mint.toString();
                 let nft_lookup_account = PublicKey.findProgramAddressSync(
-                    [
-                        lookup.colection_mint.toBytes(),
-                        uInt32ToLEBytes(lookup.nft_index),
-                        Buffer.from("Lookup"),
-                    ],
+                    [lookup.colection_mint.toBytes(), uInt32ToLEBytes(lookup.nft_index), Buffer.from("Lookup")],
                     PROGRAM,
                 )[0];
                 if (NFTLookups.has(collection)) {
                     let existing = NFTLookups.get(collection);
-                    existing.set(lookup.nft_mint.toString(), lookup)
+                    existing.set(lookup.nft_mint.toString(), lookup);
                     NFTLookups.set(collection, existing);
                 } else {
-                    let map = new Map<String, LookupData>()
-                    
-                    map.set(lookup.nft_mint.toString(), lookup)
+                    let map = new Map<String, LookupData>();
+
+                    map.set(lookup.nft_mint.toString(), lookup);
                     NFTLookups.set(collection, map);
                 }
             }

@@ -63,7 +63,6 @@ const useInitAMM = (launchData: LaunchData) => {
 
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
-
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -117,7 +116,10 @@ const useInitAMM = (launchData: LaunchData) => {
             TOKEN_PROGRAM_ID,
         );
 
-        let user_data_account = PublicKey.findProgramAddressSync([launchData.keys[LaunchKeys.Seller].toBytes(), Buffer.from("User")], PROGRAM)[0];
+        let user_data_account = PublicKey.findProgramAddressSync(
+            [launchData.keys[LaunchKeys.Seller].toBytes(), Buffer.from("User")],
+            PROGRAM,
+        )[0];
 
         let index_buffer = uInt32ToLEBytes(0);
         let price_data_account = PublicKey.findProgramAddressSync(

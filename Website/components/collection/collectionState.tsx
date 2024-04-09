@@ -65,7 +65,7 @@ export interface CollectionDataUserInput {
     token_symbol: string;
     token_image_url: string;
     token_decimals: number;
-    token_extensions : number;
+    token_extensions: number;
 }
 
 export const defaultCollectionInput: CollectionDataUserInput = {
@@ -103,7 +103,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_symbol: "",
     token_image_url: "",
     token_decimals: 0,
-    token_extensions: 0
+    token_extensions: 0,
 };
 
 export class CollectionData {
@@ -123,7 +123,7 @@ export class CollectionData {
 
         readonly nft_icon_url: string,
         readonly nft_meta_url: string,
-        readonly nft_name : string,
+        readonly nft_name: string,
 
         readonly banner: string,
         readonly page_name: string,
@@ -391,7 +391,6 @@ class EditCollection_Instruction {
             ["twitter", utf8String],
             ["telegram", utf8String],
             ["discord", utf8String],
-
         ],
         (args) =>
             new EditCollection_Instruction(
@@ -405,7 +404,6 @@ class EditCollection_Instruction {
         "EditCollection_Instruction",
     );
 }
-
 
 export function serialise_LaunchCollection_instruction(new_launch_data: CollectionDataUserInput): Buffer {
     // console.log(new_launch_data);
@@ -442,7 +440,6 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
 
     return buf;
 }
-
 
 export function serialise_EditCollection_instruction(new_launch_data: CollectionDataUserInput): Buffer {
     const data = new EditCollection_Instruction(
