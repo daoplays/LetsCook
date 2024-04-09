@@ -78,6 +78,9 @@ const CollectionSwapPage = () => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+        if (CollectionLookup === null || CollectionLookup === undefined)
+            return;
+
         let token_addresses: PublicKey[] = [];
         let token_mints: PublicKey[] = [];
 
@@ -369,6 +372,7 @@ const CollectionSwapPage = () => {
 
     const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price);
 
+    console.log(launch.token_symbol)
     return (
         <>
             <Head>

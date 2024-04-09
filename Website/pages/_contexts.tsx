@@ -47,7 +47,7 @@ const GetTradeMintData = async (trade_keys, setMintMap) => {
     let mint_map = new Map<PublicKey, Mint>();
     for (let i = 0; i < result.length; i++) {
         let mint = unpackMint(trade_keys[i], result[i], TOKEN_2022_PROGRAM_ID);
-        console.log("mint; ", mint.address.toString());
+        //console.log("mint; ", mint.address.toString());
         mint_map.set(trade_keys[i].toString(), mint);
     }
     setMintMap(mint_map);
@@ -441,12 +441,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
         for (let i = 0; i < trade_filtered.length; i++) {
-            console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
+            //console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
             trade_mints.push(trade_filtered[i].keys[LaunchKeys.MintAddress]);
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }
         for (let i = 0; i < collections.length; i++) {
-            console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
+            //console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
             trade_mints.push(collections[i].keys[CollectionKeys.MintAddress]);
         }
         setTradePageData(trade_page_map);
