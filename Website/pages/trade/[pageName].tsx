@@ -114,7 +114,7 @@ const TradePage = () => {
     const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData } = useAppRoot();
     const { pageName } = router.query;
 
-    const [leftPanel, setLeftPanel] = useState("Chart");
+    const [leftPanel, setLeftPanel] = useState("Info");
 
     const [additionalPixels, setAdditionalPixels] = useState(0);
 
