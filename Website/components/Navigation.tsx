@@ -201,7 +201,7 @@ function Navigation() {
                     transform: isOpen ? "translateY(0)" : "translateY(-100%)",
                 }}
             >
-                <VStack spacing={8} pb={6} py={20} bg="rgba(0,0,0,0.25) " w="100%" h="100%">
+                <VStack spacing={6} pb={6} py={10} bg="rgba(0,0,0,0.25) " w="100%" h="100%">
                     <VStack className="font-face-kg">
                         {wallet.publicKey && (
                             <Text mb={0} fontSize={26} color="white" className="font-face-kg" align="center">
@@ -244,15 +244,27 @@ function Navigation() {
                         </Text>
                     </div>
 
-                    <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
+                    <Link href={isHomePageOnly ? "#" : "/hybrids"} onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                            Calendar
+                            Hybrids
                         </Text>
                     </Link>
 
                     <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
                             Trade
+                        </Text>
+                    </Link>
+
+                    <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
+                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                            Calendar
+                        </Text>
+                    </Link>
+
+                    <Link href={isHomePageOnly ? "#" : "/leaderboard"} onClick={onToggle}>
+                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                            Leaderboard
                         </Text>
                     </Link>
 

@@ -137,7 +137,7 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
                         }}
                     >
                         {tableHeaders.map((i) => (
-                            <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
+                            <th key={i.text} style={{ minWidth: "120px" }}>
                                 <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
                                     <Text fontSize={sm ? "medium" : "large"} m={0}>
                                         {i.text}
@@ -203,7 +203,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
             }}
         >
             {show_icon && (
-                <td style={{ minWidth: sm ? "90px" : "120px" }}>
+                <td style={{ minWidth: "150px" }}>
                     <HStack px={3} spacing={3} justify="center">
                         <Box w={45} h={45} borderRadius={10}>
                             <Image
@@ -220,12 +220,12 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                     </HStack>
                 </td>
             )}
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {reward.launch_reward.date.toLocaleString()}
                 </Text>
             </td>
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {days_rewards.toLocaleString()}
                 </Text>

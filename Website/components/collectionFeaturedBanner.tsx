@@ -67,7 +67,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                                     fontSize={lg ? 30 : 60}
                                     color="white"
                                     className="font-face-kg"
-                                    style={{ wordBreak: "break-all" }}
+                                    style={{ wordBreak: "break-word" }}
                                     align={"center"}
                                 >
                                     {featuredLaunch !== null ? featuredLaunch.collection_name : ""}

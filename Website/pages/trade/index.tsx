@@ -32,12 +32,12 @@ const MarketMaker = () => {
                 <Flex
                     px={4}
                     py={18}
-                    gap={2}
+                    gap={5}
                     alignItems="center"
                     justifyContent={"start"}
                     style={{ position: "relative", flexDirection: sm ? "column-reverse" : "row" }}
                 >
-                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : 0}>
+                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2}>
                         {/* add rewards  */}
                         {["Markets", "Rewards"].map((name, i) => {
                             const isActive = selected === name;
@@ -82,7 +82,7 @@ const MarketMaker = () => {
                                     }}
                                     px={4}
                                     py={2}
-                                    w={xs ? "50%" : "fit-content"}
+                                    w={sm ? "50%" : "fit-content"}
                                 >
                                     <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
                                         {name}
