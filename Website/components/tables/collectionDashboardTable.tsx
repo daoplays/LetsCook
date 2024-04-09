@@ -111,7 +111,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
         >
-            <td style={{ minWidth: sm ? "90px" : "150px" }}>
+            <td style={{ minWidth: "160px" }}>
                 {" "}
                 <HStack px={3} spacing={3} justify="center">
                     <Box w={45} h={45} borderRadius={10}>
@@ -128,7 +128,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     </Text>
                 </HStack>
             </td>
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "160px" }}>
                 <HStack px={3} spacing={3} justify="center">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
@@ -154,7 +154,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     {launch.swap_fee / 100}{" "}
                 </Text>
             </td>
-            <td style={{ minWidth: md ? "230px" : "" }}>
+            <td style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>
                     {launch.total_supply}
                 </Text>

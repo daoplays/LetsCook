@@ -14,8 +14,14 @@ import "bootstrap/dist/css/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/fonts.css";
 import "../styles/table.css";
+import { usePathname } from "next/navigation";
+import useResponsive from "../hooks/useResponsive";
+
+const hide = ["/trade"];
 
 function MyApp({ Component, pageProps }) {
+    const { sm } = useResponsive();
+    const pathname = usePathname();
     const wallets = useMemo(() => [], []);
 
     return (
@@ -41,7 +47,7 @@ function MyApp({ Component, pageProps }) {
                             <div style={{ minHeight: "90vh" }}>
                                 <Component {...pageProps} />
                             </div>
-                            <Footer />
+                            {(hide.includes(pathname) || !sm) && <Footer />}
                         </ContextProviders>
                     </WalletModalProvider>
                 </WalletProvider>

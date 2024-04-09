@@ -49,7 +49,7 @@ import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
 import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
-import { FaPowerOff } from "react-icons/fa";
+import { FaChartLine, FaInfo, FaPowerOff } from "react-icons/fa";
 import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
@@ -61,6 +61,7 @@ import { HypeVote } from "../../components/hypeVote";
 import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
+import { IoMdSwap } from "react-icons/io";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -113,11 +114,13 @@ const TradePage = () => {
     const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData } = useAppRoot();
     const { pageName } = router.query;
 
-    const [leftPanel, setLeftPanel] = useState("Trade");
+    const [leftPanel, setLeftPanel] = useState("Chart");
 
     const [additionalPixels, setAdditionalPixels] = useState(0);
 
     const [selectedTab, setSelectedTab] = useState("Rewards");
+
+    const [mobilePageContent, setMobilePageContent] = useState("Chart");
 
     const handleClick = (tab: string) => {
         setSelectedTab(tab);
@@ -445,211 +448,269 @@ const TradePage = () => {
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
 
+    const Details = () => {
+        return (
+            <HStack spacing={5} w="100%" px={5} pb={sm ? 5 : 0} style={{ borderBottom: sm ? "0.5px solid rgba(134, 142, 150, 0.5)" : "" }}>
+                <Image
+                    alt="Launch icon"
+                    src={launch.icon}
+                    width={65}
+                    height={65}
+                    style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                />
+                <VStack align="start" spacing={1}>
+                    <Text m={0} fontSize={20} color="white" className="font-face-kg" style={{ wordBreak: "break-all" }} align={"center"}>
+                        {launch.symbol}
+                    </Text>
+                    <HStack spacing={3} align="start" justify="start">
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {trimAddress(launch.keys[LaunchKeys.MintAddress].toString())}
+                        </Text>
+
+                        <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
+                            <div
+                                style={{ cursor: "pointer" }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigator.clipboard.writeText(launch.keys[LaunchKeys.MintAddress].toString());
+                                }}
+                            >
+                                <MdOutlineContentCopy color="white" size={25} />
+                            </div>
+                        </Tooltip>
+
+                        <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                            <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
+                            </Link>
+                        </Tooltip>
+                    </HStack>
+                </VStack>
+            </HStack>
+        );
+    };
+
     return (
         <>
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
+            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: sm ? "100vh" : "" }}>
                 <HStack spacing={0} align="start">
-                    <VStack
-                        py={5}
-                        align="start"
-                        w={320}
-                        style={{
-                            minWidth: "350px",
-                            borderRight: "0.5px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                        spacing={8}
-                    >
-                        <HStack spacing={5} w="100%" px={5}>
-                            <Image
-                                alt="Launch icon"
-                                src={launch.icon}
-                                width={65}
-                                height={65}
-                                style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                            />
-                            <VStack align="start" spacing={1}>
-                                <Text
-                                    m={0}
-                                    fontSize={20}
-                                    color="white"
-                                    className="font-face-kg"
-                                    style={{ wordBreak: "break-all" }}
-                                    align={"center"}
-                                >
-                                    {launch.symbol}
-                                </Text>
-                                <HStack spacing={3} align="start" justify="start">
-                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                        {trimAddress(launch.keys[LaunchKeys.MintAddress].toString())}
-                                    </Text>
-
-                                    <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <div
-                                            style={{ cursor: "pointer" }}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                navigator.clipboard.writeText(launch.keys[LaunchKeys.MintAddress].toString());
-                                            }}
-                                        >
-                                            <MdOutlineContentCopy color="white" size={25} />
-                                        </div>
-                                    </Tooltip>
-
-                                    <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
-                                            <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
-                                        </Link>
-                                    </Tooltip>
-                                </HStack>
-                            </VStack>
-                        </HStack>
-
-                        <Box px={5} mt={-2} pb={5} width="100%" style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
-                            <WoodenButton
-                                action={() => {
-                                    leftPanel === "Info"
-                                        ? setLeftPanel("Trade")
-                                        : leftPanel === "Trade"
-                                          ? setLeftPanel("Info")
-                                          : setLeftPanel("Info");
-                                }}
-                                label={leftPanel === "Info" ? "Place Order" : "Info"}
-                                size={22}
-                                width="100%"
-                            />
-                        </Box>
-
-                        {leftPanel === "Info" && (
-                            <InfoContent
-                                launch={launch}
-                                volume={last_day_volume}
-                                mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
-                                price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
-                                total_supply={total_supply}
-                                sol_price={SOLPrice}
-                                quote_amount={quote_amount}
-                                num_holders={num_holders}
-                            />
-                        )}
-
-                        {leftPanel === "Trade" && (
-                            <BuyAndSell
-                                launch={launch}
-                                amm={amm}
-                                mint_data={base_mint}
-                                base_balance={base_amount}
-                                quote_balance={quote_amount}
-                                user_balance={user_amount}
-                            />
-                        )}
-                    </VStack>
-
-                    <VStack
-                        align="start"
-                        justify="start"
-                        w="100%"
-                        spacing={0}
-                        style={{
-                            minHeight: "100vh",
-                            overflow: "auto",
-                        }}
-                    >
-                        <ChartComponent data={market_data} additionalPixels={additionalPixels} />
-
-                        <div
+                    {(!sm || (sm && (mobilePageContent === "Info" || mobilePageContent === "Trade"))) && (
+                        <VStack
+                            py={5}
+                            align="start"
+                            w={sm ? "100%" : 320}
                             style={{
-                                width: "100%",
-                                height: "10px",
-                                cursor: "ns-resize",
-                                position: "relative",
+                                minWidth: "350px",
+                                borderRight: "0.5px solid rgba(134, 142, 150, 0.5)",
                             }}
-                            onMouseDown={handleMouseDown}
+                            spacing={8}
                         >
-                            <PiArrowsOutLineVerticalLight
-                                size={26}
-                                style={{
-                                    position: "absolute",
-                                    color: "white",
-                                    margin: "auto",
-                                    top: 0,
-                                    left: 0,
-                                    bottom: 0,
-                                    right: 0,
-                                    opacity: 0.75,
-                                    zIndex: 99,
-                                }}
-                            />
-                        </div>
+                            <Details />
 
-                        <HStack
-                            justify="space-between"
-                            align="center"
+                            {!sm && (
+                                <Box px={5} mt={-2} pb={5} width="100%" style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
+                                    <WoodenButton
+                                        action={() => {
+                                            leftPanel === "Info"
+                                                ? setLeftPanel("Trade")
+                                                : leftPanel === "Trade"
+                                                  ? setLeftPanel("Info")
+                                                  : setLeftPanel("Info");
+                                        }}
+                                        label={leftPanel === "Info" ? "Place Order" : "Info"}
+                                        size={22}
+                                        width="100%"
+                                    />
+                                </Box>
+                            )}
+
+                            {leftPanel === "Info" && (
+                                <InfoContent
+                                    launch={launch}
+                                    volume={last_day_volume}
+                                    mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
+                                    price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
+                                    total_supply={total_supply}
+                                    sol_price={SOLPrice}
+                                    quote_amount={quote_amount}
+                                    num_holders={num_holders}
+                                />
+                            )}
+
+                            {leftPanel === "Trade" && (
+                                <BuyAndSell
+                                    launch={launch}
+                                    amm={amm}
+                                    mint_data={base_mint}
+                                    base_balance={base_amount}
+                                    quote_balance={quote_amount}
+                                    user_balance={user_amount}
+                                />
+                            )}
+                        </VStack>
+                    )}
+
+                    {(!sm || (sm && mobilePageContent === "Chart")) && (
+                        <VStack
+                            align="start"
+                            justify="start"
                             w="100%"
-                            px={4}
+                            spacing={0}
                             style={{
-                                height: "55px",
-                                borderTop: "1px solid rgba(134, 142, 150, 0.5)",
+                                minHeight: "100vh",
+                                overflow: "auto",
                             }}
                         >
-                            <HStack spacing={3}>
-                                {["Rewards"].map((name, i) => {
-                                    const isActive = selectedTab === name;
+                            <ChartComponent data={market_data} additionalPixels={additionalPixels} />
 
-                                    const baseStyle = {
-                                        display: "flex",
-                                        alignItems: "center",
-                                        cursor: "pointer",
-                                    };
-
-                                    const activeStyle = {
+                            <div
+                                style={{
+                                    width: "100%",
+                                    height: "10px",
+                                    cursor: "ns-resize",
+                                    position: "relative",
+                                }}
+                                onMouseDown={handleMouseDown}
+                            >
+                                <PiArrowsOutLineVerticalLight
+                                    size={26}
+                                    style={{
+                                        position: "absolute",
                                         color: "white",
-                                        borderBottom: isActive ? "2px solid white" : "",
-                                        opacity: isActive ? 1 : 0.5,
-                                    };
+                                        margin: "auto",
+                                        top: 0,
+                                        left: 0,
+                                        bottom: 0,
+                                        right: 0,
+                                        opacity: 0.75,
+                                        zIndex: 99,
+                                    }}
+                                />
+                            </div>
 
-                                    return (
-                                        <HStack
-                                            key={i}
-                                            style={{
-                                                ...baseStyle,
-                                                ...activeStyle,
-                                            }}
-                                            onClick={() => {
-                                                handleClick(name);
-                                            }}
-                                            px={4}
-                                            py={2}
-                                            mt={-2}
-                                            w={"fit-content"}
-                                            justify="center"
-                                        >
-                                            <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
-                                                {name}
-                                            </Text>
-                                        </HStack>
-                                    );
-                                })}
+                            <HStack
+                                justify="space-between"
+                                align="center"
+                                w="100%"
+                                px={4}
+                                style={{
+                                    height: "55px",
+                                    borderTop: "1px solid rgba(134, 142, 150, 0.5)",
+                                }}
+                            >
+                                <HStack spacing={3}>
+                                    {["Rewards"].map((name, i) => {
+                                        const isActive = selectedTab === name;
+
+                                        const baseStyle = {
+                                            display: "flex",
+                                            alignItems: "center",
+                                            cursor: "pointer",
+                                        };
+
+                                        const activeStyle = {
+                                            color: "white",
+                                            borderBottom: isActive ? "2px solid white" : "",
+                                            opacity: isActive ? 1 : 0.5,
+                                        };
+
+                                        return (
+                                            <HStack
+                                                key={i}
+                                                style={{
+                                                    ...baseStyle,
+                                                    ...activeStyle,
+                                                }}
+                                                onClick={() => {
+                                                    handleClick(name);
+                                                }}
+                                                px={4}
+                                                py={2}
+                                                mt={-2}
+                                                w={"fit-content"}
+                                                justify="center"
+                                            >
+                                                <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
+                                                    {name}
+                                                </Text>
+                                            </HStack>
+                                        );
+                                    })}
+                                </HStack>
                             </HStack>
-                        </HStack>
 
-                        {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable launch_data={launch} />}
+                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable launch_data={launch} />}
 
-                        {(selectedTab === "Open" || selectedTab === "Filled") && wallet.connected && (
-                            <OrdersTable state={selectedTab} launch_data={launch} />
-                        )}
+                            {(selectedTab === "Open" || selectedTab === "Filled") && wallet.connected && (
+                                <OrdersTable state={selectedTab} launch_data={launch} />
+                            )}
 
-                        {!wallet.connected && (
-                            <HStack w="100%" align="center" justify="center" mt={25}>
-                                <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ opacity: 0.5 }}>
-                                    Connect your wallet to see your orders
-                                </Text>
-                            </HStack>
-                        )}
-                    </VStack>
+                            {!wallet.connected && (
+                                <HStack w="100%" align="center" justify="center" mt={25}>
+                                    <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ opacity: 0.5 }}>
+                                        Connect your wallet to see your orders
+                                    </Text>
+                                </HStack>
+                            )}
+                        </VStack>
+                    )}
                 </HStack>
+
+                {sm && (
+                    <HStack
+                        bg="url(/images/footer_fill.jpeg)"
+                        bgSize="cover"
+                        boxShadow="0px 3px 13px 13px rgba(0, 0, 0, 0.55)"
+                        position="fixed"
+                        bottom={0}
+                        h={16}
+                        w="100%"
+                        gap={2}
+                        justify="space-around"
+                    >
+                        <VStack
+                            spacing={0.5}
+                            w="120px"
+                            onClick={() => {
+                                setMobilePageContent("Chart");
+                            }}
+                        >
+                            <FaChartLine size={24} color={"#683309"} />
+                            <Text mb={0} color={"#683309"} fontSize="medium" fontFamily="ReemKufiRegular" fontWeight="bold">
+                                Chart
+                            </Text>
+                        </VStack>
+
+                        <VStack
+                            w="120px"
+                            onClick={() => {
+                                setMobilePageContent("Trade");
+                                setLeftPanel("Trade");
+                            }}
+                        >
+                            <IoMdSwap size={28} color={"#683309"} />
+                            <Text mb={0} mt={-2} color={"#683309"} fontSize="medium" fontFamily="ReemKufiRegular" fontWeight="bold">
+                                Buy/Sell
+                            </Text>
+                        </VStack>
+
+                        <VStack
+                            w="120px"
+                            onClick={() => {
+                                setMobilePageContent("Info");
+                                setLeftPanel("Info");
+                            }}
+                        >
+                            <FaInfo size={24} color={"#683309"} />
+                            <Text mb={0} color={"#683309"} fontSize="medium" fontFamily="ReemKufiRegular" fontWeight="bold">
+                                Info
+                            </Text>
+                        </VStack>
+                    </HStack>
+                )}
             </main>
         </>
     );

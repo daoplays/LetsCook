@@ -152,7 +152,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             }}
             onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)}
         >
-            <td style={{ minWidth: sm ? "90px" : "120px" }}>
+            <td style={{ minWidth: "170px" }}>
                 <HStack px={3} spacing={3} justify="center">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
@@ -169,7 +169,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
                         {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch_data.decimals, 3))}
@@ -178,7 +178,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
                         {market_cap.toLocaleString("en-US", {
@@ -190,7 +190,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "140px" }}>
+            <td style={{ minWidth: "200px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
                         {mm_rewards.toLocaleString()}
@@ -205,7 +205,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-            <td style={{ minWidth: "120px" }}>
+            <td style={{ minWidth: "140px" }}>
                 <ShowExtensions extension_flag={amm_launch.launch_data.flags[LaunchFlags.Extensions]} />
             </td>
             <td style={{ minWidth: "100px" }}>
