@@ -31,7 +31,8 @@ function Navigation() {
                 w="100%"
                 alignItems="center"
                 justify="space-between"
-                position={"relative"}
+                position={"fixed"}
+                top={0}
                 zIndex={1000}
             >
                 <Link href="/">
@@ -183,12 +184,11 @@ function Navigation() {
 
             {/* Mobile Menu */}
             <VStack
-                position="absolute"
+                position="fixed"
                 top={!isOpen || !md ? 0 : 50}
                 justify="center"
-                left={0}
-                right={0}
                 h="95vh"
+                w="100dvw"
                 bg="url(/images/drawer.jpg)"
                 backgroundSize="cover"
                 borderBottomRadius={12}
@@ -201,7 +201,7 @@ function Navigation() {
                     transform: isOpen ? "translateY(0)" : "translateY(-100%)",
                 }}
             >
-                <VStack spacing={6} pb={6} py={10} bg="rgba(0,0,0,0.25) " w="100%" h="100%">
+                <VStack spacing={6} pb={6} py={10} bg="rgba(0,0,0,0.25) " w="100%" h="100%" overflow="scroll">
                     <VStack className="font-face-kg">
                         {wallet.publicKey && (
                             <Text mb={0} fontSize={26} color="white" className="font-face-kg" align="center">

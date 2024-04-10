@@ -152,8 +152,8 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             }}
             onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)}
         >
-            <td style={{ minWidth: "170px" }}>
-                <HStack px={3} spacing={3} justify="center">
+            <td style={{ minWidth: "160px" }}>
+                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"

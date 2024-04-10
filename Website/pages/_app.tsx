@@ -44,7 +44,7 @@ function MyApp({ Component, pageProps }) {
                     <WalletModalProvider>
                         <ContextProviders>
                             <Navigation />
-                            <div style={{ minHeight: "90vh" }}>
+                            <div style={{ minHeight: "calc(100vh - 47.5px)", paddingTop: "50px" }}>
                                 <Component {...pageProps} />
                             </div>
                             {(hide.includes(pathname) || !sm) && <Footer />}

@@ -495,8 +495,13 @@ const TradePage = () => {
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: sm ? "100vh" : "" }}>
-                <HStack spacing={0} align="start">
+            <main
+                style={{
+                    background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)",
+                    height: sm ? "100vh" : "",
+                }}
+            >
+                <HStack spacing={0} align="start" pb={sm ? 14 : 0}>
                     {(!sm || (sm && (mobilePageContent === "Info" || mobilePageContent === "Trade"))) && (
                         <VStack
                             py={5}
