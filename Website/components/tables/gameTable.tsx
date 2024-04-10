@@ -172,8 +172,8 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             }}
             onClick={() => router.push(`/launch/${launch.page_name}`)}
         >
-            <td style={{ minWidth: sm ? "90px" : "120px" }}>
-                <HStack px={3} spacing={3} justify="center">
+            <td style={{ minWidth: "160px" }}>
+                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
