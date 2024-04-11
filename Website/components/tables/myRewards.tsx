@@ -203,8 +203,8 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
             }}
         >
             {show_icon && (
-                <td style={{ minWidth: "150px" }}>
-                    <HStack px={3} spacing={3} justify="center">
+                <td style={{ minWidth: "160px" }}>
+                    <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                         <Box w={45} h={45} borderRadius={10}>
                             <Image
                                 alt="Launch icon"

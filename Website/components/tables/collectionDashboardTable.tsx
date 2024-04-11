@@ -98,11 +98,11 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
+            onClick={() => router.push(`/collection/` + launch.page_name)}
         >
             <td style={{ minWidth: "160px" }}>
-                {" "}
-                <HStack px={3} spacing={3} justify="center">
-                    <Box w={45} h={45} borderRadius={10}>
+                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
+                    <Box w={45} h={45} borderRadius={10} style={{ minWidth: "45px" }}>
                         <Image
                             alt="Launch icon"
                             src={launch.collection_icon_url}
@@ -117,7 +117,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 </HStack>
             </td>
             <td style={{ minWidth: "160px" }}>
-                <HStack px={3} spacing={3} justify="center">
+                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
