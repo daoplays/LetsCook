@@ -62,7 +62,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                     h="fit-content"
                                     style={{ maxWidth: "980px" }}
                                 >
-                                    <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
+                                    <Flex w="100%" gap={xs ? 50 : lg ? 45 : 75} justify="space-between" direction={md ? "column" : "row"}>
                                         <VStack align="start" gap={xs ? 3 : 5}>
                                             <HStack>
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -84,7 +84,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                 fontFamily="ReemKufiRegular"
                                                 align={md ? "center" : "start"}
                                             >
-                                                Total Winning Tickets: {launchData.num_mints}
+                                                Total Winning Tickets: {launchData.num_mints.toLocaleString()}
                                             </Text>
 
                                             <Text
@@ -94,7 +94,8 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                 fontFamily="ReemKufiRegular"
                                                 align={md ? "center" : "start"}
                                             >
-                                                Tokens Per Winning Ticket: {one_mint} <br />({one_mint_frac}% of total supply)
+                                                Tokens Per Winning Ticket: {one_mint.toLocaleString()}
+                                                <br />({one_mint_frac.toFixed(4)}% of total supply)
                                             </Text>
 
                                             <HStack align="center" gap={3}>
