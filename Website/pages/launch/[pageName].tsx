@@ -337,7 +337,7 @@ const TokenMintPage = () => {
                             w={lg ? "100%" : "fit-content"}
                             style={{ maxWidth: lg ? "100%" : "980px" }}
                         >
-                            <Flex w="100%" gap={xs ? 50 : lg ? 45 : 100} justify="space-between" direction={md ? "column" : "row"}>
+                            <Flex w="100%" gap={xs ? 50 : lg ? 45 : 75} justify="space-between" direction={md ? "column" : "row"}>
                                 <VStack align={md ? "center" : "start"} gap={xs ? 3 : 5}>
                                     <HStack>
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -363,7 +363,7 @@ const TokenMintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Total Winning Tickets: {launchData.num_mints}
+                                        Total Winning Tickets: {launchData.num_mints.toLocaleString()}
                                     </Text>
 
                                     <Text
@@ -373,7 +373,8 @@ const TokenMintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Tokens Per Winning Ticket: {one_mint.toFixed(3)} <br />({one_mint_frac.toFixed(5)}% of total supply)
+                                        Tokens Per Winning Ticket: {one_mint.toLocaleString()}
+                                        <br />({one_mint_frac.toFixed(4)}% of total supply)
                                     </Text>
 
                                     <HStack align="center" gap={3}>
