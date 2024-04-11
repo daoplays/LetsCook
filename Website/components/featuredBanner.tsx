@@ -9,7 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { LaunchKeys, PROD } from "./Solana/constants";
+import { LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";

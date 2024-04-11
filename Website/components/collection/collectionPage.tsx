@@ -9,10 +9,8 @@ import {
     SYSTEM_KEY,
     PROGRAM,
     DEFAULT_FONT_SIZE,
-    RPC_NODE,
-    WSS_NODE,
     LaunchKeys,
-    PROD,
+    Config,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
     FEES_PROGRAM,
@@ -55,8 +53,6 @@ interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-let IRYS_URL = PROD ? "https://node2.irys.xyz" : "https://devnet.irys.xyz";
-let IRYS_WALLET = PROD ? "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD" : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS";
 
 // Define the Tag type
 type Tag = {
@@ -206,15 +202,15 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const irys_wallet = { name: "phantom", provider: wallet };
         const irys = new WebIrys({
-            url: IRYS_URL,
+            url: Config.IRYS_URL,
             token: "solana",
             wallet: irys_wallet,
             config: {
-                providerUrl: RPC_NODE,
+                providerUrl: Config.RPC_NODE,
             },
         });
 
@@ -254,7 +250,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 var tx = new Transaction(txArgs).add(
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
-                        toPubkey: new PublicKey(IRYS_WALLET),
+                        toPubkey: new PublicKey(Config.IRYS_WALLET),
                         lamports: Number(price),
                     }),
                 );
@@ -380,7 +376,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 var tx = new Transaction(txArgs).add(
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
-                        toPubkey: new PublicKey(IRYS_WALLET),
+                        toPubkey: new PublicKey(Config.IRYS_WALLET),
                         lamports: Number(json_price),
                     }),
                 );

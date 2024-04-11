@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
 import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditUser_instruction } from "../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, RPC_NODE, WSS_NODE } from "../components/Solana/constants";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config} from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -42,7 +42,7 @@ const useEditUser = () => {
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

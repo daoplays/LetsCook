@@ -10,7 +10,7 @@ import {
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -29,16 +29,10 @@ import {
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import { make_tweet } from "../components/launch/twitter";
 
-const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
-const addLookupTableInfo = PROD ? LOOKUP_TABLE_CACHE : undefined;
-
-//https://github.com/raydium-io/raydium-amm
-const RAYDIUM_FEES = PROD
-    ? new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5")
-    : new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR");
+const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -88,7 +82,7 @@ const useCreateAMM = (launchData: LaunchData) => {
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const createAMMToast = toast.loading("(4/4) Creating the AMM");
 
@@ -185,7 +179,7 @@ const useCreateAMM = (launchData: LaunchData) => {
             { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
             { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
             { pubkey: poolInfo.configId, isSigner: false, isWritable: false },
-            { pubkey: RAYDIUM_FEES, isSigner: false, isWritable: true },
+            { pubkey: Config.RAYDIUM_FEES, isSigner: false, isWritable: true },
             { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
             { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
 

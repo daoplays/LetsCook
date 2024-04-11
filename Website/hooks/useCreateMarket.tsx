@@ -10,7 +10,7 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -43,11 +43,11 @@ import {
 import { createInitializeAccount3Instruction } from "@solana/spl-token";
 
 import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
-import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import useCreateAMM from "./useCreateAMM";
 
-const PROGRAMIDS = PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
-const addLookupTableInfo = PROD ? LOOKUP_TABLE_CACHE : undefined;
+const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
+const addLookupTableInfo = Config.PROD ? LOOKUP_TABLE_CACHE : undefined;
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -281,7 +281,7 @@ const useCreateMarket = (launchData: LaunchData) => {
             return;
         }
 
-        const connection = new Connection(RPC_NODE);
+        const connection = new Connection(Config.RPC_NODE);
 
         const createMarketToast = toast.loading("(1/4) Creating the market token accounts");
 

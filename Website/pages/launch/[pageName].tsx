@@ -14,7 +14,7 @@ import {
     Divider,
 } from "@chakra-ui/react";
 import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../../components/Solana/state";
-import { PROGRAM, RPC_NODE, WSS_NODE } from "../../components/Solana/constants";
+import { PROGRAM, Config} from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
@@ -90,7 +90,7 @@ const TokenMintPage = () => {
         return () => {
             console.log("in use effect return");
             const unsub = async () => {
-                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
                 if (join_account_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(join_account_ws_id.current);
                     join_account_ws_id.current = null;
@@ -160,7 +160,7 @@ const TokenMintPage = () => {
     useEffect(() => {
         if (launchData === null) return;
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (launch_account_ws_id.current === null) {
             console.log("subscribe 1");

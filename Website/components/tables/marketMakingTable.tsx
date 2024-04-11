@@ -4,7 +4,7 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
-import { LaunchKeys, LaunchFlags, PROD, Extensions } from "../Solana/constants";
+import { LaunchKeys, LaunchFlags, Extensions } from "../Solana/constants";
 import { AMMData, MMLaunchData, MMUserData, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";

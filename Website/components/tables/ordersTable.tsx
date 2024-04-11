@@ -6,7 +6,7 @@ import { JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
 import { OpenOrder } from "../Solana/jupiter_state";
 
 import { Connection, PublicKey } from "@solana/web3.js";
-import { PROGRAM, RPC_NODE, LaunchKeys } from "../Solana/constants";
+import { LaunchKeys } from "../Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import { useEffect, useRef } from "react";

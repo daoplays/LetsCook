@@ -2,7 +2,7 @@ import { useCallback, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
-import { PROGRAM, SYSTEM_KEY, RPC_NODE, WSS_NODE, LaunchKeys } from "./Solana/constants";
+import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys } from "./Solana/constants";
 import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
@@ -56,7 +56,7 @@ export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchDat
                 return;
             }
 
-            const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+            const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
             let launch_data_account = PublicKey.findProgramAddressSync(
                 [Buffer.from(launch_data.page_name), Buffer.from("Launch")],

@@ -13,7 +13,7 @@ import { serialise_ClaimReward_instruction } from "../../components/Solana/jupit
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { LaunchKeys, PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
+import { LaunchKeys, PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -52,7 +52,7 @@ const useGetMMRewards = () => {
     }, []);
 
     const GetMMRewards = async (date: number, launch: LaunchData) => {
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const placeLimitToast = toast.loading("Claiming Reward..");
 

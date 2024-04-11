@@ -1,23 +1,47 @@
 import { isMobile } from "react-device-detect";
 import { PublicKey } from "@solana/web3.js";
 
-const DEV_RPC_NODE = "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2";
-const DEV_WSS_NODE = "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/";
+interface NetworkConfig {
+    PROD : boolean;
+    NETWORK : string;
+    PYTH_BTC : PublicKey;
+    PYTH_ETH : PublicKey;
+    PYTH_SOL : PublicKey;
+    FEES_KEY : PublicKey;
+    RAYDIUM_FEES : PublicKey;
+    RPC_NODE : string;
+    WSS_NODE : string;
+    IRYS_URL : string;
+    IRYS_WALLET : string;
+}
 
-const PROD_RPC_NODE = "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198";
-const PROD_WSS_NODE = "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/";
+const DevNetConfig : NetworkConfig = {
+    PROD : false,
+    NETWORK : "devnet",
+    PYTH_BTC : new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"),
+    PYTH_ETH : new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"),
+    PYTH_SOL : new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+    FEES_KEY : new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    RAYDIUM_FEES : new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
+    RPC_NODE : "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2",
+    WSS_NODE : "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/",
+    IRYS_URL : "https://devnet.irys.xyz",
+    IRYS_WALLET : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
+}
 
-//pyth oracles
-const PYTH_BTC_DEV = new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J");
-const PYTH_ETH_DEV = new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw");
-const PYTH_SOL_DEV = new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix");
-
-const PYTH_BTC_PROD = new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU");
-const PYTH_ETH_PROD = new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB");
-const PYTH_SOL_PROD = new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG");
-
-const DEV_FEES = new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD");
-const PROD_FEES = new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA");
+const MainNetConfig : NetworkConfig = {
+    PROD : true,
+    NETWORK : "mainnet",
+    PYTH_BTC : new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"),
+    PYTH_ETH : new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"),
+    PYTH_SOL : new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+    FEES_KEY : new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"),
+    RAYDIUM_FEES : new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
+    RPC_NODE : "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198",
+    WSS_NODE : "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/",
+    IRYS_URL : "https://node2.irys.xyz",
+    IRYS_WALLET : "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD"
+}
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
@@ -39,23 +63,10 @@ if (isMobile) {
     EMOJI_SIZE = 20;
 }
 
-export const PROD = false;
 export const DEBUG = true;
 
-export const PYTH_BTC = PROD ? PYTH_BTC_PROD : PYTH_BTC_DEV;
-export const PYTH_ETH = PROD ? PYTH_ETH_PROD : PYTH_ETH_DEV;
-export const PYTH_SOL = PROD ? PYTH_SOL_PROD : PYTH_SOL_DEV;
+export const Config = DevNetConfig;
 
-export const FEES_KEY = PROD ? PROD_FEES : DEV_FEES;
-
-export var network_string = "devnet";
-export var RPC_NODE = DEV_RPC_NODE;
-export var WSS_NODE = DEV_WSS_NODE;
-if (PROD) {
-    network_string = "mainnet";
-    RPC_NODE = PROD_RPC_NODE;
-    WSS_NODE = PROD_WSS_NODE;
-}
 
 export const enum Screen {
     HOME_SCREEN = 0,

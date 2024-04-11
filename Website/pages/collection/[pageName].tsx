@@ -16,7 +16,7 @@ import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys, WSS_NODE, RPC_NODE, PROGRAM, Extensions, LaunchFlags, PROD, LaunchKeys } from "../../components/Solana/constants";
+import { CollectionKeys, Config, PROGRAM, Extensions, LaunchFlags, LaunchKeys } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
@@ -75,7 +75,7 @@ const CollectionSwapPage = () => {
         if (launch === null || NFTLookup === null || wallet === null) return;
 
         console.log("CHECKING NFT BALANCE");
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
         if (CollectionLookup === null || CollectionLookup === undefined) return;
@@ -156,7 +156,7 @@ const CollectionSwapPage = () => {
         return () => {
             console.log("in use effect return");
             const unsub = async () => {
-                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
                 if (launch_account_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(launch_account_ws_id.current);
                     launch_account_ws_id.current = null;
@@ -314,7 +314,7 @@ const CollectionSwapPage = () => {
     useEffect(() => {
         if (launch === null) return;
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint:Config.WSS_NODE });
 
         if (launch_account_ws_id.current === null) {
             console.log("subscribe 1");

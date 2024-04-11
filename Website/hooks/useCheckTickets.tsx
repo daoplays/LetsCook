@@ -8,7 +8,7 @@ import {
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, PYTH_BTC, PYTH_ETH, PYTH_SOL, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
@@ -52,7 +52,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
@@ -81,9 +81,9 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: PYTH_SOL, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 

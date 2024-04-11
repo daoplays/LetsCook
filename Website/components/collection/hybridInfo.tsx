@@ -8,7 +8,7 @@ import styles2 from "../../styles/LaunchDetails.module.css";
 import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
-import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META, Extensions } from "../Solana/constants";
+import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META, Extensions } from "../Solana/constants";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate } from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { request_raw_account_data } from "../Solana/state";
@@ -77,7 +77,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
         let result = await connection.getAccountInfo(token_key, "confirmed");
 
         let mint: Mint;

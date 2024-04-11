@@ -17,11 +17,6 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 import { Order } from "@jup-ag/limit-order-sdk";
 
-import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials } from "./constants";
-import { Box } from "@chakra-ui/react";
-
-import BN from "bn.js";
-import bs58 from "bs58";
 import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData } from "./state";
 
 export interface OpenOrder {

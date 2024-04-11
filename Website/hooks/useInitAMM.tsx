@@ -14,7 +14,7 @@ import {
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { SOL_ACCOUNT_SEED, PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE, FEES_PROGRAM } from "../components/Solana/constants";
+import { SOL_ACCOUNT_SEED, PROGRAM, Config, SYSTEM_KEY, FEES_PROGRAM } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -32,7 +32,7 @@ import {
     ExtraAccountMeta,
 } from "@solana/spl-token";
 
-import { LaunchKeys, LaunchFlags, PROD } from "../components/Solana/constants";
+import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import { make_tweet } from "../components/launch/twitter";
 
 const useInitAMM = (launchData: LaunchData) => {
@@ -50,7 +50,7 @@ const useInitAMM = (launchData: LaunchData) => {
             return;
         }
 
-        if (PROD) {
+        if (Config.PROD) {
             let response = await make_tweet(launchData.page_name);
             console.log(response);
         }
@@ -61,7 +61,7 @@ const useInitAMM = (launchData: LaunchData) => {
         // if we have already done this then just skip this step
         console.log(launchData);
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -217,7 +217,7 @@ const useInitAMM = (launchData: LaunchData) => {
         // if we have already done this then just skip this step
         console.log(launchData);
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const initAMMToast = toast.loading("Initialising AMM...");
 

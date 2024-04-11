@@ -18,7 +18,7 @@ import {
     TokenAccount,
     RequestTokenHolders,
 } from "../../components/Solana/state";
-import { RPC_NODE, WSS_NODE, LaunchKeys, PROGRAM, LaunchFlags, PROD } from "../../components/Solana/constants";
+import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, Mint, getTransferFeeConfig } from "@solana/spl-token";
@@ -164,7 +164,7 @@ const TradePage = () => {
         return () => {
             //console.log("in use effect return");
             const unsub = async () => {
-                const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
                 if (base_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(base_ws_id.current);
                     base_ws_id.current = null;
@@ -270,7 +270,7 @@ const TradePage = () => {
 
     // launch account subscription handler
     useEffect(() => {
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (base_ws_id.current === null && base_address !== null) {
             //console.log("subscribe 1");

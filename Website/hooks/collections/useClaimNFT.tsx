@@ -23,13 +23,9 @@ import { TOKEN_PROGRAM_ID, getTransferHook, resolveExtraAccountMeta, ExtraAccoun
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
     PROGRAM,
-    RPC_NODE,
+    Config,
     SYSTEM_KEY,
-    WSS_NODE,
     SOL_ACCOUNT_SEED,
-    PYTH_BTC,
-    PYTH_ETH,
-    PYTH_SOL,
     CollectionKeys,
     METAPLEX_META,
 } from "../../components/Solana/constants";
@@ -94,7 +90,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (launchData === null) {
             return;
@@ -182,9 +178,9 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: collection_metadata_account, isSigner: false, isWritable: true },
 
-            { pubkey: PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: PYTH_SOL, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
         ];

@@ -17,7 +17,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
-import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials, Extensions } from "../Solana/constants";
+import { Extensions } from "../Solana/constants";
 import { LaunchInstruction, request_raw_account_data } from "../Solana/state";
 
 import { Box } from "@chakra-ui/react";

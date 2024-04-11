@@ -11,7 +11,7 @@ import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupit
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, RPC_NODE, SYSTEM_KEY, WSS_NODE } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY} from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -20,7 +20,7 @@ import { toast } from "react-toastify";
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags, PROD } from "../../components/Solana/constants";
+import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider, Order } from "@jup-ag/limit-order-sdk";
 import useAppRoot from "../../context/useAppRoot";
@@ -52,7 +52,7 @@ const useCancelLimitOrder = () => {
     }, []);
 
     const CancelLimitOrder = async (launch_data: LaunchData, order: OpenOrder) => {
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const placeLimitToast = toast.loading("Cancelling Limit Order..");
 

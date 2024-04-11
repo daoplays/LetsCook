@@ -22,7 +22,7 @@ import {
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { RPC_NODE, WSS_NODE, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
+import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData, LookupData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
@@ -41,7 +41,7 @@ const GetSOLPrice = async (setSOLPrice) => {
 };
 
 const GetTradeMintData = async (trade_keys, setMintMap) => {
-    const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     let result = await connection.getMultipleAccountsInfo(trade_keys, "confirmed");
 
     let mint_map = new Map<PublicKey, Mint>();
@@ -56,7 +56,7 @@ const GetTradeMintData = async (trade_keys, setMintMap) => {
 async function getUserTrades(wallet: WalletContextState): Promise<TradeHistoryItem[]> {
     if (wallet === null || wallet.publicKey === null || !wallet.connected || wallet.disconnecting) return;
 
-    const connection = new Connection(RPC_NODE);
+    const connection = new Connection(Config.RPC_NODE);
     let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
     const limitOrder = new LimitOrderProvider(connection, null);
@@ -73,7 +73,7 @@ async function getUserTrades(wallet: WalletContextState): Promise<TradeHistoryIt
 async function getUserOrders(wallet: WalletContextState): Promise<OpenOrder[]> {
     if (wallet === null || wallet.publicKey === null) return [];
 
-    const connection = new Connection(RPC_NODE);
+    const connection = new Connection(Config.RPC_NODE);
     let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
     const limitOrder = new LimitOrderProvider(connection, null);
@@ -211,7 +211,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     // launch account subscription handler
     useEffect(() => {
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (user_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
             //console.log("subscribe to user data");

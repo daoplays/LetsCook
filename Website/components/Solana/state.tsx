@@ -17,7 +17,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
-import { DEBUG, RPC_NODE, PROGRAM, LaunchKeys, Socials, Extensions } from "./constants";
+import { DEBUG, Config, PROGRAM, LaunchKeys, Socials, Extensions } from "./constants";
 import { Box } from "@chakra-ui/react";
 
 import BN from "bn.js";
@@ -117,7 +117,7 @@ interface BlockHash {
 
 export async function get_current_blockhash(bearer: string): Promise<BlockHash> {
     var body = { id: 1, jsonrpc: "2.0", method: "getLatestBlockhash" };
-    const blockhash_data_result = await postData(RPC_NODE, bearer, body);
+    const blockhash_data_result = await postData(Config.RPC_NODE, bearer, body);
 
     let blockhash = blockhash_data_result["result"]["value"]["blockhash"];
     let last_valid = blockhash_data_result["result"]["value"]["lastValidBlockHeight"];
@@ -136,7 +136,7 @@ interface TransactionResponseData {
 export async function send_transaction(bearer: string, encoded_transaction: string): Promise<TransactionResponseData> {
     var body = { id: 1, jsonrpc: "2.0", method: "sendTransaction", params: [encoded_transaction, { skipPreflight: true }] };
 
-    var response_json = await postData(RPC_NODE, bearer, body);
+    var response_json = await postData(Config.RPC_NODE, bearer, body);
     let transaction_response: TransactionResponseData = response_json;
 
     let valid_json = check_json(response_json);
@@ -169,7 +169,7 @@ interface SignatureResponseData {
 export async function check_signature(bearer: string, signature: string): Promise<SignatureResponseData | null> {
     var body = { id: 1, jsonrpc: "2.0", method: "getSignatureStatuses", params: [[signature], { searchTransactionHistory: true }] };
 
-    var response_json = await postData(RPC_NODE, bearer, body);
+    var response_json = await postData(Config.RPC_NODE, bearer, body);
     let transaction_response: SignatureResponseData = response_json;
 
     let valid_json = check_json(response_json);
@@ -314,7 +314,7 @@ export async function request_current_balance(bearer: string, pubkey: PublicKey)
 
     var account_info_result;
     try {
-        account_info_result = await postData(RPC_NODE, bearer, body);
+        account_info_result = await postData(Config.RPC_NODE, bearer, body);
     } catch (error) {
         console.log(error);
         return 0;
@@ -350,7 +350,7 @@ export async function requestMultipleAccounts(bearer: string, pubkeys: PublicKey
 
     var result;
     try {
-        result = await postData(RPC_NODE, bearer, body);
+        result = await postData(Config.RPC_NODE, bearer, body);
     } catch (error) {
         console.log(error);
         return [];
@@ -388,7 +388,7 @@ export async function RequestTokenHolders(mint: PublicKey): Promise<number> {
 
     var program_accounts_result;
     try {
-        program_accounts_result = await postData(RPC_NODE, "", body);
+        program_accounts_result = await postData(Config.RPC_NODE, "", body);
     } catch (error) {
         console.log(error);
         return 0;
@@ -410,7 +410,7 @@ export async function request_token_supply(bearer: string, mint: PublicKey): Pro
 
     var response;
     try {
-        response = await postData(RPC_NODE, bearer, body);
+        response = await postData(Config.RPC_NODE, bearer, body);
     } catch (error) {
         console.log(error);
         return 0;
@@ -449,7 +449,7 @@ export async function request_token_amount(bearer: string, pubkey: PublicKey): P
 
     var response;
     try {
-        response = await postData(RPC_NODE, bearer, body);
+        response = await postData(Config.RPC_NODE, bearer, body);
     } catch (error) {
         console.log(error);
         return 0;
@@ -488,7 +488,7 @@ export async function request_raw_account_data(bearer: string, pubkey: PublicKey
 
     var response;
     try {
-        response = await postData(RPC_NODE, bearer, body);
+        response = await postData(Config.RPC_NODE, bearer, body);
     } catch (error) {
         console.log(error);
         return null;
@@ -966,7 +966,7 @@ export async function RunGPA(): Promise<GPAccount[]> {
 
     var program_accounts_result;
     try {
-        program_accounts_result = await postData(RPC_NODE, "", body);
+        program_accounts_result = await postData(Config.RPC_NODE, "", body);
     } catch (error) {
         console.log(error);
         return [];

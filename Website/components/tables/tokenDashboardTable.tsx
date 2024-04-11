@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import useInitAMM from "../../hooks/useInitAMM";
 import convertToBlob from "../../utils/convertImageToBlob";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
-import { LaunchFlags, LaunchKeys, RPC_NODE, WSS_NODE, Extensions } from "../Solana/constants";
+import { LaunchFlags, LaunchKeys, Config, Extensions } from "../Solana/constants";
 import {
     getAssociatedTokenAddress,
     TOKEN_2022_PROGRAM_ID,
@@ -73,7 +73,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     });
 
     const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint:Config.WSS_NODE });
 
         const allAccounts = await connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
             commitment: "confirmed",

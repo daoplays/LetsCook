@@ -29,13 +29,9 @@ import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenA
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
     PROGRAM,
-    RPC_NODE,
+    Config,
     SYSTEM_KEY,
-    WSS_NODE,
     SOL_ACCOUNT_SEED,
-    PYTH_BTC,
-    PYTH_ETH,
-    PYTH_SOL,
     CollectionKeys,
     METAPLEX_META,
 } from "../../components/Solana/constants";
@@ -84,7 +80,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
-        const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (launchData === null) {
             //console.log("launch is null");
