@@ -334,7 +334,7 @@ const TokenMintPage = () => {
                             borderRadius={12}
                             border="1px solid white"
                             h="fit-content"
-                            w={lg ? "100%" : "fit-content"}
+                            w={lg ? "100%" : "980px"}
                             style={{ maxWidth: lg ? "100%" : "980px" }}
                         >
                             <Flex w="100%" gap={xs ? 50 : lg ? 45 : 75} justify="space-between" direction={md ? "column" : "row"}>
@@ -497,14 +497,14 @@ const TokenMintPage = () => {
 
                                     {!(cookState === CookState.PRE_LAUNCH) ? (
                                         <VStack hidden={MINTED_OUT || MINT_FAILED}>
-                                            <HStack>
-                                                <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            <HStack alignItems="center">
+                                                <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
                                                     Platform fee per ticket: 0.01
                                                 </Text>
                                                 <Image
                                                     src="/images/sol.png"
-                                                    width={30}
-                                                    height={30}
+                                                    width={20}
+                                                    height={20}
                                                     alt="SOL Icon"
                                                     style={{ marginLeft: -3 }}
                                                 />

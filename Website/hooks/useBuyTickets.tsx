@@ -50,7 +50,12 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         const connection = new Connection(RPC_NODE, { wsEndpoint: WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
-            alert("Launch creator cannot buy tickets");
+            toast.update(buyingTickets, {
+                render: `Launch creator cannot buy tickets`,
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
 
