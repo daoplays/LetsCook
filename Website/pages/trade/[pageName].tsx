@@ -1,4 +1,4 @@
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import {
@@ -108,6 +108,7 @@ function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
 
 const TradePage = () => {
     const wallet = useWallet();
+    const { connection } = useConnection();
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
@@ -164,7 +165,6 @@ const TradePage = () => {
         return () => {
             //console.log("in use effect return");
             const unsub = async () => {
-                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
                 if (base_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(base_ws_id.current);
                     base_ws_id.current = null;
@@ -176,7 +176,7 @@ const TradePage = () => {
             };
             unsub();
         };
-    }, []);
+    }, [connection]);
 
     useEffect(() => {
         if (ammData === null || launchList === null || mintData === null) return;
@@ -270,7 +270,6 @@ const TradePage = () => {
 
     // launch account subscription handler
     useEffect(() => {
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (base_ws_id.current === null && base_address !== null) {
             //console.log("subscribe 1");
@@ -292,6 +291,7 @@ const TradePage = () => {
             user_token_ws_id.current = connection.onAccountChange(user_address, check_user_token_update, "confirmed");
         }
     }, [
+        connection,
         base_address,
         quote_address,
         price_address,

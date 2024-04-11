@@ -1,7 +1,8 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { WalletProvider } from "@solana/wallet-adapter-react";
-import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
+import { WalletProvider, ConnectionProvider } from "@solana/wallet-adapter-react";
+import { type ConnectionConfig } from '@solana/web3.js';
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { Config } from "../components/Solana/constants";
 import { theme } from "../chakra";
 import { useMemo } from "react";
 import Navigation from "../components/Navigation";
@@ -24,6 +25,8 @@ function MyApp({ Component, pageProps }) {
     const pathname = usePathname();
     const wallets = useMemo(() => [], []);
 
+    const connectionConfig : ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed"};
+
     return (
         <NoSSR>
             <ToastContainer
@@ -40,6 +43,7 @@ function MyApp({ Component, pageProps }) {
             />
             <ChakraProvider theme={theme}>
                 <NextTopLoader />
+                <ConnectionProvider endpoint={Config.RPC_NODE} config={connectionConfig}>
                 <WalletProvider wallets={wallets} autoConnect>
                     <WalletModalProvider>
                         <ContextProviders>
@@ -51,6 +55,7 @@ function MyApp({ Component, pageProps }) {
                         </ContextProviders>
                     </WalletModalProvider>
                 </WalletProvider>
+                </ConnectionProvider>
             </ChakraProvider>
         </NoSSR>
     );

@@ -1,7 +1,7 @@
 import { VStack, Text, HStack, Progress, Button, Tooltip, Link, Flex } from "@chakra-ui/react";
 import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
@@ -47,6 +47,7 @@ function findLaunch(list: CollectionData[], page_name: string | string[]) {
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
+    const {connection} = useConnection();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const { pageName } = router.query;
@@ -66,6 +67,7 @@ const CollectionSwapPage = () => {
 
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
+    const check_initial_collection = useRef<boolean>(true);
 
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
@@ -75,7 +77,6 @@ const CollectionSwapPage = () => {
         if (launch === null || NFTLookup === null || wallet === null) return;
 
         console.log("CHECKING NFT BALANCE");
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
         if (CollectionLookup === null || CollectionLookup === undefined) return;
@@ -116,7 +117,7 @@ const CollectionSwapPage = () => {
         console.log("have ", valid_lookups.length, "addresses with balance");
 
         setNFTBalance(valid_lookups.length);
-    }, [NFTLookup, launch, wallet]);
+    }, [NFTLookup, launch, wallet, connection]);
 
     useEffect(() => {
         if (collectionList === null || mintData === null) return;
@@ -125,7 +126,11 @@ const CollectionSwapPage = () => {
 
         if (launch === null) return;
 
-        setCollectionData(launch);
+        console.log("other set collection", launch)
+        if (check_initial_collection.current) {
+            setCollectionData(launch);
+            check_initial_collection.current = false;
+        }
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
         let transfer_fee_config = getTransferFeeConfig(mint);
@@ -156,7 +161,6 @@ const CollectionSwapPage = () => {
         return () => {
             console.log("in use effect return");
             const unsub = async () => {
-                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
                 if (launch_account_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(launch_account_ws_id.current);
                     launch_account_ws_id.current = null;
@@ -168,7 +172,7 @@ const CollectionSwapPage = () => {
             };
             unsub();
         };
-    }, []);
+    }, [connection]);
 
     useEffect(() => {
         if (assigned_nft === null || !mint_nft.current) {
@@ -207,11 +211,9 @@ const CollectionSwapPage = () => {
             }
 */
 
-            if (updated_data.num_available !== launch.num_available) {
                 setCollectionData(updated_data);
-            }
         },
-        [launch],
+        [],
     );
 
     const check_assignment_update = useCallback(async (result: any) => {
@@ -314,8 +316,6 @@ const CollectionSwapPage = () => {
     useEffect(() => {
         if (launch === null) return;
 
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint:Config.WSS_NODE });
-
         if (launch_account_ws_id.current === null) {
             console.log("subscribe 1");
             let launch_data_account = PublicKey.findProgramAddressSync(
@@ -351,7 +351,7 @@ const CollectionSwapPage = () => {
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
-    }, [wallet, launch, check_launch_update, check_assignment_update, check_program_update, check_user_token_update]);
+    }, [wallet, connection, launch, check_launch_update, check_assignment_update, check_program_update, check_user_token_update]);
 
     useEffect(() => {
         if (launch === null) return;
