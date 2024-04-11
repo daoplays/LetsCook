@@ -26,6 +26,7 @@ import { MdEdit } from "react-icons/md";
 import { useWallet } from "@solana/wallet-adapter-react";
 import WoodenButton from "../components/Buttons/woodenButton";
 import UseWalletConnection from "../hooks/useWallet";
+import Image from "next/image";
 
 interface Header {
     text: string;
@@ -119,12 +120,6 @@ const LeaderboardPage = () => {
                                         </HStack>
                                     </th>
                                 ))}
-
-                                <th>
-                                    <Box mt={1} as="button" onClick={checkProgramData}>
-                                        <TfiReload size={sm ? 18 : 20} />
-                                    </Box>
-                                </th>
                             </tr>
                         </thead>
 
@@ -148,24 +143,51 @@ const LeaderboardPage = () => {
         return (
             <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
                 <td>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0} color={isUser ? "yellow" : "white"}>
+                    <Text fontSize={"large"} m={0} color={isUser ? "yellow" : "white"}>
                         {rank}
                     </Text>
                 </td>
                 <td>
-                    <Text fontSize={lg ? "large" : "x-large"} my={6} color={isUser ? "yellow" : "white"}>
+                    <Text fontSize={"large"} my={6} color={isUser ? "yellow" : "white"}>
                         {user.user_name !== "" ? user.user_name : user.user_key.toString()}
                     </Text>
                 </td>
-                <td>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0} color={isUser ? "yellow" : "white"}>
-                        {user.total_points.toString()}
-                    </Text>
+
+                <td style={{ minWidth: "160px" }}>
+                    <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
+                        <Box w={35} h={35} borderRadius={10} style={{ minWidth: "35px" }}>
+                            <Image
+                                alt="Sauce icon"
+                                src={"/images/sauce.png"}
+                                width={35}
+                                height={35}
+                                style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                            />
+                        </Box>
+                        <Text fontSize={"large"} m={0} color={isUser ? "yellow" : "white"}>
+                            {user.total_points.toString()}
+                        </Text>
+                    </HStack>
                 </td>
-                <td style={{ minWidth: "60px" }}></td>
             </tr>
         );
     };
+
+    if (!wallet.connected) {
+        return (
+            <HStack w="100%" align="center" justify="center" mt={25}>
+                <Text
+                    fontSize={lg ? "large" : "x-large"}
+                    m={0}
+                    color={"white"}
+                    onClick={() => handleConnectWallet()}
+                    style={{ cursor: "pointer" }}
+                >
+                    Sign in to view Leaderboard
+                </Text>
+            </HStack>
+        );
+    }
 
     return (
         <>
@@ -199,20 +221,6 @@ const LeaderboardPage = () => {
                 </Flex>
 
                 <LeaderboardTable user_data={userList} />
-
-                {/* {!wallet.connected && (
-                    <HStack w="100%" align="center" justify="center" mt={25}>
-                        <Text
-                            fontSize={lg ? "large" : "x-large"}
-                            m={0}
-                            color={"white"}
-                            onClick={() => handleConnectWallet()}
-                            style={{ cursor: "pointer" }}
-                        >
-                            Sign in to view Leaderboard
-                        </Text>
-                    </HStack>
-                )} */}
             </main>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>
