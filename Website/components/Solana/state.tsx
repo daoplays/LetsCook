@@ -1164,6 +1164,7 @@ export function serialise_EditUser_instruction(name: string): Buffer {
 class HypeVote_Instruction {
     constructor(
         readonly instruction: number,
+        readonly launch_type: number,
         readonly game_id: bignum,
         readonly vote: number,
     ) {}
@@ -1171,16 +1172,17 @@ class HypeVote_Instruction {
     static readonly struct = new BeetStruct<HypeVote_Instruction>(
         [
             ["instruction", u8],
+            ["launch_type", u8],
             ["game_id", u64],
             ["vote", u8],
         ],
-        (args) => new HypeVote_Instruction(args.instruction!, args.game_id!, args.vote!),
+        (args) => new HypeVote_Instruction(args.instruction!, args.launch_type!, args.game_id!, args.vote!),
         "HypeVote_Instruction",
     );
 }
 
-export function serialise_HypeVote_instruction(game_id: bignum, vote: number): Buffer {
-    const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, game_id, vote);
+export function serialise_HypeVote_instruction(launch_type: number, game_id: bignum, vote: number): Buffer {
+    const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, launch_type, game_id, vote);
     const [buf] = HypeVote_Instruction.struct.serialize(data);
 
     return buf;

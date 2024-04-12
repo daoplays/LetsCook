@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
 import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys } from "./Solana/constants";
@@ -10,9 +10,11 @@ import UseWalletConnection from "../hooks/useWallet";
 import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
+import BN from "bn.js";
 
-export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchData; isTradePage?: boolean }) {
+export function HypeVote({ launch_type, launch_id, page_name, positive_votes, negative_votes, seller_key, isTradePage }: { launch_type: number; launch_id: BN; page_name : string; positive_votes: number, negative_votes: number; seller_key: PublicKey; isTradePage?: boolean }) {
     const wallet = useWallet();
+    const {connection} = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
     const { checkProgramData, currentUserData } = useAppRoot();
     const { lg } = useResponsive();
@@ -56,16 +58,21 @@ export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchDat
                 return;
             }
 
-            const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-            let launch_data_account = PublicKey.findProgramAddressSync(
-                [Buffer.from(launch_data.page_name), Buffer.from("Launch")],
+            let launch_data_account = launch_type === 0 ? PublicKey.findProgramAddressSync(
+                [Buffer.from(page_name), Buffer.from("Launch")],
                 PROGRAM,
-            )[0];
+            )[0]
+            :
+
+            PublicKey.findProgramAddressSync(
+                [Buffer.from(page_name), Buffer.from("Collection")],
+                PROGRAM,
+            )[0]
+
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-            const instruction_data = serialise_HypeVote_instruction(launch_data.game_id, vote);
+            const instruction_data = serialise_HypeVote_instruction(launch_type, launch_id, vote);
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -102,7 +109,7 @@ export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchDat
                 return;
             }
         },
-        [wallet, launch_data.game_id, launch_data.page_name, check_signature_update],
+        [wallet, connection, launch_type, launch_id, page_name, check_signature_update],
     );
 
     let has_voted: boolean = false;
@@ -110,18 +117,18 @@ export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchDat
     if (currentUserData !== null) {
         for (let i = 0; i < currentUserData.votes.length; i++) {
             //console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
-            if (currentUserData.votes[i].toString() == launch_data.game_id.toString()) {
+            if (currentUserData.votes[i].toString() == launch_id.toString()) {
                 has_voted = true;
                 break;
             }
         }
     }
     // console.log("has_voted: ", has_voted);
-    let total_votes = launch_data.positive_votes + launch_data.negative_votes;
+    let total_votes = positive_votes + negative_votes;
     let vote_ratio = 0;
     let vote_color = "";
     if (total_votes > 0) {
-        vote_ratio = launch_data.positive_votes - launch_data.negative_votes;
+        vote_ratio = positive_votes - negative_votes;
         if (vote_ratio > 0) {
             vote_color = "#83FF81";
         } else if (vote_ratio == 0) {
@@ -131,7 +138,7 @@ export function HypeVote({ launch_data, isTradePage }: { launch_data?: LaunchDat
         }
     }
 
-    if (wallet.publicKey !== null && wallet.publicKey.toString() === launch_data.keys[LaunchKeys.Seller].toString()) {
+    if (wallet.publicKey !== null && wallet.publicKey.toString() === seller_key.toString()) {
         return (
             <>
                 {total_votes > 0 && (

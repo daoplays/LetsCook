@@ -455,7 +455,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             console.log(newCollectionData.current.uri, newCollectionData.current.nft_metadata_url);
         }
 
-        let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(

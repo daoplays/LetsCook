@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
 import { uInt32ToLEBytes, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../../components/Solana/state";
-import { SOL_ACCOUNT_SEED, DEBUG, SYSTEM_KEY, PROGRAM, Config } from "../../components/Solana/constants";
+import { SOL_ACCOUNT_SEED, DEBUG, SYSTEM_KEY, PROGRAM, Config, DATA_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -56,6 +56,8 @@ const useEditCollection = () => {
             PROGRAM,
         )[0];
 
+        let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
+
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
@@ -85,6 +87,7 @@ const useEditCollection = () => {
 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: program_data_account, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: false },
 

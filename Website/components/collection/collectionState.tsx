@@ -109,7 +109,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
 export class CollectionData {
     constructor(
         readonly account_type: number,
-
+        readonly launch_id: bignum,
         readonly collection_name: string,
         readonly collection_symbol: string,
         readonly collection_icon_url: string,
@@ -152,6 +152,7 @@ export class CollectionData {
     static readonly struct = new FixableBeetStruct<CollectionData>(
         [
             ["account_type", u8],
+            ["launch_id", u64],
 
             ["collection_name", utf8String],
             ["collection_symbol", utf8String],
@@ -194,7 +195,7 @@ export class CollectionData {
         (args) =>
             new CollectionData(
                 args.account_type!,
-
+                args.launch_id!,
                 args.collection_name!,
                 args.collection_symbol!,
                 args.collection_icon_url!,

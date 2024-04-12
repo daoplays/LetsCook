@@ -1134,7 +1134,7 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     HYPE:
                 </Text>
-                <HypeVote launch_data={launch} isTradePage={true} />
+                <HypeVote launch_type={0} launch_id={launch.game_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[LaunchKeys.Seller]} isTradePage={true} />
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
