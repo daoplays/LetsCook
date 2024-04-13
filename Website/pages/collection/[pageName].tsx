@@ -31,8 +31,6 @@ import {
     calculateFee,
 } from "@solana/spl-token";
 import { getSolscanLink } from "../../utils/getSolscanLink";
-import { HypeVote } from "../../components/hypeVote";
-
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -261,6 +259,9 @@ const CollectionSwapPage = () => {
                 const [updated_data] = LookupData.struct.deserialize(account_data);
                 console.log(updated_data);
                 let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+                if (current_map === undefined) {
+                    current_map = new Map<String, LookupData>();
+                }
 
                 current_map.set(updated_data.nft_mint.toString(), updated_data);
 
@@ -511,7 +512,6 @@ const CollectionSwapPage = () => {
                                             1 NFT = {out_amount.toLocaleString()} {launch.token_symbol}
                                         </Button>
                                     </Tooltip>
-                                    <HypeVote launch_type={1} launch_id={launch.launch_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[CollectionKeys.Seller]} isTradePage={false} />
                                 </VStack>
                             ) : (
                                 <Button margin="auto 0" onClick={() => handleConnectWallet()}>
