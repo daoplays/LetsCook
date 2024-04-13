@@ -259,6 +259,9 @@ const CollectionSwapPage = () => {
                 const [updated_data] = LookupData.struct.deserialize(account_data);
                 console.log(updated_data);
                 let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+                if (current_map === undefined) {
+                    current_map = new Map<String, LookupData>();
+                }
 
                 current_map.set(updated_data.nft_mint.toString(), updated_data);
 

@@ -60,6 +60,7 @@ export interface CollectionDataUserInput {
     nft_image_url: string;
     nft_metadata_url: string;
     nft_name: string;
+    nft_type: string;
     token_mint: PublicKey | null;
     token_name: string;
     token_symbol: string;
@@ -98,6 +99,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     nft_image_url: "",
     nft_metadata_url: "",
     nft_name: "",
+    nft_type: "",
     token_mint: null,
     token_name: "",
     token_symbol: "",
@@ -124,6 +126,7 @@ export class CollectionData {
         readonly nft_icon_url: string,
         readonly nft_meta_url: string,
         readonly nft_name: string,
+        readonly nft_type: string,
 
         readonly banner: string,
         readonly page_name: string,
@@ -168,6 +171,7 @@ export class CollectionData {
             ["nft_icon_url", utf8String],
             ["nft_meta_url", utf8String],
             ["nft_name", utf8String],
+            ["nft_type", utf8String],
 
             ["banner", utf8String],
             ["page_name", utf8String],
@@ -210,6 +214,7 @@ export class CollectionData {
                 args.nft_icon_url!,
                 args.nft_meta_url!,
                 args.nft_name!,
+                args.nft_type!,
 
                 args.banner!,
                 args.page_name!,
@@ -317,6 +322,7 @@ class LaunchCollection_Instruction {
         readonly nft_uri: string,
         readonly nft_icon: string,
         readonly nft_name: string,
+        readonly nft_type: string,
 
         readonly banner: string,
         readonly collection_size: number,
@@ -341,6 +347,7 @@ class LaunchCollection_Instruction {
             ["nft_uri", utf8String],
             ["nft_icon", utf8String],
             ["nft_name", utf8String],
+            ["nft_type", utf8String],
             ["banner", utf8String],
             ["collection_size", u32],
             ["swap_price", u64],
@@ -363,6 +370,7 @@ class LaunchCollection_Instruction {
                 args.nft_uri!,
                 args.nft_icon!,
                 args.nft_name!,
+                args.nft_type!,
                 args.banner!,
                 args.collection_size!,
                 args.swap_price!,
@@ -430,6 +438,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.nft_metadata_url,
         new_launch_data.nft_image_url,
         new_launch_data.nft_name,
+        new_launch_data.nft_type,
         new_launch_data.banner_url,
         new_launch_data.collection_size,
         new_launch_data.swap_rate * Math.pow(10, new_launch_data.token_decimals),
