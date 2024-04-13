@@ -1,6 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { WalletProvider, ConnectionProvider } from "@solana/wallet-adapter-react";
-import { type ConnectionConfig } from '@solana/web3.js';
+import { type ConnectionConfig } from "@solana/web3.js";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { Config } from "../components/Solana/constants";
 import { theme } from "../chakra";
@@ -25,7 +25,7 @@ function MyApp({ Component, pageProps }) {
     const pathname = usePathname();
     const wallets = useMemo(() => [], []);
 
-    const connectionConfig : ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed"};
+    const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };
 
     return (
         <NoSSR>
@@ -44,17 +44,17 @@ function MyApp({ Component, pageProps }) {
             <ChakraProvider theme={theme}>
                 <NextTopLoader />
                 <ConnectionProvider endpoint={Config.RPC_NODE} config={connectionConfig}>
-                <WalletProvider wallets={wallets} autoConnect>
-                    <WalletModalProvider>
-                        <ContextProviders>
-                            <Navigation />
-                            <div style={{ minHeight: "calc(100vh - 47.5px)", paddingTop: "50px" }}>
-                                <Component {...pageProps} />
-                            </div>
-                            {(hide.includes(pathname) || !sm) && <Footer />}
-                        </ContextProviders>
-                    </WalletModalProvider>
-                </WalletProvider>
+                    <WalletProvider wallets={wallets} autoConnect>
+                        <WalletModalProvider>
+                            <ContextProviders>
+                                <Navigation />
+                                <div style={{ minHeight: "calc(100vh - 47.5px)", paddingTop: "50px" }}>
+                                    <Component {...pageProps} />
+                                </div>
+                                {(hide.includes(pathname) || !sm) && <Footer />}
+                            </ContextProviders>
+                        </WalletModalProvider>
+                    </WalletProvider>
                 </ConnectionProvider>
             </ChakraProvider>
         </NoSSR>

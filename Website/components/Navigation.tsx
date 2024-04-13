@@ -1,4 +1,19 @@
-import { Badge, Box, Divider, HStack, Show, Text, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
+import {
+    Badge,
+    Box,
+    Button,
+    Divider,
+    HStack,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    Show,
+    Text,
+    Tooltip,
+    VStack,
+    useDisclosure,
+} from "@chakra-ui/react";
 import { ConnectWalletButton, DisconnectWalletButton } from "./Solana/wallet";
 import { useWallet } from "@solana/wallet-adapter-react";
 import styles from "./header.module.css";
@@ -12,14 +27,16 @@ import useAppRoot from "../context/useAppRoot";
 import { isHomePageOnly } from "../constant/root";
 import trimAddress from "../utils/trimAddress";
 import { FaWallet } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
+import { useEffect, useState } from "react";
 
 function Navigation() {
     const router = useRouter();
     const wallet = useWallet();
-    const { md } = useResponsive();
+    const { xs, md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
-    const { currentUserData } = useAppRoot();
+    const { currentUserData, setSelectedNetwork, selectedNetwork } = useAppRoot();
 
     return (
         <>
@@ -35,25 +52,61 @@ function Navigation() {
                 top={0}
                 zIndex={1000}
             >
-                <Link href="/">
-                    <HStack>
-                        <Text
-                            fontSize={md ? "large" : "x-large"}
-                            color={"#683309"}
-                            className="font-face-kg"
-                            style={{ cursor: "pointer", margin: "auto 0" }}
-                        >
-                            LET&apos;S COOK
-                        </Text>
-                        {/* <Text fontSize={14} color={"#683309"} className="font-face-kg">
-                            BETA
-                        </Text> */}
+                <HStack>
+                    <Text
+                        fontSize={md ? "large" : "x-large"}
+                        color={"#683309"}
+                        className="font-face-kg"
+                        style={{ cursor: "pointer", margin: "auto 0" }}
+                        onClick={() => router.push("/")}
+                        hidden={xs}
+                    >
+                        LET&apos;S COOK
+                    </Text>
 
-                        <Badge px={1.5} borderRadius={20} bg="rgb(104,51,10, .95)" color="white">
-                            Devnet
-                        </Badge>
-                    </HStack>
-                </Link>
+                    <Menu>
+                        <MenuButton>
+                            <Badge px={2} py={1} borderRadius={20} bg="rgb(104,51,10, .95)" color="white">
+                                <HStack spacing={1} alignItems="center">
+                                    <Text m={0}>{selectedNetwork === "mainnet" ? "Mainnet Beta" : "Devnet"}</Text>
+                                    <FaChevronDown size={12} />
+                                </HStack>
+                            </Badge>
+                        </MenuButton>
+                        <MenuList p={1} style={{ minWidth: "fit-content" }}>
+                            <MenuItem borderRadius={5}>
+                                <HStack
+                                    alignItems="start"
+                                    onClick={async () => {
+                                        setSelectedNetwork("mainnet");
+                                        await router.replace("/");
+                                        router.reload();
+                                    }}
+                                >
+                                    <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
+                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
+                                        Mainnet Beta
+                                    </Text>
+                                </HStack>
+                            </MenuItem>
+                            <MenuItem
+                                borderRadius={5}
+                                onClick={async () => {
+                                    setSelectedNetwork("devnet");
+                                    await router.replace("/");
+                                    router.reload();
+                                }}
+                            >
+                                <HStack alignItems="start">
+                                    <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
+                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
+                                        Devnet
+                                    </Text>
+                                </HStack>
+                            </MenuItem>
+                        </MenuList>
+                    </Menu>
+                </HStack>
                 <HStack gap={3}>
                     <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
@@ -76,33 +129,37 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={isHomePageOnly ? "#" : "/trade"}>
-                                <Image
-                                    src="/images/market.png"
-                                    width={35}
-                                    height={35}
-                                    alt={"Trade"}
-                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                />
-                            </Link>
-                        </Tooltip>
-                    </Show>
+                    {selectedNetwork === "devnet" && (
+                        <Show breakpoint="(min-width: 1024px)">
+                            <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
+                                <Link href={isHomePageOnly ? "#" : "/trade"}>
+                                    <Image
+                                        src="/images/market.png"
+                                        width={35}
+                                        height={35}
+                                        alt={"Trade"}
+                                        style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                    />
+                                </Link>
+                            </Tooltip>
+                        </Show>
+                    )}
 
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={isHomePageOnly ? "#" : "/calendar"}>
-                                <Image
-                                    src="/images/calendar.png"
-                                    width={35}
-                                    height={35}
-                                    alt={"Calendar"}
-                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                />
-                            </Link>
-                        </Tooltip>
-                    </Show>
+                    {selectedNetwork === "devnet" && (
+                        <Show breakpoint="(min-width: 1024px)">
+                            <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
+                                <Link href={isHomePageOnly ? "#" : "/calendar"}>
+                                    <Image
+                                        src="/images/calendar.png"
+                                        width={35}
+                                        height={35}
+                                        alt={"Calendar"}
+                                        style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                    />
+                                </Link>
+                            </Tooltip>
+                        </Show>
+                    )}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
@@ -112,24 +169,26 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Image
-                                src="/images/money-bag.png"
-                                width={35}
-                                height={35}
-                                alt={"Money Bag"}
-                                onClick={() => {
-                                    if (!wallet.connected) {
-                                        alert("Please connect your wallet to access your bags");
-                                    } else {
-                                        !isHomePageOnly && router.push(`/bags`);
-                                    }
-                                }}
-                                style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                            />
-                        </Tooltip>
-                    </Show>
+                    {selectedNetwork === "devnet" && (
+                        <Show breakpoint="(min-width: 1024px)">
+                            <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
+                                <Image
+                                    src="/images/money-bag.png"
+                                    width={35}
+                                    height={35}
+                                    alt={"Money Bag"}
+                                    onClick={() => {
+                                        if (!wallet.connected) {
+                                            alert("Please connect your wallet to access your bags");
+                                        } else {
+                                            !isHomePageOnly && router.push(`/bags`);
+                                        }
+                                    }}
+                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                />
+                            </Tooltip>
+                        </Show>
+                    )}
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Creator Dashboard" hasArrow fontSize="large" offset={[0, 15]}>
@@ -250,17 +309,21 @@ function Navigation() {
                         </Text>
                     </Link>
 
-                    <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
-                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                            Trade
-                        </Text>
-                    </Link>
+                    {selectedNetwork === "devnet" && (
+                        <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
+                            <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                                Trade
+                            </Text>
+                        </Link>
+                    )}
 
-                    <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
-                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                            Calendar
-                        </Text>
-                    </Link>
+                    {selectedNetwork === "devnet" && (
+                        <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
+                            <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                                Calendar
+                            </Text>
+                        </Link>
+                    )}
 
                     <Link href={isHomePageOnly ? "#" : "/leaderboard"} onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
@@ -268,22 +331,24 @@ function Navigation() {
                         </Text>
                     </Link>
 
-                    <Text
-                        color="white"
-                        className="font-face-kg"
-                        fontSize={24}
-                        onClick={() => {
-                            if (!wallet.connected) {
-                                alert("Please connect your wallet to access creator dashboard");
-                            } else {
-                                onToggle();
-                                !isHomePageOnly && router.push(`/bags`);
-                            }
-                        }}
-                        style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
-                    >
-                        My Bags
-                    </Text>
+                    {selectedNetwork === "devnet" && (
+                        <Text
+                            color="white"
+                            className="font-face-kg"
+                            fontSize={24}
+                            onClick={() => {
+                                if (!wallet.connected) {
+                                    alert("Please connect your wallet to access creator dashboard");
+                                } else {
+                                    onToggle();
+                                    !isHomePageOnly && router.push(`/bags`);
+                                }
+                            }}
+                            style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
+                        >
+                            My Bags
+                        </Text>
+                    )}
 
                     <Link href="/faq" onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24}>

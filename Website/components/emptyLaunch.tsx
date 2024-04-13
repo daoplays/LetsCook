@@ -13,12 +13,14 @@ import UseWalletConnection from "../hooks/useWallet";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import { isHomePageOnly } from "../constant/root";
+import useAppRoot from "../context/useAppRoot";
 
 const EmptyLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
     const { handleConnectWallet } = UseWalletConnection();
     const { sm, md, lg, xl, xxl } = useResponsive();
+    const { selectedNetwork } = useAppRoot();
 
     return (
         // <Flex
@@ -80,7 +82,11 @@ const EmptyLaunch = () => {
                                 if (!wallet.connected) {
                                     handleConnectWallet();
                                 } else {
-                                    isHomePageOnly ? toast.info("Coming Soon") : router.push("/launch");
+                                    isHomePageOnly
+                                        ? toast.info("Coming Soon")
+                                        : selectedNetwork === "devnet"
+                                          ? router.push("/launch")
+                                          : router.push("/collection");
                                 }
                             }}
                         >

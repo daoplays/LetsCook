@@ -1,6 +1,6 @@
 "use client";
 
-import { PropsWithChildren, createContext, useContext, MutableRefObject } from "react";
+import { PropsWithChildren, createContext, useContext, MutableRefObject, SetStateAction, Dispatch } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
 import { CollectionDataUserInput, CollectionData, LookupData } from "../components/collection/collectionState";
@@ -30,6 +30,8 @@ interface AppRootTypes {
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
     collectionList: CollectionData[];
     NFTLookup: MutableRefObject<Map<String, Map<String, LookupData>>>;
+    selectedNetwork: string;
+    setSelectedNetwork: Dispatch<SetStateAction<string>>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -58,6 +60,8 @@ export const AppRootContextProvider = ({
     newCollectionData,
     collectionList,
     NFTLookup,
+    selectedNetwork,
+    setSelectedNetwork,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -84,6 +88,8 @@ export const AppRootContextProvider = ({
                 newCollectionData,
                 collectionList,
                 NFTLookup,
+                setSelectedNetwork,
+                selectedNetwork,
             }}
         >
             {children}

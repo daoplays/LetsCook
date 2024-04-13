@@ -2,46 +2,46 @@ import { isMobile } from "react-device-detect";
 import { PublicKey } from "@solana/web3.js";
 
 interface NetworkConfig {
-    PROD : boolean;
-    NETWORK : string;
-    PYTH_BTC : PublicKey;
-    PYTH_ETH : PublicKey;
-    PYTH_SOL : PublicKey;
-    FEES_KEY : PublicKey;
-    RAYDIUM_FEES : PublicKey;
-    RPC_NODE : string;
-    WSS_NODE : string;
-    IRYS_URL : string;
-    IRYS_WALLET : string;
+    PROD: boolean;
+    NETWORK: string;
+    PYTH_BTC: PublicKey;
+    PYTH_ETH: PublicKey;
+    PYTH_SOL: PublicKey;
+    FEES_KEY: PublicKey;
+    RAYDIUM_FEES: PublicKey;
+    RPC_NODE: string;
+    WSS_NODE: string;
+    IRYS_URL: string;
+    IRYS_WALLET: string;
 }
 
-const DevNetConfig : NetworkConfig = {
-    PROD : false,
-    NETWORK : "devnet",
-    PYTH_BTC : new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"),
-    PYTH_ETH : new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"),
-    PYTH_SOL : new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
-    FEES_KEY : new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
-    RAYDIUM_FEES : new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE : "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2",
-    WSS_NODE : "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/",
-    IRYS_URL : "https://devnet.irys.xyz",
-    IRYS_WALLET : "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS"
-}
+const DevNetConfig: NetworkConfig = {
+    PROD: false,
+    NETWORK: "devnet",
+    PYTH_BTC: new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"),
+    PYTH_ETH: new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"),
+    PYTH_SOL: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+    FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
+    RPC_NODE: "https://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2",
+    WSS_NODE: "wss://rough-blue-tab.solana-devnet.quiknode.pro/01715d3e60529cb4730ac38934bcc66e6318d8b2/",
+    IRYS_URL: "https://devnet.irys.xyz",
+    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
+};
 
-const MainNetConfig : NetworkConfig = {
-    PROD : true,
-    NETWORK : "mainnet",
-    PYTH_BTC : new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"),
-    PYTH_ETH : new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"),
-    PYTH_SOL : new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
-    FEES_KEY : new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"),
-    RAYDIUM_FEES : new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
-    RPC_NODE : "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198",
-    WSS_NODE : "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/",
-    IRYS_URL : "https://node2.irys.xyz",
-    IRYS_WALLET : "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD"
-}
+const MainNetConfig: NetworkConfig = {
+    PROD: true,
+    NETWORK: "mainnet",
+    PYTH_BTC: new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"),
+    PYTH_ETH: new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"),
+    PYTH_SOL: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
+    FEES_KEY: new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"),
+    RAYDIUM_FEES: new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
+    RPC_NODE: "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198",
+    WSS_NODE: "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/",
+    IRYS_URL: "https://node2.irys.xyz",
+    IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
+};
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
@@ -65,8 +65,15 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export const Config = DevNetConfig;
+export let Config = DevNetConfig;
 
+export const setConfig = (network: string) => {
+    if (network === "devnet") {
+        Config = DevNetConfig;
+    } else if (network === "mainnet") {
+        Config = MainNetConfig;
+    }
+};
 
 export const enum Screen {
     HOME_SCREEN = 0,
