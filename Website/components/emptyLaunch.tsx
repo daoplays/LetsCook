@@ -84,9 +84,7 @@ const EmptyLaunch = () => {
                                 } else {
                                     isHomePageOnly
                                         ? toast.info("Coming Soon")
-                                        : selectedNetwork === "devnet"
-                                          ? router.push("/launch")
-                                          : router.push("/collection");
+                                        :  router.push("/launch")
                                 }
                             }}
                         >

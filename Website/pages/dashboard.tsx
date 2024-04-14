@@ -21,7 +21,7 @@ const DashboardPage = () => {
     const { launchList, collectionList, selectedNetwork } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
     const [creatorCollections, setCreatorCollections] = useState<CollectionData[] | null>(null);
-    const [selected, setSelected] = useState(selectedNetwork === "devnet" ? "Tokens" : "Collections");
+    const [selected, setSelected] = useState("Tokens");
 
     const { newLaunchData } = useAppRoot();
 
@@ -66,7 +66,6 @@ const DashboardPage = () => {
                         Creator Dashboard
                     </Text>
 
-                    {selectedNetwork === "devnet" && (
                         <HStack spacing={3} zIndex={99}>
                             {["Tokens", "Collections"].map((name, i) => {
                                 const isActive = selected === name;
@@ -106,7 +105,7 @@ const DashboardPage = () => {
                                 );
                             })}
                         </HStack>
-                    )}
+                    
                     <Text
                         fontSize={sm ? 25 : 35}
                         color="white"
@@ -142,7 +141,7 @@ const DashboardPage = () => {
                     {/* </Link> */}
                 </Flex>
 
-                {selected === "Tokens" && selectedNetwork === "devnet" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
+                {selected === "Tokens" &&  <TokenDashboardTable creatorLaunches={creatorLaunches} />}
 
                 {selected === "Collections" && <CollectionDashboardTable collectionList={creatorCollections} />}
 

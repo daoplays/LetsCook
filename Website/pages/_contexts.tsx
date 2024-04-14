@@ -296,6 +296,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
+            
+            //CloseAccount({account: program_data[i].pubkey});
+            continue;
+
             if (data[0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);

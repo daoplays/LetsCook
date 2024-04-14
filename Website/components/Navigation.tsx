@@ -129,7 +129,6 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    {selectedNetwork === "devnet" && (
                         <Show breakpoint="(min-width: 1024px)">
                             <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
                                 <Link href={isHomePageOnly ? "#" : "/trade"}>
@@ -143,9 +142,8 @@ function Navigation() {
                                 </Link>
                             </Tooltip>
                         </Show>
-                    )}
+                    
 
-                    {selectedNetwork === "devnet" && (
                         <Show breakpoint="(min-width: 1024px)">
                             <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
                                 <Link href={isHomePageOnly ? "#" : "/calendar"}>
@@ -159,7 +157,7 @@ function Navigation() {
                                 </Link>
                             </Tooltip>
                         </Show>
-                    )}
+                    
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
@@ -169,7 +167,6 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    {selectedNetwork === "devnet" && (
                         <Show breakpoint="(min-width: 1024px)">
                             <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
                                 <Image
@@ -188,7 +185,7 @@ function Navigation() {
                                 />
                             </Tooltip>
                         </Show>
-                    )}
+                    
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Creator Dashboard" hasArrow fontSize="large" offset={[0, 15]}>
@@ -309,21 +306,19 @@ function Navigation() {
                         </Text>
                     </Link>
 
-                    {selectedNetwork === "devnet" && (
                         <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
                             <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
                                 Trade
                             </Text>
                         </Link>
-                    )}
+                    
 
-                    {selectedNetwork === "devnet" && (
                         <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
                             <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
                                 Calendar
                             </Text>
                         </Link>
-                    )}
+                    
 
                     <Link href={isHomePageOnly ? "#" : "/leaderboard"} onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
@@ -331,7 +326,6 @@ function Navigation() {
                         </Text>
                     </Link>
 
-                    {selectedNetwork === "devnet" && (
                         <Text
                             color="white"
                             className="font-face-kg"
@@ -348,7 +342,7 @@ function Navigation() {
                         >
                             My Bags
                         </Text>
-                    )}
+                    
 
                     <Link href="/faq" onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24}>
