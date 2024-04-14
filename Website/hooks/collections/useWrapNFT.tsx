@@ -143,6 +143,9 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let wrapped_index = Math.floor(Math.random() * valid_lookups.length);
         let wrapped_nft_key = valid_lookups[wrapped_index].nft_mint;
 
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let nft_lookup_account = PublicKey.findProgramAddressSync(
@@ -240,6 +243,8 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
+
             { pubkey: nft_lookup_account, isSigner: false, isWritable: true },
 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },

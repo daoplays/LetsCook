@@ -101,6 +101,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             PROGRAM,
         )[0];
 
+
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
@@ -166,6 +167,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
+
             { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
