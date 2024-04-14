@@ -9,10 +9,12 @@ import MainButton from "./Buttons/mainButton";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { route } from "../utils/navigateTo";
 
 function Footer() {
     const router = useRouter();
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const { network } = router.query;
 
     return (
         <HStack
@@ -24,11 +26,11 @@ function Footer() {
             justify="start"
             gap={2}
         >
-            <Link href="/terms">
+            <Link href={`/${route("terms", network)}`}>
                 <MainButton label="TERMS" />
             </Link>
 
-            <Link href="faq">
+            <Link href={`/${route("faq", network)}`}>
                 <MainButton label="FAQs" />
             </Link>
 

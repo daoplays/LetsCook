@@ -13,15 +13,17 @@ import { LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
 import { CollectionData } from "../components/collection/collectionState";
+import { route } from "../utils/navigateTo";
 
 const DashboardPage = () => {
     const router = useRouter();
     const wallet = useWallet();
+    const { network } = router.query;
     const { sm, lg } = useResponsive();
-    const { launchList, collectionList, selectedNetwork } = useAppRoot();
+    const { launchList, collectionList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
     const [creatorCollections, setCreatorCollections] = useState<CollectionData[] | null>(null);
-    const [selected, setSelected] = useState("Tokens");
+    const [selected, setSelected] = useState(network === "devnet" ? "Tokens" : "Collections");
 
     const { newLaunchData } = useAppRoot();
 
@@ -71,12 +73,6 @@ const DashboardPage = () => {
                         {["Tokens", "Collections"].map((name, i) => {
                             const isActive = selected === name;
 
-                            const baseStyle = {
-                                display: "flex",
-                                alignItems: "center",
-                                cursor: "pointer",
-                            };
-
                             const activeStyle = {
                                 color: "white",
                                 borderBottom: isActive ? "2px solid white" : "",
@@ -87,7 +83,6 @@ const DashboardPage = () => {
                                 <HStack
                                     key={i}
                                     style={{
-                                        ...baseStyle,
                                         ...activeStyle,
                                     }}
                                     onClick={() => {
@@ -123,7 +118,7 @@ const DashboardPage = () => {
                             w={sm ? "100%" : "fit-content"}
                             onClick={() => {
                                 newLaunchData.current = defaultUserInput;
-                                router.push("/launch");
+                                router.push(`/${route("launch", network)}`);
                             }}
                             hidden={selected === "Collections"}
                         >
@@ -132,7 +127,7 @@ const DashboardPage = () => {
                         <Button
                             w={sm ? "100%" : "fit-content"}
                             onClick={() => {
-                                router.push("/collection");
+                                router.push(`/${route("collection", network)}`);
                             }}
                             hidden={selected === "Tokens"}
                         >

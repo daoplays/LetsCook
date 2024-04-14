@@ -20,7 +20,7 @@ const EmptyLaunch = () => {
     const router = useRouter();
     const { handleConnectWallet } = UseWalletConnection();
     const { sm, md, lg, xl, xxl } = useResponsive();
-    const { selectedNetwork } = useAppRoot();
+    const { network } = router.query;
 
     return (
         // <Flex
@@ -84,7 +84,9 @@ const EmptyLaunch = () => {
                                 } else {
                                     isHomePageOnly
                                         ? toast.info("Coming Soon")
-                                        :  router.push("/launch")
+                                        : network === "devnet"
+                                          ? router.push("/launch?network=devnet")
+                                          : router.push("/collection");
                                 }
                             }}
                         >

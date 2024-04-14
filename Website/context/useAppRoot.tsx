@@ -30,8 +30,8 @@ interface AppRootTypes {
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
     collectionList: CollectionData[];
     NFTLookup: MutableRefObject<Map<String, Map<String, LookupData>>>;
-    selectedNetwork: string;
-    setSelectedNetwork: Dispatch<SetStateAction<string>>;
+    // selectedNetwork: string;
+    // setSelectedNetwork: Dispatch<SetStateAction<string>>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -60,8 +60,8 @@ export const AppRootContextProvider = ({
     newCollectionData,
     collectionList,
     NFTLookup,
-    selectedNetwork,
-    setSelectedNetwork,
+    // selectedNetwork,
+    // setSelectedNetwork,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -88,8 +88,8 @@ export const AppRootContextProvider = ({
                 newCollectionData,
                 collectionList,
                 NFTLookup,
-                setSelectedNetwork,
-                selectedNetwork,
+                // setSelectedNetwork,
+                // selectedNetwork,
             }}
         >
             {children}

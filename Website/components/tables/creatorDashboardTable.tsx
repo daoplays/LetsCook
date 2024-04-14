@@ -25,6 +25,7 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
+import { route } from "../../utils/navigateTo";
 
 interface Header {
     text: string;
@@ -252,6 +253,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
 const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch: LaunchData) => Promise<void> }) => {
     const router = useRouter();
+    const { network } = router.query;
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: initAMMLoading } = useInitAMM(launch);
     const { newLaunchData } = useAppRoot();
@@ -304,7 +306,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
 
         setIsEditing(false);
 
-        router.push("/launch");
+        router.push(`/${route("launch", network)}`);
     };
 
     return (
@@ -320,7 +322,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.page_name}`)}
+            onClick={() => router.push(route(`/launch/${launch.page_name}`, network))}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">

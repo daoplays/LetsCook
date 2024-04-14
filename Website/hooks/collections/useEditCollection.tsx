@@ -13,10 +13,12 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { serialise_EditCollection_instruction } from "../../components/collection/collectionState";
+import { route } from "../../utils/navigateTo";
 
 const useEditCollection = () => {
     const wallet = useWallet();
     const router = useRouter();
+    const { network } = router.query;
     const { newCollectionData, checkProgramData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
@@ -139,7 +141,7 @@ const useEditCollection = () => {
                 autoClose: 3000,
             });
 
-            router.push("/dashboard");
+            router.push(`/${route("dashboard", network)}`);
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {

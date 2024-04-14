@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import { CollectionData } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
+import { route } from "../../utils/navigateTo";
 
 interface Header {
     text: string;
@@ -34,7 +35,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
     const tableHeaders: Header[] = [
         { text: "COLLECTION", field: null },
         { text: "TOKEN", field: null },
-        {text: "HYPE", field: "hype"},
+        { text: "HYPE", field: "hype" },
         { text: "TOKENS PER NFT", field: "tokens per nft" },
         { text: "UNWRAP FEE", field: "unwrap fee" },
         { text: "TOTAL SUPPLY", field: "total supply" },
@@ -86,6 +87,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
 
 const LaunchCard = ({ launch }: { launch: CollectionData }) => {
     const router = useRouter();
+    const { network } = router.query;
     const { sm, md, lg } = useResponsive();
     //console.log(launch);
     return (
@@ -101,7 +103,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/collection/` + launch.page_name)}
+            onClick={() => router.push(route(`/collection/` + launch.page_name, network))}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
@@ -136,7 +138,15 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 </HStack>
             </td>
             <td style={{ minWidth: "150px" }}>
-            <HypeVote launch_type={1} launch_id={launch.launch_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[CollectionKeys.Seller]} isTradePage={false} />
+                <HypeVote
+                    launch_type={1}
+                    launch_id={launch.launch_id}
+                    page_name={launch.page_name}
+                    positive_votes={launch.positive_votes}
+                    negative_votes={launch.negative_votes}
+                    seller_key={launch.keys[CollectionKeys.Seller]}
+                    isTradePage={false}
+                />
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={"large"} m={0}>
@@ -154,7 +164,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 </Text>
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>
+                <Button onClick={() => router.push(route(`/collection/` + launch.page_name, network))} style={{ textDecoration: "none" }}>
                     View
                 </Button>
             </td>

@@ -30,6 +30,8 @@ import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
+import { useRouter } from "next/router";
+import Loader from "../components/loader";
 
 const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
@@ -103,9 +105,9 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 };
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
+    const router = useRouter();
     const wallet = useWallet();
-    const [selectedNetwork, setSelectedNetwork] = useState(localStorage.getItem("selectedNetwork") || "devnet");
-
+    const { network } = router.query;
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
 
@@ -143,10 +145,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
 
-    useEffect(() => {
-        localStorage.setItem("selectedNetwork", selectedNetwork);
-        setConfig(selectedNetwork);
-    }, [selectedNetwork]);
+    setConfig(network === "devnet" ? "devnet" : "mainnet");
 
     function closeFilterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -297,7 +296,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
-            
             //CloseAccount({account: program_data[i].pubkey});
 
             if (data[0] === 0) {
@@ -305,7 +303,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     const [launch] = LaunchData.struct.deserialize(data);
                     // console.log("data ", i, launch.page_name);
                     //if (launch.flags[LaunchFlags.LPState] == 0)
-                      //  continue;
+                    //  continue;
 
                     launch_data.push(launch);
                 } catch (error) {
@@ -509,8 +507,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             newCollectionData={newCollectionData}
             collectionList={collection_data}
             NFTLookup={nft_lookup}
-            setSelectedNetwork={setSelectedNetwork}
-            selectedNetwork={selectedNetwork}
+            // setSelectedNetwork={setSelectedNetwork}
+            // selectedNetwork={selectedNetwork}
         >
             {children}
         </AppRootContextProvider>

@@ -13,6 +13,7 @@ import { FaSort } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { ButtonString } from "../user_status";
 import { LaunchKeys } from "../Solana/constants";
+import { route } from "../../utils/navigateTo";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -151,6 +152,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
 const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
     const { sm, md, lg } = useResponsive();
     const router = useRouter();
+    const { network } = router.query;
     let name = launch.symbol;
 
     let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
@@ -171,7 +173,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.page_name}`)}
+            onClick={() => router.push(route(`/launch/${launch.page_name}`, network))}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
@@ -199,7 +201,15 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 )}
             </td>
             <td style={{ minWidth: "150px" }}>
-            <HypeVote launch_type={0} launch_id={launch.game_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[LaunchKeys.Seller]} isTradePage={false} />
+                <HypeVote
+                    launch_type={0}
+                    launch_id={launch.game_id}
+                    page_name={launch.page_name}
+                    positive_votes={launch.positive_votes}
+                    negative_votes={launch.negative_votes}
+                    seller_key={launch.keys[LaunchKeys.Seller]}
+                    isTradePage={false}
+                />
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>
@@ -212,7 +222,7 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 </Text>
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button onClick={() => router.push(`/launch/` + launch.page_name)} style={{ textDecoration: "none" }}>
+                <Button onClick={() => router.push(route(`/launch/` + launch.page_name, network))} style={{ textDecoration: "none" }}>
                     View
                 </Button>
             </td>

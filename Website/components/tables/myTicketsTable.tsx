@@ -14,6 +14,7 @@ import useRefundTickets from "../../hooks/useRefundTickets";
 import useClaimTokens from "../../hooks/useClaimTokens";
 import { LaunchFlags, LaunchKeys } from "../Solana/constants";
 import { WinLoss, ButtonString } from "../user_status";
+import { route } from "../../utils/navigateTo";
 
 interface Header {
     text: string;
@@ -114,6 +115,7 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
 
 const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const router = useRouter();
+    const { network } = router.query;
     const { sm, md, lg } = useResponsive();
 
     const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, true);
@@ -175,7 +177,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
+            onClick={() => router.push(`/${route(`launch/${launch.launch_data.page_name}`, network)}`)}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">

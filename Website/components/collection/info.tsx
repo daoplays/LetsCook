@@ -10,14 +10,15 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import trimAddress from "../../utils/trimAddress";
+import { route } from "../../utils/navigateTo";
 interface CollectionInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
 const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const router = useRouter();
+    const { network } = router.query;
     const { newCollectionData } = useAppRoot();
-
     const { sm, md, lg } = useResponsive();
     const [name, setName] = useState<string>(newCollectionData.current.collection_name);
     const [symbol, setSymbol] = useState<string>(newCollectionData.current.collection_symbol);
@@ -378,7 +379,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                         </div>
 
                         <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
+                            <button
+                                type="button"
+                                className={`${styles.nextBtn} font-face-kg `}
+                                onClick={() => router.push(`/${route("dashboard", network)}`)}
+                            >
                                 Cancel
                             </button>
                             <button

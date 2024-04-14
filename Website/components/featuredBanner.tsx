@@ -13,6 +13,7 @@ import { LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
+import { route } from "../utils/navigateTo";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -22,6 +23,7 @@ interface FeaturedBannerProps {
 const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => {
     const { sm, lg } = useResponsive();
     const router = useRouter();
+    const { network } = router.query;
 
     if (!featuredLaunch) return;
 
@@ -37,7 +39,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                 bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)"
                 w="100%"
                 h="100%"
-                onClick={() => isHomePage && router.push(`/launch/${featuredLaunch?.page_name}`)}
+                onClick={() => isHomePage && router.push(route(`/launch/${featuredLaunch?.page_name}`, network))}
                 style={{ cursor: isHomePage ? "pointer" : "default" }}
             >
                 <Flex

@@ -35,6 +35,7 @@ import { FaDollarSign } from "react-icons/fa";
 import getImageDimensions from "../../utils/getImageDimension";
 import { distributionLabels } from "../../constant/root";
 import trimAddress from "../../utils/trimAddress";
+import { route } from "../../utils/navigateTo";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -42,6 +43,7 @@ interface TokenPageProps {
 const TokenPage = ({ setScreen }: TokenPageProps) => {
     //console.log(newLaunchData.current)
     const router = useRouter();
+    const { network } = router.query;
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
@@ -1010,7 +1012,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </HStack>
                         </VStack>
                         <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
+                            <button
+                                type="button"
+                                className={`${styles.nextBtn} font-face-kg `}
+                                onClick={() => router.push(`/${route("dashboard", network)}`)}
+                            >
                                 Cancel
                             </button>
 

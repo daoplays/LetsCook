@@ -2,16 +2,18 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useRouter } from "next/router";
 import { useCallback } from "react";
+import { route } from "../utils/navigateTo";
 
 const UseWalletConnection = () => {
     const router = useRouter();
     const wallet = useWallet();
+    const { network } = router.query;
     const { setVisible } = useWalletModal();
 
     const handleDisconnectWallet = useCallback(async () => {
         console.log("call wallet disconnect");
         await wallet.disconnect();
-        router.push("/");
+        await router.push(`/${route("", network)}`);
     }, [wallet]);
 
     const handleConnectWallet = useCallback(async () => {

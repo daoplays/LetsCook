@@ -14,6 +14,7 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { CollectionData } from "./collection/collectionState";
 import { getSolscanLink } from "../utils/getSolscanLink";
+import { route } from "../utils/navigateTo";
 
 interface CollectionFeaturedBannerProps {
     featuredLaunch: CollectionData;
@@ -23,6 +24,7 @@ interface CollectionFeaturedBannerProps {
 const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeaturedBannerProps) => {
     const { sm, lg } = useResponsive();
     const router = useRouter();
+    const { network } = router.query;
 
     if (!featuredLaunch) return;
 
@@ -37,7 +39,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
                 bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)"
                 w="100%"
                 h="100%"
-                onClick={() => isHomePage && router.push(`/launch/${featuredLaunch?.page_name}`)}
+                onClick={() => isHomePage && router.push(route(`/launch/${featuredLaunch?.page_name}`, network))}
                 style={{ cursor: isHomePage ? "pointer" : "default" }}
             >
                 <Flex

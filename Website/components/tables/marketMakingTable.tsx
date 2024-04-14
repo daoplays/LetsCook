@@ -13,6 +13,7 @@ import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";
 import { Mint } from "@solana/spl-token";
 import ShowExtensions from "../Solana/extensions";
+import { route } from "../../utils/navigateTo";
 interface Header {
     text: string;
     field: string | null;
@@ -125,6 +126,7 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
 
 const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
     const router = useRouter();
+    const { network } = router.query;
     const { sm, md, lg } = useResponsive();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch_data.last_interaction)) / 24 / 60 / 60);
@@ -150,7 +152,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)}
+            onClick={() => router.push(route(`/trade/` + amm_launch.launch_data.page_name, network))}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
@@ -209,7 +211,10 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 <ShowExtensions extension_flag={amm_launch.launch_data.flags[LaunchFlags.Extensions]} />
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)} style={{ textDecoration: "none" }}>
+                <Button
+                    onClick={() => router.push(route(`/trade/` + amm_launch.launch_data.page_name, network))}
+                    style={{ textDecoration: "none" }}
+                >
                     View
                 </Button>
             </td>

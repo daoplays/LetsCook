@@ -1,7 +1,13 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
-import { LaunchDataUserInput, get_current_blockhash, request_launch_data, send_transaction, serialise_EditLaunch_instruction } from "../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys} from "../components/Solana/constants";
+import {
+    LaunchDataUserInput,
+    get_current_blockhash,
+    request_launch_data,
+    send_transaction,
+    serialise_EditLaunch_instruction,
+} from "../components/Solana/state";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -12,10 +18,12 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { route } from "../utils/navigateTo";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
+    const { network } = router.query;
     const { newLaunchData, checkProgramData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
@@ -40,7 +48,6 @@ const useEditLaunch = () => {
         console.log(newLaunchData.current);
         await checkProgramData();
         router.push("/dashboard");
-
     }, []);
 
     const EditLaunch = async () => {
@@ -127,7 +134,7 @@ const useEditLaunch = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         const createLaunch = toast.loading("Launching your token...");
 
@@ -157,6 +164,7 @@ const useEditLaunch = () => {
                 autoClose: 3000,
             });
 
+            router.push(`/${route("dashboard", network)}`);
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {
