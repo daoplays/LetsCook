@@ -262,6 +262,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
                 var transaction_response = await send_transaction("", encoded_transaction);
+                console.log(transaction_response);
             } catch (error) {
                 console.log(error);
                 return;
@@ -298,7 +299,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             
             //CloseAccount({account: program_data[i].pubkey});
-            continue;
 
             if (data[0] === 0) {
                 try {
