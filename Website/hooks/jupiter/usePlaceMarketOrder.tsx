@@ -35,7 +35,6 @@ import {
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import { make_tweet } from "../../components/launch/twitter";
 import useAppRoot from "../../context/useAppRoot";
 
 const usePlaceMarketOrder = () => {
@@ -46,35 +45,55 @@ const usePlaceMarketOrder = () => {
 
     const signature_ws_id = useRef<number | null>(null);
 
-    let placeLimitToast;
+    const check_signature_update = useCallback(async (result: any) => {
+        console.log(result);
+        // if we have a subscription field check against ws_id
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                toast.update(placeLimitToast, {
-                    render: "Market Order Failed.  Please try again later.",
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                return;
-            }
+        signature_ws_id.current = null;
+        setIsLoading(false);
 
-            await checkProgramData();
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
 
-            signature_ws_id.current = null;
-        },
-        [checkProgramData, placeLimitToast],
-    );
+        toast.success("Market order placed!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+
+        await checkProgramData();
+        
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        
+        if (signature_ws_id.current == null)
+            return
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+        
+    }, []);
 
     const PlaceMarketOrder = async (launch: LaunchData, token_amount: number, sol_amount: number, order_type: number) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        placeLimitToast = toast.loading("Placing Market Order...");
-
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
+
+        setIsLoading(true);
+
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -246,6 +265,7 @@ const usePlaceMarketOrder = () => {
 
         transaction.add(instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
 
         console.log("sending transaction");
 
@@ -261,16 +281,13 @@ const usePlaceMarketOrder = () => {
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
 
-            toast.update(placeLimitToast, {
-                render: "Market Order Placed",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+
         } catch (error) {
-            toast.update(placeLimitToast, {
-                render: "Market Order Failed.  Please try again later.",
+
+            setIsLoading(false);
+            toast.error("Market order failed, please try again", {
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,

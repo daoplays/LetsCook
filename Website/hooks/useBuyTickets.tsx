@@ -33,6 +33,22 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         signature_ws_id.current = null;
     }, []);
 
+    const transaction_failed = useCallback(async () => {
+        
+        if (signature_ws_id.current == null)
+            return
+            
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+        
+    }, []);
+
     const BuyTickets = async () => {
         const buyingTickets = toast.loading(`Buying ${value} ${ticketLabel}`);
 

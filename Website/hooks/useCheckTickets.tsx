@@ -53,6 +53,9 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
 
     const transaction_failed = useCallback(async () => {
         
+        if (signature_ws_id.current == null)
+            return
+            
         signature_ws_id.current = null;
         setIsLoading(false);
 
@@ -132,7 +135,6 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
 
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
-        console.log(Config.PYTH_BTC.toString(), Config.PYTH_ETH.toString(), Config.PYTH_SOL.toString())
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

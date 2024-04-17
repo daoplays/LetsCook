@@ -743,7 +743,7 @@ const BuyAndSell = ({
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [sol_amount, setSOLAmount] = useState<number>(0);
     const [order_type, setOrderType] = useState<number>(0);
-    const { PlaceMarketOrder } = usePlaceMarketOrder();
+    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
     const { userSOLBalance } = useAppRoot();
 
     const handleClick = (tab: string) => {
@@ -1000,6 +1000,7 @@ const BuyAndSell = ({
                 px={4}
                 py={2}
                 bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
+                isLoading={placingOrder}
                 onClick={() => {
                     !wallet.connected ? handleConnectWallet() : PlaceMarketOrder(launch, token_amount, sol_amount, order_type);
                 }}
