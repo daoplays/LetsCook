@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
-import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config} from "../components/Solana/constants";
+import { LaunchDataUserInput, get_current_blockhash, request_launch_data, send_transaction, serialise_EditLaunch_instruction } from "../components/Solana/state";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys} from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -39,14 +39,16 @@ const useEditLaunch = () => {
 
         console.log(newLaunchData.current);
         await checkProgramData();
+        router.push("/dashboard");
+
     }, []);
 
     const EditLaunch = async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
-            toast.success("Transaction pending, please wait");
-            return;
+            //toast.success("Transaction pending, please wait");
+            //return;
         }
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
@@ -56,8 +58,10 @@ const useEditLaunch = () => {
             PROGRAM,
         )[0];
 
+        const launch_data = await request_launch_data("", launch_data_account);
+
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
+        var token_mint_pubkey = launch_data.keys[LaunchKeys.MintAddress];
 
         let amm_seed_keys = [];
         if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
@@ -123,6 +127,8 @@ const useEditLaunch = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+
         const createLaunch = toast.loading("Launching your token...");
 
         try {
@@ -151,7 +157,6 @@ const useEditLaunch = () => {
                 autoClose: 3000,
             });
 
-            router.push("/dashboard");
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {

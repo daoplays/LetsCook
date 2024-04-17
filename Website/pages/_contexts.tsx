@@ -304,6 +304,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     // console.log("data ", i, launch.page_name);
+                    //if (launch.flags[LaunchFlags.LPState] == 0)
+                      //  continue;
 
                     launch_data.push(launch);
                 } catch (error) {

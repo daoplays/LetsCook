@@ -1,5 +1,5 @@
 import { LaunchData, get_current_blockhash, myU64, send_transaction, serialise_BuyTickets_instruction } from "../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PROGRAM, Config, SYSTEM_KEY } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -96,6 +96,8 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        //transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 100_000 }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
         transaction.add(list_instruction);
 
         try {

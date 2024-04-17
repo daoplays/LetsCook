@@ -14,6 +14,8 @@ import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import useAppRoot from "../context/useAppRoot";
 import useInitAMM from "./useInitAMM";
+import { toast } from "react-toastify";
+
 const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData } = useAppRoot();
@@ -27,15 +29,39 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         // if we have a subscription field check against ws_id
 
         signature_ws_id.current = null;
+        setIsLoading(false);
 
         if (result.err !== null) {
-            alert("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
+
+        toast.success("Tickets Checked!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
         if (updateData) {
             await checkProgramData();
         }
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+        
     }, []);
 
     const CheckTickets = async () => {
@@ -105,6 +131,8 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         }
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        console.log(Config.PYTH_BTC.toString(), Config.PYTH_ETH.toString(), Config.PYTH_SOL.toString())
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -117,12 +145,13 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             console.log("reward sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
+
         } catch (error) {
             console.log(error);
-            return;
-        } finally {
             setIsLoading(false);
-        }
+            return;
+        } 
     };
 
     return { CheckTickets, isLoading };

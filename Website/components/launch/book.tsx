@@ -485,9 +485,10 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-
+        transaction.add(list_instruction);
+ 
         transaction.partialSign(newLaunchData.current.token_keypair);
 
         const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
@@ -496,15 +497,18 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-            var transaction_response = await send_transaction("", encoded_transaction);
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), {skipPreflight: false});
 
-            if (transaction_response.result === "INVALID") {
-                console.log(transaction_response);
+            //console.log(response)
+            //var transaction_response = await send_transaction("", encoded_transaction);
+
+            if (signature === undefined) {
+                console.log(signature);
                 toast.error("Transaction failed, please try again");
                 return;
             }
 
-            let signature = transaction_response.result;
+            //let signature = transaction_response.result;
 
             if (DEBUG) {
                 console.log("list signature: ", signature);
@@ -638,7 +642,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
-                                    disabled={newLaunchData.current.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
                                     placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
