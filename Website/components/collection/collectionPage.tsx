@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useRef, useState, useCallback } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
-import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, Spinner } from "@chakra-ui/react";
 
 import {
     METAPLEX_META,
@@ -53,7 +53,6 @@ interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-
 // Define the Tag type
 type Tag = {
     name: string;
@@ -65,6 +64,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
     const { newCollectionData } = useAppRoot();
+
+    const [isLoading, setIsLoading] = useState(false);
 
     const [name, setName] = useState<string>(newCollectionData.current.pagename);
     const [web, setWeb] = useState<string>(newCollectionData.current.web_url);
@@ -103,9 +104,18 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
+
+            setIsLoading(false);
+
             if (result.err !== null) {
-                toast.error("Transaction failed, please try again");
+                toast.error("Transaction failed, please try again", {
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
             }
+
             if (signature_ws_id.current === 1) {
                 await EditCollection();
             }
@@ -192,6 +202,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }
 
     const CreateLaunch = useCallback(async () => {
+        setIsLoading(true);
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         console.log(newCollectionData.current.icon_url);
@@ -554,6 +565,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             connection.onSignature(signature, check_signature_update, "confirmed");
         } catch (error) {
             console.log(error);
+            setIsLoading(false);
             toast.update(createLaunch, {
                 render: "We couldn't create your launch accounts. Please try again.",
                 type: "error",
@@ -719,11 +731,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    Launch(e);
+                                    if (!isLoading) {
+                                        Launch(e);
+                                    }
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >
-                                CONFIRM (4/4)
+                                {isLoading ? <Spinner /> : "CONFIRM (4/4)"}
                             </button>
                         </div>
                     </VStack>

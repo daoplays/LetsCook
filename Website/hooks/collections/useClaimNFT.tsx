@@ -21,20 +21,14 @@ import {
 } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import {
-    PROGRAM,
-    Config,
-    SYSTEM_KEY,
-    SOL_ACCOUNT_SEED,
-    CollectionKeys,
-    METAPLEX_META,
-} from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META } from "../../components/Solana/constants";
 import { useCallback, useRef, useState, useEffect } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import useMintNFT from "./useMintNFT";
+import { toast } from "react-toastify";
 
 const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
@@ -46,18 +40,46 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-        }
+
         signature_ws_id.current = null;
-        console.log("transaction success");
+        setIsLoading(false);
+
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        toast.success("Successfully Minted NFT", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
         if (updateData) {
             await checkProgramData();
         }
     }, []);
 
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
     const ClaimNFT = async () => {
+        setIsLoading(true);
+
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
@@ -75,8 +97,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         if (launchData.num_available === 0) {
             return;
         }
-
-        setIsLoading(true);
 
         if (wallet.signTransaction === undefined) return;
 
@@ -100,7 +120,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
             PROGRAM,
         )[0];
-
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
@@ -213,6 +232,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -225,11 +245,11 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             console.log("join sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
         } catch (error) {
             console.log(error);
-            return;
-        } finally {
             setIsLoading(false);
+            return;
         }
     };
 

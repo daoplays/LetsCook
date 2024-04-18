@@ -18,6 +18,7 @@ import {
     chakra,
     FormControl,
     FormLabel,
+    Spinner,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
@@ -1021,9 +1022,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     }
                                 }}
                                 className={`${styles.nextBtn} font-face-kg`}
-                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
                             >
-                                {isLoading ? "Please Wait" : "NEXT (1/3)"}
+                                {isLoading ? <Spinner /> : "NEXT (1/3)"}
                             </button>
                         </HStack>
                     </VStack>

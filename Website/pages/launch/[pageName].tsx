@@ -14,7 +14,7 @@ import {
     Divider,
 } from "@chakra-ui/react";
 import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../../components/Solana/state";
-import { PROGRAM, Config} from "../../components/Solana/constants";
+import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
@@ -72,9 +72,9 @@ const TokenMintPage = () => {
     const { value } = input;
 
     const { BuyTickets, openWarning, isWarningOpened, closeWarning } = useBuyTickets({ launchData, value });
-    const { CheckTickets } = useCheckTickets(launchData);
-    const { ClaimTokens } = useClaimTickets(launchData);
-    const { RefundTickets } = useRefundTickets(launchData);
+    const { CheckTickets, isLoading: isCheckingTickets } = useCheckTickets(launchData);
+    const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launchData);
+    const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(launchData);
     const { InitAMM } = useInitAMM(launchData);
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data });
@@ -425,7 +425,9 @@ const TokenMintPage = () => {
                                             } else {
                                                 if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) {
                                                     //InitAMM();
-                                                    CheckTickets();
+                                                    if (!isCheckingTickets) {
+                                                        CheckTickets();
+                                                    }
                                                 } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
                                                     return;
                                                 } else if (
@@ -433,12 +435,16 @@ const TokenMintPage = () => {
                                                         join_data?.ticket_status === 0) ||
                                                     cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP
                                                 ) {
-                                                    ClaimTokens();
+                                                    if (!isClamingTokens) {
+                                                        ClaimTokens();
+                                                    }
                                                 } else if (
                                                     cook_state === CookState.MINT_FAILED_NOT_REFUNDED ||
                                                     CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT
                                                 ) {
-                                                    RefundTickets();
+                                                    if (!isRefundingTickets) {
+                                                        RefundTickets();
+                                                    }
                                                 }
                                             }
                                         }}
@@ -450,7 +456,11 @@ const TokenMintPage = () => {
                                                     <></>
                                                 ) : (
                                                     <Box mt={4}>
-                                                        <WoodenButton label={ButtonString(cook_state, join_data, launchData)} size={28} />
+                                                        <WoodenButton
+                                                            isLoading={isCheckingTickets || isClamingTokens || isRefundingTickets}
+                                                            label={ButtonString(cook_state, join_data, launchData)}
+                                                            size={28}
+                                                        />
                                                     </Box>
                                                 )}
 

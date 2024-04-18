@@ -7,7 +7,7 @@ import {
     serialise_basic_instruction,
     uInt32ToLEBytes,
 } from "../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
@@ -15,6 +15,7 @@ import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import useAppRoot from "../context/useAppRoot";
+import { toast } from "react-toastify";
 
 const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
@@ -27,14 +28,41 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-        }
+
         signature_ws_id.current = null;
+        setIsLoading(false);
+
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        toast.success("Tickets Refunded!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
         if (updateData) {
             await checkProgramData();
         }
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }, []);
 
     const RefundTickets = async () => {
@@ -109,6 +137,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -121,11 +150,11 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
             console.log("join sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
         } catch (error) {
             console.log(error);
-            return;
-        } finally {
             setIsLoading(false);
+            return;
         }
     };
 

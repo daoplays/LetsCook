@@ -1,4 +1,4 @@
-import { Box, Text, VStack } from "@chakra-ui/react";
+import { Box, Spinner, Text, VStack } from "@chakra-ui/react";
 import styles from "../header.module.css";
 import useResponsive from "../../hooks/useResponsive";
 import { isHomePageOnly } from "../../constant/root";
@@ -8,9 +8,10 @@ interface WoodenButtonProps {
     label: string;
     size: number;
     width?: number | string;
+    isLoading?: boolean;
 }
 
-const WoodenButton = ({ action, label, size, width }: WoodenButtonProps) => {
+const WoodenButton = ({ action, label, size, width, isLoading }: WoodenButtonProps) => {
     const { lg } = useResponsive();
     return (
         <Box
@@ -24,18 +25,22 @@ const WoodenButton = ({ action, label, size, width }: WoodenButtonProps) => {
                     label === "Start Cooking" && isHomePageOnly ? "not-allowed" : label === "Waiting for LP" ? "not-allowed" : "pointer",
             }}
         >
-            <VStack h="100%" align="center" justify="center">
-                <Text
-                    w={lg ? "fit-content" : !width ? "310px" : width}
-                    align={"center"}
-                    my={lg ? 2 : 4}
-                    fontSize={lg ? "medium" : size}
-                    color="#683309"
-                    className="font-face-kg"
-                >
-                    {label}
-                </Text>
-            </VStack>
+            {isLoading ? (
+                <Spinner />
+            ) : (
+                <VStack h="100%" align="center" justify="center">
+                    <Text
+                        w={lg ? "fit-content" : !width ? "310px" : width}
+                        align={"center"}
+                        my={lg ? 2 : 4}
+                        fontSize={lg ? "medium" : size}
+                        color="#683309"
+                        className="font-face-kg"
+                    >
+                        {label}
+                    </Text>
+                </VStack>
+            )}
         </Box>
     );
 };
