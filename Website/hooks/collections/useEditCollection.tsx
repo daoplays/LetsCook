@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
+import { Dispatch, SetStateAction, useState, useCallback, useRef } from "react";
 
 import { uInt32ToLEBytes, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../../components/Solana/state";
 import { SOL_ACCOUNT_SEED, DEBUG, SYSTEM_KEY, PROGRAM, Config, DATA_ACCOUNT_SEED } from "../../components/Solana/constants";
@@ -18,11 +18,13 @@ const useEditCollection = () => {
     const wallet = useWallet();
     const router = useRouter();
     const { newCollectionData, checkProgramData } = useAppRoot();
+    const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
+        setIsLoading(false);
         signature_ws_id.current = null;
 
         // if we have a subscription field check against ws_id
@@ -30,6 +32,12 @@ const useEditCollection = () => {
             toast.error("Transaction failed, please try again");
             return;
         }
+
+        toast.success("Successfuly Launched Collection!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
         // reset the urls so we know these have been submitted
         newCollectionData.current.icon_url = "";
@@ -39,6 +47,22 @@ const useEditCollection = () => {
         newCollectionData.current.token_keypair = null;
 
         await checkProgramData();
+
+        router.push("/dashboard");
+
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }, []);
 
     const EditCollection = async () => {
@@ -111,7 +135,7 @@ const useEditCollection = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
-        const createLaunch = toast.loading("Launching your collection...");
+        const createLaunch = toast.info("Launching your collection (2/2)...");
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -131,17 +155,13 @@ const useEditCollection = () => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
 
-            toast.update(createLaunch, {
-                render: "Congratulations! Your collection has been successfully launched.",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+           
 
-            router.push("/dashboard");
         } catch (error) {
             console.log(error);
+            setIsLoading(false);
             toast.update(createLaunch, {
                 render: "Something went wrong launching your collection , please try again later.",
                 type: "error",

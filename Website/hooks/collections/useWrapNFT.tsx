@@ -50,6 +50,7 @@ import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
+import { toast } from "react-toastify";
 
 const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
@@ -62,19 +63,45 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-        }
+
         signature_ws_id.current = null;
+        setIsLoading(false);
+
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        toast.success("Successfully Wrapped NFT!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
         if (updateData) {
             await checkProgramData();
         }
     }, []);
 
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
     const WrapNFT = async () => {
         console.log("in mint nft");
-        setIsLoading(true);
 
         if (wallet.signTransaction === undefined) {
             console.log(wallet, "invalid wallet");
@@ -98,6 +125,9 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             console.log("launch is null");
             return;
         }
+
+        setIsLoading(true);
+
 
         let CollectionLookup = NFTLookup.current.get(launchData.keys[CollectionKeys.CollectionMint].toString());
         let token_addresses: PublicKey[] = [];
@@ -144,7 +174,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let wrapped_nft_key = valid_lookups[wrapped_index].nft_mint;
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
@@ -311,11 +340,11 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             console.log("join sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
         } catch (error) {
             console.log(error);
-            return;
-        } finally {
             setIsLoading(false);
+            return;
         }
     };
 

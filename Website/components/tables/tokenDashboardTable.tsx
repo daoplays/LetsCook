@@ -73,7 +73,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     });
 
     const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint:Config.WSS_NODE });
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const allAccounts = await connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
             commitment: "confirmed",
@@ -251,7 +251,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
 const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch: LaunchData) => Promise<void> }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { InitAMM } = useInitAMM(launch);
+    const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
     const { newLaunchData } = useAppRoot();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -380,7 +380,11 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "80px" }}>
-                    {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && <Button onClick={(e) => LaunchLPClicked(e)}>Launch LP</Button>}
+                    {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && (
+                        <Button onClick={(e) => LaunchLPClicked(e)} isLoading={isInitMMLoading}>
+                            Launch LP
+                        </Button>
+                    )}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable && (

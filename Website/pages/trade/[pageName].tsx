@@ -21,7 +21,7 @@ import {
 import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, Mint, getTransferFeeConfig } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 
 import {
     HStack,
@@ -761,6 +761,7 @@ const BuyAndSell = ({
         max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, launch.decimals);
     }
 
+
     let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
 
     let base_output =
@@ -769,6 +770,10 @@ const BuyAndSell = ({
         (token_amount * Math.pow(10, launch.decimals) * quote_balance) /
         (token_amount * Math.pow(10, launch.decimals) + base_balance) /
         Math.pow(10, 9);
+
+    let base_int = Math.floor((sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)))
+    let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_int)));
+    base_output = (base_int - output_fee)/Math.pow(10, launch.decimals)
 
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
@@ -784,7 +789,7 @@ const BuyAndSell = ({
             ? "0"
             : base_output <= 1e-3
               ? base_output.toExponential(3)
-              : base_output.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              : base_output.toLocaleString("en-US", { minimumFractionDigits: launch.decimals, maximumFractionDigits: launch.decimals });
 
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
@@ -863,7 +868,7 @@ const BuyAndSell = ({
                     Max Transfer Fee ({launch.symbol}):
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {max_transfer_fee / Math.pow(10, launch.decimals)}
+                    {max_transfer_fee}
                 </Text>
             </HStack>
 

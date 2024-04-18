@@ -168,7 +168,7 @@ const MyRewardsTable = ({ launch_data }: { launch_data: LaunchData | null }) => 
 const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: boolean }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { GetMMRewards } = useGetMMRewards();
+    const { GetMMRewards, isLoading: isMMRewardsLoading } = useGetMMRewards();
 
     let days_rewards = bignum_to_num(reward.launch_reward.token_rewards);
     days_rewards /= Math.pow(10, reward.launch.decimals);
@@ -262,7 +262,9 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                     </Text>
                 )}
                 {current_date > reward.launch_reward.date && (
-                    <Button onClick={() => GetMMRewards(reward.launch_reward.date, reward.launch)}>Claim</Button>
+                    <Button onClick={() => GetMMRewards(reward.launch_reward.date, reward.launch)} isLoading={isMMRewardsLoading}>
+                        Claim
+                    </Button>
                 )}
             </td>
         </tr>

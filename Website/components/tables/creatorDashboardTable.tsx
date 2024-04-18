@@ -253,7 +253,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch: LaunchData) => Promise<void> }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { InitAMM } = useInitAMM(launch);
+    const { InitAMM, isLoading: initAMMLoading } = useInitAMM(launch);
     const { newLaunchData } = useAppRoot();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -382,7 +382,11 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             </td>
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "80px" }}>
-                    {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && <Button onClick={(e) => LaunchLPClicked(e)}>Launch LP</Button>}
+                    {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && (
+                        <Button onClick={(e) => LaunchLPClicked(e)} isLoading={initAMMLoading}>
+                            Launch LP
+                        </Button>
+                    )}
 
                     {/* editable only when it is less than 48hrs from launch date */}
                     {isEditable && (

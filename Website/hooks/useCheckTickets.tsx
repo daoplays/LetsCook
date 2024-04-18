@@ -52,10 +52,8 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
     }, []);
 
     const transaction_failed = useCallback(async () => {
-        
-        if (signature_ws_id.current == null)
-            return
-            
+        if (signature_ws_id.current == null) return;
+
         signature_ws_id.current = null;
         setIsLoading(false);
 
@@ -64,7 +62,6 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             isLoading: false,
             autoClose: 3000,
         });
-        
     }, []);
 
     const CheckTickets = async () => {
@@ -134,7 +131,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         }
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -148,12 +145,11 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-
         } catch (error) {
             console.log(error);
             setIsLoading(false);
             return;
-        } 
+        }
     };
 
     return { CheckTickets, isLoading };

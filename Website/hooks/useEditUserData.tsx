@@ -1,9 +1,9 @@
-import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
 
 import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditUser_instruction } from "../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config} from "../components/Solana/constants";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -15,21 +15,48 @@ import useAppRoot from "../context/useAppRoot";
 const useEditUser = () => {
     const wallet = useWallet();
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
-        signature_ws_id.current = null;
-
         // if we have a subscription field check against ws_id
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
         if (result.err !== null) {
-            toast.error("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
+
+        toast.success("User Data Updated Successfully!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }, []);
 
     const EditUser = async (name: string) => {
+
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (!name) {
@@ -41,6 +68,9 @@ const useEditUser = () => {
             toast.success("Transaction pending, please wait");
             return;
         }
+
+        setIsLoading(true);
+
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
@@ -66,7 +96,7 @@ const useEditUser = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
-        const createLaunch = toast.loading("Updating User Data...");
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -86,27 +116,15 @@ const useEditUser = () => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-
-            toast.update(createLaunch, {
-                render: "User Data updated",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-
+            setTimeout(transaction_failed, 20000);
             router.refresh();
         } catch (error) {
             console.log(error);
-            toast.update(createLaunch, {
-                render: "Something went wrong editing your user data , please try again later.",
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
+            setIsLoading(false);
             return;
         }
     };
-    return { EditUser };
+    return { EditUser, isLoading };
 };
 
 export default useEditUser;

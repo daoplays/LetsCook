@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, useRef, useState, useCallback } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
-import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, Spinner } from "@chakra-ui/react";
 
 import {
     METAPLEX_META,
@@ -53,7 +53,6 @@ interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-
 // Define the Tag type
 type Tag = {
     name: string;
@@ -66,6 +65,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const wallet = useWallet();
     const { newCollectionData } = useAppRoot();
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const [name, setName] = useState<string>(newCollectionData.current.pagename);
     const [web, setWeb] = useState<string>(newCollectionData.current.web_url);
     const [telegram, setTelegram] = useState<string>(newCollectionData.current.tele_url);
@@ -73,7 +74,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const [discord, setDiscord] = useState(newCollectionData.current.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
     const signature_ws_id = useRef<number | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
 
     const { EditCollection } = useEditCollection();
 
@@ -196,10 +196,12 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         console.log("check balance", name, launch_data_account.toString(), balance);
 
-        if (balance > 0) {
+        if (balance > 0 && newCollectionData.current.uri == "") {
             toast.error("Page name already exists");
             return false;
         }
+
+
 
         newCollectionData.current.pagename = name;
         newCollectionData.current.web_url = web;
@@ -223,12 +225,25 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }
 
     const CreateLaunch = useCallback(async () => {
+        setIsLoading(true);
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         console.log(newCollectionData.current.icon_url);
         console.log(newCollectionData.current.banner_url);
         // if this is in edit mode then just call that function
         if (newCollectionData.current.edit_mode === true) {
+            await EditCollection();
+            return;
+        }
+
+        // check if the launch account already exists, if so just skip all this
+        let test_launch_data_account = PublicKey.findProgramAddressSync(
+            [Buffer.from(newCollectionData.current.pagename), Buffer.from("Collection")],
+            PROGRAM,
+        )[0];
+
+        let account_balance = await request_current_balance("", test_launch_data_account);
+        if (account_balance > 0) {
             await EditCollection();
             return;
         }
@@ -562,7 +577,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         transaction.partialSign(newCollectionData.current.token_keypair);
 
-        const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
+        const createLaunch = toast.info("(3/4) Setting up your launch accounts");
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -589,6 +604,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         } catch (error) {
             console.log(error);
+            setIsLoading(false);
             toast.update(createLaunch, {
                 render: "We couldn't create your launch accounts. Please try again.",
                 type: "error",
@@ -597,7 +613,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             });
             return;
         }
-    }, [wallet, newCollectionData, EditCollection, check_signature_update]);
+    }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
@@ -754,11 +770,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    Launch(e);
+                                    if (!isLoading) {
+                                        Launch(e);
+                                    }
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >
-                                CONFIRM (4/4)
+                                {isLoading ? <Spinner /> : "CONFIRM (4/4)"}
                             </button>
                         </div>
                     </VStack>

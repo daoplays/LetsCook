@@ -38,6 +38,7 @@ import {
     PopoverHeader,
     PopoverBody,
     IconButton,
+    Spinner,
 } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
@@ -85,6 +86,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const { sm, md, lg } = useResponsive();
     const { newLaunchData } = useAppRoot();
 
+    const [isLoading, setIsLoading] = useState(false);
+
     const [localOpenDate, setLocalOpenDate] = useState<Date>(newLaunchData.current.opendate);
     const [localCloseDate, setLocalCloseDate] = useState<Date>(newLaunchData.current.closedate);
 
@@ -122,9 +125,19 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         async (result: any) => {
             console.log(result);
             // if we have a subscription field check against ws_id
+
+            setIsLoading(false);
+
             if (result.err !== null) {
                 toast.error("Transaction failed, please try again");
             }
+
+            toast.success("Launch (1/2) Complete", {
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
             if (signature_ws_id.current === 1) {
                 await EditLaunch();
             }
@@ -132,6 +145,23 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         },
         [EditLaunch],
     );
+
+    const transaction_failed = useCallback(async () => {
+        
+        if (signature_ws_id.current == null)
+            return
+        
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+        
+    }, []);
+
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });
@@ -182,6 +212,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     }
 
     const CreateLaunch = useCallback(async () => {
+        setIsLoading(true);
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         console.log(newLaunchData.current.icon_url);
@@ -485,10 +516,10 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(list_instruction);
- 
+
         transaction.partialSign(newLaunchData.current.token_keypair);
 
         const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
@@ -497,7 +528,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), {skipPreflight: false});
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: false });
 
             //console.log(response)
             //var transaction_response = await send_transaction("", encoded_transaction);
@@ -523,8 +554,11 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             });
 
             connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, 20000);
+
         } catch (error) {
             console.log(error);
+            setIsLoading(false);
             toast.update(createLaunch, {
                 render: "We couldn't create your launch accounts. Please try again.",
                 type: "error",
@@ -533,7 +567,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             });
             return;
         }
-    }, [wallet, newLaunchData, EditLaunch, check_signature_update]);
+    }, [wallet, newLaunchData, EditLaunch, check_signature_update, transaction_failed]);
 
     const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -694,11 +728,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                 <button
                                     type="button"
                                     onClick={(e) => {
-                                        Launch(e);
+                                        if (!isLoading) {
+                                            Launch(e);
+                                        }
                                     }}
                                     className={`${styles.nextBtn} font-face-kg `}
                                 >
-                                    CONFIRM
+                                    {isLoading ? <Spinner /> : "CONFIRM"}
                                 </button>
                             </HStack>
                         </VStack>

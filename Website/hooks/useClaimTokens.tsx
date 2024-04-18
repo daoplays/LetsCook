@@ -79,7 +79,6 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
     }, []);
 
     const ClaimTokens = async () => {
-        setIsLoading(true);
 
         if (wallet.signTransaction === undefined) return;
 
@@ -98,6 +97,9 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             alert("Launch creator cannot buy tickets");
             return;
         }
+
+        setIsLoading(true);
+
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

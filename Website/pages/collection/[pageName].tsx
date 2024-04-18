@@ -47,7 +47,7 @@ function findLaunch(list: CollectionData[], page_name: string | string[]) {
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const { pageName } = router.query;
@@ -126,7 +126,7 @@ const CollectionSwapPage = () => {
 
         if (launch === null) return;
 
-        console.log("other set collection", launch)
+        console.log("other set collection", launch);
         if (check_initial_collection.current) {
             setCollectionData(launch);
             check_initial_collection.current = false;
@@ -185,18 +185,17 @@ const CollectionSwapPage = () => {
         mint_nft.current = false;
     }, [assigned_nft, MintNFT]);
 
-    const check_launch_update = useCallback(
-        async (result: any) => {
-            //console.log("collection", result);
-            // if we have a subscription field check against ws_id
+    const check_launch_update = useCallback(async (result: any) => {
+        //console.log("collection", result);
+        // if we have a subscription field check against ws_id
 
-            let event_data = result.data;
+        let event_data = result.data;
 
-            //console.log("have collection data", event_data, launch_account_ws_id.current);
-            let account_data = Buffer.from(event_data, "base64");
+        //console.log("have collection data", event_data, launch_account_ws_id.current);
+        let account_data = Buffer.from(event_data, "base64");
 
-            const [updated_data] = CollectionData.struct.deserialize(account_data);
-            /*
+        const [updated_data] = CollectionData.struct.deserialize(account_data);
+        /*
             for (let i = 0; i < updated_data.availability.length/2; i++) {
                 let idx = 1;
                 for (let j = 0; j < 8; j++) {
@@ -211,10 +210,8 @@ const CollectionSwapPage = () => {
             }
 */
 
-                setCollectionData(updated_data);
-        },
-        [],
-    );
+        setCollectionData(updated_data);
+    }, []);
 
     const check_assignment_update = useCallback(async (result: any) => {
         //console.log("assignment", result);
@@ -484,6 +481,7 @@ const CollectionSwapPage = () => {
                                                         ClaimNFT();
                                                     }
                                                 }}
+                                                isLoading={isClaimLoading}
                                                 isDisabled={!enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading}
                                             >
                                                 {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}{" "}
@@ -491,7 +489,9 @@ const CollectionSwapPage = () => {
                                             </Button>
                                         </Tooltip>
                                     ) : (
-                                        <Button onClick={() => MintNFT()}>Claim NFT {assigned_nft.nft_index + 1}</Button>
+                                        <Button onClick={() => MintNFT()} isLoading={isMintLoading}>
+                                            Claim NFT {assigned_nft.nft_index + 1}
+                                        </Button>
                                     )}
                                     <Tooltip
                                         label={`You don't have ${launch.collection_name} NFTs`}
@@ -507,6 +507,7 @@ const CollectionSwapPage = () => {
                                                     handleConnectWallet();
                                                 }
                                             }}
+                                            isLoading={isWrapLoading}
                                             isDisabled={nft_balance <= 0 || isClaimLoading || isMintLoading || isWrapLoading}
                                         >
                                             1 NFT = {out_amount.toLocaleString()} {launch.token_symbol}

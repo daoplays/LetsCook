@@ -11,7 +11,7 @@ import {
 } from "../../components/Solana/state";
 import { serialise_ClaimReward_instruction } from "../../components/Solana/jupiter_state";
 
-import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { LaunchKeys, PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -41,20 +41,46 @@ const useGetMMRewards = () => {
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
         if (result.err !== null) {
-            alert("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
+
+        toast.success("Rewards Claimed!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
         await checkProgramData();
 
         signature_ws_id.current = null;
     }, []);
 
-    const GetMMRewards = async (date: number, launch: LaunchData) => {
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
 
-        const placeLimitToast = toast.loading("Claiming Reward..");
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
+    const GetMMRewards = async (date: number, launch: LaunchData) => {
+        setIsLoading(true);
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -171,6 +197,7 @@ const useGetMMRewards = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -184,19 +211,11 @@ const useGetMMRewards = () => {
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
 
-            toast.update(placeLimitToast, {
-                render: "Rewards Claimed",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+            setTimeout(transaction_failed, 20000);
         } catch (error) {
-            toast.update(placeLimitToast, {
-                render: "Reward Claim Failed.  Please try again later.",
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
+            console.log(error);
+            setIsLoading(false);
+            return;
         }
     };
 
