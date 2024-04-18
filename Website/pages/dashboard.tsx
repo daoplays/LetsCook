@@ -52,8 +52,9 @@ const DashboardPage = () => {
                     py={18}
                     gap={4}
                     alignItems="center"
-                    justifyContent={selectedNetwork === "devnet" ? "space-between" : "end"}
+                    justifyContent={!sm ? "space-between" : "end"}
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
+                    w={"100"}
                 >
                     <Text
                         fontSize={sm ? 25 : 35}
@@ -66,46 +67,46 @@ const DashboardPage = () => {
                         Creator Dashboard
                     </Text>
 
-                        <HStack spacing={3} zIndex={99}>
-                            {["Tokens", "Collections"].map((name, i) => {
-                                const isActive = selected === name;
+                    <HStack spacing={3} zIndex={99}>
+                        {["Tokens", "Collections"].map((name, i) => {
+                            const isActive = selected === name;
 
-                                const baseStyle = {
-                                    display: "flex",
-                                    alignItems: "center",
-                                    cursor: "pointer",
-                                };
+                            const baseStyle = {
+                                display: "flex",
+                                alignItems: "center",
+                                cursor: "pointer",
+                            };
 
-                                const activeStyle = {
-                                    color: "white",
-                                    borderBottom: isActive ? "2px solid white" : "",
-                                    opacity: isActive ? 1 : 0.5,
-                                };
+                            const activeStyle = {
+                                color: "white",
+                                borderBottom: isActive ? "2px solid white" : "",
+                                opacity: isActive ? 1 : 0.5,
+                            };
 
-                                return (
-                                    <HStack
-                                        key={i}
-                                        style={{
-                                            ...baseStyle,
-                                            ...activeStyle,
-                                        }}
-                                        onClick={() => {
-                                            setSelected(name);
-                                        }}
-                                        px={4}
-                                        py={2}
-                                        mt={-2}
-                                        w={"fit-content"}
-                                        justify="center"
-                                    >
-                                        <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
-                                            {name}
-                                        </Text>
-                                    </HStack>
-                                );
-                            })}
-                        </HStack>
-                    
+                            return (
+                                <HStack
+                                    key={i}
+                                    style={{
+                                        ...baseStyle,
+                                        ...activeStyle,
+                                    }}
+                                    onClick={() => {
+                                        setSelected(name);
+                                    }}
+                                    px={4}
+                                    py={2}
+                                    mt={-2}
+                                    w={"fit-content"}
+                                    justify="center"
+                                >
+                                    <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
+                                        {name}
+                                    </Text>
+                                </HStack>
+                            );
+                        })}
+                    </HStack>
+
                     <Text
                         fontSize={sm ? 25 : 35}
                         color="white"
@@ -141,7 +142,7 @@ const DashboardPage = () => {
                     {/* </Link> */}
                 </Flex>
 
-                {selected === "Tokens" &&  <TokenDashboardTable creatorLaunches={creatorLaunches} />}
+                {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
 
                 {selected === "Collections" && <CollectionDashboardTable collectionList={creatorCollections} />}
 
