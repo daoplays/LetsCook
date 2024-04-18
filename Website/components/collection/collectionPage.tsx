@@ -100,40 +100,39 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         });
     }
 
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
+    const check_signature_update = useCallback(
+        async (result: any) => {
+            console.log(result);
+            // if we have a subscription field check against ws_id
 
-        signature_ws_id.current = null;
-        setIsLoading(false);
+            signature_ws_id.current = null;
+            setIsLoading(false);
 
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
+            if (result.err !== null) {
+                toast.error("Transaction failed, please try again", {
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 3000,
+                });
+                return;
+            }
+
+            toast.success("Launch (1/2) Complete", {
+                type: "success",
                 isLoading: false,
                 autoClose: 3000,
             });
-            return;
-        }
 
-        toast.success("Launch (1/2) Complete", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-        
-        if (signature_ws_id.current === 1) {
-            await EditCollection();
-        }
-
-   
-    }, [EditCollection]);
+            if (signature_ws_id.current === 1) {
+                await EditCollection();
+            }
+        },
+        [EditCollection],
+    );
 
     const transaction_failed = useCallback(async () => {
-        
-        if (signature_ws_id.current == null)
-            return
-        
+        if (signature_ws_id.current == null) return;
+
         signature_ws_id.current = null;
         setIsLoading(false);
 
@@ -142,7 +141,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             isLoading: false,
             autoClose: 3000,
         });
-        
     }, []);
 
     async function setData(e): Promise<boolean> {
@@ -201,8 +199,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return false;
         }
 
-
-
         newCollectionData.current.pagename = name;
         newCollectionData.current.web_url = web;
         newCollectionData.current.twt_url = twitter;
@@ -248,7 +244,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return;
         }
 
-        setIsLoading(true)
+        setIsLoading(true);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
@@ -287,7 +283,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     isLoading: false,
                     autoClose: 3000,
                 });
-                setIsLoading(false)
+                setIsLoading(false);
 
                 return;
             }
@@ -329,7 +325,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     isLoading: false,
                     autoClose: 3000,
                 });
-                setIsLoading(false)
+                setIsLoading(false);
 
                 return;
             }
@@ -363,7 +359,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     isLoading: false,
                     autoClose: 3000,
                 });
-                setIsLoading(false)
+                setIsLoading(false);
 
                 return;
             }
@@ -459,7 +455,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     isLoading: false,
                     autoClose: 3000,
                 });
-                setIsLoading(false)
+                setIsLoading(false);
 
                 return;
             }
@@ -601,7 +597,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-
         } catch (error) {
             console.log(error);
             setIsLoading(false);

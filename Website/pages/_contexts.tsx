@@ -297,7 +297,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
-            
             //CloseAccount({account: program_data[i].pubkey});
 
             if (data[0] === 0) {
@@ -305,7 +304,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     const [launch] = LaunchData.struct.deserialize(data);
                     // console.log("data ", i, launch.page_name);
                     //if (launch.flags[LaunchFlags.LPState] == 0)
-                      //  continue;
+                    //  continue;
 
                     launch_data.push(launch);
                 } catch (error) {

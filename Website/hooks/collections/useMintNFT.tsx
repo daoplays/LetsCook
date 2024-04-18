@@ -124,7 +124,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-
         //console.log(assignment_data);
 
         let nft_lookup_account = PublicKey.findProgramAddressSync(

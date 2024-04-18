@@ -15,7 +15,6 @@ interface NetworkConfig {
     IRYS_WALLET: string;
 }
 
-
 const DevNetConfig: NetworkConfig = {
     PROD: false,
     NETWORK: "devnet",

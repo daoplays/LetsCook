@@ -56,7 +56,6 @@ const useEditUser = () => {
     }, []);
 
     const EditUser = async (name: string) => {
-
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (!name) {
@@ -70,7 +69,6 @@ const useEditUser = () => {
         }
 
         setIsLoading(true);
-
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 

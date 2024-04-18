@@ -34,7 +34,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
     const tableHeaders: Header[] = [
         { text: "COLLECTION", field: null },
         { text: "TOKEN", field: null },
-        {text: "HYPE", field: "hype"},
+        { text: "HYPE", field: "hype" },
         { text: "TOKENS PER NFT", field: "tokens per nft" },
         { text: "UNWRAP FEE", field: "unwrap fee" },
         { text: "TOTAL SUPPLY", field: "total supply" },
@@ -136,7 +136,15 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 </HStack>
             </td>
             <td style={{ minWidth: "150px" }}>
-            <HypeVote launch_type={1} launch_id={launch.launch_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[CollectionKeys.Seller]} isTradePage={false} />
+                <HypeVote
+                    launch_type={1}
+                    launch_id={launch.launch_id}
+                    page_name={launch.page_name}
+                    positive_votes={launch.positive_votes}
+                    negative_votes={launch.negative_votes}
+                    seller_key={launch.keys[CollectionKeys.Seller]}
+                    isTradePage={false}
+                />
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={"large"} m={0}>

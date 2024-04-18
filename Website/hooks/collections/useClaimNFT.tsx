@@ -78,7 +78,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     }, []);
 
     const ClaimNFT = async () => {
-
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
@@ -116,7 +115,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         }
 
         setIsLoading(true);
-
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],

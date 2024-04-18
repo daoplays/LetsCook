@@ -1,7 +1,13 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
 
-import { LaunchDataUserInput, get_current_blockhash, request_launch_data, send_transaction, serialise_EditLaunch_instruction } from "../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys} from "../components/Solana/constants";
+import {
+    LaunchDataUserInput,
+    get_current_blockhash,
+    request_launch_data,
+    send_transaction,
+    serialise_EditLaunch_instruction,
+} from "../components/Solana/state";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -40,7 +46,6 @@ const useEditLaunch = () => {
         console.log(newLaunchData.current);
         await checkProgramData();
         router.push("/dashboard");
-
     }, []);
 
     const EditLaunch = async () => {
@@ -127,7 +132,7 @@ const useEditLaunch = () => {
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         const createLaunch = toast.loading("Launching your token...");
 
@@ -156,7 +161,6 @@ const useEditLaunch = () => {
                 isLoading: false,
                 autoClose: 3000,
             });
-
         } catch (error) {
             console.log(error);
             toast.update(createLaunch, {

@@ -21,7 +21,14 @@ import {
 import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee } from "@solana/spl-token";
+import {
+    getAssociatedTokenAddress,
+    TOKEN_PROGRAM_ID,
+    TOKEN_2022_PROGRAM_ID,
+    Mint,
+    getTransferFeeConfig,
+    calculateFee,
+} from "@solana/spl-token";
 
 import {
     HStack,
@@ -270,7 +277,6 @@ const TradePage = () => {
 
     // launch account subscription handler
     useEffect(() => {
-
         if (base_ws_id.current === null && base_address !== null) {
             //console.log("subscribe 1");
 
@@ -761,7 +767,6 @@ const BuyAndSell = ({
         max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, launch.decimals);
     }
 
-
     let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
 
     let base_output =
@@ -771,9 +776,9 @@ const BuyAndSell = ({
         (token_amount * Math.pow(10, launch.decimals) + base_balance) /
         Math.pow(10, 9);
 
-    let base_int = Math.floor((sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)))
+    let base_int = Math.floor((sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)));
     let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_int)));
-    base_output = (base_int - output_fee)/Math.pow(10, launch.decimals)
+    base_output = (base_int - output_fee) / Math.pow(10, launch.decimals);
 
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
@@ -1140,7 +1145,15 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     HYPE:
                 </Text>
-                <HypeVote launch_type={0} launch_id={launch.game_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[LaunchKeys.Seller]} isTradePage={true} />
+                <HypeVote
+                    launch_type={0}
+                    launch_id={launch.game_id}
+                    page_name={launch.page_name}
+                    positive_votes={launch.positive_votes}
+                    negative_votes={launch.negative_votes}
+                    seller_key={launch.keys[LaunchKeys.Seller]}
+                    isTradePage={true}
+                />
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">

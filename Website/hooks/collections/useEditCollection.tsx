@@ -49,7 +49,6 @@ const useEditCollection = () => {
         await checkProgramData();
 
         router.push("/dashboard");
-
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -156,9 +155,6 @@ const useEditCollection = () => {
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-
-           
-
         } catch (error) {
             console.log(error);
             setIsLoading(false);

@@ -43,10 +43,9 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         let image_check = new Array(newCollectionData.current.nft_metadata.length).fill(0);
 
         let image_type = newCollectionData.current.nft_images[0].type;
-        let split_name = newCollectionData.current.nft_images[0].name.split(".")
+        let split_name = newCollectionData.current.nft_images[0].name.split(".");
         let image_type_name = split_name[split_name.length - 1];
         console.log("image type: ", image_type_name);
-
 
         for (let i = 0; i < newCollectionData.current.nft_metadata.length; i++) {
             if (newCollectionData.current.nft_metadata[i].type !== "application/json") {
@@ -59,12 +58,11 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                 return;
             }
 
-            let split_name = newCollectionData.current.nft_images[i].name.split(".")
+            let split_name = newCollectionData.current.nft_images[i].name.split(".");
             if (split_name[split_name.length - 1] !== image_type_name) {
                 toast.error("all images must named the same type");
                 return;
             }
-
 
             let meta_idx = parseInt(newCollectionData.current.nft_metadata[i].name);
             let img_idx = parseInt(newCollectionData.current.nft_images[i].name);
@@ -94,7 +92,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         newCollectionData.current.collection_size = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.nft_name = nft_name;
-        newCollectionData.current.nft_type = "."+image_type_name;
+        newCollectionData.current.nft_type = "." + image_type_name;
 
         setScreen("step 3");
     }

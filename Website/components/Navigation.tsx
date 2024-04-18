@@ -129,35 +129,33 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                        <Show breakpoint="(min-width: 1024px)">
-                            <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
-                                <Link href={isHomePageOnly ? "#" : "/trade"}>
-                                    <Image
-                                        src="/images/market.png"
-                                        width={35}
-                                        height={35}
-                                        alt={"Trade"}
-                                        style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                    />
-                                </Link>
-                            </Tooltip>
-                        </Show>
-                    
+                    <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={isHomePageOnly ? "#" : "/trade"}>
+                                <Image
+                                    src="/images/market.png"
+                                    width={35}
+                                    height={35}
+                                    alt={"Trade"}
+                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                />
+                            </Link>
+                        </Tooltip>
+                    </Show>
 
-                        <Show breakpoint="(min-width: 1024px)">
-                            <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
-                                <Link href={isHomePageOnly ? "#" : "/calendar"}>
-                                    <Image
-                                        src="/images/calendar.png"
-                                        width={35}
-                                        height={35}
-                                        alt={"Calendar"}
-                                        style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                    />
-                                </Link>
-                            </Tooltip>
-                        </Show>
-                    
+                    <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={isHomePageOnly ? "#" : "/calendar"}>
+                                <Image
+                                    src="/images/calendar.png"
+                                    width={35}
+                                    height={35}
+                                    alt={"Calendar"}
+                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                                />
+                            </Link>
+                        </Tooltip>
+                    </Show>
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
@@ -167,25 +165,24 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                        <Show breakpoint="(min-width: 1024px)">
-                            <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
-                                <Image
-                                    src="/images/money-bag.png"
-                                    width={35}
-                                    height={35}
-                                    alt={"Money Bag"}
-                                    onClick={() => {
-                                        if (!wallet.connected) {
-                                            alert("Please connect your wallet to access your bags");
-                                        } else {
-                                            !isHomePageOnly && router.push(`/bags`);
-                                        }
-                                    }}
-                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                />
-                            </Tooltip>
-                        </Show>
-                    
+                    <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Image
+                                src="/images/money-bag.png"
+                                width={35}
+                                height={35}
+                                alt={"Money Bag"}
+                                onClick={() => {
+                                    if (!wallet.connected) {
+                                        alert("Please connect your wallet to access your bags");
+                                    } else {
+                                        !isHomePageOnly && router.push(`/bags`);
+                                    }
+                                }}
+                                style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
+                            />
+                        </Tooltip>
+                    </Show>
 
                     <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Creator Dashboard" hasArrow fontSize="large" offset={[0, 15]}>
@@ -306,19 +303,17 @@ function Navigation() {
                         </Text>
                     </Link>
 
-                        <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
-                            <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                                Trade
-                            </Text>
-                        </Link>
-                    
+                    <Link href={isHomePageOnly ? "#" : "/trade"} onClick={onToggle}>
+                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                            Trade
+                        </Text>
+                    </Link>
 
-                        <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
-                            <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                                Calendar
-                            </Text>
-                        </Link>
-                    
+                    <Link href={isHomePageOnly ? "#" : "/calendar"} onClick={onToggle}>
+                        <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
+                            Calendar
+                        </Text>
+                    </Link>
 
                     <Link href={isHomePageOnly ? "#" : "/leaderboard"} onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
@@ -326,23 +321,22 @@ function Navigation() {
                         </Text>
                     </Link>
 
-                        <Text
-                            color="white"
-                            className="font-face-kg"
-                            fontSize={24}
-                            onClick={() => {
-                                if (!wallet.connected) {
-                                    alert("Please connect your wallet to access creator dashboard");
-                                } else {
-                                    onToggle();
-                                    !isHomePageOnly && router.push(`/bags`);
-                                }
-                            }}
-                            style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
-                        >
-                            My Bags
-                        </Text>
-                    
+                    <Text
+                        color="white"
+                        className="font-face-kg"
+                        fontSize={24}
+                        onClick={() => {
+                            if (!wallet.connected) {
+                                alert("Please connect your wallet to access creator dashboard");
+                            } else {
+                                onToggle();
+                                !isHomePageOnly && router.push(`/bags`);
+                            }
+                        }}
+                        style={{ opacity: isHomePageOnly ? 0.5 : 1 }}
+                    >
+                        My Bags
+                    </Text>
 
                     <Link href="/faq" onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24}>

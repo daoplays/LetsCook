@@ -12,9 +12,25 @@ import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
 
-export function HypeVote({ launch_type, launch_id, page_name, positive_votes, negative_votes, seller_key, isTradePage }: { launch_type: number; launch_id: BN; page_name : string; positive_votes: number, negative_votes: number; seller_key: PublicKey; isTradePage?: boolean }) {
+export function HypeVote({
+    launch_type,
+    launch_id,
+    page_name,
+    positive_votes,
+    negative_votes,
+    seller_key,
+    isTradePage,
+}: {
+    launch_type: number;
+    launch_id: BN;
+    page_name: string;
+    positive_votes: number;
+    negative_votes: number;
+    seller_key: PublicKey;
+    isTradePage?: boolean;
+}) {
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
     const { checkProgramData, currentUserData } = useAppRoot();
     const { lg } = useResponsive();
@@ -58,17 +74,10 @@ export function HypeVote({ launch_type, launch_id, page_name, positive_votes, ne
                 return;
             }
 
-            let launch_data_account = launch_type === 0 ? PublicKey.findProgramAddressSync(
-                [Buffer.from(page_name), Buffer.from("Launch")],
-                PROGRAM,
-            )[0]
-            :
-
-            PublicKey.findProgramAddressSync(
-                [Buffer.from(page_name), Buffer.from("Collection")],
-                PROGRAM,
-            )[0]
-
+            let launch_data_account =
+                launch_type === 0
+                    ? PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Launch")], PROGRAM)[0]
+                    : PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

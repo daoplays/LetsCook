@@ -119,7 +119,7 @@ export async function get_current_blockhash(bearer: string): Promise<BlockHash> 
     var body = { id: 1, jsonrpc: "2.0", method: "getLatestBlockhash" };
     const blockhash_data_result = await postData(Config.RPC_NODE, bearer, body);
 
-    console.log(Config.RPC_NODE)
+    console.log(Config.RPC_NODE);
     let blockhash = blockhash_data_result["result"]["value"]["blockhash"];
     let last_valid = blockhash_data_result["result"]["value"]["lastValidBlockHeight"];
 

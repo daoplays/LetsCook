@@ -147,10 +147,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     );
 
     const transaction_failed = useCallback(async () => {
-        
-        if (signature_ws_id.current == null)
-            return
-        
+        if (signature_ws_id.current == null) return;
+
         signature_ws_id.current = null;
         setIsLoading(false);
 
@@ -159,7 +157,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             isLoading: false,
             autoClose: 3000,
         });
-        
     }, []);
 
     const isDesktopOrLaptop = useMediaQuery({
@@ -555,7 +552,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-
         } catch (error) {
             console.log(error);
             setIsLoading(false);

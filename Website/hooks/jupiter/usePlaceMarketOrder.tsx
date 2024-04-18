@@ -16,7 +16,7 @@ import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupite
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -68,13 +68,10 @@ const usePlaceMarketOrder = () => {
         });
 
         await checkProgramData();
-        
     }, []);
 
     const transaction_failed = useCallback(async () => {
-        
-        if (signature_ws_id.current == null)
-            return
+        if (signature_ws_id.current == null) return;
 
         signature_ws_id.current = null;
         setIsLoading(false);
@@ -84,7 +81,6 @@ const usePlaceMarketOrder = () => {
             isLoading: false,
             autoClose: 3000,
         });
-        
     }, []);
 
     const PlaceMarketOrder = async (launch: LaunchData, token_amount: number, sol_amount: number, order_type: number) => {
@@ -93,7 +89,6 @@ const usePlaceMarketOrder = () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         setIsLoading(true);
-
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -265,7 +260,7 @@ const usePlaceMarketOrder = () => {
 
         transaction.add(instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         console.log("sending transaction");
 
@@ -282,10 +277,7 @@ const usePlaceMarketOrder = () => {
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-
-
         } catch (error) {
-
             setIsLoading(false);
             toast.error("Market order failed, please try again", {
                 type: "error",

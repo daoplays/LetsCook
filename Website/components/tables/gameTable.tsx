@@ -199,7 +199,15 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                 )}
             </td>
             <td style={{ minWidth: "150px" }}>
-            <HypeVote launch_type={0} launch_id={launch.game_id} page_name={launch.page_name} positive_votes={launch.positive_votes} negative_votes={launch.negative_votes} seller_key ={launch.keys[LaunchKeys.Seller]} isTradePage={false} />
+                <HypeVote
+                    launch_type={0}
+                    launch_id={launch.game_id}
+                    page_name={launch.page_name}
+                    positive_votes={launch.positive_votes}
+                    negative_votes={launch.negative_votes}
+                    seller_key={launch.keys[LaunchKeys.Seller]}
+                    isTradePage={false}
+                />
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>

@@ -11,7 +11,7 @@ import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupit
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY} from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";

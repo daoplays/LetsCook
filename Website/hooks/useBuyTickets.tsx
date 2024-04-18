@@ -34,10 +34,8 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     }, []);
 
     const transaction_failed = useCallback(async () => {
-        
-        if (signature_ws_id.current == null)
-            return
-            
+        if (signature_ws_id.current == null) return;
+
         signature_ws_id.current = null;
         setIsLoading(false);
 
@@ -46,7 +44,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             isLoading: false,
             autoClose: 3000,
         });
-        
     }, []);
 
     const BuyTickets = async () => {
@@ -113,7 +110,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         transaction.feePayer = wallet.publicKey;
 
         //transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 100_000 }));
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: 1000000}))
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
         transaction.add(list_instruction);
 
         try {

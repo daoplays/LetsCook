@@ -66,7 +66,6 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
     }, []);
 
     const RefundTickets = async () => {
-
         if (wallet.signTransaction === undefined) return;
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
@@ -86,7 +85,6 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         }
 
         setIsLoading(true);
-
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 

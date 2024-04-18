@@ -163,7 +163,7 @@ const useInitAMM = (launchData: LaunchData) => {
             }
         }
 
-        console.log("base amm", base_amm_account.toString())
+        console.log("base amm", base_amm_account.toString());
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
 

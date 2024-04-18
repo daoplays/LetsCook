@@ -82,9 +82,7 @@ const EmptyLaunch = () => {
                                 if (!wallet.connected) {
                                     handleConnectWallet();
                                 } else {
-                                    isHomePageOnly
-                                        ? toast.info("Coming Soon")
-                                        :  router.push("/launch")
+                                    isHomePageOnly ? toast.info("Coming Soon") : router.push("/launch");
                                 }
                             }}
                         >

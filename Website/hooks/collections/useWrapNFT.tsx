@@ -128,7 +128,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-
         let CollectionLookup = NFTLookup.current.get(launchData.keys[CollectionKeys.CollectionMint].toString());
         let token_addresses: PublicKey[] = [];
         let token_mints: PublicKey[] = [];
