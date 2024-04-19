@@ -77,8 +77,9 @@ function Navigation() {
                             <MenuItem borderRadius={5}>
                                 <HStack
                                     alignItems="start"
-                                    as={Link}
-                                    href={"https://www.letscook.wtf"}
+                                    onClick={async () => {
+                                        await router.push("https://www.letscook.wtf")
+                                    }}
                                 >
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
                                     <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
@@ -88,8 +89,9 @@ function Navigation() {
                             </MenuItem>
                             <MenuItem
                                 borderRadius={5}
-                                as={Link}
-                                href={"https://devnet.letscook.wtf"}
+                                onClick={async () => {
+                                    await router.push("https://devnet.letscook.wtf")
+                                }}
                             >
                                 <HStack alignItems="start">
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
