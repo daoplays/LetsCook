@@ -209,7 +209,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     }
 
     const CreateLaunch = useCallback(async () => {
-        setIsLoading(true);
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         console.log(newLaunchData.current.icon_url);
@@ -231,6 +230,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             await EditLaunch();
             return;
         }
+        setIsLoading(true);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
@@ -283,6 +283,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     autoClose: 2000,
                 });
             } catch (error) {
+                setIsLoading(false);
+
                 toast.update(uploadImageToArweave, {
                     render: "Oops! Something went wrong during funding. Please try again later. ",
                     type: "error",
@@ -314,6 +316,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     autoClose: 2000,
                 });
             } catch (error) {
+                setIsLoading(false);
+
                 toast.update(uploadToArweave, {
                     render: `Failed to upload images, please try again later.`,
                     type: "error",
@@ -381,6 +385,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     autoClose: 2000,
                 });
             } catch (error) {
+                setIsLoading(false);
+
                 toast.update(fundMetadata, {
                     render: "Something went wrong. Please try again later. ",
                     type: "error",
@@ -410,6 +416,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     autoClose: 2000,
                 });
             } catch (error) {
+                setIsLoading(false);
+
                 toast.update(uploadMetadata, {
                     render: `Failed to upload token metadata, please try again later.`,
                     type: "error",
