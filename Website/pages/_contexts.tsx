@@ -104,7 +104,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
-    const [selectedNetwork, setSelectedNetwork] = useState(localStorage.getItem("selectedNetwork") || "devnet");
+    const [selectedNetwork, setSelectedNetwork] = useState("devnet");
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
