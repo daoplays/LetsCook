@@ -43,19 +43,6 @@ const MainNetConfig: NetworkConfig = {
     IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
 };
 
-const TestMainNetConfig: NetworkConfig = {
-    PROD: true,
-    NETWORK: "mainnet",
-    PYTH_BTC: new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"),
-    PYTH_ETH: new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"),
-    PYTH_SOL: new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"),
-    FEES_KEY: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
-    RAYDIUM_FEES: new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
-    RPC_NODE: "https://black-shy-flower.solana-mainnet.quiknode.pro/0e33f02ab684b325f78c2ed2b9a48d9366412ab8",
-    WSS_NODE: "wss://black-shy-flower.solana-mainnet.quiknode.pro/0e33f02ab684b325f78c2ed2b9a48d9366412ab8/",
-    IRYS_URL: "https://node2.irys.xyz",
-    IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
-};
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
@@ -80,14 +67,6 @@ if (isMobile) {
 export const DEBUG = true;
 
 export let Config = DevNetConfig;
-
-export const setConfig = (network: string) => {
-    if (network === "devnet") {
-        Config = DevNetConfig;
-    } else if (network === "mainnet") {
-        Config = TestMainNetConfig;
-    }
-};
 
 export const enum Screen {
     HOME_SCREEN = 0,
