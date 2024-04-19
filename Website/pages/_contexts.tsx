@@ -22,7 +22,7 @@ import {
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys, setConfig } from "../components/Solana/constants";
+import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData, LookupData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
@@ -104,7 +104,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
-    const [selectedNetwork, setSelectedNetwork] = useState(localStorage.getItem("selectedNetwork") || "devnet");
+    const [selectedNetwork, setSelectedNetwork] = useState(localStorage.getItem("selectedNetwork") || "mainnet");
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
@@ -143,10 +143,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
 
-    useEffect(() => {
-        localStorage.setItem("selectedNetwork", selectedNetwork);
-        setConfig(selectedNetwork);
-    }, [selectedNetwork]);
 
     function closeFilterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
