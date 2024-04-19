@@ -29,20 +29,6 @@ const DevNetConfig: NetworkConfig = {
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
 };
 
-const MainNetConfig: NetworkConfig = {
-    PROD: true,
-    NETWORK: "mainnet",
-    PYTH_BTC: new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"),
-    PYTH_ETH: new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"),
-    PYTH_SOL: new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"),
-    FEES_KEY: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
-    RAYDIUM_FEES: new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
-    RPC_NODE: "https://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198",
-    WSS_NODE: "wss://patient-intensive-patron.solana-mainnet.quiknode.pro/6e8ea4bd576894779b92770fec0798b999c54198/",
-    IRYS_URL: "https://node2.irys.xyz",
-    IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
-};
-
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
