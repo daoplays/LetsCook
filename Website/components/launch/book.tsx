@@ -130,6 +130,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             if (result.err !== null) {
                 toast.error("Transaction failed, please try again");
+                return;
             }
 
             toast.success("Launch (1/2) Complete", {
@@ -533,9 +534,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: false });
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            //console.log(response)
+            console.log(signature)
             //var transaction_response = await send_transaction("", encoded_transaction);
 
             if (signature === undefined) {
@@ -550,13 +551,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = 1;
-
-            toast.update(createLaunch, {
-                render: "Launch account is ready",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
 
             connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

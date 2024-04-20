@@ -151,6 +151,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             return false;
         }
 
+        if (description.length === 0) {
+            toast.error("Description should be more than 0 characters long");
+            return false;
+        }
+
+
         if (!containsNone(tokenStart, invalid_prefix_chars)) {
             toast.error("Prefix contains invalid characters for token");
             return false;

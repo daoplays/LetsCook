@@ -26,11 +26,23 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
+        signature_ws_id.current = null;
+        setIsLoading(false);
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
-            alert("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return
         }
-        signature_ws_id.current = null;
+
+        toast.success("Tickets Checked!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -47,7 +59,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     }, []);
 
     const BuyTickets = async () => {
-        const buyingTickets = toast.loading(`Buying ${value} ${ticketLabel}`);
 
         if (wallet.signTransaction === undefined) return;
 
@@ -60,17 +71,26 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             return;
         }
 
+        setIsLoading(true);
+
+
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
-            toast.update(buyingTickets, {
-                render: `Launch creator cannot buy tickets`,
-                type: "error",
+            toast.error(`Launch creator cannot buy tickets`, {
                 isLoading: false,
                 autoClose: 3000,
             });
+            setIsLoading(false);
+
             return;
         }
+
+        toast.info(`Buying ${value} ${ticketLabel}`, {
+            isLoading: false,
+            autoClose: 3000,
+        });
+        
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -122,25 +142,20 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             let signature = transaction_response.result;
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            toast.update(buyingTickets, {
-                render: `Successfully bought ${value} ${ticketLabel}!`,
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+            setTimeout(transaction_failed, 20000);
+
 
             // console.log("join sig: ", signature);
         } catch (error) {
             console.log(error);
-            toast.update(buyingTickets, {
-                render: `Failed to buy ${ticketLabel}, please try again.`,
-                type: "error",
+            toast.error(`Failed to buy ${ticketLabel}, please try again.`, {
                 isLoading: false,
                 autoClose: 3000,
             });
+            setIsLoading(false);
+
             return;
         } finally {
-            setIsLoading(false);
             closeWarning();
         }
     };
