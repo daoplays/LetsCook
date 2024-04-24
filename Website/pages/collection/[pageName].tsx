@@ -513,7 +513,13 @@ const CollectionSwapPage = () => {
                                                 color="white"
                                                 size="lg"
                                                 borderColor="rgba(134, 142, 150, 0.5)"
-                                                value={token_amount}
+                                                value={
+                                                    isTokenToNFT
+                                                        ? (
+                                                              bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
+                                                          ).toLocaleString()
+                                                        : out_amount.toLocaleString()
+                                                }
                                                 onChange={(e) => {
                                                     setTokenAmount(
                                                         !isNaN(parseFloat(e.target.value)) || e.target.value === ""
@@ -521,6 +527,7 @@ const CollectionSwapPage = () => {
                                                             : token_amount,
                                                     );
                                                 }}
+                                                disabled={true}
                                                 type="number"
                                                 min="0"
                                             />
@@ -564,7 +571,7 @@ const CollectionSwapPage = () => {
                                                 color="white"
                                                 size="lg"
                                                 borderColor="rgba(134, 142, 150, 0.5)"
-                                                value={nft_amount}
+                                                value={1}
                                                 onChange={(e) => {
                                                     setNFTAmount(
                                                         !isNaN(parseFloat(e.target.value)) || e.target.value === ""
@@ -572,6 +579,7 @@ const CollectionSwapPage = () => {
                                                             : nft_amount,
                                                     );
                                                 }}
+                                                disabled={true}
                                                 type="number"
                                                 min="0"
                                             />
