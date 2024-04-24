@@ -9,6 +9,7 @@ import MainButton from "./Buttons/mainButton";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { FaBook } from "react-icons/fa";
 
 function Footer() {
     const router = useRouter();
@@ -58,6 +59,20 @@ function Footer() {
                         padding: 5,
                     }}
                 />
+            </Link>
+
+            <Link href="https://docs.letscook.wtf" target="_blank">
+                <div
+                    style={{
+                        cursor: "pointer",
+                        backgroundColor: "#683309",
+                        borderRadius: "50%",
+                        padding: 7,
+                        color: "white",
+                    }}
+                >
+                    <FaBook size={16} />
+                </div>
             </Link>
 
             {/* <Image
