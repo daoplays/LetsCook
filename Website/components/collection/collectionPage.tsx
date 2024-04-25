@@ -4,7 +4,7 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, Spinner } from "@chakra-ui/react";
 
 import {
-    METAPLEX_META,
+    CORE,
     DEBUG,
     SYSTEM_KEY,
     PROGRAM,
@@ -123,9 +123,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 autoClose: 3000,
             });
 
-            if (signature_ws_id.current === 1) {
-                await EditCollection();
-            }
+            await EditCollection();
+            
         },
         [EditCollection],
     );
@@ -516,25 +515,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         var collection_mint_pubkey = newCollectionData.current.token_keypair.publicKey;
 
-        let collection_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), collection_mint_pubkey.toBuffer()],
-            METAPLEX_META,
-        )[0];
-
-        let collection_token_account = await getAssociatedTokenAddress(
-            collection_mint_pubkey, // mint
-            program_sol_account, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-
-        let collection_master_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), collection_mint_pubkey.toBuffer(), Buffer.from("edition")],
-            METAPLEX_META,
-        )[0];
-
-        let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
-
         console.log("mint", collection_mint_pubkey.toString());
 
         const instruction_data = serialise_LaunchCollection_instruction(newCollectionData.current);
@@ -546,17 +526,10 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: collection_mint_pubkey, isSigner: true, isWritable: true },
-            { pubkey: collection_token_account, isSigner: false, isWritable: true },
-            { pubkey: collection_meta_key, isSigner: false, isWritable: true },
-            { pubkey: collection_master_key, isSigner: false, isWritable: true },
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
         ];
-
-        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

@@ -25,9 +25,13 @@ import {
     Keypair,
     AccountMeta,
 } from "@solana/web3.js";
+import {deserializeAssetV1} from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
+import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
+import { publicKey } from '@metaplex-foundation/umi';
 import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, CORE } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
@@ -146,51 +150,14 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             //console.log(lookup_data);
         }
 
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), nft_pubkey.toBuffer()],
-            METAPLEX_META,
-        )[0];
 
-        let nft_token_account = await getAssociatedTokenAddress(
-            nft_pubkey, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
 
-        let nft_escrow_account = await getAssociatedTokenAddress(
-            nft_pubkey, // mint
-            program_sol_account, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-
-        let nft_master_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), nft_pubkey.toBuffer(), Buffer.from("edition")],
-            METAPLEX_META,
-        )[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
             PROGRAM,
         )[0];
 
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        let collection_metadata_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), launchData.keys[CollectionKeys.CollectionMint].toBuffer()],
-            METAPLEX_META,
-        )[0];
-
-        let collection_master_key = PublicKey.findProgramAddressSync(
-            [
-                Buffer.from("metadata"),
-                METAPLEX_META.toBuffer(),
-                launchData.keys[CollectionKeys.CollectionMint].toBuffer(),
-                Buffer.from("edition"),
-            ],
-            METAPLEX_META,
-        )[0];
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.mint_nft);
 
@@ -203,22 +170,13 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: nft_pubkey, isSigner: mint_is_signer, isWritable: true },
-            { pubkey: nft_token_account, isSigner: false, isWritable: true },
-            { pubkey: token_meta_key, isSigner: false, isWritable: true },
-            { pubkey: nft_master_key, isSigner: false, isWritable: true },
-            { pubkey: nft_escrow_account, isSigner: false, isWritable: true },
-
+          
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
-            { pubkey: collection_metadata_account, isSigner: false, isWritable: true },
-            { pubkey: collection_master_key, isSigner: false, isWritable: true },
-        ];
+          ];
 
-        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
-
+        account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
+        
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
