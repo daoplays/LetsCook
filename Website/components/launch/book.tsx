@@ -1,5 +1,4 @@
 import {
-    METAPLEX_META,
     DEBUG,
     SYSTEM_KEY,
     PROGRAM,
@@ -246,7 +245,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         });
 
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
-            const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
+            const uploadImageToArweave = toast.info("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
             let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
 
@@ -300,7 +299,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 { name: "Content-Type", value: newLaunchData.current.banner_file.type },
             ];
 
-            const uploadToArweave = toast.loading("Sign to upload images on Arweave.");
+            const uploadToArweave = toast.info("Sign to upload images on Arweave.");
 
             let receipt;
 
@@ -353,7 +352,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             const json_price = await irys.getPrice(json_file.size);
 
-            const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
+            const fundMetadata = toast.info("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
 
             try {
                 let txArgs = await get_current_blockhash("");
@@ -399,7 +398,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
 
-            const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
+            const uploadMetadata = toast.info("Sign to upload token metadata on Arweave");
 
             let json_receipt;
 
@@ -443,11 +442,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = newLaunchData.current.token_keypair.publicKey;
 
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
-            METAPLEX_META,
-        )[0];
-
         let token_raffle_account_key = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
             program_sol_account, // owner
@@ -481,7 +475,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
-            { pubkey: token_meta_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
         ];
@@ -490,8 +483,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: METAPLEX_META, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false });
 
         if (newLaunchData.current.permanent_delegate !== null) {
             console.log("add PD");
@@ -528,7 +519,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
         transaction.partialSign(newLaunchData.current.token_keypair);
 
-        const createLaunch = toast.loading("(3/4) Setting up your launch accounts");
+        const createLaunch = toast.info("(3/4) Setting up your launch accounts");
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
