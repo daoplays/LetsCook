@@ -9,7 +9,7 @@ import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META, Extensions } from "../Solana/constants";
-import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate } from "@solana/spl-token";
+import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate, getMetadataPointerState, getTokenMetadata } from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { request_raw_account_data } from "../Solana/state";
 import ShowExtensions from "../Solana/extensions";
@@ -61,22 +61,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
         const searchToken = toast.loading("Searching Token...");
 
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
-            METAPLEX_META,
-        )[0];
-        let raw_meta_data = await request_raw_account_data("", token_meta_key);
-
-        if (raw_meta_data === null) {
-            toast.update(searchToken, {
-                render: `Token Metadata Not Found!`,
-                type: "error",
-                isLoading: false,
-                autoClose: 2000,
-            });
-            return;
-        }
-
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
         let result = await connection.getAccountInfo(token_key, "confirmed");
 
@@ -94,6 +78,45 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             return;
         }
 
+        let uri = null;
+        // first look for t22 metadata
+        let metadata_pointer = getMetadataPointerState(mint);
+        console.log("metadata pinter:", metadata_pointer)
+        if (metadata_pointer !== null) {
+            let metadata = await getTokenMetadata(connection, token_key, "confirmed", TOKEN_2022_PROGRAM_ID)
+            console.log(metadata);
+            uri = metadata.uri
+            setTokenName(metadata.name);
+            setTokenSymbol(metadata.symbol);
+        }
+
+        else {
+
+            let token_meta_key = PublicKey.findProgramAddressSync(
+                [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
+                METAPLEX_META,
+            )[0];
+            let raw_meta_data = await request_raw_account_data("", token_meta_key);
+
+            if (raw_meta_data === null) {
+                toast.update(searchToken, {
+                    render: `Token Metadata Not Found!`,
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+                return;
+            }
+            let meta_data = Metadata.deserialize(raw_meta_data);
+            console.log(meta_data);
+            console.log(meta_data[0].data.symbol, meta_data[0].data.name);
+            uri = meta_data[0].data.uri
+            setTokenName(meta_data[0].data.name);
+            setTokenSymbol(meta_data[0].data.symbol);
+
+        }
+        
+
         // check the extensions we care about
         let transfer_hook = getTransferHook(mint);
         let transfer_fee_config = getTransferFeeConfig(mint);
@@ -106,14 +129,11 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         console.log("extensions", extensions);
 
         //console.log("deserialize meta data");
-        let meta_data = Metadata.deserialize(raw_meta_data);
-        console.log(meta_data);
-        console.log(meta_data[0].data.symbol, meta_data[0].data.name);
-        let uri_json = await fetch(meta_data[0].data.uri).then((res) => res.json());
+        
+        
+        let uri_json = await fetch(uri).then((res) => res.json());
         console.log(uri_json["image"]);
-        setTokenName(meta_data[0].data.name);
         setTokenIconURL(uri_json["image"]);
-        setTokenSymbol(meta_data[0].data.symbol);
         setTokenDecimals(mint.decimals);
         setTokenExtensions(extensions);
 

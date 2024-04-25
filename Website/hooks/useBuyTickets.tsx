@@ -37,7 +37,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             return
         }
 
-        toast.success("Tickets Checked!", {
+        toast.success("Tickets Bought!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,

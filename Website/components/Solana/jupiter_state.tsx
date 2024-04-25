@@ -213,7 +213,7 @@ class PlaceLimit_Instruction {
 }
 
 export function serialise_PlaceLimit_instruction(side: number, in_amount: bignum, jup_data: number[]): Buffer {
-    const data = new PlaceLimit_Instruction(LaunchInstruction.place_limit_order, side, in_amount, jup_data);
+    const data = new PlaceLimit_Instruction(LaunchInstruction.place_market_order, side, in_amount, jup_data);
     const [buf] = PlaceLimit_Instruction.struct.serialize(data);
 
     return buf;
@@ -240,7 +240,7 @@ class PlaceCancel_Instruction {
 }
 
 export function serialise_PlaceCancel_instruction(side: number, in_amount: bignum, jup_data: number[]): Buffer {
-    const data = new PlaceCancel_Instruction(LaunchInstruction.cancel_limit_order, side, in_amount, jup_data);
+    const data = new PlaceCancel_Instruction(0, side, in_amount, jup_data);
     const [buf] = PlaceCancel_Instruction.struct.serialize(data);
 
     return buf;
