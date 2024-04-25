@@ -278,16 +278,18 @@ const CollectionSwapPage = () => {
                 return;
             }
             if (account_data[0] === 10) {
+                console.log("lookup data update")
                 const [updated_data] = LookupData.struct.deserialize(account_data);
                 console.log(updated_data);
-                let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+                console.log(updated_data.colection_mint.toString(), updated_data.nft_mint.toString());
+                let current_map = NFTLookup.current.get(updated_data.colection_mint.toString());
                 if (current_map === undefined) {
                     current_map = new Map<String, LookupData>();
                 }
 
                 current_map.set(updated_data.nft_mint.toString(), updated_data);
 
-                NFTLookup.current.set(launch.keys[CollectionKeys.CollectionMint].toString(), current_map);
+                NFTLookup.current.set(updated_data.colection_mint.toString(), current_map);
                 check_nft_balance();
             }
         },
