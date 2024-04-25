@@ -121,7 +121,7 @@ const CollectionSwapPage = () => {
 
         console.log("have ", token_mints.length, "addresses to check");
 
-        const umi = createUmi(Config.RPC_NODE);
+        const umi = createUmi(Config.RPC_NODE, "confirmed");
 
         const token_infos = await umi.rpc.getAccounts(token_mints);
 

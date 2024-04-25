@@ -329,7 +329,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 continue;
             }
             if (data[0] === 8) {
-                //CloseAccount({account: program_data[i].pubkey});
 
                 const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
@@ -337,6 +336,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 10) {
+                //CloseAccount({account: program_data[i].pubkey});
                 const [lookup] = LookupData.struct.deserialize(data);
                 let collection = lookup.colection_mint.toString();
                 let nft_lookup_account = PublicKey.findProgramAddressSync(

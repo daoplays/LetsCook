@@ -145,7 +145,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             token_mints.push(nft_mint);
         }
 
-        const umi = createUmi(Config.RPC_NODE);
+        const umi = createUmi(Config.RPC_NODE, "confirmed");
 
         const token_infos = await umi.rpc.getAccounts(token_mints);
 
