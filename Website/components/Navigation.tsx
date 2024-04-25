@@ -26,9 +26,10 @@ import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
 import { isHomePageOnly } from "../constant/root";
 import trimAddress from "../utils/trimAddress";
-import { FaWallet } from "react-icons/fa";
+import { FaBook, FaWallet } from "react-icons/fa";
 import { FaChevronDown } from "react-icons/fa";
 import { useEffect, useState } from "react";
+import { BsPersonSquare } from "react-icons/bs";
 
 function Navigation() {
     const router = useRouter();
@@ -78,7 +79,7 @@ function Navigation() {
                                 <HStack
                                     alignItems="start"
                                     onClick={async () => {
-                                        await router.push("https://www.letscook.wtf")
+                                        await router.push("https://www.letscook.wtf");
                                     }}
                                 >
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
@@ -90,7 +91,7 @@ function Navigation() {
                             <MenuItem
                                 borderRadius={5}
                                 onClick={async () => {
-                                    await router.push("https://devnet.letscook.wtf")
+                                    await router.push("https://devnet.letscook.wtf");
                                 }}
                             >
                                 <HStack alignItems="start">
@@ -112,15 +113,45 @@ function Navigation() {
                     </Tooltip>
 
                     <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="FAQs" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href="/faq">
+                                <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
+                            </Link>
+                        </Tooltip>
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
+                        <Tooltip label="Docs" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={isHomePageOnly ? "#" : "https://docs.letscook.wtf"} target="_blank">
+                                <div
+                                    style={{
+                                        cursor: isHomePageOnly ? "not-allowed" : "pointer",
+                                        backgroundColor: "#683309",
+                                        borderRadius: "50%",
+                                        padding: 8,
+                                        color: "white",
+                                    }}
+                                >
+                                    <FaBook size={20} />
+                                </div>
+                            </Link>
+                        </Tooltip>
+                    </Show>
+
+                    <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Hybrids" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={isHomePageOnly ? "#" : "/hybrids"}>
-                                <Image
-                                    src="/images/hybrids.png"
-                                    width={35}
-                                    height={35}
-                                    alt={"Hybrids"}
-                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                />
+                                <div
+                                    style={{
+                                        cursor: isHomePageOnly ? "not-allowed" : "pointer",
+                                        backgroundColor: "#683309",
+                                        borderRadius: "50%",
+                                        padding: 8,
+                                        color: "white",
+                                    }}
+                                >
+                                    <BsPersonSquare size={20} />
+                                </div>
                             </Link>
                         </Tooltip>
                     </Show>
@@ -196,14 +227,6 @@ function Navigation() {
                                 }}
                                 style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
                             />
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="FAQs" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/faq">
-                                <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
-                            </Link>
                         </Tooltip>
                     </Show>
 

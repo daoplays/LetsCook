@@ -104,7 +104,11 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
+<<<<<<< HEAD
     const [selectedNetwork, setSelectedNetwork] = useState("mainnet");
+=======
+    const [selectedNetwork, setSelectedNetwork] = useState("devnet");
+>>>>>>> devnet
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
@@ -299,8 +303,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     // console.log("data ", i, launch.page_name);
-                    //if (launch.flags[LaunchFlags.LPState] == 0)
-                    //  continue;
+                    if (launch.flags[LaunchFlags.LPState] == 0)
+                      continue;
 
                     launch_data.push(launch);
                 } catch (error) {

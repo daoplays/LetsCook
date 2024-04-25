@@ -221,7 +221,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }
 
     const CreateLaunch = useCallback(async () => {
-        setIsLoading(true);
+
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         console.log(newCollectionData.current.icon_url);
@@ -490,6 +490,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     isLoading: false,
                     autoClose: 3000,
                 });
+                setIsLoading(false);
 
                 return;
             }

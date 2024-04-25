@@ -134,8 +134,6 @@ const useEditLaunch = () => {
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
-        const createLaunch = toast.loading("Launching your token...");
-
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -155,17 +153,10 @@ const useEditLaunch = () => {
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
 
-            toast.update(createLaunch, {
-                render: "Congratulations! Your token has been successfully launched.",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+           
         } catch (error) {
             console.log(error);
-            toast.update(createLaunch, {
-                render: "Something went wrong launching your token , please try again later.",
-                type: "error",
+            toast.error("Something went wrong launching your token , please try again later.", {
                 isLoading: false,
                 autoClose: 3000,
             });

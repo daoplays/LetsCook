@@ -100,6 +100,11 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
+        if (description.length === 0) {
+            toast.error("Description should be more than 0 characters long");
+            return false;
+        }
+
         if (newLaunchData.current.banner_file === null) {
             toast.error("Please select a banner image.");
             return false;
