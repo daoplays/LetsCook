@@ -96,7 +96,7 @@ const useGetMMTokens = () => {
             PROGRAM,
         )[0];
 
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.get_mm_tokens);
+        const instruction_data = serialise_basic_instruction(0);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

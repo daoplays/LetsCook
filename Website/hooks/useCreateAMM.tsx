@@ -205,7 +205,7 @@ const useCreateAMM = (launchData: LaunchData) => {
         console.log("withdrawQueue", poolInfo.withdrawQueue.toString());
         console.log("targetOrders", poolInfo.targetOrders.toString());
 
-        let create_amm_data = serialise_basic_instruction(LaunchInstruction.init_amm);
+        let create_amm_data = serialise_basic_instruction(0);
 
         const list_instruction = new TransactionInstruction({
             keys: keys,
