@@ -36,6 +36,10 @@ import {
     resolveExtraAccountMeta,
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
+import {deserializeAssetV1} from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
+import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
+import { publicKey } from '@metaplex-foundation/umi';
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
     PROGRAM,
@@ -45,6 +49,7 @@ import {
     CollectionKeys,
     METAPLEX_META,
     FEES_PROGRAM,
+    CORE,
 } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
@@ -129,38 +134,36 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         setIsLoading(true);
 
         let CollectionLookup = NFTLookup.current.get(launchData.keys[CollectionKeys.CollectionMint].toString());
-        let token_addresses: PublicKey[] = [];
-        let token_mints: PublicKey[] = [];
+        let token_mints: umiKey[] = [];
 
         let lookup_keys = CollectionLookup.keys();
         while (true) {
             let lookup_it = lookup_keys.next();
             if (lookup_it.done) break;
 
-            let nft_mint = new PublicKey(lookup_it.value);
-            let token_account = getAssociatedTokenAddressSync(
-                nft_mint, // mint
-                wallet.publicKey, // owner
-                true, // allow owner off curve
-                TOKEN_2022_PROGRAM_ID,
-            );
-            token_addresses.push(token_account);
+            let nft_mint = publicKey(lookup_it.value);
             token_mints.push(nft_mint);
         }
 
-        //console.log(token_addresses.length, " potential nfts found");
-        let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
+        const umi = createUmi(Config.RPC_NODE, "confirmed");
+
+        const token_infos = await umi.rpc.getAccounts(token_mints);
 
         let valid_lookups: LookupData[] = [];
         for (let i = 0; i < token_infos.length; i++) {
-            if (token_infos[i] === null) {
+            if (!token_infos[i].exists) {
                 continue;
             }
-            let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
-            //console.log(account, token_mints[i].toString())
-            if (account.amount > 0) {
-                valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
+            
+            let account = deserializeAssetV1(token_infos[i] as RpcAccount);
+
+            if (account.owner !== wallet.publicKey.toString()) {
+                continue;
             }
+
+            //console.log(account, token_mints[i].toString())
+            valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
+            
         }
         //console.log(valid_lookups);
 
@@ -284,13 +287,13 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: team_token_account_key, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_nft_key, isSigner: false, isWritable: true },
-            { pubkey: nft_token_account, isSigner: false, isWritable: true },
-            { pubkey: nft_escrow_account, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: CORE, isSigner: false, isWritable: true });
 
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });

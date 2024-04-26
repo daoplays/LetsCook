@@ -115,7 +115,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.collection_symbol}
+                        {launch.collection_name}
                     </Text>
                 </HStack>
             </td>

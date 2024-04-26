@@ -10,8 +10,8 @@ export const getSolscanLink = (launch: CollectionData | LaunchData, type: string
     }
 
     if (type === "Collection") {
-        return `https://solscan.io/account/${
+        return `https://core.metaplex.com/explorer/collection/${
             launch && launch.keys && launch.keys[CollectionKeys.CollectionMint] ? launch.keys[CollectionKeys.CollectionMint].toString() : ""
-        }${Config.PROD ? "" : `?cluster=devnet`}`;
+        }${Config.PROD ? "" : `?env=devnet`}`;
     }
 };

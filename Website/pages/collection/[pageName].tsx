@@ -16,6 +16,10 @@ import {
     Divider,
     Spacer,
 } from "@chakra-ui/react";
+import {deserializeAssetV1} from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
+import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
+import { publicKey } from '@metaplex-foundation/umi';
 import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
@@ -104,43 +108,41 @@ const CollectionSwapPage = () => {
         let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
         if (CollectionLookup === null || CollectionLookup === undefined) return;
 
-        let token_addresses: PublicKey[] = [];
-        let token_mints: PublicKey[] = [];
+        let token_mints: umiKey[] = [];
 
         let lookup_keys = CollectionLookup.keys();
         while (true) {
             let lookup_it = lookup_keys.next();
             if (lookup_it.done) break;
 
-            let nft_mint = new PublicKey(lookup_it.value);
-            let token_account = getAssociatedTokenAddressSync(
-                nft_mint, // mint
-                wallet.publicKey, // owner
-                true, // allow owner off curve
-                TOKEN_2022_PROGRAM_ID,
-            );
-            token_addresses.push(token_account);
+            let nft_mint = publicKey(lookup_it.value);
             token_mints.push(nft_mint);
         }
 
-        console.log("have ", token_addresses.length, "addresses to check");
+        console.log("have ", token_mints.length, "addresses to check");
 
-        let token_infos = await connection.getMultipleAccountsInfo(token_addresses, "confirmed");
+        const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-        let valid_lookups: LookupData[] = [];
+        const token_infos = await umi.rpc.getAccounts(token_mints);
+
+    
+        console.log(token_infos);
+        let valid_lookups = 0;
         for (let i = 0; i < token_infos.length; i++) {
-            if (token_infos[i] === null) {
+            if (!token_infos[i].exists) {
                 continue;
             }
-            let account = unpackAccount(token_addresses[i], token_infos[i], TOKEN_2022_PROGRAM_ID);
-            if (account.amount > 0) {
-                valid_lookups.push(CollectionLookup.get(token_mints[i].toString()));
+            let account = deserializeAssetV1(token_infos[i] as RpcAccount);
+
+            console.log(account)
+            if (account.owner === wallet.publicKey.toString()) {
+                valid_lookups += 1
             }
         }
-        console.log("have ", valid_lookups.length, "addresses with balance");
+        console.log("have ", valid_lookups, "addresses with balance");
 
-        setNFTBalance(valid_lookups.length);
-    }, [NFTLookup, launch, wallet, connection]);
+        setNFTBalance(valid_lookups);
+    }, [NFTLookup, launch, wallet]);
 
     useEffect(() => {
         if (collectionList === null || mintData === null) return;
@@ -276,16 +278,18 @@ const CollectionSwapPage = () => {
                 return;
             }
             if (account_data[0] === 10) {
+                console.log("lookup data update")
                 const [updated_data] = LookupData.struct.deserialize(account_data);
                 console.log(updated_data);
-                let current_map = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
+                console.log(updated_data.colection_mint.toString(), updated_data.nft_mint.toString());
+                let current_map = NFTLookup.current.get(updated_data.colection_mint.toString());
                 if (current_map === undefined) {
                     current_map = new Map<String, LookupData>();
                 }
 
                 current_map.set(updated_data.nft_mint.toString(), updated_data);
 
-                NFTLookup.current.set(launch.keys[CollectionKeys.CollectionMint].toString(), current_map);
+                NFTLookup.current.set(updated_data.colection_mint.toString(), current_map);
                 check_nft_balance();
             }
         },

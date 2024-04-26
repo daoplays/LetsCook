@@ -20,7 +20,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
     const { sm, md, lg } = useResponsive();
     const [name, setName] = useState<string>(newCollectionData.current.collection_name);
-    const [symbol, setSymbol] = useState<string>(newCollectionData.current.collection_symbol);
     const [tokenStart, setTokenStart] = useState<string>("");
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
@@ -136,11 +135,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             return false;
         }
 
-        if (symbol.length > 10) {
-            toast.error("Maximum symbol length is 10 characters");
-            return false;
-        }
-
         if (name.length > 25) {
             toast.error("Maximum name length is 25 characters");
             return false;
@@ -165,7 +159,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.token_keypair = Keypair.generate();
 
         newCollectionData.current.collection_name = name;
-        newCollectionData.current.collection_symbol = symbol;
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
 
@@ -194,9 +187,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
-    const handleSymbolChange = (e) => {
-        setSymbol(e.target.value);
-    };
+
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
@@ -312,32 +303,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                 </HStack>
 
                                 <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
-                                    <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                            Symbol:
-                                        </div>
-
-                                        {/* <InputGroup style={{ position: "relative" }}> */}
-                                        {/* <InputLeftElement>
-                                                <FaDollarSign size={22} style={{ opacity: 0.5, marginTop: lg ? 0 : 8 }} />
-                                            </InputLeftElement> */}
-                                        <div className={styles.textLabelInput}>
-                                            <Input
-                                                // pl={9}
-                                                bg="#494949"
-                                                placeholder="Enter Token Ticker. (Ex. $SOL)"
-                                                disabled={newCollectionData.current.edit_mode === true}
-                                                size={lg ? "md" : "lg"}
-                                                maxLength={8}
-                                                required
-                                                className={styles.inputBox}
-                                                type="text"
-                                                value={symbol}
-                                                onChange={handleSymbolChange}
-                                            />
-                                        </div>
-                                        {/* </InputGroup> */}
-                                    </HStack>
+                                   
 
                                     <HStack spacing={0} className={styles.eachField}>
                                         <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
