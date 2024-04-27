@@ -25,10 +25,6 @@ import {
     Keypair,
     AccountMeta,
 } from "@solana/web3.js";
-import {deserializeAssetV1} from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { publicKey } from '@metaplex-foundation/umi';
 import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, CORE } from "../../components/Solana/constants";
