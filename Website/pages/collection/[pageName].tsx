@@ -293,7 +293,7 @@ const CollectionSwapPage = () => {
                 check_nft_balance();
             }
         },
-        [launch, NFTLookup, check_nft_balance],
+        [NFTLookup, check_nft_balance],
     );
 
     const check_user_token_update = useCallback(async (result: any) => {
