@@ -150,7 +150,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             return false;
         }
 
-
         if (!containsNone(tokenStart, invalid_prefix_chars)) {
             toast.error("Prefix contains invalid characters for token");
             return false;
@@ -187,7 +186,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
-
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
@@ -289,7 +287,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            placeholder="Enter Token Name. (Ex. Solana)"
+                                            placeholder="Enter Collection Name. (Ex. Smile NFT)"
                                             disabled={newCollectionData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
@@ -303,11 +301,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                 </HStack>
 
                                 <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
-                                   
-
                                     <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
-                                            Token Prefix:
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                            Prefix:
                                         </div>
 
                                         <div className={styles.textLabelInput}>
@@ -316,7 +312,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                 disabled={newCollectionData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 className={styles.inputBox}
-                                                placeholder="Enter Token Prefix (Max 3 Characters) - Optional"
+                                                placeholder="Enter Collection Prefix (Max 3 Characters) - Optional"
                                                 value={tokenStart}
                                                 onChange={(e) => {
                                                     setTokenStart(e.target.value);
