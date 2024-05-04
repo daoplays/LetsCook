@@ -1189,12 +1189,12 @@ const ChartComponent = (props) => {
 
         chart.applyOptions({
             layout: {
-                background: { color: "#222" },
+                background: { color: "#171B26" },
                 textColor: "#DDD",
             },
             grid: {
-                vertLines: { color: "#444" },
-                horzLines: { color: "#444" },
+                vertLines: { color: "#242733" },
+                horzLines: { color: "#242733" },
             },
             timeScale: {
                 timeVisible: true,
@@ -1216,6 +1216,7 @@ const ChartComponent = (props) => {
             priceFormat: {
                 type: "custom",
                 formatter: (price) => price.toExponential(2),
+                minMove: 0.000000001,
             },
         });
 
