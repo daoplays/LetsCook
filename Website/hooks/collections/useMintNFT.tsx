@@ -137,10 +137,12 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         var nft_pubkey = null;
         var mint_is_signer = false;
         if (lookup_data === null) {
-            //console.log("no lookup data found");
-            nft_keypair = new Keypair();
-            nft_pubkey = nft_keypair.publicKey;
-            mint_is_signer = true;
+            nft_pubkey = PublicKey.findProgramAddressSync(
+                    [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
+                    PROGRAM,
+                )[0];
+
+                
         } else {
             nft_pubkey = lookup_data.nft_mint;
             //console.log(lookup_data);
@@ -165,7 +167,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: nft_pubkey, isSigner: mint_is_signer, isWritable: true },
+            { pubkey: nft_pubkey, isSigner: false, isWritable: true },
           
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
           ];
