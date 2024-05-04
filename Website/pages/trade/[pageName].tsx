@@ -1216,6 +1216,7 @@ const ChartComponent = (props) => {
             priceFormat: {
                 type: "custom",
                 formatter: (price) => price.toExponential(2),
+                minMove: 0.000000001,
             },
         });
 
