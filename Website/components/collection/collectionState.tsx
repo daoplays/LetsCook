@@ -13,6 +13,11 @@ import {
     array,
     coption,
     COption,
+    DataEnumKeyAsKind,
+    dataEnum,
+    BeetArgsStruct,
+    FixableBeetArgsStruct,
+    FixableBeet
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -27,6 +32,34 @@ import bs58 from "bs58";
 
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+
+type CollectionMetaEnum = {
+    RandomFixedSupply: {
+        availability: number[]
+    }
+    RandomUnlimited: { mint_prob: number }
+  }
+  type CollectionInfo = DataEnumKeyAsKind<CollectionMetaEnum>
+  
+  const collectionInfoBeet = dataEnum<CollectionMetaEnum>([
+    [
+      'RandomFixedSupply',
+      new FixableBeetArgsStruct<CollectionMetaEnum['RandomFixedSupply']>(
+        [
+          ['availability', array(u8)]
+        ],
+        'CollectionMetaEnum["RandomFixedSupply"]'
+      ),
+    ],
+  
+    [
+      'RandomUnlimited',
+      new BeetArgsStruct<CollectionMetaEnum['RandomUnlimited']>(
+        [['mint_prob', u16]],
+        'CollectionMetaEnum["RandomUnlimited"]'
+      ),
+    ],
+  ]) as FixableBeet<CollectionInfo>
 
 export interface CollectionDataUserInput {
     edit_mode: boolean;
@@ -112,6 +145,7 @@ export class CollectionData {
     constructor(
         readonly account_type: number,
         readonly launch_id: bignum,
+        readonly collection_meta : CollectionMetaEnum,
         readonly collection_name: string,
         readonly collection_symbol: string,
         readonly collection_icon_url: string,
@@ -140,8 +174,6 @@ export class CollectionData {
         readonly positive_votes: number,
         readonly negative_votes: number,
 
-        readonly availability: number[],
-
         readonly total_mm_buy_amount: bignum,
         readonly total_mm_sell_amount: bignum,
         readonly last_mm_reward_date: number,
@@ -157,6 +189,8 @@ export class CollectionData {
             ["account_type", u8],
             ["launch_id", u64],
 
+
+            ["collection_meta", collectionInfoBeet],
             ["collection_name", utf8String],
             ["collection_symbol", utf8String],
             ["collection_icon_url", utf8String],
@@ -185,8 +219,6 @@ export class CollectionData {
             ["positive_votes", u32],
             ["negative_votes", u32],
 
-            ["availability", array(u8)],
-
             ["total_mm_buy_amount", u64],
             ["total_mm_sell_amount", u64],
             ["last_mm_reward_date", u32],
@@ -200,6 +232,7 @@ export class CollectionData {
             new CollectionData(
                 args.account_type!,
                 args.launch_id!,
+                args.collection_meta!,
                 args.collection_name!,
                 args.collection_symbol!,
                 args.collection_icon_url!,
@@ -227,8 +260,6 @@ export class CollectionData {
 
                 args.positive_votes!,
                 args.negative_votes!,
-
-                args.availability!,
 
                 args.total_mm_buy_amount!,
                 args.total_mm_sell_amount!,
@@ -308,6 +339,7 @@ export async function request_lookup_data(pubkey: PublicKey): Promise<LookupData
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,
+        readonly collection_type: number,
         readonly collection_name: string,
         readonly collection_symbol: string,
         readonly collection_uri: string,
@@ -330,11 +362,13 @@ class LaunchCollection_Instruction {
         readonly page_name: string,
         readonly swap_fee: number,
         readonly nft_extensions: number,
+        readonly mint_prob: COption<number>
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
         [
             ["instruction", u8],
+            ["collection_type", u8],
             ["collection_name", utf8String],
             ["collection_symbol", utf8String],
             ["collection_uri", utf8String],
@@ -354,10 +388,12 @@ class LaunchCollection_Instruction {
             ["page_name", utf8String],
             ["swap_fee", u16],
             ["nft_extensions", u8],
+            ["mint_prob", coption(u16)],
         ],
         (args) =>
             new LaunchCollection_Instruction(
                 args.instruction!,
+                args.collection_type!,
                 args.collection_name!,
                 args.collection_symbol!,
                 args.collection_uri!,
@@ -377,6 +413,7 @@ class LaunchCollection_Instruction {
                 args.page_name!,
                 args.swap_fee!,
                 args.nft_extensions!,
+                args.mint_prob!
             ),
         "LaunchCollection_Instruction",
     );
@@ -426,6 +463,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
     console.log(new_launch_data);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
+        0,
         new_launch_data.collection_name,
         new_launch_data.collection_symbol,
         new_launch_data.uri,
@@ -445,6 +483,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.pagename,
         new_launch_data.swap_fee,
         nft_extensions,
+        0
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

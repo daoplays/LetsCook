@@ -24,7 +24,7 @@ import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData, LookupData } from "../components/collection/collectionState";
-import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
+import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
@@ -252,6 +252,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             transaction.feePayer = wallet.publicKey;
 
             transaction.add(list_instruction);
+            transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
             try {
                 let signed_transaction = await wallet.signTransaction(transaction);
@@ -329,9 +330,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 continue;
             }
             if (data[0] === 8) {
+                //CloseAccount({account: program_data[i].pubkey});
 
                 const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
+                console.log(collection)
                 continue;
             }
 

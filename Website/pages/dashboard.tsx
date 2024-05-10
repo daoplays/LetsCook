@@ -43,10 +43,7 @@ const DashboardPage = () => {
 
     return (
         <>
-            <Head>
-                <title>Let&apos;s Cook | Dashboard</title>
-            </Head>
-            <main>
+          
                 <Flex
                     px={4}
                     py={18}
@@ -153,7 +150,6 @@ const DashboardPage = () => {
                         </Text>
                     </HStack>
                 )}
-            </main>
         </>
     );
 };
