@@ -256,7 +256,7 @@ const CollectionSwapPage = () => {
 
         const [updated_data] = AssignmentData.struct.deserialize(account_data);
 
-        console.log("in check assignment", updated_data);
+        console.log("in check assignment", updated_data, updated_data.nft_address.toString());
         if (assigned_nft !== null && updated_data.nft_index === assigned_nft.nft_index) {
             return;
         }
@@ -354,7 +354,7 @@ const CollectionSwapPage = () => {
         )[0];
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
-        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+        console.log("check assignment", nft_assignment_account.toString(), assignment_data, assignment_data.nft_address.toString());
 
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -638,7 +638,7 @@ const CollectionSwapPage = () => {
                                             <HStack w="100%">
                                                 {(assigned_nft === null || 
                                                 launch.collection_meta["__kind"] === "RandomUnlimited" ||
-                                                (launch.collection_meta["__kind"] === "RandomFixed" && assigned_nft.nft_address.equals(PublicKey.default))
+                                                (launch.collection_meta["__kind"] === "RandomFixedSupply" && assigned_nft.nft_address.equals(SYSTEM_KEY))
                                                 ) ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
