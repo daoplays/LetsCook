@@ -129,32 +129,11 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-        //console.log(assignment_data);
 
-        let nft_lookup_account = PublicKey.findProgramAddressSync(
-            [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Lookup")],
-            PROGRAM,
-        )[0];
-
-        let lookup_data = await request_lookup_data(nft_lookup_account);
-
-        var nft_keypair: Keypair = null;
-        var nft_pubkey = null;
-        var mint_is_signer = false;
-        if (lookup_data === null) {
-            nft_pubkey = PublicKey.findProgramAddressSync(
-                    [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
-                    PROGRAM,
-                )[0];
-
-                
-        } else {
-            nft_pubkey = lookup_data.nft_mint;
-            //console.log(lookup_data);
-        }
-
-
-
+        let nft_pubkey = PublicKey.findProgramAddressSync(
+                [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
+                PROGRAM,
+            )[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
@@ -167,7 +146,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
-            { pubkey: nft_lookup_account, isSigner: false, isWritable: true },
 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
@@ -194,9 +172,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
-        if (mint_is_signer) {
-            transaction.partialSign(nft_keypair);
-        }
+    
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
