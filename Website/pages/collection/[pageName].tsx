@@ -38,7 +38,7 @@ import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys, Config, PROGRAM, Extensions, LaunchFlags, LaunchKeys } from "../../components/Solana/constants";
+import { CollectionKeys, Config, PROGRAM, Extensions, LaunchFlags, LaunchKeys, SYSTEM_KEY } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
@@ -197,7 +197,7 @@ const CollectionSwapPage = () => {
             return;
         }
 
-        if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+        if (launch.collection_meta["__kind"] === "RandomFixedSupply" && !assigned_nft.nft_address.equals(PublicKey.default)) {
             console.log("CALLING MINT NFT", mint_nft.current);
             MintNFT();
         }
@@ -239,7 +239,7 @@ const CollectionSwapPage = () => {
     }, []);
 
     const check_assignment_update = useCallback(async (result: any) => {
-        //console.log("assignment", result);
+        console.log("assignment", result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
@@ -267,7 +267,7 @@ const CollectionSwapPage = () => {
             asset_received.current = null;
             asset_image.current = null;
         }
-        if (updated_data.status === 1) {
+        if (launch.collection_meta["__kind"] === "RandomUnlimited" && updated_data.status === 1) {
             const umi = createUmi(Config.RPC_NODE, "confirmed");
 
 
@@ -282,7 +282,7 @@ const CollectionSwapPage = () => {
         //console.log(updated_data);
         mint_nft.current = true;
         setAssignedNFT(updated_data);
-    }, [assigned_nft]);
+    }, [launch, assigned_nft]);
 
     const check_program_update = useCallback(
         async (result: any) => {
@@ -353,8 +353,9 @@ const CollectionSwapPage = () => {
             PROGRAM,
         )[0];
 
-        console.log("check assignment", nft_assignment_account.toString());
         let assignment_data = await request_assignment_data(nft_assignment_account);
+        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+
         check_initial_assignment.current = false;
         if (assignment_data === null) {
             return;
@@ -635,7 +636,10 @@ const CollectionSwapPage = () => {
                                     <VStack spacing={3} w="100%">
                                         {isTokenToNFT ? (
                                             <HStack w="100%">
-                                                {(assigned_nft === null || launch.collection_meta["__kind"] === "RandomUnlimited") ? (
+                                                {(assigned_nft === null || 
+                                                launch.collection_meta["__kind"] === "RandomUnlimited" ||
+                                                (launch.collection_meta["__kind"] === "RandomFixed" && assigned_nft.nft_address.equals(PublicKey.default))
+                                                ) ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
                                                         hasArrow

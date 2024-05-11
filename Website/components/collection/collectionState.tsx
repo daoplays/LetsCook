@@ -500,7 +500,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
     console.log(new_launch_data);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
-        1,
+        0,
         new_launch_data.collection_name,
         new_launch_data.collection_symbol,
         new_launch_data.uri,

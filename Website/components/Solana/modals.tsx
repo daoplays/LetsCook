@@ -156,7 +156,7 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, asset, asset
                                 fontWeight: "semibold",
                             }}
                         >
-                            New NFT Received! {asset.current.name}
+                            New NFT Received! <br/>{asset.current.name}
                         </Text>
                             }
                             <VStack mt={-8} align="center" fontFamily="ReemKufiRegular">
