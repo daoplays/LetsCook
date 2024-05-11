@@ -15,8 +15,9 @@ import {
     Center,
     Divider,
     Spacer,
+    useDisclosure
 } from "@chakra-ui/react";
-import {Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, deserializeAssetV1} from "@metaplex-foundation/mpl-core";
+import {Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1} from "@metaplex-foundation/mpl-core";
 import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
@@ -55,6 +56,7 @@ import {
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { LuArrowUpDown } from "react-icons/lu";
 import { FaWallet } from "react-icons/fa";
+import { ReceivedAssetModal } from "../../components/Solana/modals";
 
 function findLaunch(list: CollectionData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
@@ -96,6 +98,13 @@ const CollectionSwapPage = () => {
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
     const check_initial_collection = useRef<boolean>(true);
+
+
+    const asset_received = useRef<AssetV1 | null>(null);
+    const asset_image = useRef<string | null>(null);
+
+    const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
+
 
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
@@ -188,11 +197,18 @@ const CollectionSwapPage = () => {
             return;
         }
 
-        console.log("CALLING MINT NFT", mint_nft.current);
-        MintNFT();
+        if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+            console.log("CALLING MINT NFT", mint_nft.current);
+            MintNFT();
+        }
+        if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+            console.log("Opening asset modal");
+            openAssetModal();
+        }
+
 
         mint_nft.current = false;
-    }, [assigned_nft, MintNFT]);
+    }, [launch, assigned_nft, MintNFT]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -240,10 +256,33 @@ const CollectionSwapPage = () => {
 
         const [updated_data] = AssignmentData.struct.deserialize(account_data);
 
+        console.log("in check assignment", updated_data);
+        if (assigned_nft !== null && updated_data.nft_index === assigned_nft.nft_index) {
+            return;
+        }
+
+        if (updated_data.status === 0) {
+            console.log("no asset recieved");
+
+            asset_received.current = null;
+            asset_image.current = null;
+        }
+        if (updated_data.status === 1) {
+            const umi = createUmi(Config.RPC_NODE, "confirmed");
+
+
+            let asset_umiKey = publicKey(updated_data.nft_address.toString());
+            let asset = await fetchAssetV1(umi, asset_umiKey);
+            console.log("new asset", asset);
+            asset_received.current = asset;
+
+            let uri_json = await fetch(asset.uri).then((res) => res.json());
+            asset_image.current = uri_json["image"];
+        }
         //console.log(updated_data);
         mint_nft.current = true;
         setAssignedNFT(updated_data);
-    }, []);
+    }, [assigned_nft]);
 
     const check_program_update = useCallback(
         async (result: any) => {
@@ -314,6 +353,7 @@ const CollectionSwapPage = () => {
             PROGRAM,
         )[0];
 
+        console.log("check assignment", nft_assignment_account.toString());
         let assignment_data = await request_assignment_data(nft_assignment_account);
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -595,7 +635,7 @@ const CollectionSwapPage = () => {
                                     <VStack spacing={3} w="100%">
                                         {isTokenToNFT ? (
                                             <HStack w="100%">
-                                                {assigned_nft === null ? (
+                                                {(assigned_nft === null || launch.collection_meta["__kind"] === "RandomUnlimited") ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
                                                         hasArrow
@@ -817,6 +857,12 @@ const CollectionSwapPage = () => {
                         </VStack>
                     </VStack>
                 </div>
+                <ReceivedAssetModal
+                    isWarningOpened={isAssetModalOpen}
+                    closeWarning={closeAssetModal}
+                    asset={asset_received}
+                    asset_image={asset_image}
+                />
             </main>
         </>
     );

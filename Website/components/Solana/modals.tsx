@@ -1,9 +1,11 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, MutableRefObject } from "react";
 import { Box, Button, Center, HStack, Link, Text, VStack } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import { LaunchData } from "./state";
 import useBuyTickets from "../../hooks/useBuyTickets";
+import { AssetV1 } from "@metaplex-foundation/mpl-core";
+import { PublicKey } from "@solana/web3.js";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -111,3 +113,92 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
         </>
     );
 }
+
+
+interface RecievedAssetModalProps {
+    isWarningOpened?: boolean;
+    closeWarning?: () => void;
+    asset: MutableRefObject<AssetV1>;
+    asset_image: MutableRefObject<string>;
+
+}
+
+export function ReceivedAssetModal({ isWarningOpened, closeWarning, asset, asset_image }: RecievedAssetModalProps) {
+    const { sm } = useResponsive();
+    return (
+        <>
+            <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
+                <ModalOverlay />
+
+                <ModalContent mx={6} p={0} h={585} style={{ background: "transparent" }}>
+                    <ModalBody bg="url(/images/terms-container.png)" bgSize="contain" bgRepeat="no-repeat" p={sm ? 10 : 14}>
+                        <VStack spacing={sm ? 6 : 10}>
+                        {asset.current === null &&
+                            <Text
+                                align="center"
+                                fontSize={"large"}
+                                style={{
+                                    fontFamily: "KGSummerSunshineBlackout",
+                                    color: "white",
+                                    fontWeight: "semibold",
+                                }}
+                            >
+                            No NFT Received!
+                            </Text>
+                            }
+                            {asset.current !== null &&
+                            <Text
+                            align="center"
+                            fontSize={"large"}
+                            style={{
+                                fontFamily: "KGSummerSunshineBlackout",
+                                color: "white",
+                                fontWeight: "semibold",
+                            }}
+                        >
+                            New NFT Received! {asset.current.name}
+                        </Text>
+                            }
+                            <VStack mt={-8} align="center" fontFamily="ReemKufiRegular">
+                                {asset_image.current === null &&
+                                    <img
+                                        src="/images/cooks.jpeg"
+                                        width={180}
+                                        height={180}
+                                        alt="the cooks"
+                                    />
+                                }
+                                {asset_image.current !== null &&
+                                    <img
+                                    src={asset_image.current}
+                                    width={180}
+                                    height={180}
+                                    alt="the cooks"
+                                />
+                                    
+                                }
+                                
+                            </VStack>
+
+                            <VStack spacing={5}>
+                                <Text
+                                    align="end"
+                                    fontSize={sm ? "medium" : "medium"}
+                                    style={{
+                                        fontFamily: "KGSummerSunshineBlackout",
+                                        color: "red",
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={closeWarning}
+                                >
+                                    Close
+                                </Text>
+                            </VStack>
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
+

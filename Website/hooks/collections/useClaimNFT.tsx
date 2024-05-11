@@ -242,7 +242,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("claim nft sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

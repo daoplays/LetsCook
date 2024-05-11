@@ -277,6 +277,7 @@ export class CollectionData {
 export class AssignmentData {
     constructor(
         readonly account_type: number,
+        readonly nft_address: PublicKey,
         readonly nft_index: number,
         readonly status: number,
     ) {}
@@ -284,10 +285,11 @@ export class AssignmentData {
     static readonly struct = new FixableBeetStruct<AssignmentData>(
         [
             ["account_type", u8],
+            ["nft_address", publicKey],
             ["nft_index", u32],
             ["status", u8],
         ],
-        (args) => new AssignmentData(args.account_type!, args.nft_index!, args.status!),
+        (args) => new AssignmentData(args.account_type!, args.nft_address!, args.nft_index!, args.status!),
         "AssignmentData",
     );
 }
@@ -319,6 +321,8 @@ export async function request_assignment_data(pubkey: PublicKey): Promise<Assign
         return null;
     }
 
+    console.log("assignment", pubkey.toString(), account_data);
+
     const [data] = AssignmentData.struct.deserialize(account_data);
 
     return data;
@@ -335,7 +339,7 @@ export async function request_lookup_data(pubkey: PublicKey): Promise<LookupData
 
     return data;
 }
-
+AssignmentData
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,

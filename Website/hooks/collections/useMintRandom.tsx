@@ -34,7 +34,6 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
-    const { MintNFT } = useMintNFT(launchData);
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
@@ -53,7 +52,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             return;
         }
 
-        toast.success("Successfully Minted NFT", {
+        toast.success("Transaction Successfull", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
@@ -80,24 +79,8 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
     const MintRandom = async () => {
         setIsLoading(true);
 
-        let nft_assignment_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
-            PROGRAM,
-        )[0];
-        let assignment_data = await request_assignment_data(nft_assignment_account);
 
-        if (assignment_data !== null) {
-            if (assignment_data.status > 0) {
-                console.log("assignment data found, minting nft");
-                await MintNFT();
-                return;
-            }
-        }
-
-        if (launchData.num_available === 0) {
-            return;
-        }
-
+       
         if (wallet.signTransaction === undefined) return;
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
@@ -138,6 +121,12 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
         );
+
+        let nft_assignment_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+            PROGRAM,
+        )[0];
+       
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -194,6 +183,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
 
+            { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: nft_mint_account, isSigner: true, isWritable: true },
 
@@ -241,7 +231,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("mint random sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

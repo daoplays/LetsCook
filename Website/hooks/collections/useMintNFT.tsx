@@ -86,12 +86,13 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
     }, []);
 
     const MintNFT = async () => {
-        //console.log("in mint nft");
 
         if (wallet.signTransaction === undefined) {
             //console.log(wallet, "invalid wallet");
             return;
         }
+
+
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
@@ -205,7 +206,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("mint nft sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

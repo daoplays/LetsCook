@@ -106,7 +106,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
     }, []);
 
     const WrapNFT = async () => {
-        console.log("in mint nft");
+        console.log("in wrap nft");
 
         if (wallet.signTransaction === undefined) {
             console.log(wallet, "invalid wallet");
@@ -303,7 +303,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("wrap nft sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

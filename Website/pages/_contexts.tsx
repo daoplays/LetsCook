@@ -338,6 +338,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 continue;
             }
 
+            //if (data[0] === 9) {
+            //    CloseAccount({account: program_data[i].pubkey});
+           // }
+
             if (data[0] === 10) {
                 //CloseAccount({account: program_data[i].pubkey});
                 const [lookup] = LookupData.struct.deserialize(data);
