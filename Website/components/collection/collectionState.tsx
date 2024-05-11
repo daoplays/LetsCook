@@ -33,11 +33,41 @@ import bs58 from "bs58";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
+type CollectionPluginEnum = {
+    AsymmetricSwapPrice: {
+        return_swap_price: number
+    }
+    MintProbability: { mint_prob : number }
+  }
+  type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>
+  
+  const collectionPluginBeet = dataEnum<CollectionPluginEnum>([
+    [
+      'AsymmetricSwapPrice',
+      new FixableBeetArgsStruct<CollectionPluginEnum['AsymmetricSwapPrice']>(
+        [
+          ['return_swap_price', u64]
+        ],
+        'CollectionPluginEnum["AsymmetricSwapPrice"]'
+      ),
+    ],
+  
+    [
+      'MintProbability',
+      new BeetArgsStruct<CollectionPluginEnum['MintProbability']>(
+        [
+            ['mint_prob', u16]
+          ],
+        'CollectionPluginEnum["MintProbability"]'
+      ),
+    ],
+  ]) as FixableBeet<CollectionPlugin>
+
 type CollectionMetaEnum = {
     RandomFixedSupply: {
         availability: number[]
     }
-    RandomUnlimited: { mint_prob: number }
+    RandomUnlimited: {  }
   }
   type CollectionInfo = DataEnumKeyAsKind<CollectionMetaEnum>
   
@@ -55,7 +85,7 @@ type CollectionMetaEnum = {
     [
       'RandomUnlimited',
       new BeetArgsStruct<CollectionMetaEnum['RandomUnlimited']>(
-        [['mint_prob', u16]],
+        [],
         'CollectionMetaEnum["RandomUnlimited"]'
       ),
     ],
@@ -146,6 +176,7 @@ export class CollectionData {
         readonly account_type: number,
         readonly launch_id: bignum,
         readonly collection_meta : CollectionMetaEnum,
+        readonly plugins : CollectionPluginEnum[],
         readonly collection_name: string,
         readonly collection_symbol: string,
         readonly collection_icon_url: string,
@@ -191,6 +222,7 @@ export class CollectionData {
 
 
             ["collection_meta", collectionInfoBeet],
+            ["plugins", array(collectionPluginBeet)],
             ["collection_name", utf8String],
             ["collection_symbol", utf8String],
             ["collection_icon_url", utf8String],
@@ -233,6 +265,7 @@ export class CollectionData {
                 args.account_type!,
                 args.launch_id!,
                 args.collection_meta!,
+                args.plugins!,
                 args.collection_name!,
                 args.collection_symbol!,
                 args.collection_icon_url!,
@@ -467,7 +500,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
     console.log(new_launch_data);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
-        0,
+        1,
         new_launch_data.collection_name,
         new_launch_data.collection_symbol,
         new_launch_data.uri,
@@ -487,7 +520,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.pagename,
         new_launch_data.swap_fee,
         nft_extensions,
-        0
+        50
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

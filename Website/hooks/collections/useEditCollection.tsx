@@ -66,7 +66,6 @@ const useEditCollection = () => {
 
     const EditCollection = async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
-        alert("In Edit NFT?");
 
         if (signature_ws_id.current !== null) {
             toast.success("Transaction pending, please wait");
