@@ -16,7 +16,7 @@ import {
     Divider,
     Spacer,
 } from "@chakra-ui/react";
-import {deserializeAssetV1} from "@metaplex-foundation/mpl-core";
+import {Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, deserializeAssetV1} from "@metaplex-foundation/mpl-core";
 import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
@@ -103,41 +103,23 @@ const CollectionSwapPage = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
     const check_nft_balance = useCallback(async () => {
-        if (launch === null || NFTLookup === null || wallet === null) return;
+        if (launch === null || NFTLookup === null || wallet === null || wallet.publicKey === null) return;
 
         console.log("CHECKING NFT BALANCE");
 
-        let CollectionLookup = NFTLookup.current.get(launch.keys[CollectionKeys.CollectionMint].toString());
-        if (CollectionLookup === null || CollectionLookup === undefined) return;
-
-        let token_mints: umiKey[] = [];
-
-        let lookup_keys = CollectionLookup.keys();
-        while (true) {
-            let lookup_it = lookup_keys.next();
-            if (lookup_it.done) break;
-
-            let nft_mint = publicKey(lookup_it.value);
-            token_mints.push(nft_mint);
-        }
-
-        console.log("have ", token_mints.length, "addresses to check");
-
         const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-        const token_infos = await umi.rpc.getAccounts(token_mints);
+        let collection_umiKey = publicKey(launch.keys[CollectionKeys.CollectionMint].toString());
 
+        const assets = await getAssetV1GpaBuilder(umi)
+        .whereField('key', Key.AssetV1)
+        .whereField('updateAuthority', updateAuthority('Collection', [collection_umiKey]))
+        .getDeserialized()
     
-        console.log(token_infos);
+        console.log(assets);
         let valid_lookups = 0;
-        for (let i = 0; i < token_infos.length; i++) {
-            if (!token_infos[i].exists) {
-                continue;
-            }
-            let account = deserializeAssetV1(token_infos[i] as RpcAccount);
-
-            console.log(account)
-            if (account.owner === wallet.publicKey.toString()) {
+        for (let i = 0; i < assets.length; i++) {
+            if (assets[i].owner.toString() === wallet.publicKey.toString()) {
                 valid_lookups += 1
             }
         }
@@ -402,7 +384,7 @@ const CollectionSwapPage = () => {
 
     let progress_string = "";
     if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-        progress_string = (launch.num_available / launch.total_supply).toString();
+        progress_string = launch.num_available.toString() + " / " + launch.total_supply.toString()
     }
     if (launch.collection_meta["__kind"] === "RandomUnlimited") {
         progress_string = "Unlimited"
