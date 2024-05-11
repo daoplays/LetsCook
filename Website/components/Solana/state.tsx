@@ -567,6 +567,7 @@ export const enum LaunchInstruction {
     mint_nft = 15,
     wrap_nft = 16,
     edit_collection = 17,
+    mint_random = 18,
 }
 
 export interface LaunchDataUserInput {

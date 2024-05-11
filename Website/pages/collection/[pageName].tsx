@@ -41,6 +41,7 @@ import { CollectionKeys, Config, PROGRAM, Extensions, LaunchFlags, LaunchKeys } 
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
+import useMintRandom from "../../hooks/collections/useMintRandom";
 import ShowExtensions from "../../components/Solana/extensions";
 import {
     unpackMint,
@@ -99,6 +100,7 @@ const CollectionSwapPage = () => {
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
     const check_nft_balance = useCallback(async () => {
         if (launch === null || NFTLookup === null || wallet === null) return;
@@ -293,7 +295,7 @@ const CollectionSwapPage = () => {
                 check_nft_balance();
             }
         },
-        [launch, NFTLookup, check_nft_balance],
+        [NFTLookup, check_nft_balance],
     );
 
     const check_user_token_update = useCallback(async (result: any) => {
@@ -398,7 +400,14 @@ const CollectionSwapPage = () => {
 
     const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price);
 
-    console.log(launch.token_symbol);
+    let progress_string = "";
+    if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+        progress_string = (launch.num_available / launch.total_supply).toString();
+    }
+    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+        progress_string = "Unlimited"
+    }
+
     return (
         <>
             <Head>
@@ -620,7 +629,12 @@ const CollectionSwapPage = () => {
                                                                 }
 
                                                                 if (wallet.connected && enoughTokenBalance) {
-                                                                    ClaimNFT();
+                                                                    if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                                        ClaimNFT();
+                                                                    }
+                                                                    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+                                                                        MintRandom();
+                                                                    }
                                                                 }
                                                             }}
                                                             isLoading={isClaimLoading}
@@ -813,7 +827,7 @@ const CollectionSwapPage = () => {
                                 <HStack style={{ position: "absolute", zIndex: 1 }}>
                                     <HStack justify="center">
                                         <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
-                                            {launch.num_available} / {launch.total_supply}
+                                            {progress_string}
                                         </Text>
                                     </HStack>
                                 </HStack>
