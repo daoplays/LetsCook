@@ -3,9 +3,11 @@ import useResponsive from "../hooks/useResponsive";
 import Head from "next/head";
 import Image from "next/image";
 import { Flex, VStack, Text } from "@chakra-ui/react";
+import useMintRandom from "../hooks/collections/useMintRandom";
 
-const Pepemon = () => {
+const Pepemon = ({ launch }) => {
     const { sm, lg } = useResponsive();
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
     return (
         <>
@@ -36,6 +38,7 @@ const Pepemon = () => {
                             width={sm ? 150 : 200}
                             height={sm ? 150 : 200}
                             style={{ cursor: "pointer" }}
+                            onClick={() => {}}
                         />
                         <Text fontSize={sm ? 18 : 22} fontWeight={500} mt={-4}>
                             Mint
