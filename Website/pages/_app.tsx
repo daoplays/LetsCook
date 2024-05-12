@@ -4,7 +4,7 @@ import { type ConnectionConfig } from "@solana/web3.js";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { Config } from "../components/Solana/constants";
 import { theme } from "../chakra";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
 import NoSSR from "../utils/NoSSR";
@@ -18,11 +18,19 @@ import "../styles/table.css";
 import { usePathname } from "next/navigation";
 import useResponsive from "../hooks/useResponsive";
 
-const hide = ["/trade"];
-
 function MyApp({ Component, pageProps }) {
     const { sm } = useResponsive();
     const pathname = usePathname();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const hide = ["/trade", "/pepemon"];
+
+    useEffect(() => {
+        console.log(pathname);
+        console.log(hide.includes(`${pathname}`));
+    }, [pathname, hide]);
+
+    console.log(pathname);
     const wallets = useMemo(() => [], []);
 
     const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };
@@ -47,11 +55,11 @@ function MyApp({ Component, pageProps }) {
                     <WalletProvider wallets={wallets} autoConnect>
                         <WalletModalProvider>
                             <ContextProviders>
-                                <Navigation />
-                                <div style={{ minHeight: "calc(100vh - 47.5px)", paddingTop: "50px" }}>
+                                {!hide.includes(pathname) && <Navigation />}
+                                <div style={{ minHeight: "calc(100vh - 47.5px)", paddingTop: !hide.includes(pathname) && "50px" }}>
                                     <Component {...pageProps} />
                                 </div>
-                                {(hide.includes(pathname) || !sm) && <Footer />}
+                                {hide.includes(pathname) || (!sm && <Footer />)}
                             </ContextProviders>
                         </WalletModalProvider>
                     </WalletProvider>
