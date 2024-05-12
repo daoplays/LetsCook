@@ -297,6 +297,7 @@ export class AssignmentData {
         readonly nft_address: PublicKey,
         readonly nft_index: number,
         readonly status: number,
+        readonly num_interations : number
     ) {}
 
     static readonly struct = new FixableBeetStruct<AssignmentData>(
@@ -305,31 +306,13 @@ export class AssignmentData {
             ["nft_address", publicKey],
             ["nft_index", u32],
             ["status", u8],
+            ["num_interations", u32]
         ],
-        (args) => new AssignmentData(args.account_type!, args.nft_address!, args.nft_index!, args.status!),
+        (args) => new AssignmentData(args.account_type!, args.nft_address!, args.nft_index!, args.status!, args.num_interations!),
         "AssignmentData",
     );
 }
 
-export class LookupData {
-    constructor(
-        readonly account_type: number,
-        readonly colection_mint: PublicKey,
-        readonly nft_mint: PublicKey,
-        readonly nft_index: number,
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<LookupData>(
-        [
-            ["account_type", u8],
-            ["colection_mint", publicKey],
-            ["nft_mint", publicKey],
-            ["nft_index", u32],
-        ],
-        (args) => new LookupData(args.account_type!, args.colection_mint!, args.nft_mint!, args.nft_index!),
-        "LookupData",
-    );
-}
 
 export async function request_assignment_data(pubkey: PublicKey): Promise<AssignmentData | null> {
     let account_data = await request_raw_account_data("", pubkey);
@@ -345,18 +328,6 @@ export async function request_assignment_data(pubkey: PublicKey): Promise<Assign
     return data;
 }
 
-export async function request_lookup_data(pubkey: PublicKey): Promise<LookupData | null> {
-    let account_data = await request_raw_account_data("", pubkey);
-
-    if (account_data === null) {
-        return null;
-    }
-
-    const [data] = LookupData.struct.deserialize(account_data);
-
-    return data;
-}
-AssignmentData;
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,

@@ -1,11 +1,15 @@
 import { Dispatch, SetStateAction, MutableRefObject } from "react";
-import { Box, Button, Center, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Link, Spinner, Text, VStack } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import { LaunchData } from "./state";
 import useBuyTickets from "../../hooks/useBuyTickets";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { PublicKey } from "@solana/web3.js";
+import { AssignmentData, CollectionData } from "../collection/collectionState";
+import useMintNFT from "../../hooks/collections/useMintNFT";
+import styles from "../../styles/LaunchDetails.module.css";
+import { SYSTEM_KEY } from "./constants";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -117,12 +121,33 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
 interface RecievedAssetModalProps {
     isWarningOpened?: boolean;
     closeWarning?: () => void;
+    collection: CollectionData;
     asset: MutableRefObject<AssetV1>;
     asset_image: MutableRefObject<string>;
+    assignment_data: AssignmentData;
 }
 
-export function ReceivedAssetModal({ isWarningOpened, closeWarning, asset, asset_image }: RecievedAssetModalProps) {
+export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, assignment_data, asset, asset_image }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
+
+    if (assignment_data === null)
+        return(<></>)
+
+    let asset_name = collection.nft_name + " #" + (assignment_data.nft_index+1).toString();
+    let image_url = "";
+
+    if (asset.current !== null) {
+        asset_name = asset.current.name;
+    }
+    if (asset_image.current !== null) {
+        if (asset_image.current["name"] !== undefined) {
+            asset_name = asset_image.current["name"];
+        }
+        image_url = asset_image.current["image"];
+    }
+
+    
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
@@ -131,7 +156,7 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, asset, asset
                 <ModalContent mx={6} p={0} h={585} style={{ background: "transparent" }}>
                     <ModalBody bg="url(/images/terms-container.png)" bgSize="contain" bgRepeat="no-repeat" p={sm ? 10 : 14}>
                         <VStack spacing={sm ? 6 : 10}>
-                            {asset.current === null && (
+                            {assignment_data.nft_address.equals(SYSTEM_KEY) ? (
                                 <Text
                                     align="center"
                                     fontSize={"large"}
@@ -143,8 +168,7 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, asset, asset
                                 >
                                     No NFT Received!
                                 </Text>
-                            )}
-                            {asset.current !== null && (
+                            ) :(
                                 <Text
                                     align="center"
                                     fontSize={"large"}
@@ -155,13 +179,30 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, asset, asset
                                     }}
                                 >
                                     New NFT Received! <br />
-                                    {asset.current.name}
+                                    {asset_name}
                                 </Text>
                             )}
                             <VStack mt={-8} align="center" fontFamily="ReemKufiRegular">
-                                {asset_image.current === null && <img src="/images/cooks.jpeg" width={180} height={180} alt="the cooks" />}
-                                {asset_image.current !== null && <img src={asset_image.current} width={180} height={180} alt="the cooks" />}
+                                {assignment_data.nft_address.equals(SYSTEM_KEY) ? 
+                                    <img src="/images/cooks.jpeg" width={180} height={180} alt="the cooks" />
+                                :
+                                    <img src={image_url} width={180} height={180} alt="the cooks" />
+                                }
                             </VStack>
+
+                            {collection.collection_meta["__kind"] === "RandomFixedSupply" &&
+                            assignment_data.status !== 0 &&
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    MintNFT();
+                                }}
+                                className={`${styles.nextBtn} font-face-kg `}
+                            >
+                                {isMintLoading ? <Spinner /> : "Mint"}
+
+                            </button>
+                            }
 
                             <VStack spacing={5}>
                                 <Text

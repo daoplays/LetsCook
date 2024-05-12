@@ -8,7 +8,7 @@ import {
     uInt32ToLEBytes,
     request_raw_account_data,
 } from "../../components/Solana/state";
-import { CollectionData, request_assignment_data, request_lookup_data } from "../../components/collection/collectionState";
+import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     PublicKey,
