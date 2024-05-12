@@ -187,7 +187,7 @@ const CollectionSwapPage = () => {
         openAssetModal();
       
         mint_nft.current = false;
-    }, [launch, assigned_nft, MintNFT, openAssetModal]);
+    }, [launch, assigned_nft, openAssetModal]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -239,12 +239,25 @@ const CollectionSwapPage = () => {
                 let uri_json = await fetch(json_url).then((res) => res.json());
                 asset_image.current = uri_json;
 
-                const umi = createUmi(Config.RPC_NODE, "confirmed");
+                
+                try{
+                    const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-                let asset_umiKey = publicKey(updated_data.nft_address.toString());
-                let asset = await fetchAssetV1(umi, asset_umiKey);
-                console.log("new asset", asset);
-                asset_received.current = asset;
+                    let asset_umiKey = publicKey(updated_data.nft_address.toString());
+                    const myAccount = await umi.rpc.getAccount(asset_umiKey);
+
+                    if (myAccount.exists){
+                        let asset = await deserializeAssetV1(myAccount as RpcAccount);
+                        console.log("new asset", asset);
+                        asset_received.current = asset;
+                    }
+                    else {
+                        asset_received.current = null;
+                    }
+                }
+                catch(error) {
+                    asset_received.current = null;
+                }
 
                 
             }
