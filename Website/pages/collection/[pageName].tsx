@@ -57,19 +57,9 @@ import { getSolscanLink } from "../../utils/getSolscanLink";
 import { LuArrowUpDown } from "react-icons/lu";
 import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal } from "../../components/Solana/modals";
+import { findCollection } from "../../components/collection/utils";
 
-function findLaunch(list: CollectionData[], page_name: string | string[]) {
-    if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
 
-    let launchList = list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.page_name == page_name;
-    });
-
-    if (launchList.length === 0) return null;
-
-    return launchList[0];
-}
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
@@ -79,7 +69,7 @@ const CollectionSwapPage = () => {
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
-    const { collectionList, mintData, NFTLookup } = useAppRoot();
+    const { collectionList, mintData } = useAppRoot();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [out_amount, setOutAmount] = useState<number>(0);
@@ -92,7 +82,6 @@ const CollectionSwapPage = () => {
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
-    const lookup_account_ws_id = useRef<number | null>(null);
     const user_token_ws_id = useRef<number | null>(null);
 
     const mint_nft = useRef<boolean>(false);
@@ -112,7 +101,7 @@ const CollectionSwapPage = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
     const check_nft_balance = useCallback(async () => {
-        if (launch === null || NFTLookup === null || wallet === null || wallet.publicKey === null) return;
+        if (launch === null || wallet === null || wallet.publicKey === null) return;
 
         console.log("CHECKING NFT BALANCE");
 
@@ -135,12 +124,12 @@ const CollectionSwapPage = () => {
         console.log("have ", valid_lookups, "addresses with balance");
 
         setNFTBalance(valid_lookups);
-    }, [NFTLookup, launch, wallet]);
+    }, [launch, wallet]);
 
     useEffect(() => {
         if (collectionList === null || mintData === null) return;
 
-        let launch = findLaunch(collectionList, pageName);
+        let launch = findCollection(collectionList, pageName);
 
         if (launch === null) return;
 
@@ -168,10 +157,10 @@ const CollectionSwapPage = () => {
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
-        if (NFTLookup !== null) {
-            check_nft_balance();
-        }
-    }, [collectionList, pageName, mintData, NFTLookup, check_nft_balance, wallet]);
+        
+        check_nft_balance();
+        
+    }, [collectionList, pageName, mintData, check_nft_balance, wallet]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -220,20 +209,6 @@ const CollectionSwapPage = () => {
         let account_data = Buffer.from(event_data, "base64");
 
         const [updated_data] = CollectionData.struct.deserialize(account_data);
-        /*
-            for (let i = 0; i < updated_data.availability.length/2; i++) {
-                let idx = 1;
-                for (let j = 0; j < 8; j++) {
-                    console.log(j, (idx & updated_data.availability[i]) > 0);
-                    idx *=2
-                }
-            }
-
-            for (let i = updated_data.availability.length/2; i < updated_data.availability.length; i++) {
-                    console.log("left in block", i - updated_data.availability.length/2, updated_data.availability[i]);
-                
-            }
-*/
 
         setCollectionData(updated_data);
     }, []);
@@ -300,7 +275,7 @@ const CollectionSwapPage = () => {
                 //console.log("account deleted");
                 return;
             }
-            if (account_data[0] === 10) {
+            /*if (account_data[0] === 10) {
                 console.log("lookup data update")
                 const [updated_data] = LookupData.struct.deserialize(account_data);
                 console.log(updated_data);
@@ -314,9 +289,9 @@ const CollectionSwapPage = () => {
 
                 NFTLookup.current.set(updated_data.colection_mint.toString(), current_map);
                 check_nft_balance();
-            }
+            }*/
         },
-        [NFTLookup, check_nft_balance],
+        [],
     );
 
     const check_user_token_update = useCallback(async (result: any) => {
@@ -354,7 +329,7 @@ const CollectionSwapPage = () => {
         )[0];
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
-        console.log("check assignment", nft_assignment_account.toString(), assignment_data, assignment_data.nft_address.toString());
+        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
 
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -378,10 +353,6 @@ const CollectionSwapPage = () => {
             launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
         }
 
-        if (lookup_account_ws_id.current === null) {
-            lookup_account_ws_id.current = connection.onProgramAccountChange(PROGRAM, check_program_update, "confirmed");
-        }
-
         if (wallet === null || wallet.publicKey === null) {
             return;
         }
@@ -403,7 +374,7 @@ const CollectionSwapPage = () => {
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
-    }, [wallet, connection, launch, check_launch_update, check_assignment_update, check_program_update, check_user_token_update]);
+    }, [wallet, connection, launch, check_launch_update, check_assignment_update, check_user_token_update]);
 
     useEffect(() => {
         if (launch === null) return;

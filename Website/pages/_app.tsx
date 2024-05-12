@@ -23,14 +23,8 @@ function MyApp({ Component, pageProps }) {
     const pathname = usePathname();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const hide = ["/trade", "/pepemon"];
+    const hide = ["/curated/pepemon"];
 
-    useEffect(() => {
-        console.log(pathname);
-        console.log(hide.includes(`${pathname}`));
-    }, [pathname, hide]);
-
-    console.log(pathname);
     const wallets = useMemo(() => [], []);
 
     const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };
