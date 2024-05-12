@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, Button, CloseButton } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -7,6 +7,7 @@ import useResponsive from "../../hooks/useResponsive";
 import styles2 from "../../styles/LaunchDetails.module.css";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
+import { IoMdClose } from "react-icons/io";
 
 interface NFTDataProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -165,6 +166,31 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         </HStack>
     );
 
+    const AddOnChainAttributes = () => (
+        <HStack spacing={0} className={styles.eachField}>
+            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
+                On-Chain Attributes:
+            </div>
+            <div>
+                <label className={styles.label}>
+                    <span
+                        className={styles.browse}
+                        style={{
+                            cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
+                            padding: "5px 10px",
+                            marginLeft: "20px",
+                        }}
+                    >
+                        ADD
+                    </span>
+                </label>
+            </div>
+            {/* <Text m={0} ml={3} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                (Optional)
+            </Text> */}
+        </HStack>
+    );
+
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
@@ -177,7 +203,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
+                                        NFT Name:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
@@ -198,6 +224,62 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
                                 <BrowseImages />
                                 <BrowseMetaData />
+                                <AddOnChainAttributes />
+
+                                <VStack>
+                                    <HStack gap={2} alignItems="center">
+                                        <Text mr={2} mb={0} color="white" fontSize={24} fontWeight={"bold"} w={120}>
+                                            #1
+                                        </Text>
+
+                                        <HStack spacing={0} className={styles.eachField} gap={3}>
+                                            <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
+
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    size={lg ? "md" : "lg"}
+                                                    maxLength={25}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
+                                            <div className={`${styles.textLabel} font-face-kg`}>Min:</div>
+
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    size={lg ? "md" : "lg"}
+                                                    maxLength={25}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
+                                            <div className={`${styles.textLabel} font-face-kg`}>Max:</div>
+
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    size={lg ? "md" : "lg"}
+                                                    maxLength={25}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <HStack ml={3}>
+                                            <Button>Remove</Button>
+                                            <Button>Add</Button>
+                                        </HStack>
+                                    </HStack>
+                                </VStack>
                             </VStack>
                         </HStack>
 

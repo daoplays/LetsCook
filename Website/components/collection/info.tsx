@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -25,6 +25,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
+    const [supplyMode, setSupplyMode] = useState("fixed");
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -321,7 +322,25 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         </div>
                                     </HStack>
                                 </Flex>
-
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                        Mode:
+                                    </div>
+                                    <RadioGroup onChange={setSupplyMode} value={supplyMode}>
+                                        <Stack direction="row" gap={5}>
+                                            <Radio value="fixed" color="white">
+                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                    Fixed Supply
+                                                </Text>
+                                            </Radio>
+                                            <Radio value="unlimited">
+                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                    Unlimited Supply
+                                                </Text>
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
