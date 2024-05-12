@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import Image from "next/image";
@@ -9,10 +9,10 @@ import useAppRoot from "../../context/useAppRoot";
 import { AssignmentData, CollectionData } from "../../components/collection/collectionState";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { CollectionKeys, Config } from "../../components/Solana/constants";
-import {Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1} from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { publicKey } from '@metaplex-foundation/umi';
+import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { publicKey } from "@metaplex-foundation/umi";
 const Pepemon = () => {
     const { sm, lg } = useResponsive();
     const wallet = useWallet();
@@ -49,22 +49,22 @@ const Pepemon = () => {
         let collection_umiKey = publicKey(launch.keys[CollectionKeys.CollectionMint].toString());
 
         const assets = await getAssetV1GpaBuilder(umi)
-        .whereField('key', Key.AssetV1)
-        .whereField('updateAuthority', updateAuthority('Collection', [collection_umiKey]))
-        .getDeserialized()
-    
+            .whereField("key", Key.AssetV1)
+            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+            .getDeserialized();
+
         console.log(assets);
         let valid_lookups = 0;
         for (let i = 0; i < assets.length; i++) {
             if (assets[i].owner.toString() === wallet.publicKey.toString()) {
-                valid_lookups += 1
+                valid_lookups += 1;
             }
         }
         console.log("have ", valid_lookups, "addresses with balance");
 
         setNFTBalance(valid_lookups);
     }, [launch, wallet]);
-    
+
     useEffect(() => {
         if (collectionList === null) return;
 
@@ -76,11 +76,9 @@ const Pepemon = () => {
             setCollectionData(launch);
             check_initial_collection.current = false;
         }
-        
-        check_nft_balance();
-        
-    }, [collectionList, check_nft_balance]);
 
+        check_nft_balance();
+    }, [collectionList, check_nft_balance]);
 
     return (
         <>

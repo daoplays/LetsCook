@@ -25,10 +25,10 @@ import {
     Keypair,
     AccountMeta,
 } from "@solana/web3.js";
-import {deserializeAssetV1} from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { publicKey } from '@metaplex-foundation/umi';
+import { deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { publicKey } from "@metaplex-foundation/umi";
 import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, CORE } from "../../components/Solana/constants";
@@ -86,13 +86,10 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
     }, []);
 
     const MintNFT = async () => {
-
         if (wallet.signTransaction === undefined) {
             //console.log(wallet, "invalid wallet");
             return;
         }
-
-
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
@@ -129,17 +126,15 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-
         let nft_pubkey = PublicKey.findProgramAddressSync(
-                [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
-                PROGRAM,
-            )[0];
+            [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
+            PROGRAM,
+        )[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
             PROGRAM,
         )[0];
-
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.mint_nft);
 
@@ -151,13 +146,13 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: nft_pubkey, isSigner: false, isWritable: true },
-          
+
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
-          ];
+        ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
-        
+
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
@@ -171,8 +166,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-
-    
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

@@ -17,7 +17,7 @@ import {
     dataEnum,
     BeetArgsStruct,
     FixableBeetArgsStruct,
-    FixableBeet
+    FixableBeet,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -35,61 +35,46 @@ import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 type CollectionPluginEnum = {
     AsymmetricSwapPrice: {
-        return_swap_price: number
-    }
-    MintProbability: { mint_prob : number }
-  }
-  type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>
-  
-  const collectionPluginBeet = dataEnum<CollectionPluginEnum>([
+        return_swap_price: number;
+    };
+    MintProbability: { mint_prob: number };
+};
+type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>;
+
+const collectionPluginBeet = dataEnum<CollectionPluginEnum>([
     [
-      'AsymmetricSwapPrice',
-      new FixableBeetArgsStruct<CollectionPluginEnum['AsymmetricSwapPrice']>(
-        [
-          ['return_swap_price', u64]
-        ],
-        'CollectionPluginEnum["AsymmetricSwapPrice"]'
-      ),
+        "AsymmetricSwapPrice",
+        new FixableBeetArgsStruct<CollectionPluginEnum["AsymmetricSwapPrice"]>(
+            [["return_swap_price", u64]],
+            'CollectionPluginEnum["AsymmetricSwapPrice"]',
+        ),
     ],
-  
+
     [
-      'MintProbability',
-      new BeetArgsStruct<CollectionPluginEnum['MintProbability']>(
-        [
-            ['mint_prob', u16]
-          ],
-        'CollectionPluginEnum["MintProbability"]'
-      ),
+        "MintProbability",
+        new BeetArgsStruct<CollectionPluginEnum["MintProbability"]>([["mint_prob", u16]], 'CollectionPluginEnum["MintProbability"]'),
     ],
-  ]) as FixableBeet<CollectionPlugin>
+]) as FixableBeet<CollectionPlugin>;
 
 type CollectionMetaEnum = {
     RandomFixedSupply: {
-        availability: number[]
-    }
-    RandomUnlimited: {  }
-  }
-  type CollectionInfo = DataEnumKeyAsKind<CollectionMetaEnum>
-  
-  const collectionInfoBeet = dataEnum<CollectionMetaEnum>([
+        availability: number[];
+    };
+    RandomUnlimited: {};
+};
+type CollectionInfo = DataEnumKeyAsKind<CollectionMetaEnum>;
+
+const collectionInfoBeet = dataEnum<CollectionMetaEnum>([
     [
-      'RandomFixedSupply',
-      new FixableBeetArgsStruct<CollectionMetaEnum['RandomFixedSupply']>(
-        [
-          ['availability', array(u8)]
-        ],
-        'CollectionMetaEnum["RandomFixedSupply"]'
-      ),
+        "RandomFixedSupply",
+        new FixableBeetArgsStruct<CollectionMetaEnum["RandomFixedSupply"]>(
+            [["availability", array(u8)]],
+            'CollectionMetaEnum["RandomFixedSupply"]',
+        ),
     ],
-  
-    [
-      'RandomUnlimited',
-      new BeetArgsStruct<CollectionMetaEnum['RandomUnlimited']>(
-        [],
-        'CollectionMetaEnum["RandomUnlimited"]'
-      ),
-    ],
-  ]) as FixableBeet<CollectionInfo>
+
+    ["RandomUnlimited", new BeetArgsStruct<CollectionMetaEnum["RandomUnlimited"]>([], 'CollectionMetaEnum["RandomUnlimited"]')],
+]) as FixableBeet<CollectionInfo>;
 
 export interface CollectionDataUserInput {
     edit_mode: boolean;
@@ -175,8 +160,8 @@ export class CollectionData {
     constructor(
         readonly account_type: number,
         readonly launch_id: bignum,
-        readonly collection_meta : CollectionMetaEnum,
-        readonly plugins : CollectionPluginEnum[],
+        readonly collection_meta: CollectionMetaEnum,
+        readonly plugins: CollectionPluginEnum[],
         readonly collection_name: string,
         readonly collection_symbol: string,
         readonly collection_icon_url: string,
@@ -219,7 +204,6 @@ export class CollectionData {
         [
             ["account_type", u8],
             ["launch_id", u64],
-
 
             ["collection_meta", collectionInfoBeet],
             ["plugins", array(collectionPluginBeet)],
@@ -372,7 +356,7 @@ export async function request_lookup_data(pubkey: PublicKey): Promise<LookupData
 
     return data;
 }
-AssignmentData
+AssignmentData;
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,
@@ -399,7 +383,7 @@ class LaunchCollection_Instruction {
         readonly page_name: string,
         readonly swap_fee: number,
         readonly nft_extensions: number,
-        readonly mint_prob: COption<number>
+        readonly mint_prob: COption<number>,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -450,7 +434,7 @@ class LaunchCollection_Instruction {
                 args.page_name!,
                 args.swap_fee!,
                 args.nft_extensions!,
-                args.mint_prob!
+                args.mint_prob!,
             ),
         "LaunchCollection_Instruction",
     );
@@ -520,7 +504,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.pagename,
         new_launch_data.swap_fee,
         nft_extensions,
-        50
+        50,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

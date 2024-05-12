@@ -36,10 +36,10 @@ import {
     resolveExtraAccountMeta,
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
-import {Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, deserializeAssetV1} from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { publicKey } from '@metaplex-foundation/umi';
+import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { publicKey } from "@metaplex-foundation/umi";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
     PROGRAM,
@@ -138,21 +138,18 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let collection_umiKey = publicKey(launchData.keys[CollectionKeys.CollectionMint].toString());
 
         const assets = await getAssetV1GpaBuilder(umi)
-        .whereField('key', Key.AssetV1)
-        .whereField('updateAuthority', updateAuthority('Collection', [collection_umiKey]))
-        .getDeserialized()
-    
- 
+            .whereField("key", Key.AssetV1)
+            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+            .getDeserialized();
+
         let valid_assets: AssetV1[] = [];
         for (let i = 0; i < assets.length; i++) {
-           
             if (assets[i].owner !== wallet.publicKey.toString()) {
                 continue;
             }
 
             //console.log(account, token_mints[i].toString())
             valid_assets.push(assets[i]);
-            
         }
         //console.log(valid_lookups);
 

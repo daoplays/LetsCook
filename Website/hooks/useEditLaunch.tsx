@@ -152,8 +152,6 @@ const useEditLaunch = () => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-
-           
         } catch (error) {
             console.log(error);
             toast.error("Something went wrong launching your token , please try again later.", {

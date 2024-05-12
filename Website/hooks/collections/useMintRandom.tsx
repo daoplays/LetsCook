@@ -79,8 +79,6 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
     const MintRandom = async () => {
         setIsLoading(true);
 
-
-       
         if (wallet.signTransaction === undefined) return;
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
@@ -126,12 +124,11 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
         )[0];
-       
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let nft_mint_keypair = new Keypair();
-        let nft_mint_account = nft_mint_keypair.publicKey
+        let nft_mint_account = nft_mint_keypair.publicKey;
 
         let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
         let transfer_hook = getTransferHook(mint_account);
@@ -222,7 +219,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
-        transaction.partialSign(nft_mint_keypair)
+        transaction.partialSign(nft_mint_keypair);
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());

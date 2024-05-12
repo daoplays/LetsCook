@@ -527,7 +527,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            console.log(signature)
+            console.log(signature);
             //var transaction_response = await send_transaction("", encoded_transaction);
 
             if (signature === undefined) {

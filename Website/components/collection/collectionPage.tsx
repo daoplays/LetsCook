@@ -124,7 +124,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             });
 
             await EditCollection();
-            
         },
         [EditCollection],
     );
@@ -220,7 +219,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }
 
     const CreateLaunch = useCallback(async () => {
-
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         console.log(newCollectionData.current.icon_url);

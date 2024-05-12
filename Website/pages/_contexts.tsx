@@ -143,7 +143,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
 
-
     function closeFilterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
         return list.filter(function (item) {
@@ -300,8 +299,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     // console.log("data ", i, launch.page_name);
-                    if (launch.flags[LaunchFlags.LPState] == 0)
-                      continue;
+                    if (launch.flags[LaunchFlags.LPState] == 0) continue;
 
                     launch_data.push(launch);
                 } catch (error) {
@@ -334,19 +332,19 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
                 const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
-                console.log(collection)
+                console.log(collection);
                 continue;
             }
 
             //if (data[0] === 9) {
             //    CloseAccount({account: program_data[i].pubkey});
-           // }
+            // }
 
             if (data[0] === 10) {
                 //CloseAccount({account: program_data[i].pubkey});
                 const [lookup] = LookupData.struct.deserialize(data);
                 let collection = lookup.colection_mint.toString();
-                
+
                 if (NFTLookups.has(collection)) {
                     let existing = NFTLookups.get(collection);
                     existing.set(lookup.nft_mint.toString(), lookup);

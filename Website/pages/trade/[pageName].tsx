@@ -401,7 +401,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = bignum_to_num(item.volume / Math.pow(10, launch.decimals)) ;
+                let volume = bignum_to_num(item.volume / Math.pow(10, launch.decimals));
 
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;

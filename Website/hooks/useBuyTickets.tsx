@@ -34,7 +34,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
                 isLoading: false,
                 autoClose: 3000,
             });
-            return
+            return;
         }
 
         toast.success("Tickets Bought!", {
@@ -42,7 +42,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             isLoading: false,
             autoClose: 3000,
         });
-
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -59,7 +58,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     }, []);
 
     const BuyTickets = async () => {
-
         if (wallet.signTransaction === undefined) return;
 
         if (launchData === null) {
@@ -72,7 +70,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         }
 
         setIsLoading(true);
-
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
@@ -90,7 +87,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             isLoading: false,
             autoClose: 3000,
         });
-        
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -143,7 +139,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-
 
             // console.log("join sig: ", signature);
         } catch (error) {

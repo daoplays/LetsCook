@@ -15,12 +15,12 @@ import {
     Center,
     Divider,
     Spacer,
-    useDisclosure
+    useDisclosure,
 } from "@chakra-ui/react";
-import {Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1} from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from '@metaplex-foundation/umi';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
-import { publicKey } from '@metaplex-foundation/umi';
+import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
+import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { publicKey } from "@metaplex-foundation/umi";
 import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
@@ -59,8 +59,6 @@ import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal } from "../../components/Solana/modals";
 import { findCollection } from "../../components/collection/utils";
 
-
-
 const CollectionSwapPage = () => {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -88,12 +86,10 @@ const CollectionSwapPage = () => {
     const check_initial_assignment = useRef<boolean>(true);
     const check_initial_collection = useRef<boolean>(true);
 
-
     const asset_received = useRef<AssetV1 | null>(null);
     const asset_image = useRef<string | null>(null);
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
-
 
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
@@ -110,15 +106,15 @@ const CollectionSwapPage = () => {
         let collection_umiKey = publicKey(launch.keys[CollectionKeys.CollectionMint].toString());
 
         const assets = await getAssetV1GpaBuilder(umi)
-        .whereField('key', Key.AssetV1)
-        .whereField('updateAuthority', updateAuthority('Collection', [collection_umiKey]))
-        .getDeserialized()
-    
+            .whereField("key", Key.AssetV1)
+            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+            .getDeserialized();
+
         console.log(assets);
         let valid_lookups = 0;
         for (let i = 0; i < assets.length; i++) {
             if (assets[i].owner.toString() === wallet.publicKey.toString()) {
-                valid_lookups += 1
+                valid_lookups += 1;
             }
         }
         console.log("have ", valid_lookups, "addresses with balance");
@@ -157,9 +153,7 @@ const CollectionSwapPage = () => {
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
-        
         check_nft_balance();
-        
     }, [collectionList, pageName, mintData, check_nft_balance, wallet]);
 
     // when page unloads unsub from any active websocket listeners
@@ -195,9 +189,8 @@ const CollectionSwapPage = () => {
             openAssetModal();
         }
 
-
         mint_nft.current = false;
-    }, [launch, assigned_nft, MintNFT]);
+    }, [launch, assigned_nft, MintNFT, openAssetModal]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -213,69 +206,70 @@ const CollectionSwapPage = () => {
         setCollectionData(updated_data);
     }, []);
 
-    const check_assignment_update = useCallback(async (result: any) => {
-        console.log("assignment", result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-
-        //console.log("have assignment data", event_data);
-        let account_data = Buffer.from(event_data, "base64");
-
-        if (account_data.length === 0) {
-            //console.log("account deleted");
-            setAssignedNFT(null);
-            mint_nft.current = false;
-            return;
-        }
-
-        const [updated_data] = AssignmentData.struct.deserialize(account_data);
-
-        console.log("in check assignment", updated_data, updated_data.nft_address.toString());
-        if (assigned_nft !== null && updated_data.nft_index === assigned_nft.nft_index) {
-            return;
-        }
-
-        if (updated_data.status === 0) {
-            console.log("no asset recieved");
-
-            asset_received.current = null;
-            asset_image.current = null;
-        }
-        if (launch.collection_meta["__kind"] === "RandomUnlimited" && updated_data.status === 1) {
-            const umi = createUmi(Config.RPC_NODE, "confirmed");
-
-
-            let asset_umiKey = publicKey(updated_data.nft_address.toString());
-            let asset = await fetchAssetV1(umi, asset_umiKey);
-            console.log("new asset", asset);
-            asset_received.current = asset;
-
-            let uri_json = await fetch(asset.uri).then((res) => res.json());
-            asset_image.current = uri_json["image"];
-        }
-        //console.log(updated_data);
-        mint_nft.current = true;
-        setAssignedNFT(updated_data);
-    }, [launch, assigned_nft]);
-
-    const check_program_update = useCallback(
+    const check_assignment_update = useCallback(
         async (result: any) => {
-            //console.log("program data", result);
+            console.log("assignment", result);
             // if we have a subscription field check against ws_id
 
-            if (result === undefined) return;
+            let event_data = result.data;
 
-            let event_data = result.accountInfo.data;
-
-            //console.log("have program data", event_data);
+            //console.log("have assignment data", event_data);
             let account_data = Buffer.from(event_data, "base64");
 
             if (account_data.length === 0) {
                 //console.log("account deleted");
+                setAssignedNFT(null);
+                mint_nft.current = false;
                 return;
             }
-            /*if (account_data[0] === 10) {
+
+            const [updated_data] = AssignmentData.struct.deserialize(account_data);
+
+            console.log("in check assignment", updated_data, updated_data.nft_address.toString());
+            if (assigned_nft !== null && updated_data.nft_index === assigned_nft.nft_index) {
+                return;
+            }
+
+            if (updated_data.status === 0) {
+                console.log("no asset recieved");
+
+                asset_received.current = null;
+                asset_image.current = null;
+            }
+            if (launch.collection_meta["__kind"] === "RandomUnlimited" && updated_data.status === 1) {
+                const umi = createUmi(Config.RPC_NODE, "confirmed");
+
+                let asset_umiKey = publicKey(updated_data.nft_address.toString());
+                let asset = await fetchAssetV1(umi, asset_umiKey);
+                console.log("new asset", asset);
+                asset_received.current = asset;
+
+                let uri_json = await fetch(asset.uri).then((res) => res.json());
+                asset_image.current = uri_json["image"];
+            }
+            //console.log(updated_data);
+            mint_nft.current = true;
+            setAssignedNFT(updated_data);
+        },
+        [launch, assigned_nft],
+    );
+
+    const check_program_update = useCallback(async (result: any) => {
+        //console.log("program data", result);
+        // if we have a subscription field check against ws_id
+
+        if (result === undefined) return;
+
+        let event_data = result.accountInfo.data;
+
+        //console.log("have program data", event_data);
+        let account_data = Buffer.from(event_data, "base64");
+
+        if (account_data.length === 0) {
+            //console.log("account deleted");
+            return;
+        }
+        /*if (account_data[0] === 10) {
                 console.log("lookup data update")
                 const [updated_data] = LookupData.struct.deserialize(account_data);
                 console.log(updated_data);
@@ -290,9 +284,7 @@ const CollectionSwapPage = () => {
                 NFTLookup.current.set(updated_data.colection_mint.toString(), current_map);
                 check_nft_balance();
             }*/
-        },
-        [],
-    );
+    }, []);
 
     const check_user_token_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -396,10 +388,10 @@ const CollectionSwapPage = () => {
 
     let progress_string = "";
     if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-        progress_string = launch.num_available.toString() + " / " + launch.total_supply.toString()
+        progress_string = launch.num_available.toString() + " / " + launch.total_supply.toString();
     }
     if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-        progress_string = "Unlimited"
+        progress_string = "Unlimited";
     }
 
     return (
@@ -607,10 +599,10 @@ const CollectionSwapPage = () => {
                                     <VStack spacing={3} w="100%">
                                         {isTokenToNFT ? (
                                             <HStack w="100%">
-                                                {(assigned_nft === null || 
+                                                {assigned_nft === null ||
                                                 launch.collection_meta["__kind"] === "RandomUnlimited" ||
-                                                (launch.collection_meta["__kind"] === "RandomFixedSupply" && assigned_nft.nft_address.equals(SYSTEM_KEY))
-                                                ) ? (
+                                                (launch.collection_meta["__kind"] === "RandomFixedSupply" &&
+                                                    assigned_nft.nft_address.equals(SYSTEM_KEY)) ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
                                                         hasArrow
