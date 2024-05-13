@@ -45,6 +45,9 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const [swap_fee, setSwapFee] = useState<string>(
         newCollectionData.current.swap_fee > 0 ? newCollectionData.current.swap_fee.toString() : "",
     );
+    const [mint_prob, setMintProb] = useState<string>(
+        newCollectionData.current.mint_prob < 100 ? newCollectionData.current.mint_prob.toString() : "",
+    );
     const [swap_rate, setSwapRate] = useState<string>(
         newCollectionData.current.swap_rate > 0 ? newCollectionData.current.swap_rate.toString() : "",
     );
@@ -166,6 +169,18 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.swap_fee = parseInt(swap_fee);
         newCollectionData.current.token_decimals = token_decimals;
         newCollectionData.current.token_extensions = token_extensions;
+
+        if (mint_prob !== "") {
+            let prob = parseInt(mint_prob);
+            if (!isNaN(prob) && prob > 0 && prob < 100) {
+                newCollectionData.current.mint_prob = prob;
+            }
+            else {
+                toast.error("Invalid Mint Chance");
+                return;
+    
+            }
+        }
 
         setScreen("step 4");
     }
@@ -329,6 +344,28 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             value={swap_fee}
                                             onChange={(e) => {
                                                 setSwapFee(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+
+                                <HStack spacing={0} w="100%" className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                        Mint Chance:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            bg="#494949"
+                                            placeholder="Optional - chance of getting nft on swap (default = 100%)"
+                                            size={lg ? "md" : "lg"}
+                                            maxLength={8}
+                                            required
+                                            className={styles.inputBox}
+                                            type="text"
+                                            value={mint_prob}
+                                            onChange={(e) => {
+                                                setMintProb(e.target.value);
                                             }}
                                         />
                                     </div>

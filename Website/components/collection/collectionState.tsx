@@ -108,6 +108,7 @@ export interface CollectionDataUserInput {
     token_keypair: Keypair | null;
     swap_rate: number;
     swap_fee: number;
+    mint_prob: number;
 
     // nft_extension data
     permanent_delegate: PublicKey | null;
@@ -151,6 +152,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_keypair: null,
     swap_rate: 0,
     swap_fee: 0,
+    mint_prob: 100,
     permanent_delegate: null,
     transfer_hook_program: null,
     nft_images: null,
@@ -515,7 +517,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.pagename,
         new_launch_data.swap_fee,
         nft_extensions,
-        50,
+        new_launch_data.mint_prob,
         attributes
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
