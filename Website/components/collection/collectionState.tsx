@@ -384,7 +384,7 @@ class LaunchCollection_Instruction {
         readonly page_name: string,
         readonly swap_fee: number,
         readonly nft_extensions: number,
-        readonly mint_prob: COption<number>,
+        readonly mint_prob: number,
         readonly attributes: Attribute[]
     ) {}
 
@@ -411,7 +411,7 @@ class LaunchCollection_Instruction {
             ["page_name", utf8String],
             ["swap_fee", u16],
             ["nft_extensions", u8],
-            ["mint_prob", coption(u16)],
+            ["mint_prob", u16],
             ["attributes", array(Attribute.struct)]
         ],
         (args) =>
@@ -492,7 +492,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
     }
 
 
-    console.log(new_launch_data);
+    console.log(attributes);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
         new_launch_data.collection_type,

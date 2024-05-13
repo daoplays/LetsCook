@@ -147,6 +147,8 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
         image_url = asset_image.current["image"];
     }
 
+    let attributes = asset.current === null ? [] : asset.current.attributes.attributeList;
+
     
     return (
         <>
@@ -189,6 +191,20 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
                                     <img src={image_url} width={180} height={180} alt="the cooks" />
                                 }
                             </VStack>
+
+                            {attributes.length > 0 &&
+                            <VStack spacing={6}>
+
+                            {attributes.map((attribute) => (
+                                <Text m={0} p={0} style={{
+                                    fontFamily: "KGSummerSunshineBlackout",
+                                    color: "white",
+                                    fontWeight: "semibold",
+                                }}>
+                                    {attribute.key} : {attribute.value}</Text>
+                            ))}
+                            </VStack>
+                            }
 
                             {collection.collection_meta["__kind"] === "RandomFixedSupply" &&
                             assignment_data.status !== 0 &&

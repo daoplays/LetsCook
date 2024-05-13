@@ -217,6 +217,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         transaction.feePayer = wallet.publicKey;
 
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         transaction.partialSign(nft_mint_keypair);
