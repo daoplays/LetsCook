@@ -324,11 +324,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
                                             <HStack ml={3}>
                                                 <Button onClick={() => removeRow(index)}>Remove</Button>
-                                                {attribute.editMode ? (
-                                                    <Button onClick={() => saveRow(index)}>Save</Button>
-                                                ) : (
-                                                    <Button onClick={() => toggleEditMode(index)}>Edit</Button>
-                                                )}
+                                                
                                             </HStack>
                                         </HStack>
                                     </VStack>
