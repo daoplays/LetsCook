@@ -195,8 +195,8 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
                             {attributes.length > 0 &&
                             <VStack spacing={6}>
 
-                            {attributes.map((attribute) => (
-                                <Text m={0} p={0} style={{
+                            {attributes.map((attribute, index) => (
+                                <Text key={index} m={0} p={0} style={{
                                     fontFamily: "KGSummerSunshineBlackout",
                                     color: "white",
                                     fontWeight: "semibold",
