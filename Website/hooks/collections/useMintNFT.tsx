@@ -11,9 +11,7 @@ import {
 import {
     CollectionData,
     AssignmentData,
-    LookupData,
     request_assignment_data,
-    request_lookup_data,
 } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,

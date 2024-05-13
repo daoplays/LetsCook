@@ -33,7 +33,7 @@ import Head from "next/head";
 import { MdOutlineContentCopy } from "react-icons/md";
 import trimAddress from "../../utils/trimAddress";
 import useAppRoot from "../../context/useAppRoot";
-import { AssignmentData, CollectionData, LookupData, request_assignment_data } from "../../components/collection/collectionState";
+import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
@@ -180,17 +180,14 @@ const CollectionSwapPage = () => {
             return;
         }
 
-        if (launch.collection_meta["__kind"] === "RandomFixedSupply" && !assigned_nft.nft_address.equals(PublicKey.default)) {
-            console.log("CALLING MINT NFT", mint_nft.current);
-            MintNFT();
-        }
-        if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-            console.log("Opening asset modal");
-            openAssetModal();
-        }
 
+        if (launch.collection_meta["__kind"] === "RandomFixedSupply" && assigned_nft.status === 0 && !assigned_nft.nft_address.equals(SYSTEM_KEY)) {
+            return;
+        }
+        openAssetModal();
+      
         mint_nft.current = false;
-    }, [launch, assigned_nft, MintNFT, openAssetModal]);
+    }, [launch, assigned_nft, openAssetModal]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -226,27 +223,46 @@ const CollectionSwapPage = () => {
             const [updated_data] = AssignmentData.struct.deserialize(account_data);
 
             console.log("in check assignment", updated_data, updated_data.nft_address.toString());
-            if (assigned_nft !== null && updated_data.nft_index === assigned_nft.nft_index) {
+            if (assigned_nft !== null && updated_data.num_interations === assigned_nft.num_interations) {
                 return;
             }
 
-            if (updated_data.status === 0) {
+            if (updated_data.nft_address.equals(SYSTEM_KEY)) {
                 console.log("no asset recieved");
 
                 asset_received.current = null;
                 asset_image.current = null;
             }
-            if (launch.collection_meta["__kind"] === "RandomUnlimited" && updated_data.status === 1) {
-                const umi = createUmi(Config.RPC_NODE, "confirmed");
+            else {
+                let nft_index = updated_data.nft_index;
+                let json_url = launch.nft_meta_url + nft_index + ".json";
+                let uri_json = await fetch(json_url).then((res) => res.json());
+                asset_image.current = uri_json;
 
-                let asset_umiKey = publicKey(updated_data.nft_address.toString());
-                let asset = await fetchAssetV1(umi, asset_umiKey);
-                console.log("new asset", asset);
-                asset_received.current = asset;
+                
+                try{
+                    const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-                let uri_json = await fetch(asset.uri).then((res) => res.json());
-                asset_image.current = uri_json["image"];
+                    let asset_umiKey = publicKey(updated_data.nft_address.toString());
+                    const myAccount = await umi.rpc.getAccount(asset_umiKey);
+
+                    if (myAccount.exists){
+                        let asset = await deserializeAssetV1(myAccount as RpcAccount);
+                        console.log("new asset", asset);
+                        asset_received.current = asset;
+                    }
+                    else {
+                        asset_received.current = null;
+                    }
+                }
+                catch(error) {
+                    asset_received.current = null;
+                }
+
+                
             }
+
+      
             //console.log(updated_data);
             mint_nft.current = true;
             setAssignedNFT(updated_data);
@@ -602,7 +618,8 @@ const CollectionSwapPage = () => {
                                                 {assigned_nft === null ||
                                                 launch.collection_meta["__kind"] === "RandomUnlimited" ||
                                                 (launch.collection_meta["__kind"] === "RandomFixedSupply" &&
-                                                    assigned_nft.nft_address.equals(SYSTEM_KEY)) ? (
+                                                    assigned_nft.nft_address.equals(SYSTEM_KEY)) ||
+                                                    (!assigned_nft.nft_address.equals(SYSTEM_KEY) && assigned_nft.status === 0) ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
                                                         hasArrow
@@ -827,6 +844,8 @@ const CollectionSwapPage = () => {
                 <ReceivedAssetModal
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
+                    assignment_data={assigned_nft}
+                    collection={launch}
                     asset={asset_received}
                     asset_image={asset_image}
                 />

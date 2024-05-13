@@ -11,9 +11,7 @@ import {
 import {
     CollectionData,
     AssignmentData,
-    LookupData,
     request_assignment_data,
-    request_lookup_data,
 } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
@@ -59,7 +57,7 @@ import { toast } from "react-toastify";
 
 const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData, NFTLookup, mintData } = useAppRoot();
+    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 

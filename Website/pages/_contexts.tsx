@@ -23,7 +23,7 @@ import {
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
-import { CollectionDataUserInput, defaultCollectionInput, CollectionData, LookupData } from "../components/collection/collectionState";
+import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
@@ -113,7 +113,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [collection_data, setCollectionData] = useState<CollectionData[] | null>(null);
-    const nft_lookup = useRef<Map<String, Map<String, LookupData>> | null>(null);
 
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
@@ -286,7 +285,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
         let amm_data: AMMData[] = [];
         let collections: CollectionData[] = [];
-        let NFTLookups: Map<String, Map<String, LookupData>> = new Map();
 
         console.log("program_data", program_data.length);
 
@@ -337,25 +335,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             //if (data[0] === 9) {
-            //    CloseAccount({account: program_data[i].pubkey});
+             //   CloseAccount({account: program_data[i].pubkey});
             // }
 
-            if (data[0] === 10) {
-                //CloseAccount({account: program_data[i].pubkey});
-                const [lookup] = LookupData.struct.deserialize(data);
-                let collection = lookup.colection_mint.toString();
-
-                if (NFTLookups.has(collection)) {
-                    let existing = NFTLookups.get(collection);
-                    existing.set(lookup.nft_mint.toString(), lookup);
-                    NFTLookups.set(collection, existing);
-                } else {
-                    let map = new Map<String, LookupData>();
-
-                    map.set(lookup.nft_mint.toString(), lookup);
-                    NFTLookups.set(collection, map);
-                }
-            }
             // other data depends on a wallet
             if (!have_wallet) continue;
 
@@ -394,7 +376,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMUserData(mm_user_data);
         setAMMData(amm_data);
         setCollectionData(collections);
-        nft_lookup.current = NFTLookups;
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
@@ -505,7 +486,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             mintData={mintData}
             newCollectionData={newCollectionData}
             collectionList={collection_data}
-            NFTLookup={nft_lookup}
             setSelectedNetwork={setSelectedNetwork}
             selectedNetwork={selectedNetwork}
         >
