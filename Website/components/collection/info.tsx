@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack, Tooltip } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -161,6 +161,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.collection_name = name;
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
+
+        if (supplyMode === "fixed") {
+            newCollectionData.current.collection_type = 0;
+        }
+        if (supplyMode === "unlimited") {
+            newCollectionData.current.collection_type = 1;
+        }
 
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
@@ -329,14 +336,19 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     <RadioGroup onChange={setSupplyMode} value={supplyMode}>
                                         <Stack direction="row" gap={5}>
                                             <Radio value="fixed" color="white">
+                                            <Tooltip label="Each NFT will only be minted once" hasArrow fontSize="large" offset={[0, 10]}>
                                                 <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                                     Fixed Supply
                                                 </Text>
+                                                </Tooltip>
                                             </Radio>
                                             <Radio value="unlimited">
+                                            <Tooltip label="Each NFT can be minted multiple times." hasArrow fontSize="large" offset={[0, 10]}>
+
                                                 <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                                     Unlimited Supply
                                                 </Text>
+                                                </Tooltip>
                                             </Radio>
                                         </Stack>
                                     </RadioGroup>

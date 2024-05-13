@@ -76,8 +76,17 @@ const collectionInfoBeet = dataEnum<CollectionMetaEnum>([
     ["RandomUnlimited", new BeetArgsStruct<CollectionMetaEnum["RandomUnlimited"]>([], 'CollectionMetaEnum["RandomUnlimited"]')],
 ]) as FixableBeet<CollectionInfo>;
 
+export interface OnChainAttributes {
+    name: string;
+    min: string;
+    max: string;
+    saved: boolean;
+    editMode: boolean;
+}
+
 export interface CollectionDataUserInput {
     edit_mode: boolean;
+    collection_type: number,
     collection_name: string;
     collection_symbol: string;
     icon_file: File | null;
@@ -115,10 +124,12 @@ export interface CollectionDataUserInput {
     token_image_url: string;
     token_decimals: number;
     token_extensions: number;
+    attributes: OnChainAttributes[];
 }
 
 export const defaultCollectionInput: CollectionDataUserInput = {
     edit_mode: false,
+    collection_type: 0,
     collection_name: "",
     collection_symbol: "",
     icon_file: null,
@@ -154,6 +165,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_image_url: "",
     token_decimals: 0,
     token_extensions: 0,
+    attributes: []
 };
 
 export class CollectionData {
@@ -328,6 +340,24 @@ export async function request_assignment_data(pubkey: PublicKey): Promise<Assign
     return data;
 }
 
+class Attribute {
+    constructor(
+        readonly name: string,
+        readonly min: string,
+        readonly max: string,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<Attribute>(
+        [
+            ["name", utf8String],
+            ["min", utf8String],
+            ["max", utf8String],
+        ],
+        (args) => new Attribute(args.name!, args.min!, args.max!),
+        "Attribute",
+    );
+}
+
 class LaunchCollection_Instruction {
     constructor(
         readonly instruction: number,
@@ -355,6 +385,7 @@ class LaunchCollection_Instruction {
         readonly swap_fee: number,
         readonly nft_extensions: number,
         readonly mint_prob: COption<number>,
+        readonly attributes: Attribute[]
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -381,6 +412,7 @@ class LaunchCollection_Instruction {
             ["swap_fee", u16],
             ["nft_extensions", u8],
             ["mint_prob", coption(u16)],
+            ["attributes", array(Attribute.struct)]
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -406,6 +438,7 @@ class LaunchCollection_Instruction {
                 args.swap_fee!,
                 args.nft_extensions!,
                 args.mint_prob!,
+                args.attributes!
             ),
         "LaunchCollection_Instruction",
     );
@@ -452,10 +485,17 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
+    let attributes : Attribute[] = [];
+    for (let i = 0; i < new_launch_data.attributes.length; i++) {
+        let attribute : Attribute = new Attribute(new_launch_data.attributes[i].name, new_launch_data.attributes[i].min, new_launch_data.attributes[i].max);
+        attributes.push(attribute)
+    }
+
+
     console.log(new_launch_data);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
-        0,
+        new_launch_data.collection_type,
         new_launch_data.collection_name,
         new_launch_data.collection_symbol,
         new_launch_data.uri,
@@ -476,6 +516,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.swap_fee,
         nft_extensions,
         50,
+        attributes
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

@@ -8,18 +8,13 @@ import styles2 from "../../styles/LaunchDetails.module.css";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { IoMdClose } from "react-icons/io";
+import { OnChainAttributes } from "./collectionState";
 
 interface NFTDataProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-interface OnChainAttributes {
-    name: string;
-    min: number;
-    max: number;
-    saved: boolean;
-    editMode: boolean;
-}
+
 
 const NFTData = ({ setScreen }: NFTDataProps) => {
     const router = useRouter();
@@ -34,7 +29,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const addRow = () => {
         if (attributes.length < 10) {
-            setAttributes([...attributes, { name: "", min: 0, max: 0, saved: false, editMode: true }]);
+            setAttributes([...attributes, { name: "", min: "0", max: "0", saved: false, editMode: true }]);
         } else {
             alert("Attributes Limit Reached");
         }
@@ -60,7 +55,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const saveRow = (index: number) => {
         const { name, min, max } = attributes[index];
-        if (name.trim() !== "" && min !== 0 && max !== 0) {
+        if (name.trim() !== "" && !isNaN(parseFloat(min)) && !isNaN(parseFloat(max)) && parseFloat(max) >= parseFloat(min)) {
             const newAttributes = [...attributes];
             newAttributes[index].saved = true;
             newAttributes[index].editMode = false;
@@ -143,6 +138,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.nft_name = nft_name;
         newCollectionData.current.nft_type = "." + image_type_name;
+        newCollectionData.current.attributes = attributes;
 
         setScreen("step 3");
     }
@@ -218,7 +214,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     const AddOnChainAttributes = () => (
         <HStack spacing={0} className={styles.eachField}>
             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                On-Chain Attributes:
+                Randomised On-Chain Attributes:
             </div>
             <div>
                 <label className={styles.label}>
@@ -304,9 +300,8 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                                         maxLength={25}
                                                         required
                                                         className={styles.inputBox}
-                                                        type="number"
                                                         value={attribute.min}
-                                                        onChange={(e) => handleChange(index, "min", parseInt(e.target.value))}
+                                                        onChange={(e) => handleChange(index, "min", e.target.value)}
                                                         disabled={!attribute.editMode && attribute.saved}
                                                     />
                                                 </div>
@@ -320,9 +315,8 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                                         maxLength={25}
                                                         required
                                                         className={styles.inputBox}
-                                                        type="number"
                                                         value={attribute.max}
-                                                        onChange={(e) => handleChange(index, "max", parseInt(e.target.value))}
+                                                        onChange={(e) => handleChange(index, "max", e.target.value)}
                                                         disabled={!attribute.editMode && attribute.saved}
                                                     />
                                                 </div>
