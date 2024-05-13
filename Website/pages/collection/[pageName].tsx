@@ -410,6 +410,14 @@ const CollectionSwapPage = () => {
         progress_string = "Unlimited";
     }
 
+    let prob_string = ""
+    for (let i = 0; i < launch.plugins.length; i++){
+        if (launch.plugins[i]["__kind"] === "MintProbability") {
+            prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)"
+            console.log("Have mint prob", prob_string)
+        }
+    }
+
     return (
         <>
             <Head>
@@ -557,7 +565,7 @@ const CollectionSwapPage = () => {
                                             </InputRightElement>
                                         </InputGroup>
                                     </VStack>
-
+                                                    
                                     <LuArrowUpDown
                                         size={24}
                                         color="white"
@@ -648,7 +656,7 @@ const CollectionSwapPage = () => {
                                                                 !enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading
                                                             }
                                                         >
-                                                            Confirm
+                                                            Confirm {prob_string}
                                                         </Button>
                                                     </Tooltip>
                                                 ) : (
