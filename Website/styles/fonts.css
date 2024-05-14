@@ -2,7 +2,7 @@
     font-family: "Pokemon";
     src:
         local("Pokemon"),
-        url(/fonts/Pokemon.tff) format("tff");
+        url(/fonts/Pokemon.ttf) format("ttf");
 }
 
 @font-face {

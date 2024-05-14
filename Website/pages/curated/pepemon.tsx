@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import Image from "next/image";
-import { Flex, VStack, Text, useDisclosure } from "@chakra-ui/react";
+import { Flex, VStack, Text, useDisclosure, Button, HStack } from "@chakra-ui/react";
 import useMintRandom from "../../hooks/collections/useMintRandom";
 import { findCollection } from "../../components/collection/utils";
 import useAppRoot from "../../context/useAppRoot";
@@ -25,10 +25,12 @@ import {
     calculateFee,
 } from "@solana/spl-token";
 import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
+import UseWalletConnection from "../../hooks/useWallet";
 const Pepemon = () => {
-    const { sm, lg } = useResponsive();
+    const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
     const { connection } = useConnection();
+    const { handleConnectWallet, handleDisconnectWallet } = UseWalletConnection();
 
     const { collectionList, mintData } = useAppRoot();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
@@ -51,7 +53,6 @@ const Pepemon = () => {
 
     const asset_received = useRef<AssetV1 | null>(null);
     const asset_image = useRef<string | null>(null);
-
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
@@ -98,7 +99,6 @@ const Pepemon = () => {
         check_nft_balance();
     }, [collectionList, check_nft_balance]);
 
-
     useEffect(() => {
         return () => {
             console.log("in use effect return");
@@ -121,11 +121,15 @@ const Pepemon = () => {
             return;
         }
 
-        if (launch.collection_meta["__kind"] === "RandomFixedSupply" && assigned_nft.status === 0 && !assigned_nft.nft_address.equals(SYSTEM_KEY)) {
+        if (
+            launch.collection_meta["__kind"] === "RandomFixedSupply" &&
+            assigned_nft.status === 0 &&
+            !assigned_nft.nft_address.equals(SYSTEM_KEY)
+        ) {
             return;
         }
         openAssetModal();
-      
+
         mint_nft.current = false;
     }, [launch, assigned_nft, openAssetModal]);
 
@@ -172,31 +176,27 @@ const Pepemon = () => {
 
                 asset_received.current = null;
                 asset_image.current = null;
-            }
-            else {
+            } else {
                 let nft_index = updated_data.nft_index;
                 let json_url = launch.nft_meta_url + nft_index + ".json";
                 let uri_json = await fetch(json_url).then((res) => res.json());
                 asset_image.current = uri_json;
 
-                try{
+                try {
                     const umi = createUmi(Config.RPC_NODE, "confirmed");
 
                     let asset_umiKey = publicKey(updated_data.nft_address.toString());
                     const myAccount = await umi.rpc.getAccount(asset_umiKey);
 
-                    if (myAccount.exists){
+                    if (myAccount.exists) {
                         let asset = await deserializeAssetV1(myAccount as RpcAccount);
                         asset_received.current = asset;
-                    }
-                    else {
+                    } else {
                         asset_received.current = null;
                     }
-                }
-                catch(error) {
+                } catch (error) {
                     asset_received.current = null;
                 }
-                
             }
             //console.log(updated_data);
             mint_nft.current = true;
@@ -297,6 +297,19 @@ const Pepemon = () => {
         get_assignment_data();
     }, [launch, wallet, get_assignment_data]);
 
+    const tiltShaking = `@keyframes tilt-shaking {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(5px, 5px) rotate(5deg); }
+        50% { transform: translate(0, 0) rotate(0eg); }
+        75% { transform: translate(-5px, 5px) rotate(-5deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
+    }`;
+
+    useEffect(() => {
+        const styleSheet = document.styleSheets[0];
+        styleSheet.insertRule(tiltShaking, styleSheet.cssRules.length);
+    }, []);
+
     return (
         <>
             <Head>
@@ -310,39 +323,78 @@ const Pepemon = () => {
                     position: "relative",
                 }}
             >
-                <Flex h="100%" p={8} alignItems={"center"} justify={sm ? "start" : "center"} flexDirection="column">
-                    <Image src={"/curatedLaunches/pepemon/PageTitle.png"} alt="Pepemon Title" width={800} height={400} />
+                <Flex h="100%" alignItems={"center"} justify={sm ? "start" : "center"} flexDirection="column">
+                    <HStack alignItems="end" gap={0} style={{ position: "absolute", bottom: 0, left: 0 }}>
+                        <Image
+                            src={"/curatedLaunches/pepemon/PepeTrainer.png"}
+                            alt="Pepemon Trainer"
+                            width={md ? 200 : 400}
+                            height={md ? 400 : 600}
+                        />
+                        {wallet.connected && (
+                            <VStack mb={8} ml={sm ? "-10px" : "-55px"} gap={0} align={sm ? "center" : "start"}>
+                                <Text mt={-2} fontWeight={500} fontSize={sm ? 16 : 18}>
+                                    Your NFT Balance: {nft_balance}
+                                </Text>
+                                <Text mt={-2} fontWeight={500} fontSize={sm ? 16 : 18}>
+                                    Your Token Balance: {token_balance.toLocaleString()}
+                                </Text>
+                                <Button mt={-1} onClick={async () => await wallet.disconnect()}>
+                                    Disconnect Wallet
+                                </Button>
+                            </VStack>
+                        )}
+                    </HStack>
 
-                    <VStack gap={0} mt={sm && 70}>
-                        <Image
-                            src={"/curatedLaunches/pepemon/Grass.png"}
-                            alt="Pepemon Grass"
-                            width={sm ? 280 : 450}
-                            height={sm ? 280 : 450}
-                        />
-                        <Image
-                            src={"/curatedLaunches/pepemon/Pepeball.png"}
-                            alt="Pepemon Ball"
-                            width={sm ? 150 : 200}
-                            height={sm ? 150 : 200}
-                            style={{ cursor: "pointer" }}
-                            onClick={isMintRandomLoading ? () => {} : () => MintRandom()}
-                        />
-                        <Text fontSize={sm ? 18 : 22} fontWeight={500} mt={-4}>
-                            Mint
-                        </Text>
+                    <Image
+                        src={"/curatedLaunches/pepemon/PageTitle.png"}
+                        alt="Pepemon Title"
+                        width={800}
+                        height={400}
+                        style={{ position: "fixed", top: 50 }}
+                    />
+
+                    <VStack
+                        style={{
+                            position: "fixed",
+                            top: sm ? "40%" : "55%",
+                            left: "50%",
+                            transform: "translate(-50%, -50%)",
+                        }}
+                    >
+                        <VStack gap={0}>
+                            <Image src={"/curatedLaunches/pepemon/Grass.png"} alt="Pepemon Grass" width={400} height={400} />
+
+                            <Text mt={-2} fontWeight={500} fontSize={18}>
+                                Supply Left: {launch && launch.num_available}
+                            </Text>
+                        </VStack>
+                        {wallet.connected ? (
+                            <VStack gap={0} mt={-4}>
+                                <Image
+                                    src="/curatedLaunches/pepemon/Pepeball.png"
+                                    alt="Pepemon Ball"
+                                    width={130}
+                                    height={sm ? 150 : 150}
+                                    style={{
+                                        cursor: "pointer",
+                                        animation: isMintRandomLoading && "tilt-shaking 0.25s infinite",
+                                    }}
+                                    onClick={isMintRandomLoading ? () => {} : () => MintRandom()}
+                                />
+                                <Text mt={-2} fontWeight={500} fontSize={20}>
+                                    Click to Mint
+                                </Text>
+                            </VStack>
+                        ) : (
+                            <Button size="lg" onClick={() => handleConnectWallet()}>
+                                Connect your wallet
+                            </Button>
+                        )}
                     </VStack>
                 </Flex>
 
-                <Image
-                    src={"/curatedLaunches/pepemon/PepeTrainer.png"}
-                    alt="Pepemon Trainer"
-                    width={sm ? 200 : 400}
-                    height={sm ? 400 : 600}
-                    style={{ position: "absolute", bottom: 0, left: sm ? 0 : 100 }}
-                />
-
-            <ReceivedAssetModal
+                <ReceivedAssetModal
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}

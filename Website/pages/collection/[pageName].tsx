@@ -180,12 +180,15 @@ const CollectionSwapPage = () => {
             return;
         }
 
-
-        if (launch.collection_meta["__kind"] === "RandomFixedSupply" && assigned_nft.status === 0 && !assigned_nft.nft_address.equals(SYSTEM_KEY)) {
+        if (
+            launch.collection_meta["__kind"] === "RandomFixedSupply" &&
+            assigned_nft.status === 0 &&
+            !assigned_nft.nft_address.equals(SYSTEM_KEY)
+        ) {
             return;
         }
         openAssetModal();
-      
+
         mint_nft.current = false;
     }, [launch, assigned_nft, openAssetModal]);
 
@@ -232,37 +235,30 @@ const CollectionSwapPage = () => {
 
                 asset_received.current = null;
                 asset_image.current = null;
-            }
-            else {
+            } else {
                 let nft_index = updated_data.nft_index;
                 let json_url = launch.nft_meta_url + nft_index + ".json";
                 let uri_json = await fetch(json_url).then((res) => res.json());
                 asset_image.current = uri_json;
 
-                
-                try{
+                try {
                     const umi = createUmi(Config.RPC_NODE, "confirmed");
 
                     let asset_umiKey = publicKey(updated_data.nft_address.toString());
                     const myAccount = await umi.rpc.getAccount(asset_umiKey);
 
-                    if (myAccount.exists){
+                    if (myAccount.exists) {
                         let asset = await deserializeAssetV1(myAccount as RpcAccount);
                         console.log("new asset", asset);
                         asset_received.current = asset;
-                    }
-                    else {
+                    } else {
                         asset_received.current = null;
                     }
-                }
-                catch(error) {
+                } catch (error) {
                     asset_received.current = null;
                 }
-
-                
             }
 
-      
             //console.log(updated_data);
             mint_nft.current = true;
             setAssignedNFT(updated_data);
@@ -410,11 +406,11 @@ const CollectionSwapPage = () => {
         progress_string = "Unlimited";
     }
 
-    let prob_string = ""
-    for (let i = 0; i < launch.plugins.length; i++){
+    let prob_string = "";
+    for (let i = 0; i < launch.plugins.length; i++) {
         if (launch.plugins[i]["__kind"] === "MintProbability") {
-            prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)"
-            console.log("Have mint prob", prob_string)
+            prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)";
+            console.log("Have mint prob", prob_string);
         }
     }
 
@@ -565,7 +561,7 @@ const CollectionSwapPage = () => {
                                             </InputRightElement>
                                         </InputGroup>
                                     </VStack>
-                                                    
+
                                     <LuArrowUpDown
                                         size={24}
                                         color="white"
@@ -627,7 +623,7 @@ const CollectionSwapPage = () => {
                                                 launch.collection_meta["__kind"] === "RandomUnlimited" ||
                                                 (launch.collection_meta["__kind"] === "RandomFixedSupply" &&
                                                     assigned_nft.nft_address.equals(SYSTEM_KEY)) ||
-                                                    (!assigned_nft.nft_address.equals(SYSTEM_KEY) && assigned_nft.status === 0) ? (
+                                                (!assigned_nft.nft_address.equals(SYSTEM_KEY) && assigned_nft.status === 0) ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
                                                         hasArrow
