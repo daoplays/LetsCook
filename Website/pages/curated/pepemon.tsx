@@ -26,6 +26,7 @@ import {
 } from "@solana/spl-token";
 import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
 import UseWalletConnection from "../../hooks/useWallet";
+import { DisconnectWalletButton } from "../../components/Solana/wallet";
 const Pepemon = () => {
     const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
@@ -310,6 +311,17 @@ const Pepemon = () => {
         styleSheet.insertRule(tiltShaking, styleSheet.cssRules.length);
     }, []);
 
+    let prob_string = "";
+
+    if (launch) {
+        for (let i = 0; i < launch.plugins.length; i++) {
+            if (launch.plugins[i]["__kind"] === "MintProbability") {
+                prob_string = `${launch.plugins[i]["mint_prob"].toString()}%`;
+                console.log("Have mint prob", prob_string);
+            }
+        }
+    }
+
     return (
         <>
             <Head>
@@ -323,54 +335,67 @@ const Pepemon = () => {
                     position: "relative",
                 }}
             >
-                <Flex h="100%" alignItems={"center"} justify={sm ? "start" : "center"} flexDirection="column">
-                    <HStack alignItems="end" gap={0} style={{ position: "absolute", bottom: 0, left: 0 }}>
-                        <Image
-                            src={"/curatedLaunches/pepemon/PepeTrainer.png"}
-                            alt="Pepemon Trainer"
-                            width={md ? 200 : 400}
-                            height={md ? 400 : 600}
-                        />
-                        {wallet.connected && (
-                            <VStack mb={8} ml={sm ? "-10px" : "-55px"} gap={0} align={sm ? "center" : "start"}>
-                                <Text mt={-2} fontWeight={500} fontSize={sm ? 16 : 18}>
-                                    Your NFT Balance: {nft_balance}
-                                </Text>
-                                <Text mt={-2} fontWeight={500} fontSize={sm ? 16 : 18}>
-                                    Your Token Balance: {token_balance.toLocaleString()}
-                                </Text>
-                                <Button mt={-1} onClick={async () => await wallet.disconnect()}>
-                                    Disconnect Wallet
-                                </Button>
-                            </VStack>
-                        )}
-                    </HStack>
-
+                <Flex h="100%" alignItems={"center"} justify={"center"} flexDirection="column">
+                    {/* // Page Title  */}
                     <Image
                         src={"/curatedLaunches/pepemon/PageTitle.png"}
                         alt="Pepemon Title"
                         width={800}
                         height={400}
-                        style={{ position: "fixed", top: 50 }}
+                        style={{ position: "fixed", top: 30 }}
                     />
 
+                    {/* // Restart Button */}
+                    {wallet.connected && !md && (
+                        <div
+                            style={{
+                                cursor: "pointer",
+                                background: "url(/curatedLaunches/pepemon/horizontal3.png)",
+                                backgroundSize: "cover",
+                                width: "160px",
+                                height: "80px",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                position: "absolute",
+                                top: 20,
+                                right: 20,
+                            }}
+                            onClick={async () => await wallet.disconnect()}
+                        >
+                            <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
+                                Restart
+                            </Text>
+                        </div>
+                    )}
+
                     <VStack
+                        zIndex={2}
                         style={{
-                            position: "fixed",
-                            top: sm ? "40%" : "55%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
+                            position: "absolute",
+                            left: 0,
+                            right: 0,
+                            marginLeft: "auto",
+                            marginRight: "auto",
+                            marginTop: sm && wallet.connected ? -280 : sm ? -150 : wallet.connected ? -50 : 0,
                         }}
                     >
-                        <VStack gap={0}>
-                            <Image src={"/curatedLaunches/pepemon/Grass.png"} alt="Pepemon Grass" width={400} height={400} />
+                        <Image
+                            src={"/curatedLaunches/pepemon/Grass.png"}
+                            alt="Pepemon Grass"
+                            width={sm ? 300 : 400}
+                            height={sm ? 300 : 400}
+                        />
+                        <Image
+                            src={"/curatedLaunches/pepemon/pikachu.png"}
+                            alt="Pikachu Silhouette"
+                            width={sm ? 300 : 350}
+                            height={sm ? 300 : 350}
+                            style={{ position: "absolute", zIndex: -1 }}
+                        />
 
-                            <Text mt={-2} fontWeight={500} fontSize={18}>
-                                Supply Left: {launch && launch.num_available}
-                            </Text>
-                        </VStack>
                         {wallet.connected ? (
-                            <VStack gap={0} mt={-4}>
+                            <VStack gap={0} position={"absolute"} style={{ bottom: -160 }}>
                                 <Image
                                     src="/curatedLaunches/pepemon/Pepeball.png"
                                     alt="Pepemon Ball"
@@ -382,17 +407,74 @@ const Pepemon = () => {
                                     }}
                                     onClick={isMintRandomLoading ? () => {} : () => MintRandom()}
                                 />
-                                <Text mt={-2} fontWeight={500} fontSize={20}>
-                                    Click to Mint
+                                <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk    ">
+                                    Click to Throw
                                 </Text>
                             </VStack>
                         ) : (
-                            <Button size="lg" onClick={() => handleConnectWallet()}>
-                                Connect your wallet
-                            </Button>
+                            <div
+                                style={{
+                                    cursor: "pointer",
+                                    background: "url(/curatedLaunches/pepemon/horizontal3.png)",
+                                    backgroundSize: "cover",
+                                    width: "160px",
+                                    height: "80px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    marginTop: "-15px",
+                                }}
+                                onClick={() => handleConnectWallet()}
+                            >
+                                <Text m={0} fontWeight={500} fontSize={40} className="font-face-pk    ">
+                                    Start
+                                </Text>
+                            </div>
                         )}
                     </VStack>
                 </Flex>
+
+                <HStack alignItems="end" gap={0} style={{ position: "absolute", bottom: 0, left: -20 }}>
+                    <Image
+                        src={"/curatedLaunches/pepemon/PepeTrainer.png"}
+                        alt="Pepemon Trainer"
+                        width={md ? 200 : 400}
+                        height={md ? 400 : 600}
+                    />
+                </HStack>
+
+                {wallet.connected && (
+                    <div
+                        style={{
+                            cursor: "pointer",
+                            background: md ? "none" : "url(/curatedLaunches/pepemon/horizontal1.png)",
+                            backgroundSize: "cover",
+                            width: md ? "fit-content" : "400px",
+                            height: "250px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "start",
+                            justifyContent: md ? "end" : "center",
+                            position: "absolute",
+                            bottom: 20,
+                            right: 20,
+                            padding: md ? 0 : 30,
+                        }}
+                    >
+                        <Text m={0} fontWeight={500} fontSize={md ? 30 : 32} className="font-face-pk">
+                            PEPEBALLS: {token_balance.toLocaleString()}
+                        </Text>
+                        <Text m={0} fontWeight={500} fontSize={md ? 30 : 32} className="font-face-pk">
+                            PEPEMON OWNED: {nft_balance}
+                        </Text>
+                        <Text m={0} fontWeight={500} fontSize={md ? 30 : 32} className="font-face-pk">
+                            WILD PEPEMON: {launch && launch.num_available}
+                        </Text>
+                        <Text m={0} fontWeight={500} fontSize={md ? 30 : 32} className="font-face-pk">
+                            CATCH CHANCE: {prob_string}
+                        </Text>
+                    </div>
+                )}
 
                 <ReceivedAssetModal
                     isWarningOpened={isAssetModalOpen}

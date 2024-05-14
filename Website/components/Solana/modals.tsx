@@ -10,6 +10,7 @@ import { AssignmentData, CollectionData } from "../collection/collectionState";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import styles from "../../styles/LaunchDetails.module.css";
 import { SYSTEM_KEY } from "./constants";
+import Image from "next/image";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -34,7 +35,7 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                 align="center"
                                 fontSize={"large"}
                                 style={{
-                                    fontFamily: "KGSummerSunshineBlackout",
+                                    fontFamily: "Pokemon",
                                     color: "white",
                                     fontWeight: "semibold",
                                 }}
@@ -88,7 +89,7 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                         align="end"
                                         fontSize={sm ? "medium" : "large"}
                                         style={{
-                                            fontFamily: "KGSummerSunshineBlackout",
+                                            fontFamily: "Pokemon",
                                             fontWeight: "semibold",
                                             cursor: "pointer",
                                             color: "white",
@@ -101,7 +102,7 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                     align="end"
                                     fontSize={sm ? "medium" : "medium"}
                                     style={{
-                                        fontFamily: "KGSummerSunshineBlackout",
+                                        fontFamily: "Pokemon",
                                         color: "red",
                                         cursor: "pointer",
                                     }}
@@ -127,22 +128,26 @@ interface RecievedAssetModalProps {
     assignment_data: AssignmentData;
 }
 
-export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, assignment_data, asset, asset_image }: RecievedAssetModalProps) {
+export function ReceivedAssetModal({
+    isWarningOpened,
+    closeWarning,
+    collection,
+    assignment_data,
+    asset,
+    asset_image,
+}: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
 
     function filterAttributes(attributes) {
-        return attributes.filter(function (item : Attribute) {
-            return (
-                item.key !== "Number"
-            );
+        return attributes.filter(function (item: Attribute) {
+            return item.key !== "Number";
         });
     }
 
-    if (assignment_data === null)
-        return(<></>)
+    if (assignment_data === null) return <></>;
 
-    let asset_name = collection.nft_name + " #" + (assignment_data.nft_index+1).toString();
+    let asset_name = collection.nft_name + " #" + (assignment_data.nft_index + 1).toString();
     let image_url = "";
 
     if (asset.current !== null) {
@@ -155,97 +160,89 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
         image_url = asset_image.current["image"];
     }
 
-    let attributes = asset.current === null ? [] : (asset.current.attributes === undefined ? [] : filterAttributes(asset.current.attributes.attributeList))
-    console.log("attributes: ", attributes)
-    
+    let attributes =
+        asset.current === null
+            ? []
+            : asset.current.attributes === undefined
+              ? []
+              : filterAttributes(asset.current.attributes.attributeList);
+    console.log("attributes: ", attributes);
+
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
                 <ModalOverlay />
 
-                <ModalContent mx={6} p={0} h={585} style={{ background: "transparent" }}>
-                    <ModalBody bg="url(/images/terms-container.png)" bgSize="contain" bgRepeat="no-repeat" p={sm ? 10 : 14}>
-                        <VStack spacing={sm ? 6 : 10}>
-                            {assignment_data.nft_address.equals(SYSTEM_KEY) ? (
+                {assignment_data.nft_address.equals(SYSTEM_KEY) ? (
+                    <ModalContent p={0} h={620} style={{ background: "transparent" }}>
+                        <ModalBody bg="url(/curatedLaunches/pepemon/vertical.png)" bgSize="cover" p={sm ? 10 : 14}>
+                            <VStack>
                                 <Text
+                                    m={0}
                                     align="center"
-                                    fontSize={"large"}
+                                    fontSize={40}
                                     style={{
-                                        fontFamily: "KGSummerSunshineBlackout",
-                                        color: "white",
+                                        fontFamily: "Pokemon",
                                         fontWeight: "semibold",
                                     }}
                                 >
-                                    No NFT Received!
+                                    Successfully Captured <br /> {asset_name}
                                 </Text>
-                            ) :(
-                                <Text
-                                    align="center"
-                                    fontSize={"large"}
-                                    style={{
-                                        fontFamily: "KGSummerSunshineBlackout",
-                                        color: "white",
-                                        fontWeight: "semibold",
-                                    }}
-                                >
-                                    New NFT Received! <br />
-                                    {asset_name}
-                                </Text>
-                            )}
-                            <VStack mt={-8} align="center" fontFamily="ReemKufiRegular">
-                                {assignment_data.nft_address.equals(SYSTEM_KEY) ? 
-                                    <img src="/images/cooks.jpeg" width={180} height={180} alt="the cooks" />
-                                :
-                                    <img src={image_url} width={180} height={180} alt="the cooks" />
-                                }
+                                <Image src={image_url} width={220} height={200} alt="The Cooks" />
+
+                                {attributes.length > 0 && (
+                                    <VStack spacing={6}>
+                                        {attributes.map((attribute, index) => (
+                                            <Text
+                                                key={index}
+                                                m={0}
+                                                p={0}
+                                                style={{
+                                                    fontFamily: "Pokemon",
+                                                    color: "white",
+                                                    fontWeight: "semibold",
+                                                }}
+                                            >
+                                                {attribute.key} : {attribute.value}
+                                            </Text>
+                                        ))}
+                                    </VStack>
+                                )}
+
+                                {collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            MintNFT();
+                                        }}
+                                        className={`${styles.nextBtn} font-face-kg `}
+                                    >
+                                        {isMintLoading ? <Spinner /> : "Mint"}
+                                    </button>
+                                )}
+
+                                <VStack spacing={5}>
+                                    <Text
+                                        align="end"
+                                        fontSize={30}
+                                        style={{
+                                            fontFamily: "Pokemon",
+                                            color: "red",
+                                            cursor: "pointer",
+                                        }}
+                                        onClick={closeWarning}
+                                    >
+                                        Close
+                                    </Text>
+                                </VStack>
                             </VStack>
-
-                            {attributes.length > 0 &&
-                            <VStack spacing={6}>
-
-                            {attributes.map((attribute, index) => (
-                                
-                                <Text key={index} m={0} p={0} style={{
-                                    fontFamily: "KGSummerSunshineBlackout",
-                                    color: "white",
-                                    fontWeight: "semibold",
-                                }}>
-                                    {attribute.key} : {attribute.value}</Text>
-                            ))}
-                            </VStack>
-                            }
-
-                            {collection.collection_meta["__kind"] === "RandomFixedSupply" &&
-                            assignment_data.status !== 0 &&
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    MintNFT();
-                                }}
-                                className={`${styles.nextBtn} font-face-kg `}
-                            >
-                                {isMintLoading ? <Spinner /> : "Mint"}
-
-                            </button>
-                            }
-
-                            <VStack spacing={5}>
-                                <Text
-                                    align="end"
-                                    fontSize={sm ? "medium" : "medium"}
-                                    style={{
-                                        fontFamily: "KGSummerSunshineBlackout",
-                                        color: "red",
-                                        cursor: "pointer",
-                                    }}
-                                    onClick={closeWarning}
-                                >
-                                    Close
-                                </Text>
-                            </VStack>
-                        </VStack>
-                    </ModalBody>
-                </ModalContent>
+                        </ModalBody>
+                    </ModalContent>
+                ) : (
+                    <ModalContent h={450} style={{ background: "transparent" }}>
+                        <ModalBody bg="url(/curatedLaunches/pepemon/escaped.png)" bgSize="cover" />
+                    </ModalContent>
+                )}
             </Modal>
         </>
     );
