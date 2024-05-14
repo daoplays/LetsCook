@@ -846,6 +846,7 @@ const CollectionSwapPage = () => {
                     </VStack>
                 </div>
                 <ReceivedAssetModal
+                    curated={false}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}

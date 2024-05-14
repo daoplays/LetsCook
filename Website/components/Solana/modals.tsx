@@ -35,7 +35,7 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                 align="center"
                                 fontSize={"large"}
                                 style={{
-                                    fontFamily: "Pokemon",
+                                    fontFamily: "KGSummerSunshineBlackout",
                                     color: "white",
                                     fontWeight: "semibold",
                                 }}
@@ -89,7 +89,7 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                         align="end"
                                         fontSize={sm ? "medium" : "large"}
                                         style={{
-                                            fontFamily: "Pokemon",
+                                            fontFamily: "KGSummerSunshineBlackout",
                                             fontWeight: "semibold",
                                             cursor: "pointer",
                                             color: "white",
@@ -102,7 +102,7 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                     align="end"
                                     fontSize={sm ? "medium" : "medium"}
                                     style={{
-                                        fontFamily: "Pokemon",
+                                        fontFamily: "KGSummerSunshineBlackout",
                                         color: "red",
                                         cursor: "pointer",
                                     }}
@@ -126,6 +126,7 @@ interface RecievedAssetModalProps {
     asset: MutableRefObject<AssetV1>;
     asset_image: MutableRefObject<string>;
     assignment_data: AssignmentData;
+    curated?: boolean;
 }
 
 export function ReceivedAssetModal({
@@ -135,6 +136,7 @@ export function ReceivedAssetModal({
     assignment_data,
     asset,
     asset_image,
+    curated,
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
@@ -168,81 +170,142 @@ export function ReceivedAssetModal({
               : filterAttributes(asset.current.attributes.attributeList);
     console.log("attributes: ", attributes);
 
+    let success = !assignment_data.nft_address.equals(SYSTEM_KEY);
+    let failed = assignment_data.nft_address.equals(SYSTEM_KEY);
+
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
                 <ModalOverlay />
 
-                {assignment_data.nft_address.equals(SYSTEM_KEY) ? (
-                    <ModalContent p={0} h={sm ? 550 : 620} w={sm ? 450 : 620} style={{ background: "transparent" }}>
-                        <ModalBody bg="url(/curatedLaunches/pepemon/vertical.png)" bgSize="cover" p={sm ? 10 : 14}>
-                            <VStack>
+                <ModalContent
+                    h={sm && curated && success ? 570 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 585}
+                    w={sm && curated && success ? 420 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 450}
+                    style={{ background: "transparent" }}
+                >
+                    <ModalBody
+                        bg={
+                            curated && failed
+                                ? "url(/curatedLaunches/pepemon/escaped.png)"
+                                : curated
+                                  ? "url(/curatedLaunches/pepemon/vertical.png)"
+                                  : "url(/images/terms-container.png)"
+                        }
+                        bgSize={curated ? "cover" : "contain"}
+                        bgRepeat={!curated && "no-repeat"}
+                        p={sm ? 10 : 14}
+                    >
+                        <VStack h="100%" position="relative">
+                            {failed && !curated && (
                                 <Text
-                                    m={0}
                                     align="center"
-                                    fontSize={40}
+                                    fontSize={curated ? 40 : "large"}
                                     style={{
-                                        fontFamily: "Pokemon",
+                                        fontFamily: curated ? "pokemon" : "KGSummerSunshineBlackout",
+                                        color: curated ? "black" : "white",
                                         fontWeight: "semibold",
                                     }}
                                 >
-                                    Successfully Captured <br /> {asset_name}
+                                    No NFT Received!
                                 </Text>
-                                <Image src={image_url} width={220} height={200} alt="The Cooks" />
+                            )}
 
-                                {attributes.length > 0 && (
-                                    <VStack spacing={6}>
-                                        {attributes.map((attribute, index) => (
-                                            <Text
-                                                key={index}
-                                                m={0}
-                                                p={0}
-                                                style={{
-                                                    fontFamily: "Pokemon",
-                                                    color: "white",
-                                                    fontWeight: "semibold",
-                                                }}
-                                            >
-                                                {attribute.key} : {attribute.value}
-                                            </Text>
-                                        ))}
-                                    </VStack>
-                                )}
-
-                                {collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            MintNFT();
-                                        }}
-                                        className={`${styles.nextBtn} font-face-kg `}
-                                    >
-                                        {isMintLoading ? <Spinner /> : "Mint"}
-                                    </button>
-                                )}
-
-                                <VStack spacing={5}>
+                            {success && (
+                                <VStack spacing={!curated && 5}>
                                     <Text
-                                        align="end"
-                                        fontSize={30}
+                                        m={0}
+                                        align="center"
+                                        fontSize={curated ? 40 : "large"}
                                         style={{
-                                            fontFamily: "Pokemon",
-                                            color: "red",
-                                            cursor: "pointer",
+                                            fontFamily: curated ? "pokemon" : "KGSummerSunshineBlackout",
+                                            color: curated ? "black" : "white",
+                                            fontWeight: "semibold",
                                         }}
-                                        onClick={closeWarning}
                                     >
-                                        Close
+                                        {curated ? "Successfully Catched" : "New NFT Received!"}
+                                    </Text>
+                                    <Text
+                                        m={curated && 0}
+                                        align="center"
+                                        fontSize={curated ? 40 : "large"}
+                                        style={{
+                                            fontFamily: curated ? "pokemon" : "KGSummerSunshineBlackout",
+                                            color: curated ? "black" : "white",
+                                            fontWeight: "semibold",
+                                        }}
+                                    >
+                                        {asset_name}
                                     </Text>
                                 </VStack>
+                            )}
+
+                            <VStack align="center" fontFamily="ReemKufiRegular">
+                                {failed && !curated && (
+                                    <img
+                                        src="/images/cooks.jpeg"
+                                        width={200}
+                                        height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
+                                )}
+
+                                {success && (
+                                    <img src={image_url} width={200} height={200} alt="the cooks" style={{ borderRadius: "12px" }} />
+                                )}
                             </VStack>
-                        </ModalBody>
-                    </ModalContent>
-                ) : (
-                    <ModalContent h={sm ? 350 : 450} w={sm ? 350 : 450} style={{ background: "transparent" }}>
-                        <ModalBody bg="url(/curatedLaunches/pepemon/escaped.png)" bgSize="cover" />
-                    </ModalContent>
-                )}
+
+                            {attributes.length > 0 && (
+                                <VStack spacing={curated ? 0 : 4} mt={4}>
+                                    {attributes.map((attribute, index) => (
+                                        <Text
+                                            key={index}
+                                            m={0}
+                                            fontSize={curated ? 35 : "medium"}
+                                            style={{
+                                                fontFamily: curated ? "pokemon" : "KGSummerSunshineBlackout",
+                                                color: curated ? "black" : "white",
+                                                fontWeight: "semibold",
+                                            }}
+                                        >
+                                            {attribute.key} : {attribute.value}
+                                        </Text>
+                                    ))}
+                                </VStack>
+                            )}
+
+                            {collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0 && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        MintNFT();
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    {isMintLoading ? <Spinner /> : "Mint"}
+                                </button>
+                            )}
+
+                            {!curated && (
+                                <Text
+                                    m={0}
+                                    align="center"
+                                    fontSize={sm ? "medium" : "medium"}
+                                    style={{
+                                        fontFamily: "KGSummerSunshineBlackout",
+                                        color: "red",
+                                        cursor: "pointer",
+                                        position: "absolute",
+                                        bottom: 0,
+                                    }}
+                                    onClick={closeWarning}
+                                >
+                                    Close
+                                </Text>
+                            )}
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
             </Modal>
         </>
     );

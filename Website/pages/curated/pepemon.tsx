@@ -27,6 +27,12 @@ import {
 import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
+
+const soundCollection = {
+    success: "/Success.mp3",
+    fail: "/Fail.mp3",
+};
+
 const Pepemon = () => {
     const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
@@ -59,6 +65,15 @@ const Pepemon = () => {
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
+    const sound = (src) => {
+        let audio = new Audio(src);
+        try {
+            audio.play();
+        } catch (error) {
+            console.error(`An error occurred: ${error}`);
+        }
+    };
+
     const check_nft_balance = useCallback(async () => {
         if (launch === null || wallet === null || wallet.publicKey === null) return;
 
@@ -88,7 +103,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "DM21_Random");
+        let launch = findCollection(collectionList, "DM21_RandomA");
 
         if (launch === null) return;
 
@@ -177,6 +192,8 @@ const Pepemon = () => {
 
                 asset_received.current = null;
                 asset_image.current = null;
+
+                sound(soundCollection.fail);
             } else {
                 let nft_index = updated_data.nft_index;
                 let json_url = launch.nft_meta_url + nft_index + ".json";
@@ -192,6 +209,8 @@ const Pepemon = () => {
                     if (myAccount.exists) {
                         let asset = await deserializeAssetV1(myAccount as RpcAccount);
                         asset_received.current = asset;
+
+                        sound(soundCollection.success);
                     } else {
                         asset_received.current = null;
                     }
@@ -477,6 +496,7 @@ const Pepemon = () => {
                 )}
 
                 <ReceivedAssetModal
+                    curated={true}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}
