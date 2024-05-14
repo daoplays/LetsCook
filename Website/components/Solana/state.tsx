@@ -616,7 +616,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     banner_url: "",
     displayImg: null,
     total_supply: 0,
-    decimals: 0,
+    decimals: 1,
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
