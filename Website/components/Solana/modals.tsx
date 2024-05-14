@@ -174,7 +174,7 @@ export function ReceivedAssetModal({
                 <ModalOverlay />
 
                 {assignment_data.nft_address.equals(SYSTEM_KEY) ? (
-                    <ModalContent p={0} h={620} style={{ background: "transparent" }}>
+                    <ModalContent p={0} h={sm ? 550 : 620} w={sm ? 450 : 620} style={{ background: "transparent" }}>
                         <ModalBody bg="url(/curatedLaunches/pepemon/vertical.png)" bgSize="cover" p={sm ? 10 : 14}>
                             <VStack>
                                 <Text
@@ -239,7 +239,7 @@ export function ReceivedAssetModal({
                         </ModalBody>
                     </ModalContent>
                 ) : (
-                    <ModalContent h={450} style={{ background: "transparent" }}>
+                    <ModalContent h={sm ? 350 : 450} w={sm ? 350 : 450} style={{ background: "transparent" }}>
                         <ModalBody bg="url(/curatedLaunches/pepemon/escaped.png)" bgSize="cover" />
                     </ModalContent>
                 )}
