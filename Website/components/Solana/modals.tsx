@@ -147,7 +147,7 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
         image_url = asset_image.current["image"];
     }
 
-    let attributes = asset.current === null ? [] : asset.current.attributes.attributeList;
+    let attributes = asset.current === null ? [] : (asset.current.attributes === undefined ? [] : asset.current.attributes.attributeList)
 
     
     return (
