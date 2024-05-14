@@ -4,7 +4,7 @@ import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody,
 import useResponsive from "../../hooks/useResponsive";
 import { LaunchData } from "./state";
 import useBuyTickets from "../../hooks/useBuyTickets";
-import { AssetV1 } from "@metaplex-foundation/mpl-core";
+import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import { PublicKey } from "@solana/web3.js";
 import { AssignmentData, CollectionData } from "../collection/collectionState";
 import useMintNFT from "../../hooks/collections/useMintNFT";
@@ -131,6 +131,14 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
 
+    function filterAttributes(attributes) {
+        return attributes.filter(function (item : Attribute) {
+            return (
+                item.key !== "Number"
+            );
+        });
+    }
+
     if (assignment_data === null)
         return(<></>)
 
@@ -147,8 +155,8 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
         image_url = asset_image.current["image"];
     }
 
-    let attributes = asset.current === null ? [] : (asset.current.attributes === undefined ? [] : asset.current.attributes.attributeList)
-
+    let attributes = asset.current === null ? [] : (asset.current.attributes === undefined ? [] : filterAttributes(asset.current.attributes.attributeList))
+    console.log("attributes: ", attributes)
     
     return (
         <>
@@ -196,6 +204,7 @@ export function ReceivedAssetModal({ isWarningOpened, closeWarning, collection, 
                             <VStack spacing={6}>
 
                             {attributes.map((attribute, index) => (
+                                
                                 <Text key={index} m={0} p={0} style={{
                                     fontFamily: "KGSummerSunshineBlackout",
                                     color: "white",
