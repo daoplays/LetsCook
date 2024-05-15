@@ -28,6 +28,7 @@ import { TokenAccount, bignum_to_num, request_token_amount } from "../../compone
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
+import Loader from "../../components/loader";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -356,6 +357,9 @@ const Pepemon = () => {
         }
     }
 
+    if (launch === null) return <Loader />;
+
+    
     return (
         <>
             <Head>

@@ -158,6 +158,7 @@ export function ReceivedAssetModal({
 
     let asset_name = collection.nft_name + " #" + (assignment_data.nft_index + 1).toString();
     let image_url = "";
+    let description = "";
 
     if (asset.current !== null) {
         asset_name = asset.current.name;
@@ -165,6 +166,9 @@ export function ReceivedAssetModal({
     if (asset_image.current !== null) {
         if (asset_image.current["name"] !== undefined) {
             asset_name = asset_image.current["name"];
+        }
+        if (asset_image.current["description"] !== undefined) {
+            description = asset_image.current["description"]
         }
         image_url = asset_image.current["image"];
     }
@@ -262,6 +266,20 @@ export function ReceivedAssetModal({
                                     <img src={image_url} width={200} height={200} alt="the cooks" style={{ borderRadius: "12px" }} />
                                 )}
                             </VStack>
+
+                            <Text
+                                m={0}
+                                fontSize={curated ? "25" : "10"}
+                                align="center"
+                                style={{
+                                    fontFamily: style.fontFamily,
+                                    color: style.fontColor,
+                                    fontWeight: "semibold",
+                                }}
+                            >
+                                {description}
+                            </Text>
+
                             {attributes.length > 0 && (
                                 <VStack spacing={curated ? 0 : 4} mt={4}>
                                     {attributes.map((attribute, index) => (
@@ -293,23 +311,7 @@ export function ReceivedAssetModal({
                                 </button>
                             )}
 
-                            {!curated && (
-                                <Text
-                                    m={0}
-                                    align="center"
-                                    fontSize={sm ? "medium" : "medium"}
-                                    style={{
-                                        fontFamily: "KGSummerSunshineBlackout",
-                                        color: "red",
-                                        cursor: "pointer",
-                                        position: "absolute",
-                                        bottom: 0,
-                                    }}
-                                    onClick={closeWarning}
-                                >
-                                    Close
-                                </Text>
-                            )}
+                            
                         </VStack>
                     </ModalBody>
                 </ModalContent>
