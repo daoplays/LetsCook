@@ -56,7 +56,7 @@ import {
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { LuArrowUpDown } from "react-icons/lu";
 import { FaWallet } from "react-icons/fa";
-import { ReceivedAssetModal } from "../../components/Solana/modals";
+import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { findCollection } from "../../components/collection/utils";
 
 const CollectionSwapPage = () => {
@@ -95,6 +95,11 @@ const CollectionSwapPage = () => {
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
+
+    const modalStyle : ReceivedAssetModalStyle = {
+        fontFamily : "KGSummerSunshineBlackout",
+        fontColor : "white"
+    }
 
     const check_nft_balance = useCallback(async () => {
         if (launch === null || wallet === null || wallet.publicKey === null) return;
@@ -848,12 +853,14 @@ const CollectionSwapPage = () => {
                     </VStack>
                 </div>
                 <ReceivedAssetModal
+                    curated={false}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}
                     collection={launch}
                     asset={asset_received}
                     asset_image={asset_image}
+                    style={modalStyle}
                 />
             </main>
         </>

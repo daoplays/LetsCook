@@ -13,7 +13,7 @@ import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, dese
 import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
-import { ReceivedAssetModal } from "../../components/Solana/modals";
+import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { PublicKey } from "@solana/web3.js";
 import {
     unpackMint,
@@ -28,6 +28,11 @@ import { TokenAccount, bignum_to_num, request_token_amount } from "../../compone
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
+const soundCollection = {
+    success: "/Success.mp3",
+    fail: "/Fail.mp3",
+};
+
 const Pepemon = () => {
     const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
@@ -63,6 +68,20 @@ const Pepemon = () => {
 
     let isLoading = isClaimLoading || isMintRandomLoading;
 
+    const modalStyle : ReceivedAssetModalStyle = {
+        fontFamily : "pokemon",
+        fontColor : "black"
+    }
+
+    const sound = (src) => {
+        let audio = new Audio(src);
+        try {
+            audio.play();
+        } catch (error) {
+            console.error(`An error occurred: ${error}`);
+        }
+    };
+
     const check_nft_balance = useCallback(async () => {
         if (launch === null || wallet === null || wallet.publicKey === null) return;
 
@@ -92,7 +111,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "DM21_FA");
+        let launch = findCollection(collectionList, "DM21_RandomA");
 
         if (launch === null) return;
 
@@ -184,6 +203,8 @@ const Pepemon = () => {
 
                 asset_received.current = null;
                 asset_image.current = null;
+
+                sound(soundCollection.fail);
             } else {
                 let nft_index = updated_data.nft_index;
                 let json_url = launch.nft_meta_url + nft_index + ".json";
@@ -202,6 +223,8 @@ const Pepemon = () => {
                         asset_received.current = asset;
                         let uri_json = await fetch(asset.uri).then((res) => res.json());
                         asset_image.current = uri_json;
+
+                        sound(soundCollection.success);
                     } else {
                         asset_received.current = null;
                     }
@@ -496,12 +519,14 @@ const Pepemon = () => {
                 )}
 
                 <ReceivedAssetModal
+                    curated={true}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}
                     collection={launch}
                     asset={asset_received}
                     asset_image={asset_image}
+                    style={modalStyle}
                 />
             </main>
         </>
