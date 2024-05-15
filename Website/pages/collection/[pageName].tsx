@@ -251,6 +251,8 @@ const CollectionSwapPage = () => {
                         let asset = await deserializeAssetV1(myAccount as RpcAccount);
                         console.log("new asset", asset);
                         asset_received.current = asset;
+                        let uri_json = await fetch(asset.uri).then((res) => res.json());
+                        asset_image.current = uri_json;
                     } else {
                         asset_received.current = null;
                     }

@@ -172,7 +172,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
         if (mint_prob !== "") {
             let prob = parseInt(mint_prob);
-            if (!isNaN(prob) && prob > 0 && prob < 100) {
+            if (!isNaN(prob) && prob > 0 && prob <= 100) {
                 newCollectionData.current.mint_prob = prob;
             }
             else {
@@ -360,7 +360,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             placeholder="Optional - chance of getting nft on swap (default = 100%)"
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
-                                            required
                                             className={styles.inputBox}
                                             type="text"
                                             value={mint_prob}

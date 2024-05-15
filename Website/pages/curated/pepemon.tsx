@@ -27,6 +27,7 @@ import {
 import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
+import useClaimNFT from "../../hooks/collections/useClaimNFT";
 const Pepemon = () => {
     const { sm, md, lg } = useResponsive();
     const wallet = useWallet();
@@ -58,6 +59,9 @@ const Pepemon = () => {
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
+    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
+
+    let isLoading = isClaimLoading || isMintRandomLoading;
 
     const check_nft_balance = useCallback(async () => {
         if (launch === null || wallet === null || wallet.publicKey === null) return;
@@ -88,7 +92,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "DM21_Random");
+        let launch = findCollection(collectionList, "DM21_FA");
 
         if (launch === null) return;
 
@@ -122,6 +126,7 @@ const Pepemon = () => {
             return;
         }
 
+        console.log(assigned_nft, assigned_nft.nft_address.toString())
         if (
             launch.collection_meta["__kind"] === "RandomFixedSupply" &&
             assigned_nft.status === 0 &&
@@ -129,6 +134,8 @@ const Pepemon = () => {
         ) {
             return;
         }
+
+        console.log("open asset modal");
         openAssetModal();
 
         mint_nft.current = false;
@@ -191,7 +198,10 @@ const Pepemon = () => {
 
                     if (myAccount.exists) {
                         let asset = await deserializeAssetV1(myAccount as RpcAccount);
+                        console.log("new asset", asset);
                         asset_received.current = asset;
+                        let uri_json = await fetch(asset.uri).then((res) => res.json());
+                        asset_image.current = uri_json;
                     } else {
                         asset_received.current = null;
                     }
@@ -199,6 +209,7 @@ const Pepemon = () => {
                     asset_received.current = null;
                 }
             }
+
             //console.log(updated_data);
             mint_nft.current = true;
             setAssignedNFT(updated_data);
@@ -403,9 +414,17 @@ const Pepemon = () => {
                                     height={sm ? 150 : 150}
                                     style={{
                                         cursor: "pointer",
-                                        animation: isMintRandomLoading && "tilt-shaking 0.25s infinite",
+                                        animation: isLoading && "tilt-shaking 0.25s infinite",
                                     }}
-                                    onClick={isMintRandomLoading ? () => {} : () => MintRandom()}
+                                    
+                                    onClick={isLoading ? () => {} : () => {
+                                        if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                        ClaimNFT();
+                                    }
+                                    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+                                        MintRandom();
+                                    }}
+                                }
                                 />
                                 <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk    ">
                                     Click to Throw
