@@ -343,7 +343,7 @@ const Pepemon = () => {
     useEffect(() => {
         const styleSheet = document.styleSheets[0];
         styleSheet.insertRule(tiltShaking, styleSheet.cssRules.length);
-    }, []);
+    }, [tiltShaking]);
 
     let prob_string = "";
 
