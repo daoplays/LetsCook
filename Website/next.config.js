@@ -9,7 +9,13 @@ const nextConfig = withBundleAnalyzer({
     swcMinify: true,
 
     images: {
-        domains: [`www.arweave.net`, "gateway.irys.xyz", "snipboard.io"],
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "**",
+            },
+        ],
+        // domains: [`www.arweave.net`, "gateway.irys.xyz", "snipboard.io"],
     },
 });
 
