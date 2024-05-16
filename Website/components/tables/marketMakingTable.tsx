@@ -65,7 +65,7 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
             let amm_launch: AMMLaunch = {
                 amm_data: ammData[i],
                 launch_data: ammLaunch[0],
-                mint: mintData !== null ? mintData.get(ammData[i].base_mint.toString()) : null,
+                mint: mintData !== null ? mintData.get(ammData[i].base_mint.toString()).mint : null,
             };
             amm_launches.push(amm_launch);
         }

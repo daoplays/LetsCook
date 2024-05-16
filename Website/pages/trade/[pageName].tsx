@@ -195,7 +195,7 @@ const TradePage = () => {
         setAMM(amm);
 
         let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
-        setBaseMint(base_mint);
+        setBaseMint(base_mint.mint);
     }, [launchList, ammData, mintData, pageName]);
 
     useEffect(() => {

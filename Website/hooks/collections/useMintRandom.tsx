@@ -26,7 +26,7 @@ import { useCallback, useRef, useState, useEffect } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
-import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import useMintNFT from "./useMintNFT";
 import { toast } from "react-toastify";
 
@@ -105,19 +105,19 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
-
+        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -130,8 +130,8 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         let nft_mint_keypair = new Keypair();
         let nft_mint_account = nft_mint_keypair.publicKey;
 
-        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
-        let transfer_hook = getTransferHook(mint_account);
+        
+        let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -189,7 +189,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: CORE, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: mint_account.program, isSigner: false, isWritable: true },
         ];
 
         if (transfer_hook_program_account !== null) {

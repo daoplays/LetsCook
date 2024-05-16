@@ -141,7 +141,7 @@ const CollectionSwapPage = () => {
         }
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-        let transfer_fee_config = getTransferFeeConfig(mint);
+        let transfer_fee_config = getTransferFeeConfig(mint.mint);
         let input_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)));
         let swap_price = bignum_to_num(launch.swap_price);
 

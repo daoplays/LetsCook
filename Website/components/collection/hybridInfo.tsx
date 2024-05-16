@@ -18,6 +18,7 @@ import {
     getPermanentDelegate,
     getMetadataPointerState,
     getTokenMetadata,
+    TOKEN_PROGRAM_ID
 } from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { request_raw_account_data } from "../Solana/state";
@@ -77,18 +78,34 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         let result = await connection.getAccountInfo(token_key, "confirmed");
 
         let mint: Mint;
-        try {
-            mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
-            console.log(mint);
-        } catch (error) {
-            toast.update(searchToken, {
+        if (result.owner.equals(TOKEN_PROGRAM_ID)) {
+            try {
+              mint = unpackMint(token_key, result, TOKEN_PROGRAM_ID);
+              console.log(mint);
+            } catch (error) {
+              toast.update(searchToken, {
+                render: `Error loading token`,
+                type: "error",
+                isLoading: false,
+                autoClose: 2000,
+              });
+              return;
+            }
+          }
+          else {
+            try {
+              mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
+              console.log(mint);
+            } catch (error) {
+              toast.update(searchToken, {
                 render: `Token is not using Token2022 program`,
                 type: "error",
                 isLoading: false,
                 autoClose: 2000,
-            });
-            return;
-        }
+              });
+              return;
+            }
+          }
 
         let uri = null;
         // first look for t22 metadata

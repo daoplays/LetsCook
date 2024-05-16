@@ -24,7 +24,7 @@ import BN from "bn.js";
 import bs58 from "bs58";
 
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, Mint } from "@solana/spl-token";
 
 export async function get_JWT_token(): Promise<any | null> {
     const token_url = `/.netlify/functions/jwt`;
@@ -178,6 +178,11 @@ export async function check_signature(bearer: string, signature: string): Promis
     if (valid_json) return transaction_response;
 
     return null;
+}
+
+export interface MintInfo {
+    mint : Mint;
+    program : PublicKey
 }
 
 export interface MetaData {

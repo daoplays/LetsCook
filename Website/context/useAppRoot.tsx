@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, createContext, useContext, MutableRefObject, SetStateAction, Dispatch } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
-import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
+import { LaunchData, UserData, LaunchDataUserInput, JoinData, MintInfo } from "../components/Solana/state";
 import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { PublicKey } from "@solana/web3.js";
@@ -26,7 +26,7 @@ interface AppRootTypes {
     ammData: AMMData[];
     userSOLBalance: number;
     SOLPrice: number;
-    mintData: Map<String, Mint>;
+    mintData: Map<String, MintInfo>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
     collectionList: CollectionData[];
     selectedNetwork: string;

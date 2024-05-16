@@ -24,7 +24,7 @@ import {
     AccountMeta,
 } from "@solana/web3.js";
 import {
-    TOKEN_2022_PROGRAM_ID,
+    
     ASSOCIATED_TOKEN_PROGRAM_ID,
     getAssociatedTokenAddress,
     getAssociatedTokenAddressSync,
@@ -169,30 +169,31 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         )[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
+        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let team_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             launchData.keys[CollectionKeys.TeamWallet], // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
-        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
-        let transfer_hook = getTransferHook(mint_account);
+        
+        let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -249,7 +250,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: mint_account.program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: true });

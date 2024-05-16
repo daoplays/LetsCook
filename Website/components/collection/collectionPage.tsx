@@ -38,7 +38,6 @@ import {
     SYSVAR_RENT_PUBKEY,
     SystemProgram,
 } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import bs58 from "bs58";
 
 import useResponsive from "../../hooks/useResponsive";
