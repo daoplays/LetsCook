@@ -232,16 +232,20 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [wallet, check_user_update, check_user_balance, checkUserBalance]);
 
     const CloseAccount = useCallback(
-        async ({ account }: { account: PublicKey }) => {
+        async ({ accounts }: { accounts: PublicKey[] }) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             const instruction_data = serialise_basic_instruction(LaunchInstruction.close_account);
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-                { pubkey: account, isSigner: false, isWritable: true },
                 { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             ];
+
+            for (let i = 0; i < accounts.length; i++) {
+                account_vector.push({ pubkey: accounts[i], isSigner: false, isWritable: true })
+
+            }
 
             const list_instruction = new TransactionInstruction({
                 keys: account_vector,
@@ -292,11 +296,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let collections: CollectionData[] = [];
 
         console.log("program_data", program_data.length);
-
+        let closeAccounts = [];
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
-            //CloseAccount({account: program_data[i].pubkey});
+            //if (data[0] === 0) {
+            //    closeAccounts.push(program_data[i].pubkey)
+            //}
 
             if (data[0] === 0) {
                 try {
@@ -319,6 +325,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 5) {
+                
                 const [mm] = MMLaunchData.struct.deserialize(data);
                 // console.log("launch mm", mm);
                 mm_launch_data.push(mm);
@@ -326,22 +333,22 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 6) {
+                
                 const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
                 continue;
             }
             if (data[0] === 8) {
-                //CloseAccount({account: program_data[i].pubkey});
-
+                
+                
                 const [collection] = CollectionData.struct.deserialize(data);
                 collections.push(collection);
                 console.log(collection);
                 continue;
             }
 
-            //if (data[0] === 9) {
-             //   CloseAccount({account: program_data[i].pubkey});
-            // }
+            
+    
 
             // other data depends on a wallet
             if (!have_wallet) continue;
@@ -373,6 +380,21 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
+        if (closeAccounts.length > 0) {
+           
+            let start = 0
+            while (start < closeAccounts.length) {
+                let temp = []
+                for (let i = 0; i < 20; i++) {
+                    if (start+i < closeAccounts.length)
+                        temp.push(closeAccounts[start+i])
+                }
+                
+                CloseAccount({accounts : temp});
+                start += 20
+            }   
+        }
+        
         //console.log("launch data", launch_data);
         setLaunchData(launch_data);
         setUserData(user_data);
@@ -443,6 +465,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setTradePageData(trade_page_map);
 
         GetTradeMintData(trade_mints, setMintData);
+
+        
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {

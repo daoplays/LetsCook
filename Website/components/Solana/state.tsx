@@ -13,6 +13,11 @@ import {
     array,
     coption,
     COption,
+    DataEnumKeyAsKind,
+    dataEnum,
+    FixableBeetArgsStruct,
+    BeetArgsStruct,
+    FixableBeet,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -537,6 +542,28 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+type LaunchPluginEnum = {
+    MintProbability: { mint_prob: number };
+};
+type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
+
+const launchPluginBeet = dataEnum<LaunchPluginEnum>([
+    [
+        "MintProbability",
+        new BeetArgsStruct<LaunchPluginEnum["MintProbability"]>([["mint_prob", u16]], 'LaunchPluginEnum["MintProbability"]'),
+    ],
+]) as FixableBeet<LaunchPlugin>;
+
+type LaunchMetaEnum = {
+    Raffle: {};
+};
+type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
+
+const launchInfoBeet = dataEnum<LaunchMetaEnum>([
+    ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
+]) as FixableBeet<LaunchInfo>;
+
 export interface JoinedLaunch {
     join_data: JoinData;
     launch_data: LaunchData;
@@ -653,6 +680,8 @@ export class myU64 {
 export class LaunchData {
     constructor(
         readonly account_type: number,
+        readonly launch_meta: LaunchMetaEnum,
+        readonly plugins: LaunchPluginEnum[],
         readonly game_id: bignum,
         readonly last_interaction: bignum,
         readonly num_interactions: number,
@@ -693,6 +722,8 @@ export class LaunchData {
     static readonly struct = new FixableBeetStruct<LaunchData>(
         [
             ["account_type", u8],
+            ["launch_meta", launchInfoBeet],
+            ["plugins", array(launchPluginBeet)],
             ["game_id", u64],
             ["last_interaction", i64],
             ["num_interactions", u16],
@@ -732,6 +763,8 @@ export class LaunchData {
         (args) =>
             new LaunchData(
                 args.account_type!,
+                args.launch_meta!,
+                args.plugins!,
                 args.game_id!,
                 args.last_interaction!,
                 args.num_interactions!,
@@ -780,8 +813,16 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     const banner_url = URL.createObjectURL(new_launch_data.banner_file);
     const icon_url = URL.createObjectURL(new_launch_data.icon_file);
 
+    const meta: LaunchMetaEnum & { __kind: 'Raffle' } = {
+        "__kind": "Raffle",
+        Raffle: {
+           
+        }
+    }
     const data = new LaunchData(
         1,
+        meta,
+        [],
         new BN(0),
         new BN(0),
         0,
