@@ -130,7 +130,6 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         let nft_mint_keypair = new Keypair();
         let nft_mint_account = nft_mint_keypair.publicKey;
 
-        
         let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;

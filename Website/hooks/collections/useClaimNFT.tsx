@@ -148,7 +148,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             METAPLEX_META,
         )[0];
 
-        
         let transfer_hook = getTransferHook(mint_account);
 
         let transfer_hook_program_account: PublicKey | null = null;

@@ -22,7 +22,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
-import { Extensions } from "../Solana/constants";
+import { CollectionKeys, Extensions, Socials } from "../Solana/constants";
 import { LaunchInstruction, request_raw_account_data } from "../Solana/state";
 
 import { Box } from "@chakra-ui/react";
@@ -86,7 +86,7 @@ export interface OnChainAttributes {
 
 export interface CollectionDataUserInput {
     edit_mode: boolean;
-    collection_type: number,
+    collection_type: number;
     collection_name: string;
     collection_symbol: string;
     icon_file: File | null;
@@ -167,7 +167,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_image_url: "",
     token_decimals: 0,
     token_extensions: 0,
-    attributes: []
+    attributes: [],
 };
 
 export class CollectionData {
@@ -305,13 +305,63 @@ export class CollectionData {
     );
 }
 
+export function create_CollectionDataInput(launch_data: CollectionData, edit_mode: boolean): CollectionDataUserInput {
+    // console.log(new_launch_data);
+    // console.log(new_launch_data.opendate.toString());
+    // console.log(new_launch_data.closedate.toString());
+
+    const data: CollectionDataUserInput = {
+        edit_mode: edit_mode,
+        collection_type: 0,
+        collection_name: launch_data.collection_name,
+        collection_symbol: "",
+        icon_file: null,
+        uri_file: null,
+        banner_file: null,
+        icon_url: launch_data.collection_icon_url,
+        banner_url: launch_data.banner,
+        displayImg: launch_data.collection_icon_url,
+        total_supply: launch_data.num_available,
+        collection_size: launch_data.num_available,
+        uri: launch_data.collection_meta_url,
+        pagename: launch_data.page_name,
+        description: launch_data.description,
+        web_url: launch_data.socials[Socials.Website].toString(),
+        tele_url: launch_data.socials[Socials.Telegram].toString(),
+        twt_url: launch_data.socials[Socials.Twitter].toString(),
+        disc_url: launch_data.socials[Socials.Discord].toString(),
+        team_wallet: launch_data.keys[CollectionKeys.TeamWallet].toString(),
+        token_keypair: null,
+        swap_rate: launch_data.swap_price,
+        swap_fee: launch_data.swap_fee,
+        mint_prob: 100,
+        permanent_delegate: null,
+        transfer_hook_program: null,
+        nft_images: null,
+        nft_metadata: null,
+        nft_image_url: launch_data.nft_icon_url,
+        nft_metadata_url: launch_data.nft_meta_url,
+        nft_name: launch_data.nft_name,
+        nft_type: launch_data.nft_type,
+        token_mint: launch_data.keys[CollectionKeys.MintAddress],
+        token_name: launch_data.token_name,
+        token_symbol: launch_data.token_symbol,
+        token_image_url: "",
+        token_decimals: launch_data.token_decimals,
+        token_extensions: launch_data.token_extensions,
+        attributes: [],
+    };
+
+    return data;
+}
+
 export class AssignmentData {
     constructor(
         readonly account_type: number,
         readonly nft_address: PublicKey,
         readonly nft_index: number,
         readonly status: number,
-        readonly num_interations : number
+        readonly num_interations: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<AssignmentData>(
@@ -320,13 +370,12 @@ export class AssignmentData {
             ["nft_address", publicKey],
             ["nft_index", u32],
             ["status", u8],
-            ["num_interations", u32]
+            ["num_interations", u32],
         ],
         (args) => new AssignmentData(args.account_type!, args.nft_address!, args.nft_index!, args.status!, args.num_interations!),
         "AssignmentData",
     );
 }
-
 
 export async function request_assignment_data(pubkey: PublicKey): Promise<AssignmentData | null> {
     let account_data = await request_raw_account_data("", pubkey);
@@ -387,7 +436,7 @@ class LaunchCollection_Instruction {
         readonly swap_fee: number,
         readonly nft_extensions: number,
         readonly mint_prob: number,
-        readonly attributes: Attribute[]
+        readonly attributes: Attribute[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -414,7 +463,7 @@ class LaunchCollection_Instruction {
             ["swap_fee", u16],
             ["nft_extensions", u8],
             ["mint_prob", u16],
-            ["attributes", array(Attribute.struct)]
+            ["attributes", array(Attribute.struct)],
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -440,7 +489,7 @@ class LaunchCollection_Instruction {
                 args.swap_fee!,
                 args.nft_extensions!,
                 args.mint_prob!,
-                args.attributes!
+                args.attributes!,
             ),
         "LaunchCollection_Instruction",
     );
@@ -487,12 +536,15 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         (Extensions.PermanentDelegate * Number(new_launch_data.permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(new_launch_data.transfer_hook_program !== null));
 
-    let attributes : Attribute[] = [];
+    let attributes: Attribute[] = [];
     for (let i = 0; i < new_launch_data.attributes.length; i++) {
-        let attribute : Attribute = new Attribute(new_launch_data.attributes[i].name, new_launch_data.attributes[i].min, new_launch_data.attributes[i].max);
-        attributes.push(attribute)
+        let attribute: Attribute = new Attribute(
+            new_launch_data.attributes[i].name,
+            new_launch_data.attributes[i].min,
+            new_launch_data.attributes[i].max,
+        );
+        attributes.push(attribute);
     }
-
 
     console.log(attributes);
     const data = new LaunchCollection_Instruction(
@@ -518,7 +570,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         new_launch_data.swap_fee,
         nft_extensions,
         new_launch_data.mint_prob,
-        attributes
+        attributes,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

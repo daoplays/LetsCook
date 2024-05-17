@@ -8,11 +8,7 @@ import {
     uInt32ToLEBytes,
     request_raw_account_data,
 } from "../../components/Solana/state";
-import {
-    CollectionData,
-    AssignmentData,
-    request_assignment_data,
-} from "../../components/collection/collectionState";
+import { CollectionData, AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,

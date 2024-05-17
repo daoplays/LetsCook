@@ -186,8 +186,8 @@ export async function check_signature(bearer: string, signature: string): Promis
 }
 
 export interface MintInfo {
-    mint : Mint;
-    program : PublicKey
+    mint: Mint;
+    program: PublicKey;
 }
 
 export interface MetaData {
@@ -542,7 +542,6 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 type LaunchPluginEnum = {
     MintProbability: { mint_prob: number };
 };
@@ -813,12 +812,10 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     const banner_url = URL.createObjectURL(new_launch_data.banner_file);
     const icon_url = URL.createObjectURL(new_launch_data.icon_file);
 
-    const meta: LaunchMetaEnum & { __kind: 'Raffle' } = {
-        "__kind": "Raffle",
-        Raffle: {
-           
-        }
-    }
+    const meta: LaunchMetaEnum & { __kind: "Raffle" } = {
+        __kind: "Raffle",
+        Raffle: {},
+    };
     const data = new LaunchData(
         1,
         meta,

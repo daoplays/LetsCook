@@ -19,7 +19,7 @@ import {
     requestMultipleAccounts,
     Token22MintAccount,
     uInt32ToLEBytes,
-    MintInfo
+    MintInfo,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
@@ -48,10 +48,10 @@ const GetTradeMintData = async (trade_keys, setMintMap) => {
     let mint_map = new Map<PublicKey, MintInfo>();
     for (let i = 0; i < result.length; i++) {
         let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
-        let mint_info : MintInfo = {
+        let mint_info: MintInfo = {
             mint: mint,
-            program : result[i].owner
-        }
+            program: result[i].owner,
+        };
         //console.log("mint; ", mint.address.toString());
         mint_map.set(trade_keys[i].toString(), mint_info);
     }
@@ -243,8 +243,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             ];
 
             for (let i = 0; i < accounts.length; i++) {
-                account_vector.push({ pubkey: accounts[i], isSigner: false, isWritable: true })
-
+                account_vector.push({ pubkey: accounts[i], isSigner: false, isWritable: true });
             }
 
             const list_instruction = new TransactionInstruction({
@@ -325,7 +324,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 5) {
-                
                 const [mm] = MMLaunchData.struct.deserialize(data);
                 // console.log("launch mm", mm);
                 mm_launch_data.push(mm);
@@ -333,22 +331,19 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 6) {
-                
                 const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
                 continue;
             }
             if (data[0] === 8) {
-                
-                
                 const [collection] = CollectionData.struct.deserialize(data);
+
+                if (collection.description === "") continue;
+
                 collections.push(collection);
                 console.log(collection);
                 continue;
             }
-
-            
-    
 
             // other data depends on a wallet
             if (!have_wallet) continue;
@@ -381,20 +376,18 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
 
         if (closeAccounts.length > 0) {
-           
-            let start = 0
+            let start = 0;
             while (start < closeAccounts.length) {
-                let temp = []
+                let temp = [];
                 for (let i = 0; i < 20; i++) {
-                    if (start+i < closeAccounts.length)
-                        temp.push(closeAccounts[start+i])
+                    if (start + i < closeAccounts.length) temp.push(closeAccounts[start + i]);
                 }
-                
-                CloseAccount({accounts : temp});
-                start += 20
-            }   
+
+                //CloseAccount({accounts : temp});
+                start += 20;
+            }
         }
-        
+
         //console.log("launch data", launch_data);
         setLaunchData(launch_data);
         setUserData(user_data);
@@ -465,8 +458,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setTradePageData(trade_page_map);
 
         GetTradeMintData(trade_mints, setMintData);
-
-        
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {

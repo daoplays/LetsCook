@@ -14,8 +14,6 @@ interface NFTDataProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
 
-
-
 const NFTData = ({ setScreen }: NFTDataProps) => {
     const router = useRouter();
     const { newCollectionData } = useAppRoot();
@@ -324,7 +322,6 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
                                             <HStack ml={3}>
                                                 <Button onClick={() => removeRow(index)}>Remove</Button>
-                                                
                                             </HStack>
                                         </HStack>
                                     </VStack>

@@ -17,7 +17,7 @@ import { serialise_EditCollection_instruction } from "../../components/collectio
 const useEditCollection = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newCollectionData, checkProgramData } = useAppRoot();
+    const { newCollectionData, checkProgramData, mintData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -87,19 +87,20 @@ const useEditCollection = () => {
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_mint = newCollectionData.current.token_mint;
+        let mint_info = await connection.getAccountInfo(token_mint);
 
         let team_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             team_wallet, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_info.owner,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_info.owner,
         );
 
         const instruction_data = serialise_EditCollection_instruction(newCollectionData.current);
@@ -120,7 +121,7 @@ const useEditCollection = () => {
 
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: mint_info.owner, isSigner: false, isWritable: false },
         ];
 
         const list_instruction = new TransactionInstruction({

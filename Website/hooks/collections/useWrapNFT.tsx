@@ -8,11 +8,7 @@ import {
     uInt32ToLEBytes,
     request_raw_account_data,
 } from "../../components/Solana/state";
-import {
-    CollectionData,
-    AssignmentData,
-    request_assignment_data,
-} from "../../components/collection/collectionState";
+import { CollectionData, AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
@@ -24,7 +20,6 @@ import {
     AccountMeta,
 } from "@solana/web3.js";
 import {
-    
     ASSOCIATED_TOKEN_PROGRAM_ID,
     getAssociatedTokenAddress,
     getAssociatedTokenAddressSync,
@@ -192,7 +187,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             mint_account.program,
         );
 
-        
         let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;

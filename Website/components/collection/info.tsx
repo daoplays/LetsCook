@@ -184,8 +184,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             return;
         }
 
-        setScreen("step 2");
-    }, [grindComplete, setScreen]);
+        if (!newCollectionData.current.edit_mode) setScreen("step 2");
+        else setScreen("step 3");
+    }, [grindComplete, newCollectionData, setScreen]);
 
     async function nextPage(e) {
         await setData(e);
@@ -336,18 +337,27 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     <RadioGroup onChange={setSupplyMode} value={supplyMode}>
                                         <Stack direction="row" gap={5}>
                                             <Radio value="fixed" color="white">
-                                            <Tooltip label="Each NFT will only be minted once" hasArrow fontSize="large" offset={[0, 10]}>
-                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                    Fixed Supply
-                                                </Text>
+                                                <Tooltip
+                                                    label="Each NFT will only be minted once"
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Fixed Supply
+                                                    </Text>
                                                 </Tooltip>
                                             </Radio>
                                             <Radio value="unlimited">
-                                            <Tooltip label="Each NFT can be minted multiple times." hasArrow fontSize="large" offset={[0, 10]}>
-
-                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                    Unlimited Supply
-                                                </Text>
+                                                <Tooltip
+                                                    label="Each NFT can be minted multiple times."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Unlimited Supply
+                                                    </Text>
                                                 </Tooltip>
                                             </Radio>
                                         </Stack>

@@ -131,8 +131,8 @@ interface RecievedAssetModalProps {
 }
 
 export interface ReceivedAssetModalStyle {
-    fontFamily: string,
-    fontColor: string
+    fontFamily: string;
+    fontColor: string;
 }
 
 export function ReceivedAssetModal({
@@ -150,7 +150,7 @@ export function ReceivedAssetModal({
 
     function filterAttributes(attributes) {
         return attributes.filter(function (item: Attribute) {
-            return item.key !== "Number";
+            return item.key !== "CookWrapIndex";
         });
     }
 
@@ -168,7 +168,7 @@ export function ReceivedAssetModal({
             asset_name = asset_image.current["name"];
         }
         if (asset_image.current["description"] !== undefined) {
-            description = asset_image.current["description"]
+            description = asset_image.current["description"];
         }
         image_url = asset_image.current["image"];
     }
@@ -179,7 +179,7 @@ export function ReceivedAssetModal({
             : asset.current.attributes === undefined
               ? []
               : filterAttributes(asset.current.attributes.attributeList);
-              
+
     //console.log("image_url: ", asset.current.attributes.attributeList, asset_image.current);
 
     let success = !assignment_data.nft_address.equals(SYSTEM_KEY);
@@ -310,8 +310,6 @@ export function ReceivedAssetModal({
                                     {isMintLoading ? <Spinner /> : "Mint"}
                                 </button>
                             )}
-
-                            
                         </VStack>
                     </ModalBody>
                 </ModalContent>

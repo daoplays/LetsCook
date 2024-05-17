@@ -274,11 +274,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         let decimals = parseInt(decimal);
-        if (isNaN(decimals) || decimals <= 0 || decimals > 9 ){
+        if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
             toast.error("Invalid decimal places (must be between 1 and 9)");
             return false;
         }
-
 
         newLaunchData.current.token_keypair = Keypair.generate();
 

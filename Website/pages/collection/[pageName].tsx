@@ -44,15 +44,7 @@ import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import useMintRandom from "../../hooks/collections/useMintRandom";
 import ShowExtensions from "../../components/Solana/extensions";
-import {
-    unpackMint,
-    Mint,
-    TOKEN_2022_PROGRAM_ID,
-    unpackAccount,
-    getTransferFeeConfig,
-    getAssociatedTokenAddressSync,
-    calculateFee,
-} from "@solana/spl-token";
+import { unpackMint, Mint, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { LuArrowUpDown } from "react-icons/lu";
 import { FaWallet } from "react-icons/fa";
@@ -96,10 +88,10 @@ const CollectionSwapPage = () => {
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
-    const modalStyle : ReceivedAssetModalStyle = {
-        fontFamily : "KGSummerSunshineBlackout",
-        fontColor : "white"
-    }
+    const modalStyle: ReceivedAssetModalStyle = {
+        fontFamily: "KGSummerSunshineBlackout",
+        fontColor: "white",
+    };
 
     const check_nft_balance = useCallback(async () => {
         if (launch === null || wallet === null || wallet.publicKey === null) return;
@@ -135,6 +127,7 @@ const CollectionSwapPage = () => {
         if (launch === null) return;
 
         console.log("other set collection", launch);
+
         if (check_initial_collection.current) {
             setCollectionData(launch);
             check_initial_collection.current = false;
@@ -142,7 +135,8 @@ const CollectionSwapPage = () => {
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
         let transfer_fee_config = getTransferFeeConfig(mint.mint);
-        let input_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)));
+        let input_fee =
+            transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)));
         let swap_price = bignum_to_num(launch.swap_price);
 
         let input_amount = swap_price - input_fee;
@@ -151,7 +145,7 @@ const CollectionSwapPage = () => {
 
         let output = input_amount - swap_fee;
 
-        let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(output)));
+        let output_fee = transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(output)));
 
         let final_output = output - output_fee;
 
@@ -213,7 +207,7 @@ const CollectionSwapPage = () => {
 
     const check_assignment_update = useCallback(
         async (result: any) => {
-            console.log("assignment", result);
+            //console.log("assignment", result);
             // if we have a subscription field check against ws_id
 
             let event_data = result.data;
@@ -243,6 +237,7 @@ const CollectionSwapPage = () => {
             } else {
                 let nft_index = updated_data.nft_index;
                 let json_url = launch.nft_meta_url + nft_index + ".json";
+                console.log(json_url);
                 let uri_json = await fetch(json_url).then((res) => res.json());
                 asset_image.current = uri_json;
 
@@ -318,17 +313,19 @@ const CollectionSwapPage = () => {
     }, []);
 
     const get_assignment_data = useCallback(async () => {
-        if (launch === null) return;
+        if (launch === null || mintData === null) return;
 
         if (!check_initial_assignment.current) {
             return;
         }
 
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
         let user_token_account_key = getAssociatedTokenAddressSync(
             launch.keys[CollectionKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint.program,
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
@@ -340,7 +337,8 @@ const CollectionSwapPage = () => {
         )[0];
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
-        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+        //console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+        //console.log("user token balance", user_amount)
 
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -349,7 +347,7 @@ const CollectionSwapPage = () => {
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-    }, [launch, wallet]);
+    }, [launch, wallet, mintData]);
 
     useEffect(() => {
         if (launch === null) return;
@@ -364,9 +362,12 @@ const CollectionSwapPage = () => {
             launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
         }
 
-        if (wallet === null || wallet.publicKey === null) {
+        if (wallet === null || wallet.publicKey === null || mintData === null) {
             return;
         }
+
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
         if (nft_account_ws_id.current === null) {
             console.log("subscribe 2");
             let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -381,11 +382,11 @@ const CollectionSwapPage = () => {
                 launch.keys[CollectionKeys.MintAddress], // mint
                 wallet.publicKey, // owner
                 true, // allow owner off curve
-                TOKEN_2022_PROGRAM_ID,
+                mint.program,
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
-    }, [wallet, connection, launch, check_launch_update, check_assignment_update, check_user_token_update]);
+    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update, check_user_token_update]);
 
     useEffect(() => {
         if (launch === null) return;
@@ -417,7 +418,7 @@ const CollectionSwapPage = () => {
     for (let i = 0; i < launch.plugins.length; i++) {
         if (launch.plugins[i]["__kind"] === "MintProbability") {
             prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)";
-            console.log("Have mint prob", prob_string);
+            //console.log("Have mint prob", prob_string);
         }
     }
 

@@ -69,10 +69,10 @@ const Pepemon = () => {
 
     let isLoading = isClaimLoading || isMintRandomLoading;
 
-    const modalStyle : ReceivedAssetModalStyle = {
-        fontFamily : "pokemon",
-        fontColor : "black"
-    }
+    const modalStyle: ReceivedAssetModalStyle = {
+        fontFamily: "pokemon",
+        fontColor: "black",
+    };
 
     const sound = (src) => {
         let audio = new Audio(src);
@@ -146,7 +146,7 @@ const Pepemon = () => {
             return;
         }
 
-        console.log(assigned_nft, assigned_nft.nft_address.toString())
+        console.log(assigned_nft, assigned_nft.nft_address.toString());
         if (
             launch.collection_meta["__kind"] === "RandomFixedSupply" &&
             assigned_nft.status === 0 &&
@@ -359,7 +359,6 @@ const Pepemon = () => {
 
     if (launch === null) return <Loader />;
 
-    
     return (
         <>
             <Head>
@@ -443,15 +442,18 @@ const Pepemon = () => {
                                         cursor: "pointer",
                                         animation: isLoading && "tilt-shaking 0.25s infinite",
                                     }}
-                                    
-                                    onClick={isLoading ? () => {} : () => {
-                                        if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-                                        ClaimNFT();
+                                    onClick={
+                                        isLoading
+                                            ? () => {}
+                                            : () => {
+                                                  if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                      ClaimNFT();
+                                                  }
+                                                  if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+                                                      MintRandom();
+                                                  }
+                                              }
                                     }
-                                    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                        MintRandom();
-                                    }}
-                                }
                                 />
                                 <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk    ">
                                     Click to Throw

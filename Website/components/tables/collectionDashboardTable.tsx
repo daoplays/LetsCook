@@ -13,9 +13,11 @@ import { useRouter } from "next/router";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import { CollectionData } from "../collection/collectionState";
+import { CollectionData, create_CollectionDataInput } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
+import useEditCollection from "../../hooks/collections/useEditCollection";
+import convertImageURLToFile from "../../utils/convertImageToBlob";
 
 interface Header {
     text: string;
@@ -87,6 +89,27 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
 const LaunchCard = ({ launch }: { launch: CollectionData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+    const { EditCollection } = useEditCollection();
+    const { newCollectionData } = useAppRoot();
+
+    const [isEditing, setIsEditing] = useState(false);
+
+    const EditClicked = async (e) => {
+        e.stopPropagation();
+        setIsEditing(true);
+        newCollectionData.current = create_CollectionDataInput(launch, true);
+
+        let bannerFile = await convertImageURLToFile(launch.banner, `${launch.collection_name} banner image`);
+        let iconFile = await convertImageURLToFile(launch.collection_icon_url, `${launch.collection_name} icon image`);
+
+        newCollectionData.current.banner_file = bannerFile;
+        newCollectionData.current.icon_file = iconFile;
+
+        setIsEditing(false);
+
+        router.push("/collection");
+    };
+
     //console.log(launch);
     return (
         <tr
@@ -162,9 +185,15 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 </Text>
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>
-                    View
-                </Button>
+                {launch.description !== "" ? (
+                    <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>
+                        View
+                    </Button>
+                ) : (
+                    <Button onClick={(e) => EditClicked(e)} style={{ textDecoration: "none" }}>
+                        Edit
+                    </Button>
+                )}
             </td>
         </tr>
     );
