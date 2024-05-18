@@ -25,6 +25,7 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
+import useCreateMarket from "../../hooks/useCreateMarket";
 
 interface Header {
     text: string;
@@ -254,6 +255,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: initAMMLoading } = useInitAMM(launch);
+    const { CreateMarket, isLoading: createMarketLoading } = useCreateMarket(launch);
     const { newLaunchData } = useAppRoot();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -283,7 +285,13 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     //buttonClicked:
     const LaunchLPClicked = (e) => {
         e.stopPropagation();
-        InitAMM();
+        console.log("launching LP", launch.flags[LaunchFlags.AMMProvider])
+        if (launch.flags[LaunchFlags.AMMProvider] == 0) {
+            InitAMM();
+        }
+        if (launch.flags[LaunchFlags.AMMProvider] == 1) {
+            CreateMarket();
+        }
     };
 
     const GetFeesClicked = (e) => {
@@ -383,7 +391,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             <td style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "80px" }}>
                     {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && (
-                        <Button onClick={(e) => LaunchLPClicked(e)} isLoading={initAMMLoading}>
+                        <Button onClick={(e) => LaunchLPClicked(e)} isLoading={createMarketLoading || initAMMLoading}>
                             Launch LP
                         </Button>
                     )}

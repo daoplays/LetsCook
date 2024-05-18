@@ -50,15 +50,19 @@ const useCreateAMM = (launchData: LaunchData) => {
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
+        signature_ws_id.current = null;
+        setIsLoading(false)
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
             alert("Transaction failed, please try again");
             return;
         }
 
-        let response = await make_tweet(launchData.page_name);
-        console.log(response);
-        signature_ws_id.current = null;
+        if (Config.PROD) {
+
+            let response = await make_tweet(launchData.page_name);
+            console.log(response);
+        }
     }, []);
 
     async function generatePubKey({
@@ -205,7 +209,7 @@ const useCreateAMM = (launchData: LaunchData) => {
         console.log("withdrawQueue", poolInfo.withdrawQueue.toString());
         console.log("targetOrders", poolInfo.targetOrders.toString());
 
-        let create_amm_data = serialise_basic_instruction(0);
+        let create_amm_data = serialise_basic_instruction(LaunchInstruction.create_raydium);
 
         const list_instruction = new TransactionInstruction({
             keys: keys,

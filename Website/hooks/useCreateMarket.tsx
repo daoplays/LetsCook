@@ -8,7 +8,7 @@ import {
     request_current_balance,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY } from "../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -340,7 +340,7 @@ const useCreateMarket = (launchData: LaunchData) => {
         const baseVault = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "6",
-            programId: TOKEN_2022_PROGRAM_ID,
+            programId: TOKEN_PROGRAM_ID,
         });
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
 
@@ -382,7 +382,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: baseVault.publicKey,
                 lamports: accountLamports,
                 space: 165,
-                programId: TOKEN_2022_PROGRAM_ID,
+                programId: TOKEN_PROGRAM_ID,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
@@ -589,7 +589,7 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.create_openbook);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

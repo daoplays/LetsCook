@@ -579,6 +579,18 @@ export const enum Distribution {
     LENGTH,
 }
 
+export const enum LaunchFlags {
+    MintedToUser,
+    LaunchFailed,
+    LPState,
+    TokenProgramVersion,
+    BookProvider,
+    AMMProvider,
+    Extensions,
+    Transferring,
+    LENGTH,
+}
+
 export const enum LaunchInstruction {
     init = 0,
     create_game = 1,
@@ -599,6 +611,8 @@ export const enum LaunchInstruction {
     wrap_nft = 16,
     edit_collection = 17,
     mint_random = 18,
+    create_openbook = 19,
+    create_raydium = 20
 }
 
 export interface LaunchDataUserInput {
@@ -629,6 +643,7 @@ export interface LaunchDataUserInput {
     team_wallet: string;
     token_keypair: Keypair | null;
     amm_fee: number;
+    amm_provider: number;
     // extension data
     token_program: PublicKey | null;
     transfer_fee: number;
@@ -665,6 +680,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     team_wallet: "",
     token_keypair: null,
     amm_fee: 0,
+    amm_provider: 0,
     token_program: null,
     transfer_fee: 0,
     max_transfer_fee: 0,
@@ -895,6 +911,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
         amm_fee: 0,
+        amm_provider: launch_data.flags[LaunchFlags.AMMProvider],
         token_program: null,
         transfer_fee: 0,
         max_transfer_fee: 0,
@@ -1052,6 +1069,7 @@ class CreateLaunch_Instruction {
         readonly transfer_fee: number,
         readonly max_transfer_fee: bignum,
         readonly extensions: number,
+        readonly amm_provider: number
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1072,6 +1090,8 @@ class CreateLaunch_Instruction {
             ["transfer_fee", u16],
             ["max_transfer_fee", u64],
             ["extensions", u8],
+            ["amm_provider", u8],
+
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1091,6 +1111,7 @@ class CreateLaunch_Instruction {
                 args.transfer_fee!,
                 args.max_transfer_fee!,
                 args.extensions!,
+                args.amm_provider!,
             ),
         "CreateLaunch_Instruction",
     );
@@ -1123,6 +1144,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.transfer_fee,
         new_launch_data.max_transfer_fee,
         extensions,
+        new_launch_data.amm_provider
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

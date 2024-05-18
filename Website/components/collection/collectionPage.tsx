@@ -498,7 +498,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 let json = JSON.parse(text);
                 let index = newCollectionData.current.nft_metadata[i].name.split(".")[0];
                 //console.log("name", newCollectionData.current.nft_metadata[i].name)
-                json["image"] = newCollectionData.current.nft_image_url + index + ".png";
+                json["image"] = newCollectionData.current.nft_image_url + index + newCollectionData.current.nft_type;
                 //console.log(json);
 
                 const blob = new Blob([JSON.stringify(json)], { type: "application/json" });

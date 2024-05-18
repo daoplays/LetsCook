@@ -39,6 +39,10 @@ import {
     PopoverBody,
     IconButton,
     Spinner,
+    RadioGroup,
+    Stack,
+    Radio,
+    Tooltip,
 } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
@@ -93,6 +97,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
+    const [AMMProvider, setAMMProvider] = useState<string>("cook");
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -196,6 +201,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
         newLaunchData.current.amm_fee = parseInt(amm_fee);
+
+        if (AMMProvider === "cook") {
+            newLaunchData.current.amm_provider = 0;
+        }
+        if (AMMProvider === "raydium") {
+            newLaunchData.current.amm_provider = 1;
+        }
 
         return true;
     }
@@ -669,6 +681,31 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                 </HStack>
                             </div>
                         </HStack>
+
+                        <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                        Mode:
+                                    </div>
+                                    <RadioGroup onChange={setAMMProvider} value={AMMProvider}>
+                                        <Stack direction="row" gap={5}>
+                                            <Radio value="cook" color="white">
+                                                
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Let's Cook
+                                                    </Text>
+                                            </Radio>
+                                            {newLaunchData.current.token_program.equals(TOKEN_PROGRAM_ID) &&
+                                            <Radio value="raydium">
+                                                
+                                               
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Raydium
+                                                    </Text>
+                                            </Radio>
+                                            }
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
 
                         <HStack spacing={15} w="100%">
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>

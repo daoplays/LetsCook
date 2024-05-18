@@ -124,7 +124,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        if (launchData.flags[LaunchFlags.LPState] < 2) {
+        if (launchData.flags[LaunchFlags.AMMProvider] == 0 && launchData.flags[LaunchFlags.LPState] < 2) {
             let init_idx = await GetInitAMMInstruction();
             transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
             transaction.add(init_idx);
