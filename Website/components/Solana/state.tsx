@@ -630,6 +630,7 @@ export interface LaunchDataUserInput {
     token_keypair: Keypair | null;
     amm_fee: number;
     // extension data
+    token_program: PublicKey | null;
     transfer_fee: number;
     max_transfer_fee: number;
     permanent_delegate: PublicKey | null;
@@ -664,6 +665,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     team_wallet: "",
     token_keypair: null,
     amm_fee: 0,
+    token_program: null,
     transfer_fee: 0,
     max_transfer_fee: 0,
     permanent_delegate: null,
@@ -893,6 +895,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
         amm_fee: 0,
+        token_program: null,
         transfer_fee: 0,
         max_transfer_fee: 0,
         permanent_delegate: null,

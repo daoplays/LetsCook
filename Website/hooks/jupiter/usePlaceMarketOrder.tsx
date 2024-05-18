@@ -27,7 +27,6 @@ import { ComputeBudgetProgram } from "@solana/web3.js";
 import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
-    TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
     getMint,
     getTransferHook,
@@ -39,7 +38,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const usePlaceMarketOrder = () => {
     const wallet = useWallet();
-    const { checkProgramData } = useAppRoot();
+    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -92,6 +91,7 @@ const usePlaceMarketOrder = () => {
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
         token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
         sol_amount = new BN(sol_amount * Math.pow(10, 9));
@@ -100,7 +100,7 @@ const usePlaceMarketOrder = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let temp_wsol_account = PublicKey.findProgramAddressSync(
@@ -141,7 +141,7 @@ const usePlaceMarketOrder = () => {
             token_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -157,7 +157,7 @@ const usePlaceMarketOrder = () => {
             token_mint, // mint
             team_wallet, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
@@ -168,8 +168,7 @@ const usePlaceMarketOrder = () => {
             PROGRAM,
         )[0];
 
-        let mint_account = await getMint(connection, token_mint, "confirmed", TOKEN_2022_PROGRAM_ID);
-        let transfer_hook = getTransferHook(mint_account);
+        let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -229,7 +228,7 @@ const usePlaceMarketOrder = () => {
             { pubkey: price_data_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: mint_account.program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];

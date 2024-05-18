@@ -8,6 +8,7 @@ import {
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
     FEES_PROGRAM,
+    METAPLEX_META,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -53,7 +54,7 @@ import {
     SystemProgram,
     LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
 import styles from "../../styles/LaunchBook.module.css";
 import bs58 from "bs58";
@@ -446,8 +447,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            newLaunchData.current.token_program,
         );
+
+        let token_meta_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
+            METAPLEX_META,
+        )[0];
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
@@ -477,10 +483,15 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
+
+            { pubkey: token_meta_key, isSigner: false, isWritable: true },
+            { pubkey: METAPLEX_META, isSigner: false, isWritable: false },
+            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 

@@ -7,6 +7,7 @@ import {
     request_current_balance,
     request_token_supply,
     uInt32ToLEBytes,
+    MintInfo,
 } from "../../components/Solana/state";
 import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
@@ -24,7 +25,6 @@ import { PublicKey, Connection } from "@solana/web3.js";
 import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
-    TOKEN_2022_PROGRAM_ID,
     Mint,
     getTransferFeeConfig,
     calculateFee,
@@ -154,7 +154,7 @@ const TradePage = () => {
 
     const [launch, setLaunch] = useState<LaunchData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
-    const [base_mint, setBaseMint] = useState<Mint | null>(null);
+    const [base_mint, setBaseMint] = useState<MintInfo | null>(null);
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
@@ -195,7 +195,7 @@ const TradePage = () => {
         setAMM(amm);
 
         let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
-        setBaseMint(base_mint.mint);
+        setBaseMint(base_mint);
     }, [launchList, ammData, mintData, pageName]);
 
     useEffect(() => {
@@ -332,7 +332,7 @@ const TradePage = () => {
             token_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            base_mint.program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -346,7 +346,7 @@ const TradePage = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            base_mint.program,
         );
 
         // console.log(base_amm_account.toString(), quote_amm_account.toString());
@@ -426,7 +426,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, wallet.publicKey]);
+    }, [launch, base_mint, wallet.publicKey]);
 
     useEffect(() => {
         CheckMarketData();
@@ -555,7 +555,7 @@ const TradePage = () => {
                                 <BuyAndSell
                                     launch={launch}
                                     amm={amm}
-                                    mint_data={base_mint}
+                                    mint_data={base_mint.mint}
                                     base_balance={base_amount}
                                     quote_balance={quote_amount}
                                     user_balance={user_amount}
@@ -777,7 +777,7 @@ const BuyAndSell = ({
         Math.pow(10, 9);
 
     let base_int = Math.floor((sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)));
-    let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_int)));
+    let output_fee = transfer_fee_config !== null ? Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_int))) : 0;
     base_output = (base_int - output_fee) / Math.pow(10, launch.decimals);
 
     let base_no_slip = sol_amount / price;

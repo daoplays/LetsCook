@@ -444,9 +444,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let trade_mints: PublicKey[] = [];
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
-        for (let i = 0; i < trade_filtered.length; i++) {
+        for (let i = 0; i < launch_data.length; i++) {
             //console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
-            trade_mints.push(trade_filtered[i].keys[LaunchKeys.MintAddress]);
+            trade_mints.push(launch_data[i].keys[LaunchKeys.MintAddress]);
+        }
+        for (let i = 0; i < trade_filtered.length; i++) {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }
         for (let i = 0; i < collections.length; i++) {

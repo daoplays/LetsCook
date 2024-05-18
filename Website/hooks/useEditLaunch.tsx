@@ -17,7 +17,7 @@ import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -86,7 +86,7 @@ const useEditLaunch = () => {
             token_mint_pubkey, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            newLaunchData.current.token_program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -116,7 +116,7 @@ const useEditLaunch = () => {
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
         ];
 
