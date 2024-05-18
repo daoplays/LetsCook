@@ -313,6 +313,8 @@ const CollectionSwapPage = () => {
     }, []);
 
     const get_assignment_data = useCallback(async () => {
+
+        console.log("get assignment data", launch === null,  mintData === null)
         if (launch === null || mintData === null) return;
 
         if (!check_initial_assignment.current) {
@@ -337,8 +339,8 @@ const CollectionSwapPage = () => {
         )[0];
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
-        //console.log("check assignment", nft_assignment_account.toString(), assignment_data);
-        //console.log("user token balance", user_amount)
+        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+        console.log("user token balance", user_amount)
 
         check_initial_assignment.current = false;
         if (assignment_data === null) {

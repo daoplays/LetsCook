@@ -25,7 +25,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
-    const [supplyMode, setSupplyMode] = useState("fixed");
+    const [supplyMode, setSupplyMode] = useState<string>(newCollectionData.current.collection_type == 0 ? "fixed" : "unlimited");
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -185,7 +185,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         }
 
         if (!newCollectionData.current.edit_mode) setScreen("step 2");
-        else setScreen("step 3");
+        else setScreen("step 4");
     }, [grindComplete, newCollectionData, setScreen]);
 
     async function nextPage(e) {

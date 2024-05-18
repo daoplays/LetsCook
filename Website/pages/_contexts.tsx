@@ -338,8 +338,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 8) {
                 const [collection] = CollectionData.struct.deserialize(data);
 
-                if (collection.description === "") continue;
-
                 collections.push(collection);
                 console.log(collection);
                 continue;

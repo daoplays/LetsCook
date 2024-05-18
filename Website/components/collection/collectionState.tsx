@@ -310,9 +310,17 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
 
+    let mint_prob = 100;
+    for (let i = 0; i < launch_data.plugins.length; i++) {
+        if (launch_data.plugins[i]["__kind"] === "MintProbability") {
+            mint_prob = launch_data.plugins[i]["mint_prob"];
+            //console.log("Have mint prob", prob_string);
+        }
+    }
+
     const data: CollectionDataUserInput = {
         edit_mode: edit_mode,
-        collection_type: 0,
+        collection_type: launch_data.collection_meta["__kind"] === "RandomFixedSupply" ? 0 : 1,
         collection_name: launch_data.collection_name,
         collection_symbol: "",
         icon_file: null,
@@ -332,9 +340,9 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
         disc_url: launch_data.socials[Socials.Discord].toString(),
         team_wallet: launch_data.keys[CollectionKeys.TeamWallet].toString(),
         token_keypair: null,
-        swap_rate: launch_data.swap_price,
+        swap_rate: launch_data.swap_price / Math.pow(10, launch_data.token_decimals),
         swap_fee: launch_data.swap_fee,
-        mint_prob: 100,
+        mint_prob: mint_prob,
         permanent_delegate: null,
         transfer_hook_program: null,
         nft_images: null,
@@ -346,7 +354,7 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
         token_mint: launch_data.keys[CollectionKeys.MintAddress],
         token_name: launch_data.token_name,
         token_symbol: launch_data.token_symbol,
-        token_image_url: "",
+        token_image_url: launch_data.token_icon_url,
         token_decimals: launch_data.token_decimals,
         token_extensions: launch_data.token_extensions,
         attributes: [],
@@ -546,7 +554,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         attributes.push(attribute);
     }
 
-    console.log(attributes);
+    console.log(new_launch_data);
     const data = new LaunchCollection_Instruction(
         LaunchInstruction.launch_collection,
         new_launch_data.collection_type,
