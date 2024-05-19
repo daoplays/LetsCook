@@ -190,6 +190,10 @@ const useSwapRaydium = (launchData: LaunchData) => {
         let inKey = order_type === 0 ? user_quote_account : user_base_account;
         let outKey = order_type === 0 ? user_base_account : user_quote_account;
 
+        let inMint = order_type === 0 ? quoteToken.mint : launchData.keys[LaunchKeys.MintAddress];
+        let outMint = order_type === 0 ? launchData.keys[LaunchKeys.MintAddress] : quoteToken.mint;
+
+
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launchData.last_interaction)) / 24 / 60 / 60);
@@ -231,6 +235,9 @@ const useSwapRaydium = (launchData: LaunchData) => {
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: inMint, isSigner: false, isWritable: true },
+            { pubkey: outMint, isSigner: false, isWritable: true },
+            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
 
 
