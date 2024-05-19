@@ -310,7 +310,7 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        if (launch === null) return;
+        if (launch === null || amm === null) return;
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -329,19 +329,9 @@ const TradePage = () => {
             PROGRAM,
         )[0];
 
-        let base_amm_account = await getAssociatedTokenAddress(
-            token_mint, // mint
-            amm_data_account, // owner
-            true, // allow owner off curve
-            base_mint.program,
-        );
+        let base_amm_account = amm.base_key
 
-        let quote_amm_account = await getAssociatedTokenAddress(
-            wsol_mint, // mint
-            amm_data_account, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
+        let quote_amm_account = amm.quote_key
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
@@ -368,11 +358,9 @@ const TradePage = () => {
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
-            //let token_holders = await RequestTokenHolders(token_mint);
-            //setNumHolders(token_holders);
-            let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
+            if (launch.flags[LaunchFlags.AMMProvider] > 0)
+                return;
 
-            // console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
 
             let index_buffer = uInt32ToLEBytes(0);
             let price_data_account = PublicKey.findProgramAddressSync(
@@ -427,7 +415,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, base_mint, wallet.publicKey]);
+    }, [launch, amm, base_mint, wallet.publicKey]);
 
     useEffect(() => {
         CheckMarketData();
@@ -786,6 +774,8 @@ const BuyAndSell = ({
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
 
+    let max_token_amount = Math.floor(base_no_slip * Math.pow(10, launch.decimals) * 2)
+
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
@@ -1017,7 +1007,7 @@ const BuyAndSell = ({
                 onClick={() => {
                     !wallet.connected ? handleConnectWallet() : 
                     launch.flags[LaunchFlags.AMMProvider] === 0 ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
-                    : SwapRaydium();
+                    : SwapRaydium(order_type === 1 ? token_amount * Math.pow(10, launch.decimals) : max_token_amount, order_type === 1 ? 0 : sol_amount * Math.pow(10, 9), order_type);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
