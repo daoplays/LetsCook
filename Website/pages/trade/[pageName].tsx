@@ -219,7 +219,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        //console.log("update base amount", amount);
+        console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
@@ -230,7 +230,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        // console.log("update quote amount", amount);
+        console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
     }, []);
@@ -310,6 +310,7 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
+        console.log("check market data")
         if (launch === null || amm === null) return;
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
@@ -332,6 +333,8 @@ const TradePage = () => {
         let base_amm_account = amm.base_key
 
         let quote_amm_account = amm.quote_key
+
+        console.log("base key", base_amm_account.toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
@@ -750,6 +753,8 @@ const BuyAndSell = ({
         if (tab == "Sell") setOrderType(1);
     };
 
+    let amm_provider = launch.flags[LaunchFlags.AMMProvider];
+
     let transfer_fee = 0;
     let max_transfer_fee = 0;
     let transfer_fee_config = getTransferFeeConfig(mint_data);
@@ -774,7 +779,10 @@ const BuyAndSell = ({
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
 
-    let max_token_amount = Math.floor(base_no_slip * Math.pow(10, launch.decimals) * 2)
+    console.log("no slip", quote_no_slip, quote_output)
+    console.log("fees",  quote_output - quote_no_slip * 0.0025);
+
+    let max_sol_amount = Math.floor(quote_no_slip * Math.pow(10, 9) * 2)
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
@@ -926,17 +934,21 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={sol_amount}
-                            onChange={(e) => {
+                            value={amm_provider === 0 ? sol_amount : token_amount}
+                            onChange={(e) => {amm_provider === 0 ?
                                 setSOLAmount(
                                     !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : sol_amount,
+                                ) 
+                                :
+                                setTokenAmount(
+                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : token_amount,
                                 );
                             }}
                             type="number"
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                            <Image src={amm_provider === 0 ? "/images/sol.png": launch.icon} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
                 ) : (
@@ -949,7 +961,8 @@ const BuyAndSell = ({
                             onChange={(e) => {
                                 setTokenAmount(
                                     !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : token_amount,
-                                );
+                                )
+                               
                             }}
                             type="number"
                             min="0"
@@ -972,11 +985,11 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={base_output_string === "NaN" ? "0" : base_output_string}
+                            value={amm_provider === 0 ?  (base_output_string === "NaN" ? "0" : base_output_string) : (quote_output_string === "NaN" ? "0" : quote_output_string)}
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={launch.icon} width={30} height={30} alt="SOL Icon" />
+                            <Image src={amm_provider === 0 ? launch.icon : "/images/sol.png"} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
                 ) : (
@@ -986,11 +999,11 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={quote_output_string === "NaN" ? "0" : quote_output_string}
+                            value={ quote_output_string === "NaN" ? "0" : quote_output_string}
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+                            <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
                 )}
@@ -1006,8 +1019,8 @@ const BuyAndSell = ({
                 isLoading={placingOrder}
                 onClick={() => {
                     !wallet.connected ? handleConnectWallet() : 
-                    launch.flags[LaunchFlags.AMMProvider] === 0 ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
-                    : SwapRaydium(order_type === 1 ? token_amount * Math.pow(10, launch.decimals) : max_token_amount, order_type === 1 ? 0 : sol_amount * Math.pow(10, 9), order_type);
+                    amm_provider === 0 ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
+                    : SwapRaydium(token_amount * Math.pow(10, launch.decimals), order_type === 1 ? 0 : max_sol_amount, order_type);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

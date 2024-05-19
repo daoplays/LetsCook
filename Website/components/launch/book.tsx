@@ -200,7 +200,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.opendate = localOpenDate;
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
-        newLaunchData.current.amm_fee = parseInt(amm_fee);
+        newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
 
         if (AMMProvider === "cook") {
             newLaunchData.current.amm_provider = 0;
@@ -684,9 +684,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
                         <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                        Mode:
+                                        AMM Provider:
                                     </div>
-                                    <RadioGroup onChange={setAMMProvider} value={AMMProvider}>
+                                    <RadioGroup ml={5} onChange={setAMMProvider} value={AMMProvider}>
                                         <Stack direction="row" gap={5}>
                                             <Radio value="cook" color="white">
                                                 
@@ -713,12 +713,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
+                                    disabled={AMMProvider === "raydium"}
                                     size={sm ? "medium" : "lg"}
                                     required
                                     placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
                                     className={styles.inputBox}
                                     type="text"
-                                    value={parseInt(amm_fee) > 0 ? amm_fee : ""}
+                                    value={AMMProvider === "raydium" ? 25 : parseInt(amm_fee) > 0 ? amm_fee : ""}
                                     onChange={(e) => {
                                         setAMMFee(e.target.value);
                                     }}

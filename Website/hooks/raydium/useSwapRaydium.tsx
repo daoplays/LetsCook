@@ -53,7 +53,10 @@ function serialise_raydium_swap_instruction(token_amount: number, sol_amount: nu
 
     let idx = order_type === 0 ? 11 : 9;
 
-    const data = new RaydiumSwap_Instruction(idx, token_amount, sol_amount);
+    let inAmount = order_type === 0 ? sol_amount : token_amount;
+    let outAmount = order_type === 0 ? token_amount : sol_amount;
+
+    const data = new RaydiumSwap_Instruction(idx, inAmount, outAmount);
 
     const [buf] = RaydiumSwap_Instruction.struct.serialize(data);
 
@@ -184,6 +187,8 @@ const useSwapRaydium = (launchData: LaunchData) => {
         });
         const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
 
+        let inKey = order_type === 0 ? user_quote_account : user_base_account;
+        let outKey = order_type === 0 ? user_base_account : user_quote_account;
 
         const keys = [
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -203,8 +208,8 @@ const useSwapRaydium = (launchData: LaunchData) => {
             { pubkey: quoteVault.publicKey, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[LaunchKeys.Seller], isSigner: false, isWritable: true },
 
-            { pubkey: user_base_account, isSigner: false, isWritable: true },
-            { pubkey: user_quote_account, isSigner: false, isWritable: true },
+            { pubkey: inKey, isSigner: false, isWritable: true },
+            { pubkey: outKey, isSigner: false, isWritable: true },
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
 
         ]
