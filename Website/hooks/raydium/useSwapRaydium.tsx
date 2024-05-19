@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
+    bignum_to_num,
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -49,14 +50,11 @@ const DEFAULT_TOKEN = {
 
 
 function serialise_raydium_swap_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
-    // buy = 11, sell = 9
-
-    let idx = order_type === 0 ? 11 : 9;
 
     let inAmount = order_type === 0 ? sol_amount : token_amount;
     let outAmount = order_type === 0 ? token_amount : sol_amount;
 
-    const data = new RaydiumSwap_Instruction(idx, inAmount, outAmount);
+    const data = new RaydiumSwap_Instruction(LaunchInstruction.raydium_swap, order_type, inAmount, outAmount);
 
     const [buf] = RaydiumSwap_Instruction.struct.serialize(data);
 
@@ -66,6 +64,7 @@ function serialise_raydium_swap_instruction(token_amount: number, sol_amount: nu
 class RaydiumSwap_Instruction {
     constructor(
         readonly instruction: number,
+        readonly side : number,
         readonly in_amount: bignum,
         readonly out_amount: bignum,
     ) {}
@@ -73,10 +72,11 @@ class RaydiumSwap_Instruction {
     static readonly struct = new BeetStruct<RaydiumSwap_Instruction>(
         [
             ["instruction", u8],
+            ["side", u8],
             ["in_amount", u64],
             ["out_amount", u64],
         ],
-        (args) => new RaydiumSwap_Instruction(args.instruction!, args.in_amount!, args.out_amount!),
+        (args) => new RaydiumSwap_Instruction(args.instruction!, args.side!, args.in_amount!, args.out_amount!),
         "RaydiumSwap_Instruction",
     );
 }
@@ -190,6 +190,21 @@ const useSwapRaydium = (launchData: LaunchData) => {
         let inKey = order_type === 0 ? user_quote_account : user_base_account;
         let outKey = order_type === 0 ? user_base_account : user_quote_account;
 
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+        let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launchData.last_interaction)) / 24 / 60 / 60);
+        let date_bytes = uInt32ToLEBytes(current_date);
+
+        let launch_date_account = PublicKey.findProgramAddressSync(
+            [launchData.keys[LaunchKeys.MintAddress].toBytes(), date_bytes, Buffer.from("LaunchDate")],
+            PROGRAM,
+        )[0];
+
+        let user_date_account = PublicKey.findProgramAddressSync(
+            [launchData.keys[LaunchKeys.MintAddress].toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            PROGRAM,
+        )[0];
+
         const keys = [
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: poolInfo.id, isSigner: false, isWritable: true },
@@ -211,6 +226,13 @@ const useSwapRaydium = (launchData: LaunchData) => {
             { pubkey: inKey, isSigner: false, isWritable: true },
             { pubkey: outKey, isSigner: false, isWritable: true },
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: PROGRAMIDS.AmmV4, isSigner: false, isWritable: false },
+
+            { pubkey: launch_date_account, isSigner: false, isWritable: true },
+            { pubkey: user_date_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+
 
         ]
 
@@ -218,7 +240,7 @@ const useSwapRaydium = (launchData: LaunchData) => {
 
         const list_instruction = new TransactionInstruction({
             keys: keys,
-            programId: PROGRAMIDS.AmmV4,
+            programId: PROGRAM,
             data: raydium_swap_data,
         });
 

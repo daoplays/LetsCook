@@ -787,7 +787,7 @@ const BuyAndSell = ({
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
-    let quote_output_string = base_output === 0 ? "0" : quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
+    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
     quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
     let base_output_string =

@@ -612,7 +612,8 @@ export const enum LaunchInstruction {
     edit_collection = 17,
     mint_random = 18,
     create_openbook = 19,
-    create_raydium = 20
+    create_raydium = 20,
+    raydium_swap = 21
 }
 
 export interface LaunchDataUserInput {
