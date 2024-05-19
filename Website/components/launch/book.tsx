@@ -691,7 +691,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             <Radio value="cook" color="white">
                                                 
                                                     <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        Let's Cook
+                                                        Lets Cook
                                                     </Text>
                                             </Radio>
                                             {newLaunchData.current.token_program.equals(TOKEN_PROGRAM_ID) &&

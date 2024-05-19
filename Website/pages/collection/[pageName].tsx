@@ -309,8 +309,8 @@ const CollectionSwapPage = () => {
         let amount = bignum_to_num(token_account.amount);
         // console.log("update quote amount", amount);
 
-        setTokenBalance(amount);
-    }, []);
+        setTokenBalance(amount / Math.pow(10, launch.token_decimals));
+    }, [launch]);
 
     const get_assignment_data = useCallback(async () => {
 
@@ -331,7 +331,8 @@ const CollectionSwapPage = () => {
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
-        setTokenBalance(user_amount);
+        console.log("set token balance in GAD", user_amount/ Math.pow(10, launch.token_decimals));
+        setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -424,6 +425,8 @@ const CollectionSwapPage = () => {
         }
     }
 
+
+    console.log(token_balance)
     return (
         <>
             <Head>
@@ -530,7 +533,7 @@ const CollectionSwapPage = () => {
                                             <HStack gap={1} opacity={0.5}>
                                                 <FaWallet size={12} color="white" />
                                                 <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                    {(token_balance / Math.pow(10, launch.token_decimals)).toLocaleString()}
+                                                    {(token_balance).toLocaleString()}
                                                 </Text>
                                                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                                     {launch.token_symbol}

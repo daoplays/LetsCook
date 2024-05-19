@@ -18,7 +18,6 @@ import { PublicKey } from "@solana/web3.js";
 import {
     unpackMint,
     Mint,
-    TOKEN_2022_PROGRAM_ID,
     unpackAccount,
     getTransferFeeConfig,
     getAssociatedTokenAddressSync,
@@ -112,9 +111,11 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "DM21_RandomA");
+        let launch = findCollection(collectionList, "gen1_test1");
 
         if (launch === null) return;
+
+        console.log("swap price", launch.swap_price.toString())
 
         if (check_initial_collection.current) {
             setCollectionData(launch);
@@ -248,27 +249,29 @@ const Pepemon = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        // console.log("update quote amount", amount);
+         console.log("update quote amount", amount);
 
-        setTokenBalance(amount);
-    }, []);
+        setTokenBalance(amount / Math.pow(10, launch.token_decimals));
+    }, [launch]);
 
     const get_assignment_data = useCallback(async () => {
-        if (launch === null) return;
+        if (launch === null  || mintData === null) return;
 
         if (!check_initial_assignment.current) {
             return;
         }
 
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
         let user_token_account_key = getAssociatedTokenAddressSync(
             launch.keys[CollectionKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint.program,
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
-        setTokenBalance(user_amount);
+        setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -285,10 +288,10 @@ const Pepemon = () => {
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-    }, [launch, wallet]);
+    }, [launch, mintData, wallet]);
 
     useEffect(() => {
-        if (launch === null) return;
+        if (launch === null || mintData === null) return;
 
         if (launch_account_ws_id.current === null) {
             console.log("subscribe 1");
@@ -303,6 +306,10 @@ const Pepemon = () => {
         if (wallet === null || wallet.publicKey === null) {
             return;
         }
+
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
+
         if (nft_account_ws_id.current === null) {
             console.log("subscribe 2");
             let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -317,11 +324,11 @@ const Pepemon = () => {
                 launch.keys[CollectionKeys.MintAddress], // mint
                 wallet.publicKey, // owner
                 true, // allow owner off curve
-                TOKEN_2022_PROGRAM_ID,
+                mint.program,
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
-    }, [wallet, connection, launch, check_launch_update, check_assignment_update, check_user_token_update]);
+    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update, check_user_token_update]);
 
     useEffect(() => {
         if (launch === null) return;

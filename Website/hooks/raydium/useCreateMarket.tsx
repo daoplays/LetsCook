@@ -6,11 +6,11 @@ import {
     send_transaction,
     serialise_basic_instruction,
     request_current_balance,
-} from "../components/Solana/state";
+} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -42,12 +42,17 @@ import {
 
 import { createInitializeAccount3Instruction } from "@solana/spl-token";
 
-import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../components/Solana/state";
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
-import useCreateAMM from "./useCreateAMM";
+import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../../components/Solana/state";
+import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
+import useCreateAMM from "./useCreateRaydium";
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 const addLookupTableInfo = Config.PROD ? LOOKUP_TABLE_CACHE : undefined;
+
+export function getMarketProgram(Config)
+{
+   return Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
+}
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -135,6 +140,25 @@ enum InstructionType {
 const DEFAULT_TOKEN = {
     WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
 };
+
+export async function generatePubKey({
+    fromPublicKey,
+    seed,
+    programId = TOKEN_PROGRAM_ID,
+}: {
+    fromPublicKey: PublicKey;
+    seed: string;
+    programId: PublicKey;
+}) {
+    const publicKey = await PublicKey.createWithSeed(fromPublicKey, seed, programId);
+    return { publicKey, seed };
+}
+
+export function getMarketSeedBase(launchData : LaunchData)
+{
+    return launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
+
+}
 
 const useCreateMarket = (launchData: LaunchData) => {
     const wallet = useWallet();
@@ -259,18 +283,7 @@ const useCreateMarket = (launchData: LaunchData) => {
         return txList;
     }
 
-    async function generatePubKey({
-        fromPublicKey,
-        seed,
-        programId = TOKEN_PROGRAM_ID,
-    }: {
-        fromPublicKey: PublicKey;
-        seed: string;
-        programId: PublicKey;
-    }) {
-        const publicKey = await PublicKey.createWithSeed(fromPublicKey, seed, programId);
-        return { publicKey, seed };
-    }
+
 
     const CreateMarket = async () => {
         // if we have already done this then just skip this step

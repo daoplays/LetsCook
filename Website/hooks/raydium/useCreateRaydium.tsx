@@ -7,10 +7,10 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
-} from "../components/Solana/state";
+} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -29,8 +29,8 @@ import {
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
-import { make_tweet } from "../components/launch/twitter";
+import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
+import { make_tweet } from "../../components/launch/twitter";
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 

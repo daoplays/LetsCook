@@ -18,6 +18,8 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { generatePubKey, getMarketProgram, getMarketSeedBase } from "./raydium/useCreateMarket";
+import { Liquidity } from "@raydium-io/raydium-sdk";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -65,6 +67,8 @@ const useEditLaunch = () => {
 
         const launch_data = await request_launch_data("", launch_data_account);
 
+        console.log("launch data", launch_data)
+
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = launch_data.keys[LaunchKeys.MintAddress];
 
@@ -82,19 +86,31 @@ const useEditLaunch = () => {
             PROGRAM,
         )[0];
 
-        let base_amm_account = await getAssociatedTokenAddress(
+        const market = await generatePubKey({
+            fromPublicKey: wallet.publicKey,
+            seed: getMarketSeedBase(launch_data) + "1",
+            programId: getMarketProgram(Config).OPENBOOK_MARKET,
+        });
+
+        let raydium_base_account = Liquidity.getAssociatedBaseVault({programId: getMarketProgram(Config).AmmV4, marketId: market.publicKey})
+        let raydium_quote_account = Liquidity.getAssociatedQuoteVault({programId: getMarketProgram(Config).AmmV4, marketId: market.publicKey})
+
+        let cook_amm_base_account = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
             amm_data_account, // owner
             true, // allow owner off curve
             newLaunchData.current.token_program,
         );
 
-        let quote_amm_account = await getAssociatedTokenAddress(
+        let cook_amm_quote_account = await getAssociatedTokenAddress(
             wrapped_sol_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
             TOKEN_PROGRAM_ID,
         );
+
+        let base_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_base_account : raydium_base_account;
+        let quote_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_quote_account : raydium_quote_account;
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

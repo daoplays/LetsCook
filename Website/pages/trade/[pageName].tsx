@@ -69,6 +69,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
+import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -750,6 +751,8 @@ const BuyAndSell = ({
     const [sol_amount, setSOLAmount] = useState<number>(0);
     const [order_type, setOrderType] = useState<number>(0);
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
+    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+
     const { userSOLBalance } = useAppRoot();
 
     const handleClick = (tab: string) => {
@@ -1012,7 +1015,9 @@ const BuyAndSell = ({
                 bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
                 isLoading={placingOrder}
                 onClick={() => {
-                    !wallet.connected ? handleConnectWallet() : PlaceMarketOrder(launch, token_amount, sol_amount, order_type);
+                    !wallet.connected ? handleConnectWallet() : 
+                    launch.flags[LaunchFlags.AMMProvider] === 0 ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
+                    : SwapRaydium();
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

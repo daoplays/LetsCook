@@ -205,7 +205,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         }
 
         if (file) {
-            if (file.size <= 1048576) {
+            if (file.size <= 2048576) {
                 const dimensions = await getImageDimensions(file);
 
                 if (dimensions.width === dimensions.height) {
@@ -215,7 +215,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                     toast.error("Please upload an image with equal width and height.");
                 }
             } else {
-                toast.error("File size exceeds 1MB limit.");
+                toast.error("File size exceeds 2MB limit.");
             }
         }
     };
@@ -239,7 +239,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                 {newCollectionData.current.icon_file !== null
                     ? newCollectionData.current.icon_file.name
-                    : "No File Selected (Size Limit: 1MB)"}
+                    : "No File Selected (Size Limit: 2MB)"}
             </Text>
         </HStack>
     );
