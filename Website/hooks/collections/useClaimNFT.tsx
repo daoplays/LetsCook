@@ -53,7 +53,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             return;
         }
 
-        toast.success("Successfully Minted NFT", {
+        toast.success("Transaction successful!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,

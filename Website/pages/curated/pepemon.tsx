@@ -24,6 +24,7 @@ import Loader from "../../components/loader";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
+    catched: "/Catched.mp3",
 };
 
 const Pepemon = () => {
@@ -141,6 +142,7 @@ const Pepemon = () => {
         }
 
         console.log(assigned_nft, assigned_nft.nft_address.toString());
+
         if (
             launch.collection_meta["__kind"] === "RandomFixedSupply" &&
             assigned_nft.status === 0 &&
@@ -218,9 +220,9 @@ const Pepemon = () => {
                         asset_received.current = asset;
                         let uri_json = await fetch(asset.uri).then((res) => res.json());
                         asset_image.current = uri_json;
-
-                        sound(soundCollection.success);
+                        sound(soundCollection.catched);
                     } else {
+                        sound(soundCollection.success);
                         asset_received.current = null;
                     }
                 } catch (error) {
