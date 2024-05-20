@@ -128,7 +128,7 @@ const useAddLiquidityRaydium = (launchData: LaunchData) => {
 
         const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
         const targetMargetId = await generatePubKey({
-            fromPublicKey: wallet.publicKey,
+            fromPublicKey: launchData.keys[LaunchKeys.Seller],
             seed: seed_base + "1",
             programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
@@ -196,11 +196,19 @@ const useAddLiquidityRaydium = (launchData: LaunchData) => {
             data: raydium_add_liquidity_data,
         });
 
+        let create_lp_ata = createAssociatedTokenAccountInstruction(wallet.publicKey, user_lp_account, wallet.publicKey, poolInfo.lpMint, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+
+        let ata_balance = await connection.getBalance(user_lp_account);
+        console.log("ata balance", ata_balance);
+
         let list_txArgs = await get_current_blockhash("");
 
         let list_transaction = new Transaction(list_txArgs);
         list_transaction.feePayer = wallet.publicKey;
 
+        if (ata_balance === 0) {
+            list_transaction.add(create_lp_ata)
+        }
         list_transaction.add(list_instruction);
 
         try {

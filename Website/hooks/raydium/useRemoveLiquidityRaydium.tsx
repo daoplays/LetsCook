@@ -124,7 +124,7 @@ const useRemoveLiquidityRaydium = (launchData: LaunchData) => {
 
         const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
         const targetMargetId = await generatePubKey({
-            fromPublicKey: wallet.publicKey,
+            fromPublicKey: launchData.keys[LaunchKeys.Seller],
             seed: seed_base + "1",
             programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
