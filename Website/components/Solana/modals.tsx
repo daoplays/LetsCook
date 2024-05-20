@@ -223,7 +223,6 @@ export function ReceivedAssetModal({
                                     No NFT Received!
                                 </Text>
                             )}
-
                             {success && (
                                 <VStack spacing={!curated && 5}>
                                     <Text
@@ -260,7 +259,6 @@ export function ReceivedAssetModal({
                                     {/* )} */}
                                 </VStack>
                             )}
-
                             <VStack align="center" fontFamily="ReemKufiRegular">
                                 {failed && !curated && (
                                     <img
@@ -284,7 +282,6 @@ export function ReceivedAssetModal({
                                     />
                                 )}
                             </VStack>
-
                             <Text
                                 m={0}
                                 fontSize={curated ? "25" : "10"}
@@ -297,7 +294,6 @@ export function ReceivedAssetModal({
                             >
                                 {description}
                             </Text>
-
                             {attributes.length > 0 && (
                                 <VStack spacing={curated ? 0 : 4} mt={4}>
                                     {attributes.map((attribute, index) => (
@@ -316,17 +312,7 @@ export function ReceivedAssetModal({
                                     ))}
                                 </VStack>
                             )}
-
-                            {toCatch && (
-                                // <button
-                                //     type="button"
-                                //     onClick={(e) => {
-                                //         MintNFT();
-                                //     }}
-                                //     className={`${styles.nextBtn} font-face-kg `}
-                                // >
-                                //     {isMintLoading ? <Spinner /> : "Mint"}
-                                // </button>
+                            {curated && toCatch && (
                                 <div
                                     style={{
                                         cursor: "pointer",
@@ -337,9 +323,6 @@ export function ReceivedAssetModal({
                                         display: "flex",
                                         justifyContent: "center",
                                         alignItems: "center",
-                                        // position: "absolute",
-                                        // top: 20,
-                                        // right: 20,
                                     }}
                                     onClick={(e) => {
                                         MintNFT();
@@ -353,6 +336,19 @@ export function ReceivedAssetModal({
                                         </Text>
                                     )}
                                 </div>
+                            )}
+                            {!curated && toCatch && (
+                                <VStack>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            MintNFT();
+                                        }}
+                                        className={`${styles.nextBtn} font-face-kg `}
+                                    >
+                                        {isMintLoading ? <Spinner /> : "Mint"}
+                                    </button>
+                                </VStack>
                             )}
                         </VStack>
                     </ModalBody>
