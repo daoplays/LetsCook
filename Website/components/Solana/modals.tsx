@@ -185,6 +185,8 @@ export function ReceivedAssetModal({
     let success = !assignment_data.nft_address.equals(SYSTEM_KEY);
     let failed = assignment_data.nft_address.equals(SYSTEM_KEY);
 
+    let toCatch = collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0;
+
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
@@ -221,7 +223,6 @@ export function ReceivedAssetModal({
                                     No NFT Received!
                                 </Text>
                             )}
-
                             {success && (
                                 <VStack spacing={!curated && 5}>
                                     <Text
@@ -234,8 +235,15 @@ export function ReceivedAssetModal({
                                             fontWeight: "semibold",
                                         }}
                                     >
-                                        {curated ? "Successfully Caught" : "New NFT Received!"}
+                                        {curated ? "Successfully caught" : "New NFT Received!"}
+
+                                        {/* {curated && toCatch
+                                            ? `A wild ${asset_name} has Appeared!`
+                                            : curated && !toCatch
+                                              ? "Successfully caught"
+                                              : "New NFT Received!"} */}
                                     </Text>
+                                    {/* {!toCatch && ( */}
                                     <Text
                                         m={curated && 0}
                                         align="center"
@@ -248,12 +256,13 @@ export function ReceivedAssetModal({
                                     >
                                         {asset_name}
                                     </Text>
+                                    {/* )} */}
                                 </VStack>
                             )}
-
                             <VStack align="center" fontFamily="ReemKufiRegular">
                                 {failed && !curated && (
                                     <img
+                                        loading="lazy"
                                         src="/images/cooks.jpeg"
                                         width={200}
                                         height={200}
@@ -263,10 +272,16 @@ export function ReceivedAssetModal({
                                 )}
 
                                 {success && (
-                                    <img src={image_url} width={200} height={200} alt="the cooks" style={{ borderRadius: "12px" }} />
+                                    <img
+                                        loading="lazy"
+                                        src={image_url}
+                                        width={200}
+                                        height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
                                 )}
                             </VStack>
-
                             <Text
                                 m={0}
                                 fontSize={curated ? "25" : "10"}
@@ -279,7 +294,6 @@ export function ReceivedAssetModal({
                             >
                                 {description}
                             </Text>
-
                             {attributes.length > 0 && (
                                 <VStack spacing={curated ? 0 : 4} mt={4}>
                                     {attributes.map((attribute, index) => (
@@ -298,17 +312,43 @@ export function ReceivedAssetModal({
                                     ))}
                                 </VStack>
                             )}
-
-                            {collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0 && (
-                                <button
-                                    type="button"
+                            {curated && toCatch && (
+                                <div
+                                    style={{
+                                        cursor: "pointer",
+                                        background: "url(/curatedLaunches/pepemon/horizontal3.png)",
+                                        backgroundSize: "cover",
+                                        width: "160px",
+                                        height: "80px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}
                                     onClick={(e) => {
                                         MintNFT();
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg `}
                                 >
-                                    {isMintLoading ? <Spinner /> : "Mint"}
-                                </button>
+                                    {isMintLoading ? (
+                                        <Spinner />
+                                    ) : (
+                                        <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
+                                            Mint
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                            {!curated && toCatch && (
+                                <VStack>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            MintNFT();
+                                        }}
+                                        className={`${styles.nextBtn} font-face-kg `}
+                                    >
+                                        {isMintLoading ? <Spinner /> : "Mint"}
+                                    </button>
+                                </VStack>
                             )}
                         </VStack>
                     </ModalBody>
