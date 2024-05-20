@@ -499,7 +499,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_meta_key, isSigner: false, isWritable: true },
             { pubkey: METAPLEX_META, isSigner: false, isWritable: false },
             { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
@@ -683,29 +682,26 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         </HStack>
 
                         <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                        AMM Provider:
-                                    </div>
-                                    <RadioGroup ml={5} onChange={setAMMProvider} value={AMMProvider}>
-                                        <Stack direction="row" gap={5}>
-                                            <Radio value="cook" color="white">
-                                                
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        Lets Cook
-                                                    </Text>
-                                            </Radio>
-                                            {newLaunchData.current.token_program.equals(TOKEN_PROGRAM_ID) &&
-                                            <Radio value="raydium">
-                                                
-                                               
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        Raydium
-                                                    </Text>
-                                            </Radio>
-                                            }
-                                        </Stack>
-                                    </RadioGroup>
-                                </HStack>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                AMM Provider:
+                            </div>
+                            <RadioGroup ml={5} onChange={setAMMProvider} value={AMMProvider}>
+                                <Stack direction="row" gap={5}>
+                                    <Radio value="cook" color="white">
+                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                            Lets Cook
+                                        </Text>
+                                    </Radio>
+                                    {newLaunchData.current.token_program.equals(TOKEN_PROGRAM_ID) && (
+                                        <Radio value="raydium">
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Raydium
+                                            </Text>
+                                        </Radio>
+                                    )}
+                                </Stack>
+                            </RadioGroup>
+                        </HStack>
 
                         <HStack spacing={15} w="100%">
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>

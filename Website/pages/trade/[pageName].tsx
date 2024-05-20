@@ -22,13 +22,7 @@ import {
 import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import {
-    getAssociatedTokenAddress,
-    TOKEN_PROGRAM_ID,
-    Mint,
-    getTransferFeeConfig,
-    calculateFee,
-} from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
 
 import {
     HStack,
@@ -70,6 +64,10 @@ import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
+import { Liquidity } from "@raydium-io/raydium-sdk";
+import { getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
+import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
+import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -78,6 +76,37 @@ interface MarketData {
     low: number;
     close: number;
     volume: number;
+}
+
+async function getBirdEyeData(setMarketData: any) {
+    let market_address = "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN";
+    // Default options are marked with *
+    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+    let today_seconds = Math.floor(new Date().getTime() / 1000);
+
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+    let end_time = new Date(2024, 5, 1).getTime() / 1000;
+
+    let url =
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
+        market_address +
+        "&type=15m" +
+        "&time_from=" +
+        start_time +
+        "&time_to=" +
+        today_seconds;
+
+    console.log(url);
+    let result = await fetch(url, options).then((response) => response.json());
+
+    let data: MarketData[] = [];
+    for (let i = 0; i < result["data"]["items"].length; i++) {
+        let item = result["data"]["items"][i];
+        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c, volume: item.v });
+    }
+    console.log(data);
+    setMarketData(data);
+    //return data;
 }
 
 function findLaunch(list: LaunchData[], page_name: string | string[]) {
@@ -147,6 +176,7 @@ const TradePage = () => {
 
     const [base_amount, setBaseAmount] = useState<number | null>(null);
     const [quote_amount, setQuoteAmount] = useState<number | null>(null);
+    const [lp_amount, setLPAmount] = useState<number | null>(null);
 
     const [user_amount, setUserAmount] = useState<number>(0);
 
@@ -310,7 +340,7 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        console.log("check market data")
+        console.log("check market data");
         if (launch === null || amm === null) return;
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
@@ -330,10 +360,14 @@ const TradePage = () => {
             PROGRAM,
         )[0];
 
-        let base_amm_account = amm.base_key
+        let base_amm_account = amm.base_key;
 
-        let quote_amm_account = amm.quote_key
+        let quote_amm_account = amm.quote_key;
 
+        if (launch.flags[LaunchFlags.AMMProvider] == 1) {
+            let market_id = await getLaunchOBMAccount(Config, launch);
+            let lp_mint = Liquidity.getAssociatedLpMint({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market_id.publicKey });
+        }
         console.log("base key", base_amm_account.toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
@@ -361,9 +395,10 @@ const TradePage = () => {
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
-            if (launch.flags[LaunchFlags.AMMProvider] > 0)
+            if (launch.flags[LaunchFlags.AMMProvider] > 0) {
+                getBirdEyeData(setMarketData);
                 return;
-
+            }
 
             let index_buffer = uInt32ToLEBytes(0);
             let price_data_account = PublicKey.findProgramAddressSync(
@@ -743,6 +778,8 @@ const BuyAndSell = ({
     const [order_type, setOrderType] = useState<number>(0);
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
+    const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(launch);
 
     const { userSOLBalance } = useAppRoot();
 
@@ -779,10 +816,12 @@ const BuyAndSell = ({
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
 
-    console.log("no slip", quote_no_slip, quote_output)
-    console.log("fees",  quote_output - quote_no_slip * 0.0025);
+    //console.log("no slip", quote_no_slip, quote_output)
+    //console.log("fees",  quote_output - quote_no_slip * 0.0025);
 
-    let max_sol_amount = Math.floor(quote_no_slip * Math.pow(10, 9) * 2)
+    console.log("base ratio", base_balance, token_amount, token_amount / base_balance);
+
+    let max_sol_amount = Math.floor(quote_no_slip * Math.pow(10, 9) * 2);
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
@@ -802,7 +841,7 @@ const BuyAndSell = ({
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
             <HStack align="center" spacing={0} zIndex={99} w="100%">
-                {["Buy", "Sell"].map((name, i) => {
+                {["Buy", "Sell", "LP+", "LP-"].map((name, i) => {
                     const isActive = selected === name;
 
                     const baseStyle = {
@@ -880,10 +919,19 @@ const BuyAndSell = ({
 
             <VStack align="start" w="100%">
                 <HStack w="100%" justify="space-between">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Swap:
-                    </Text>
-
+                    {selected === "LP+" ? (
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            Add:
+                        </Text>
+                    ) : selected == "LP-" ? (
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            Remove:
+                        </Text>
+                    ) : (
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            Swap:
+                        </Text>
+                    )}
                     <HStack spacing={2}>
                         <Text
                             m={0}
@@ -935,20 +983,30 @@ const BuyAndSell = ({
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
                             value={amm_provider === 0 ? sol_amount : token_amount}
-                            onChange={(e) => {amm_provider === 0 ?
-                                setSOLAmount(
-                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : sol_amount,
-                                ) 
-                                :
-                                setTokenAmount(
-                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : token_amount,
-                                );
+                            onChange={(e) => {
+                                amm_provider === 0
+                                    ? setSOLAmount(
+                                          !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                              ? parseFloat(e.target.value)
+                                              : sol_amount,
+                                      )
+                                    : setTokenAmount(
+                                          !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                              ? parseFloat(e.target.value)
+                                              : token_amount,
+                                      );
                             }}
                             type="number"
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={amm_provider === 0 ? "/images/sol.png": launch.icon} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                            <Image
+                                src={amm_provider === 0 ? "/images/sol.png" : launch.icon}
+                                width={30}
+                                height={30}
+                                alt="SOL Icon"
+                                style={{ borderRadius: "100%" }}
+                            />
                         </InputRightElement>
                     </InputGroup>
                 ) : (
@@ -961,23 +1019,36 @@ const BuyAndSell = ({
                             onChange={(e) => {
                                 setTokenAmount(
                                     !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : token_amount,
-                                )
-                               
+                                );
                             }}
                             type="number"
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            {selected !== "LP-" ? (
+                                <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            ) : (
+                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                    LP
+                                </Text>
+                            )}
                         </InputRightElement>
                     </InputGroup>
                 )}
             </VStack>
 
             <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    For:
-                </Text>
+                {selected === "LP+" ? (
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        And:
+                    </Text>
+                ) : selected === "Sell" || selected === "LP+" ? (
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        For:
+                    </Text>
+                ) : (
+                    <></>
+                )}
                 {selected === "Buy" ? (
                     <InputGroup size="md">
                         <Input
@@ -985,56 +1056,124 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={amm_provider === 0 ?  (base_output_string === "NaN" ? "0" : base_output_string) : (quote_output_string === "NaN" ? "0" : quote_output_string)}
+                            value={
+                                amm_provider === 0
+                                    ? base_output_string === "NaN"
+                                        ? "0"
+                                        : base_output_string
+                                    : quote_output_string === "NaN"
+                                      ? "0"
+                                      : quote_output_string
+                            }
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={amm_provider === 0 ? launch.icon : "/images/sol.png"} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            <Image
+                                src={amm_provider === 0 ? launch.icon : "/images/sol.png"}
+                                width={30}
+                                height={30}
+                                alt=""
+                                style={{ borderRadius: "100%" }}
+                            />
                         </InputRightElement>
                     </InputGroup>
-                ) : (
+                ) : selected === "Sell" || selected === "LP+" ? (
                     <InputGroup size="md">
                         <Input
                             readOnly={true}
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={ quote_output_string === "NaN" ? "0" : quote_output_string}
+                            value={quote_output_string === "NaN" ? "0" : quote_output_string}
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
                             <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
+                ) : (
+                    <></>
                 )}
             </VStack>
 
-            <Button
-                mt={2}
-                size="lg"
-                w="100%"
-                px={4}
-                py={2}
-                bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
-                isLoading={placingOrder}
-                onClick={() => {
-                    !wallet.connected ? handleConnectWallet() : 
-                    amm_provider === 0 ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
-                    : SwapRaydium(token_amount * Math.pow(10, launch.decimals), order_type === 1 ? 0 : max_sol_amount, order_type);
-                }}
-            >
-                <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                    {!wallet.connected ? "Connect Wallet" : selected === "Buy" ? "Buy" : selected === "Sell" ? "Sell" : ""}
-                </Text>
-            </Button>
-
-            <Card bg="transparent">
-                <CardBody>
-                    <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        MM Rewards are only granted on Buys through Let&apos;s Cook.
+            {selected === "LP+" ? (
+                <Button
+                    mt={2}
+                    size="lg"
+                    w="100%"
+                    px={4}
+                    py={2}
+                    bg={"#83FF81"}
+                    isLoading={addLiquidityRaydiumLoading}
+                    onClick={() => {
+                        !wallet.connected
+                            ? handleConnectWallet()
+                            : amm_provider === 0
+                              ? {}
+                              : AddLiquidityRaydium(token_amount * Math.pow(10, launch.decimals), max_sol_amount);
+                    }}
+                >
+                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                        {!wallet.connected ? "Connect Wallet" : "Add Liquidity"}
                     </Text>
-                </CardBody>
-            </Card>
+                </Button>
+            ) : selected === "LP-" ? (
+                <Button
+                    mt={2}
+                    size="lg"
+                    w="100%"
+                    px={4}
+                    py={2}
+                    bg={"#FF6E6E"}
+                    isLoading={addLiquidityRaydiumLoading}
+                    onClick={() => {
+                        !wallet.connected
+                            ? handleConnectWallet()
+                            : amm_provider === 0
+                              ? {}
+                              : RemoveLiquidityRaydium(token_amount * Math.pow(10, launch.decimals));
+                    }}
+                >
+                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                        {!wallet.connected ? "Connect Wallet" : "Remove Liquidity"}
+                    </Text>
+                </Button>
+            ) : (
+                <>
+                    <Button
+                        mt={2}
+                        size="lg"
+                        w="100%"
+                        px={4}
+                        py={2}
+                        bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
+                        isLoading={placingOrder}
+                        onClick={() => {
+                            !wallet.connected
+                                ? handleConnectWallet()
+                                : amm_provider === 0
+                                  ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
+                                  : SwapRaydium(
+                                        token_amount * Math.pow(10, launch.decimals),
+                                        order_type === 1 ? 0 : max_sol_amount,
+                                        order_type,
+                                    );
+                        }}
+                    >
+                        <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                            {!wallet.connected ? "Connect Wallet" : selected === "Buy" ? "Buy" : selected === "Sell" ? "Sell" : ""}
+                        </Text>
+                    </Button>
+
+                    <Card bg="transparent">
+                        <CardBody>
+                            <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                MM Rewards are only granted on Buys through Let&apos;s Cook.
+                            </Text>
+                        </CardBody>
+                    </Card>
+                </>
+            )}
         </VStack>
     );
 };

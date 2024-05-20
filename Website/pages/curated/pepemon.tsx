@@ -15,14 +15,7 @@ import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { PublicKey } from "@solana/web3.js";
-import {
-    unpackMint,
-    Mint,
-    unpackAccount,
-    getTransferFeeConfig,
-    getAssociatedTokenAddressSync,
-    calculateFee,
-} from "@solana/spl-token";
+import { unpackMint, Mint, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
 import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
@@ -115,7 +108,7 @@ const Pepemon = () => {
 
         if (launch === null) return;
 
-        console.log("swap price", launch.swap_price.toString())
+        console.log("swap price", launch.swap_price.toString());
 
         if (check_initial_collection.current) {
             setCollectionData(launch);
@@ -242,20 +235,23 @@ const Pepemon = () => {
         [launch, assigned_nft],
     );
 
-    const check_user_token_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
+    const check_user_token_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
 
-        let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-         console.log("update quote amount", amount);
+            let event_data = result.data;
+            const [token_account] = TokenAccount.struct.deserialize(event_data);
+            let amount = bignum_to_num(token_account.amount);
+            console.log("update quote amount", amount);
 
-        setTokenBalance(amount / Math.pow(10, launch.token_decimals));
-    }, [launch]);
+            setTokenBalance(amount / Math.pow(10, launch.token_decimals));
+        },
+        [launch],
+    );
 
     const get_assignment_data = useCallback(async () => {
-        if (launch === null  || mintData === null) return;
+        if (launch === null || mintData === null) return;
 
         if (!check_initial_assignment.current) {
             return;
@@ -308,7 +304,6 @@ const Pepemon = () => {
         }
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-
 
         if (nft_account_ws_id.current === null) {
             console.log("subscribe 2");

@@ -20,9 +20,7 @@ const BagsPage = () => {
 
     function filterTable() {
         return collectionList.filter(function (item) {
-            return (
-                item.description !== ""
-            );
+            return item.description !== "";
         });
     }
 

@@ -300,21 +300,23 @@ const CollectionSwapPage = () => {
             }*/
     }, []);
 
-    const check_user_token_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
+    const check_user_token_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
 
-        let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-        // console.log("update quote amount", amount);
+            let event_data = result.data;
+            const [token_account] = TokenAccount.struct.deserialize(event_data);
+            let amount = bignum_to_num(token_account.amount);
+            // console.log("update quote amount", amount);
 
-        setTokenBalance(amount / Math.pow(10, launch.token_decimals));
-    }, [launch]);
+            setTokenBalance(amount / Math.pow(10, launch.token_decimals));
+        },
+        [launch],
+    );
 
     const get_assignment_data = useCallback(async () => {
-
-        console.log("get assignment data", launch === null,  mintData === null)
+        console.log("get assignment data", launch === null, mintData === null);
         if (launch === null || mintData === null) return;
 
         if (!check_initial_assignment.current) {
@@ -331,7 +333,7 @@ const CollectionSwapPage = () => {
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
-        console.log("set token balance in GAD", user_amount/ Math.pow(10, launch.token_decimals));
+        console.log("set token balance in GAD", user_amount / Math.pow(10, launch.token_decimals));
         setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -341,7 +343,7 @@ const CollectionSwapPage = () => {
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
         console.log("check assignment", nft_assignment_account.toString(), assignment_data);
-        console.log("user token balance", user_amount)
+        console.log("user token balance", user_amount);
 
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -425,8 +427,7 @@ const CollectionSwapPage = () => {
         }
     }
 
-
-    console.log(token_balance)
+    console.log(token_balance);
     return (
         <>
             <Head>
@@ -533,7 +534,7 @@ const CollectionSwapPage = () => {
                                             <HStack gap={1} opacity={0.5}>
                                                 <FaWallet size={12} color="white" />
                                                 <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                    {(token_balance).toLocaleString()}
+                                                    {token_balance.toLocaleString()}
                                                 </Text>
                                                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                                     {launch.token_symbol}

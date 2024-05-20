@@ -51,7 +51,7 @@ const useCreateAMM = (launchData: LaunchData) => {
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         signature_ws_id.current = null;
-        setIsLoading(false)
+        setIsLoading(false);
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
             alert("Transaction failed, please try again");
@@ -59,7 +59,6 @@ const useCreateAMM = (launchData: LaunchData) => {
         }
 
         if (Config.PROD) {
-
             let response = await make_tweet(launchData.page_name);
             console.log(response);
         }

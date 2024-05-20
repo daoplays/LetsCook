@@ -45,14 +45,9 @@ import { createInitializeAccount3Instruction } from "@solana/spl-token";
 import { serialise_RaydiumInitMarket_Instruction, MarketStateLayoutV2, bignum_to_num } from "../../components/Solana/state";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useCreateAMM from "./useCreateRaydium";
+import { generatePubKey, getRaydiumPrograms } from "./utils";
 
-const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 const addLookupTableInfo = Config.PROD ? LOOKUP_TABLE_CACHE : undefined;
-
-export function getMarketProgram(Config)
-{
-   return Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
-}
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -140,25 +135,6 @@ enum InstructionType {
 const DEFAULT_TOKEN = {
     WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
 };
-
-export async function generatePubKey({
-    fromPublicKey,
-    seed,
-    programId = TOKEN_PROGRAM_ID,
-}: {
-    fromPublicKey: PublicKey;
-    seed: string;
-    programId: PublicKey;
-}) {
-    const publicKey = await PublicKey.createWithSeed(fromPublicKey, seed, programId);
-    return { publicKey, seed };
-}
-
-export function getMarketSeedBase(launchData : LaunchData)
-{
-    return launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
-
-}
 
 const useCreateMarket = (launchData: LaunchData) => {
     const wallet = useWallet();
@@ -283,8 +259,6 @@ const useCreateMarket = (launchData: LaunchData) => {
         return txList;
     }
 
-
-
     const CreateMarket = async () => {
         // if we have already done this then just skip this step
         console.log(launchData);
@@ -328,27 +302,27 @@ const useCreateMarket = (launchData: LaunchData) => {
         const market = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "1",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
+            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
         const requestQueue = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "2",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
+            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
         const eventQueue = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "3",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
+            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
         const bids = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "4",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
+            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
         const asks = await generatePubKey({
             fromPublicKey: wallet.publicKey,
             seed: seed_base + "5",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
+            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
         });
         const baseVault = await generatePubKey({
             fromPublicKey: wallet.publicKey,
@@ -370,7 +344,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 try {
                     const vaultOwner = PublicKey.createProgramAddressSync(
                         [market.publicKey.toBuffer(), vaultSignerNonce.toArrayLike(Buffer, "le", 8)],
-                        PROGRAMIDS.OPENBOOK_MARKET,
+                        getRaydiumPrograms(Config).OPENBOOK_MARKET,
                     );
                     return { vaultOwner, vaultSignerNonce };
                 } catch (e) {
@@ -457,7 +431,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: market.publicKey,
                 lamports: await connection.getMinimumBalanceForRentExemption(MarketStateLayoutV2.struct.byteSize),
                 space: MarketStateLayoutV2.struct.byteSize,
-                programId: PROGRAMIDS.OPENBOOK_MARKET,
+                programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
@@ -466,7 +440,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: requestQueue.publicKey,
                 lamports: await connection.getMinimumBalanceForRentExemption(5120 + 12),
                 space: 5120 + 12,
-                programId: PROGRAMIDS.OPENBOOK_MARKET,
+                programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
@@ -475,7 +449,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: eventQueue.publicKey,
                 lamports: await connection.getMinimumBalanceForRentExemption(262144 + 12),
                 space: 262144 + 12,
-                programId: PROGRAMIDS.OPENBOOK_MARKET,
+                programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
@@ -484,7 +458,7 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: bids.publicKey,
                 lamports: await connection.getMinimumBalanceForRentExemption(65536 + 12),
                 space: 65536 + 12,
-                programId: PROGRAMIDS.OPENBOOK_MARKET,
+                programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
             }),
             SystemProgram.createAccountWithSeed({
                 fromPubkey: wallet.publicKey,
@@ -493,10 +467,10 @@ const useCreateMarket = (launchData: LaunchData) => {
                 newAccountPubkey: asks.publicKey,
                 lamports: await connection.getMinimumBalanceForRentExemption(65536 + 12),
                 space: 65536 + 12,
-                programId: PROGRAMIDS.OPENBOOK_MARKET,
+                programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
             }),
             initializeMarketInstruction({
-                programId: PROGRAMIDS.OPENBOOK_MARKET,
+                programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
                 marketInfo: {
                     id: market.publicKey,
                     requestQueue: requestQueue.publicKey,
@@ -616,7 +590,7 @@ const useCreateMarket = (launchData: LaunchData) => {
             { pubkey: asks.publicKey, isSigner: false, isWritable: true },
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: PROGRAMIDS.OPENBOOK_MARKET, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: getRaydiumPrograms(Config).OPENBOOK_MARKET, isSigner: false, isWritable: true });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

@@ -59,7 +59,6 @@ type Tag = {
     value: string;
 };
 
-
 const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
@@ -506,8 +505,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 file_list.push(json_file);
             }
 
-             // Convert to TaggedFile objects
-             const taggedFiles = file_list.map((f: TaggedFile) => {
+            // Convert to TaggedFile objects
+            const taggedFiles = file_list.map((f: TaggedFile) => {
                 f.tags = [{ name: "Content-Type", value: "application/json" }];
                 return f;
             });
@@ -519,7 +518,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             console.log(taggedFiles);
 
-            const json_price = await irys.getPrice(10*size);
+            const json_price = await irys.getPrice(10 * size);
 
             const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
 
@@ -564,11 +563,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return;
             }
 
-           
-            
             // Optional parameters
-            const uploadOptions = {
-            };
+            const uploadOptions = {};
 
             const uploadMetadata = toast.loading("Sign to upload token metadata on Arweave");
 
@@ -576,8 +572,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             try {
                 json_receipt = await irys.uploadFolder(taggedFiles, uploadOptions);
-               
-
 
                 toast.update(uploadMetadata, {
                     render: `Token metadata has been uploaded successfully!
@@ -588,7 +582,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     autoClose: 2000,
                 });
             } catch (error) {
-                console.log(error)
+                console.log(error);
                 toast.update(uploadMetadata, {
                     render: `Failed to upload token metadata, please try again later.`,
                     type: "error",
@@ -621,7 +615,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         let team_wallet = new PublicKey(newCollectionData.current.team_wallet);
 
-
         var collection_mint_pubkey = newCollectionData.current.token_keypair.publicKey;
 
         console.log("mint", collection_mint_pubkey.toString());
@@ -637,7 +630,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             { pubkey: collection_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: true, isWritable: false },
-
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });

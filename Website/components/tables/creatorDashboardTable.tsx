@@ -285,7 +285,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     //buttonClicked:
     const LaunchLPClicked = (e) => {
         e.stopPropagation();
-        console.log("launching LP", launch.flags[LaunchFlags.AMMProvider])
+        console.log("launching LP", launch.flags[LaunchFlags.AMMProvider]);
         if (launch.flags[LaunchFlags.AMMProvider] == 0) {
             InitAMM();
         }

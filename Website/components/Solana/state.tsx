@@ -613,7 +613,7 @@ export const enum LaunchInstruction {
     mint_random = 18,
     create_openbook = 19,
     create_raydium = 20,
-    raydium_swap = 21
+    raydium_swap = 21,
 }
 
 export interface LaunchDataUserInput {
@@ -1070,7 +1070,7 @@ class CreateLaunch_Instruction {
         readonly transfer_fee: number,
         readonly max_transfer_fee: bignum,
         readonly extensions: number,
-        readonly amm_provider: number
+        readonly amm_provider: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1092,7 +1092,6 @@ class CreateLaunch_Instruction {
             ["max_transfer_fee", u64],
             ["extensions", u8],
             ["amm_provider", u8],
-
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1145,7 +1144,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.transfer_fee,
         new_launch_data.max_transfer_fee,
         extensions,
-        new_launch_data.amm_provider
+        new_launch_data.amm_provider,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

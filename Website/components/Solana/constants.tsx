@@ -1,7 +1,7 @@
 import { isMobile } from "react-device-detect";
 import { PublicKey } from "@solana/web3.js";
 
-interface NetworkConfig {
+export interface NetworkConfig {
     PROD: boolean;
     NETWORK: string;
     PYTH_BTC: PublicKey;

@@ -41,7 +41,7 @@ export function WinLoss({ join_data }: { join_data: JoinData }) {
 }
 
 export function ButtonString(cook_state: CookState, join_data: JoinData, launch_data: LaunchData): string {
-    console.log(cook_state, join_data, launch_data)
+    console.log(cook_state, join_data, launch_data);
     if (cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK) return "Check Tickets";
 
     if (cook_state === CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP && join_data.ticket_status === 1) return "Claim Tokens";
