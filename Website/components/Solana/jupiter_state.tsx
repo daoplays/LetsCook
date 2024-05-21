@@ -97,12 +97,14 @@ export class AMMData {
         readonly account_type: number,
         readonly base_mint: PublicKey,
         readonly quote_mint: PublicKey,
+        readonly lp_mint: PublicKey,
         readonly base_key: PublicKey,
         readonly quote_key: PublicKey,
         readonly fee: number,
         readonly num_data_accounts: number,
         readonly last_price: number[],
         readonly transferring: number,
+        readonly lp_amount: bignum
     ) {}
 
     static readonly struct = new FixableBeetStruct<AMMData>(
@@ -110,24 +112,28 @@ export class AMMData {
             ["account_type", u8],
             ["base_mint", publicKey],
             ["quote_mint", publicKey],
+            ["lp_mint", publicKey],
             ["base_key", publicKey],
             ["quote_key", publicKey],
             ["fee", u16],
             ["num_data_accounts", u32],
             ["last_price", uniformFixedSizeArray(u8, 4)],
             ["transferring", u8],
+            ["lp_amount", u64],
         ],
         (args) =>
             new AMMData(
                 args.account_type!,
                 args.base_mint!,
                 args.quote_mint!,
+                args.lp_mint!,
                 args.base_key!,
                 args.quote_key!,
                 args.fee!,
                 args.num_data_accounts!,
                 args.last_price!,
                 args.transferring!,
+                args.lp_amount!,
             ),
         "AMMData",
     );
@@ -192,7 +198,7 @@ export class MMLaunchData {
     );
 }
 
-class PlaceLimit_Instruction {
+export class PlaceLimit_Instruction {
     constructor(
         readonly instruction: number,
         readonly side: number,

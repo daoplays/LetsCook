@@ -68,6 +68,7 @@ import { Liquidity } from "@raydium-io/raydium-sdk";
 import { getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
 import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
+import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -363,11 +364,9 @@ const TradePage = () => {
         let base_amm_account = amm.base_key;
 
         let quote_amm_account = amm.quote_key;
+        
 
-        if (launch.flags[LaunchFlags.AMMProvider] == 1) {
-            let market_id = await getLaunchOBMAccount(Config, launch);
-            let lp_mint = Liquidity.getAssociatedLpMint({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market_id.publicKey });
-        }
+       
         console.log("base key", base_amm_account.toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
@@ -780,6 +779,7 @@ const BuyAndSell = ({
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
     const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
     const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(launch);
+    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
 
     const { userSOLBalance } = useAppRoot();
 
@@ -837,6 +837,9 @@ const BuyAndSell = ({
               : base_output.toLocaleString("en-US", { minimumFractionDigits: launch.decimals, maximumFractionDigits: launch.decimals });
 
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
+
+    //let expected_lp = amm.lp_amount * token_amount / base_balance;
+    //console.log("expected lp", expected_lp, amm.lp_amount.toString(), token_amount, base_balance)
 
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
@@ -1109,7 +1112,7 @@ const BuyAndSell = ({
                         !wallet.connected
                             ? handleConnectWallet()
                             : amm_provider === 0
-                              ? {}
+                              ? UpdateCookLiquidity(launch, token_amount, 0 )
                               : AddLiquidityRaydium(token_amount * Math.pow(10, launch.decimals), max_sol_amount);
                     }}
                 >

@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { generatePubKey, getRaydiumPrograms, getMarketSeedBase } from "./raydium/utils";
+import { generatePubKey, getRaydiumPrograms, getMarketSeedBase, getLaunchOBMAccount } from "./raydium/utils";
 import { Liquidity } from "@raydium-io/raydium-sdk";
 
 const useEditLaunch = () => {
@@ -101,6 +101,14 @@ const useEditLaunch = () => {
             marketId: market.publicKey,
         });
 
+        let market_id = await getLaunchOBMAccount(Config, launch_data);
+        let raydium_lp_mint_account = Liquidity.getAssociatedLpMint({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market_id.publicKey });
+
+        let cook_lp_mint_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), Buffer.from("LP")],
+            PROGRAM,
+        )[0];
+        
         let cook_amm_base_account = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
             amm_data_account, // owner
@@ -115,12 +123,15 @@ const useEditLaunch = () => {
             TOKEN_PROGRAM_ID,
         );
 
+        console.log(wrapped_sol_mint.toString(), amm_data_account.toString(), cook_amm_quote_account.toString());
+
         let base_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_base_account : raydium_base_account;
         let quote_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_quote_account : raydium_quote_account;
+        let amm_lp_mint = newLaunchData.current.amm_provider === 0 ? cook_lp_mint_account : raydium_lp_mint_account;
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        console.log("launch account", newLaunchData.current.pagename, launch_data_account.toString());
+        console.log("cook quote account", cook_amm_quote_account.toString());
 
         const instruction_data = serialise_EditLaunch_instruction(newLaunchData.current);
 
@@ -135,6 +146,7 @@ const useEditLaunch = () => {
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
+            { pubkey: amm_lp_mint, isSigner: false, isWritable: true },
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
