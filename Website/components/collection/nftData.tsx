@@ -20,7 +20,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const [nft_name, setNFTName] = useState<string>(newCollectionData.current.nft_name);
 
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const [displayImg, setDisplayImg] = useState<string>("");
 
     const [attributes, setAttributes] = useState<OnChainAttributes[]>([]);
@@ -233,12 +233,12 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Individual NFT info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">

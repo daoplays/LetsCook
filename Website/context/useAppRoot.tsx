@@ -8,6 +8,8 @@ import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Sola
 import { PublicKey } from "@solana/web3.js";
 import { Mint } from "@solana/spl-token";
 interface AppRootTypes {
+    sidePanelCollapsed: boolean;
+    setSidePanelCollapsed: Dispatch<SetStateAction<boolean>>;
     launchList: LaunchData[];
     homePageList: LaunchData[];
     tradePageList: Map<string, LaunchData>;
@@ -36,6 +38,8 @@ interface AppRootTypes {
 export const AppRootContext = createContext<AppRootTypes | null>(null);
 
 export const AppRootContextProvider = ({
+    sidePanelCollapsed,
+    setSidePanelCollapsed,
     children,
     launchList,
     homePageList,
@@ -64,6 +68,8 @@ export const AppRootContextProvider = ({
     return (
         <AppRootContext.Provider
             value={{
+                sidePanelCollapsed,
+                setSidePanelCollapsed,
                 launchList,
                 homePageList,
                 tradePageList,

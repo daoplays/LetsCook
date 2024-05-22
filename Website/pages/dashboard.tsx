@@ -60,7 +60,7 @@ const DashboardPage = () => {
                     align={"center"}
                     hidden={!sm}
                 >
-                    Creator Dashboard
+                    Dashboard
                 </Text>
 
                 <HStack spacing={3} zIndex={99}>
@@ -111,7 +111,7 @@ const DashboardPage = () => {
                     align={"center"}
                     hidden={sm}
                 >
-                    Creator Dashboard
+                    Dashboard
                 </Text>
 
                 {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}

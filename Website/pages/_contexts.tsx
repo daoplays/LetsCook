@@ -110,6 +110,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
     const [selectedNetwork, setSelectedNetwork] = useState("devnet");
+    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(true);
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
@@ -485,6 +486,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     return (
         <AppRootContextProvider
+            sidePanelCollapsed={sidePanelCollapsed}
+            setSidePanelCollapsed={setSidePanelCollapsed}
             launchList={launch_data}
             homePageList={home_page_data}
             tradePageList={trade_page_data}

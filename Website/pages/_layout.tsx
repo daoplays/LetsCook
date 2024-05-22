@@ -12,8 +12,8 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
         <VStack h="100vh">
             {!hide.includes(pathname) && <Navigation />}
             <HStack gap={0} h="100%" w="100%">
-                <SideNav />
-                <VStack pt={50} h="100%" w="100%" sx={{ flex: 1, overflowY: "auto" }}>
+                {!hide.includes(pathname) && <SideNav />}
+                <VStack pt={!hide.includes(pathname) && 50} h="100%" w="100%" sx={{ flex: 1, overflowY: "auto" }}>
                     <div style={{ width: "100%", height: "100%" }}>{children}</div>
                 </VStack>
             </HStack>

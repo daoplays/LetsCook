@@ -1,13 +1,15 @@
-import { VStack, HStack, Text } from "@chakra-ui/react";
+import { VStack, HStack, Text, Link, Spacer } from "@chakra-ui/react";
 import { usePathname, useRouter, useSelectedLayoutSegment } from "next/navigation";
 import { ReactNode, useState } from "react";
-import { FaCalendarDays, FaChartLine, FaHouse } from "react-icons/fa6";
+import { FaBook, FaCalendarDays, FaChartLine, FaCircleQuestion, FaClipboardList, FaQuestion } from "react-icons/fa6";
 import useResponsive from "../hooks/useResponsive";
 import { GiCook, GiToken } from "react-icons/gi";
-import Image from "next/image";
 import { MdLeaderboard } from "react-icons/md";
 import { BsPersonSquare } from "react-icons/bs";
-import { RiGalleryLine } from "react-icons/ri";
+import { RiGalleryFill, RiGalleryLine } from "react-icons/ri";
+import Image from "next/image";
+import useAppRoot from "../context/useAppRoot";
+import { FaHome } from "react-icons/fa";
 
 const tabs = {
     create: [
@@ -17,7 +19,7 @@ const tabs = {
             url: "/launch",
         },
         {
-            icon: (size: number) => <RiGalleryLine size={size} />,
+            icon: (size: number) => <RiGalleryFill size={size} />,
             tab: "New Hybrid",
             url: "/collection",
         },
@@ -61,17 +63,17 @@ const tabs = {
 
     info: [
         {
-            icon: (size: number) => <MdLeaderboard size={size} />,
-            tab: "Docs",
+            icon: (size: number) => <FaBook size={size} />,
+            tab: "Documentation",
             url: "https://docs.letscook.wtf/",
         },
         {
-            icon: (size: number) => <GiCook size={size} />,
+            icon: (size: number) => <FaClipboardList size={size} />,
             tab: "Terms",
             url: "/terms",
         },
         {
-            icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
+            icon: (size: number) => <FaCircleQuestion size={size} />,
             tab: "FAQs",
             url: "/faq",
         },
@@ -88,21 +90,24 @@ export interface TabProps {
 const SideNav = () => {
     const { sm } = useResponsive();
     const pathname = usePathname();
+    const { sidePanelCollapsed } = useAppRoot();
 
     return (
         <VStack
             bg="url(/images/rough-white.png)"
             backgroundSize="cover"
-            width="290px"
+            width={sidePanelCollapsed ? "260px" : "fit-content"}
             h="calc(100%)"
             position="sticky"
             top="0px"
             bottom="0px"
             pt={50}
             overflowY="auto"
+            hidden={sm}
         >
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
-                <VStack align="start" h="100%" w="100%" p={4}>
+                <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
+                    <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
                     <Text align="start" m={0} fontSize={"medium"} opacity={0.5}>
                         Create
                     </Text>
@@ -138,23 +143,28 @@ const SideNav = () => {
 
 const Tab = ({ isActive, icon, tab, url }: TabProps) => {
     const router = useRouter();
+    const { sidePanelCollapsed } = useAppRoot();
+
     return (
         <HStack
+            justify={sidePanelCollapsed ? "start" : "center"}
             w="100%"
-            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.20)inset"
+            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.15)inset"
             bg={isActive ? "#683309" : "transparent"}
             color={isActive ? "white" : "#683309"}
             cursor={"pointer"}
             borderRadius={8}
             spacing={4}
-            py={2}
-            px={4}
+            py={sidePanelCollapsed ? 2 : 2.5}
+            px={sidePanelCollapsed ? 4 : 2}
             onClick={() => router.push(url)}
         >
             {tab === "My Bags" && isActive ? <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} /> : icon}
-            <Text m={0} fontFamily="ReemKufiRegular" fontWeight="regular" fontSize={"large"} align="center">
-                {tab}
-            </Text>
+            {sidePanelCollapsed && (
+                <Text m={0} fontFamily="ReemKufiRegular" fontWeight="regular" fontSize={"large"} align="center">
+                    {tab}
+                </Text>
+            )}
         </HStack>
     );
 };

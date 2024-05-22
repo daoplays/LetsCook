@@ -23,45 +23,6 @@ const EmptyLaunch = () => {
     const { selectedNetwork } = useAppRoot();
 
     return (
-        // <Flex
-        //     style={{
-        //         background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)",
-        //         height: "90vh",
-        //         flexDirection: md ? "column" : "row",
-        //     }}
-        //     align="center"
-        //     justify="center"
-        //     gap={sm ? 3 : 24}
-        // >
-        //     <Image
-        //         src={EmptyLaunches}
-        //         width={md ? 300 : 600}
-        //         height={md ? 300 : 600}
-        //         alt="404 Error with a cute animal-cute"
-        //         style={{ marginLeft: "12px", marginTop: "-40px" }}
-        //     />
-
-        //     <VStack w={md ? "100%" : "800px"} spacing={15} align={md ? "center" : "start"}>
-        //         <Text m={0} fontSize={lg ? 30 : 55} color="white" className="font-face-kg" style={{ wordBreak: "break-word" }}>
-        //             No Launches Yet
-        //         </Text>
-
-        //         <Text
-        //             fontFamily="ReemKufiRegular"
-        //             fontSize={md ? "large" : "x-large"}
-        //             color="white"
-        //             maxW={sm ? "100%" : md ? "600px" : "850px"}
-        //             mr={md ? 0 : 25}
-        //             align={sm ? "center" : "start"}
-        //         >
-        //             We&apos;re currently working hard behind the scenes to bring you exciting meals. Stay tuned for updates! In the
-        //             meantime, feel free to cook your own.
-        //         </Text>
-        //         <Link href="/launch">
-        //             <WoodenButton label="Cook Something" size={22} width={"fit-content"} />
-        //         </Link>
-        //     </VStack>
-        // </Flex>
         <VStack minHeight="92vh" style={{ background: "linear-gradient(180deg, #292929 50%, #0B0B0B 100%)" }}>
             <Box
                 w="100%"
@@ -104,27 +65,27 @@ const EmptyLaunch = () => {
             >
                 <HStack justify="center" spacing={sm ? 75 : 125} style={{ flexDirection: sm ? "column" : "row" }}>
                     <VStack spacing={15}>
-                        <Image src={botProof} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Bot Proof Vector" />
-                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                        <Image src={botProof} width={sm ? 100 : 130} height={sm ? 100 : 130} alt="Bot Proof Vector" />
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"x-large"} color="white" align="center">
                             Bot-proof Liquidity
                         </Text>
                     </VStack>
 
                     <VStack spacing={15}>
-                        <VStack justify="center" w={sm ? 150 : 180} h={sm ? 150 : 180}>
+                        <VStack justify="center" w={sm ? 100 : 130} h={sm ? 100 : 130}>
                             <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xxx-large"} color="white" align="center">
                                 ZERO
                             </Text>
                         </VStack>
 
-                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"x-large"} color="white" align="center">
                             Upfront Fees
                         </Text>
                     </VStack>
 
                     <VStack spacing={15}>
-                        <Image src={mintInsurance} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Mint Insurance Vector" />
-                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                        <Image src={mintInsurance} width={sm ? 100 : 130} height={sm ? 100 : 130} alt="Mint Insurance Vector" />
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"x-large"} color="white" align="center">
                             Mint Insurance
                         </Text>
                     </VStack>
@@ -132,23 +93,23 @@ const EmptyLaunch = () => {
 
                 <HStack justify="center" spacing={sm ? 75 : 125} style={{ flexDirection: sm ? "column" : "row" }}>
                     <VStack spacing={15}>
-                        <Image src={coins} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Bot Proof Vector" />
-                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                        <Image src={coins} width={sm ? 100 : 130} height={sm ? 100 : 130} alt="Bot Proof Vector" />
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"x-large"} color="white" align="center">
                             1-Click Safe LP Deployment
                         </Text>
                     </VStack>
                     <VStack spacing={15}>
-                        <Image src={stock} width={sm ? 150 : 180} height={sm ? 150 : 180} alt="Bot Proof Vector" />
-                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                        <Image src={stock} width={sm ? 100 : 130} height={sm ? 100 : 130} alt="Bot Proof Vector" />
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"x-large"} color="white" align="center">
                             Market Making Rewards
                         </Text>
                     </VStack>
                     <VStack spacing={15}>
-                        <HStack h={sm ? 150 : 180} w={sm ? 150 : 180}>
+                        <HStack h={sm ? 100 : 130} w={sm ? 100 : 130}>
                             <Image src="/images/thumbs-up.svg" width={130} height={130} alt="Thumbs Up" />{" "}
                             <Image src="/images/thumbs-down.svg" width={130} height={130} alt="Thumbs Down" />
                         </HStack>
-                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"xx-large"} color="white" align="center">
+                        <Text m={0} fontFamily="ReemKufiRegular" fontSize={"x-large"} color="white" align="center">
                             Community Ratings
                         </Text>
                     </VStack>

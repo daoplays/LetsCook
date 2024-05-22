@@ -46,7 +46,7 @@ interface TokenPageProps {
 const TokenPage = ({ setScreen }: TokenPageProps) => {
     //console.log(newLaunchData.current)
     const router = useRouter();
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
@@ -363,7 +363,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Token Information:
                 </Text>
-                <form style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (

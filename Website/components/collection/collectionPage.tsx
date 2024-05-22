@@ -61,7 +61,7 @@ type Tag = {
 
 const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const router = useRouter();
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const wallet = useWallet();
     const { newCollectionData } = useAppRoot();
 
@@ -688,12 +688,12 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed]);
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Page Information:
                 </Text>
-                <form onSubmit={nextPage} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={nextPage} style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>

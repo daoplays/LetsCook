@@ -18,7 +18,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const router = useRouter();
     const { newCollectionData } = useAppRoot();
 
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const [name, setName] = useState<string>(newCollectionData.current.collection_name);
     const [tokenStart, setTokenStart] = useState<string>("");
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
@@ -250,7 +250,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (

@@ -57,7 +57,7 @@ const CollectionSwapPage = () => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const { pageName } = router.query;
-    const { xs, sm, md, lg } = useResponsive();
+    const { xs, sm, md, lg, xl } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
     const { collectionList, mintData } = useAppRoot();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
@@ -444,7 +444,7 @@ const CollectionSwapPage = () => {
                         h="fit-content"
                         justifyContent="space-between"
                     >
-                        <Flex gap={sm ? 12 : 24} direction={sm ? "column" : "row"} alignItems={"center"}>
+                        <Flex gap={lg ? 12 : 24} direction={lg ? "column" : "row"} alignItems={"center"}>
                             <VStack minW={220}>
                                 <Image
                                     src={launch.collection_icon_url}
@@ -828,6 +828,7 @@ const CollectionSwapPage = () => {
                                 </Button>
                             )} */}
                         </Flex>
+
                         <VStack mt={5} spacing={0} w="100%" style={{ position: "relative" }}>
                             <Text color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                 Available Supply

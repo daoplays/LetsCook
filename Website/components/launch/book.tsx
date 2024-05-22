@@ -87,7 +87,7 @@ interface BookPageProps {
 const BookPage = ({ setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const { newLaunchData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -591,7 +591,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Book Token Raffle
                 </Text>
-                <form style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
                         <HStack spacing={15}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
@@ -689,7 +689,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                 <Stack direction="row" gap={5}>
                                     <Radio value="cook" color="white">
                                         <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                            Lets Cook
+                                            Let&apos;s Cook
                                         </Text>
                                     </Radio>
                                     {newLaunchData.current.token_program.equals(TOKEN_PROGRAM_ID) && (

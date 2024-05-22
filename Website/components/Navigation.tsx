@@ -28,16 +28,17 @@ import { isHomePageOnly } from "../constant/root";
 import trimAddress from "../utils/trimAddress";
 import { FaBook, FaWallet } from "react-icons/fa";
 import { FaChevronDown } from "react-icons/fa";
-import { useEffect, useState } from "react";
-import { BsPersonSquare } from "react-icons/bs";
+import twitter from "../public/images/Twitter.png";
+import discord from "../public/images/discord.png";
+import { TbLayoutSidebarLeftExpandFilled, TbLayoutSidebarRightExpandFilled } from "react-icons/tb";
 
 function Navigation() {
     const router = useRouter();
     const wallet = useWallet();
-    const { xs, md } = useResponsive();
+    const { xs, sm, md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
-    const { currentUserData, setSelectedNetwork, selectedNetwork } = useAppRoot();
+    const { currentUserData, setSelectedNetwork, selectedNetwork, sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
 
     return (
         <>
@@ -58,13 +59,20 @@ function Navigation() {
                 }}
             >
                 <HStack>
+                    <div style={{ cursor: "pointer" }} onClick={() => setSidePanelCollapsed(!sidePanelCollapsed)} hidden={sm}>
+                        {sidePanelCollapsed ? (
+                            <TbLayoutSidebarRightExpandFilled size={35} color="#683309" />
+                        ) : (
+                            <TbLayoutSidebarLeftExpandFilled size={35} color="#683309" />
+                        )}
+                    </div>
                     <Text
-                        fontSize={md ? "large" : "x-large"}
+                        fontSize={md ? "medium" : "x-large"}
                         color={"#683309"}
                         className="font-face-kg"
                         style={{ cursor: "pointer", margin: "auto 0" }}
                         onClick={() => router.push("/")}
-                        hidden={xs}
+                        // hidden={xs}
                     >
                         LET&apos;S COOK
                     </Text>
@@ -108,131 +116,62 @@ function Navigation() {
                         </MenuList>
                     </Menu>
                 </HStack>
+
                 <HStack gap={3}>
                     <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
                         <div className={styles.sauce}>
-                            <Image height={20} width={20} src="/images/sauce.png" alt="Sauce" />
-                            <div>{currentUserData === null ? 0 : currentUserData.total_points}</div>
+                            <Image height={sm ? 15 : 20} width={sm ? 15 : 20} src="/images/sauce.png" alt="Sauce" />
+                            <Text m={0} fontSize={sm ? "small" : "medium"}>
+                                {currentUserData === null ? 0 : currentUserData.total_points}
+                            </Text>
                         </div>
                     </Tooltip>
 
                     <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="FAQs" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/faq">
-                                <Image src="/images/question-mark.png" width={35} height={35} alt={"Question Mark"} />
-                            </Link>
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Docs" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={isHomePageOnly ? "#" : "https://docs.letscook.wtf"} target="_blank">
-                                <div
+                        <HStack>
+                            <Link href="https://twitter.com/letscook_sol" target="_blank">
+                                <Image
+                                    src={twitter.src}
+                                    width={30}
+                                    height={30}
+                                    alt={"Twitter"}
                                     style={{
-                                        cursor: isHomePageOnly ? "not-allowed" : "pointer",
                                         backgroundColor: "#683309",
                                         borderRadius: "50%",
-                                        padding: 8,
+                                        padding: 5,
+                                    }}
+                                />
+                            </Link>
+
+                            <Link href="https://discord.gg/fZQd5yGWEr" target="_blank">
+                                <Image
+                                    src={discord}
+                                    width={30}
+                                    height={30}
+                                    alt={"Discord"}
+                                    style={{
+                                        backgroundColor: "#683309",
+                                        borderRadius: "50%",
+                                        padding: 5,
+                                    }}
+                                />
+                            </Link>
+
+                            <Link href="https://docs.letscook.wtf" target="_blank">
+                                <div
+                                    style={{
+                                        cursor: "pointer",
+                                        backgroundColor: "#683309",
+                                        borderRadius: "50%",
+                                        padding: 7,
                                         color: "white",
                                     }}
                                 >
-                                    <FaBook size={20} />
+                                    <FaBook size={16} />
                                 </div>
                             </Link>
-                        </Tooltip>
+                        </HStack>
                     </Show>
-
-                    {/* <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Hybrids" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={isHomePageOnly ? "#" : "/hybrids"}>
-                                <div
-                                    style={{
-                                        cursor: isHomePageOnly ? "not-allowed" : "pointer",
-                                        backgroundColor: "#683309",
-                                        borderRadius: "50%",
-                                        padding: 8,
-                                        color: "white",
-                                    }}
-                                >
-                                    <BsPersonSquare size={20} />
-                                </div>
-                            </Link>
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Trade" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={isHomePageOnly ? "#" : "/trade"}>
-                                <Image
-                                    src="/images/market.png"
-                                    width={35}
-                                    height={35}
-                                    alt={"Trade"}
-                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                />
-                            </Link>
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Calendar" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={isHomePageOnly ? "#" : "/calendar"}>
-                                <Image
-                                    src="/images/calendar.png"
-                                    width={35}
-                                    height={35}
-                                    alt={"Calendar"}
-                                    style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                                />
-                            </Link>
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Leaderboard" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href="/leaderboard">
-                                <Image src="/images/points.png" width={35} height={35} alt={"Points"} />
-                            </Link>
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="My Bag" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Image
-                                src="/images/money-bag.png"
-                                width={35}
-                                height={35}
-                                alt={"Money Bag"}
-                                onClick={() => {
-                                    if (!wallet.connected) {
-                                        alert("Please connect your wallet to access your bags");
-                                    } else {
-                                        !isHomePageOnly && router.push(`/bags`);
-                                    }
-                                }}
-                                style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                            />
-                        </Tooltip>
-                    </Show>
-
-                    <Show breakpoint="(min-width: 1024px)">
-                        <Tooltip label="Creator Dashboard" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Image
-                                src="/images/chef-hat.png"
-                                width={35}
-                                height={35}
-                                alt={"Question Mark"}
-                                onClick={() => {
-                                    if (!wallet.connected) {
-                                        alert("Please connect your wallet to access creator dashboard");
-                                    } else {
-                                        !isHomePageOnly && router.push(`/dashboard`);
-                                    }
-                                }}
-                                style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
-                            />
-                        </Tooltip>
-                    </Show> */}
 
                     <Show breakpoint="(max-width: 1024px)">
                         <Image
@@ -249,10 +188,6 @@ function Navigation() {
                         <>
                             {wallet.publicKey && <DisconnectWalletButton />}
                             {wallet.publicKey === null && <ConnectWalletButton />}
-
-                            {/* <Link href="/launch">
-                                <MainButton label="LAUNCH" />
-                            </Link> */}
                         </>
                     </Show>
                 </HStack>
@@ -268,7 +203,6 @@ function Navigation() {
                 bg="url(/images/drawer.jpg)"
                 backgroundSize="cover"
                 borderBottomRadius={12}
-                // hidden={!md || !isOpen}
                 boxShadow="0px 3px 13px 0px rgba(0,0,0,0.75) inset"
                 zIndex={999}
                 justifyContent="start"
