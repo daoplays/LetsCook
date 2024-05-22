@@ -614,6 +614,8 @@ export const enum LaunchInstruction {
     create_openbook = 19,
     create_raydium = 20,
     raydium_swap = 21,
+    update_cook_liquidity = 22,
+
 }
 
 export interface LaunchDataUserInput {

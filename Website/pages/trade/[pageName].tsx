@@ -9,7 +9,7 @@ import {
     uInt32ToLEBytes,
     MintInfo,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
+import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import {
     bignum_to_num,
@@ -68,6 +68,7 @@ import { Liquidity } from "@raydium-io/raydium-sdk";
 import { getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
 import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
+import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -363,11 +364,9 @@ const TradePage = () => {
         let base_amm_account = amm.base_key;
 
         let quote_amm_account = amm.quote_key;
+        
 
-        if (launch.flags[LaunchFlags.AMMProvider] == 1) {
-            let market_id = await getLaunchOBMAccount(Config, launch);
-            let lp_mint = Liquidity.getAssociatedLpMint({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market_id.publicKey });
-        }
+       
         console.log("base key", base_amm_account.toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
@@ -397,6 +396,11 @@ const TradePage = () => {
 
             if (launch.flags[LaunchFlags.AMMProvider] > 0) {
                 getBirdEyeData(setMarketData);
+                //let market = await getLaunchOBMAccount(Config, launch);
+                //let ray_key = Liquidity.getAssociatedId({programId: getRaydiumPrograms(Config).AmmV4, marketId : market.publicKey})
+                //let ray_account = await connection.getAccountInfo(ray_key)
+                //const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
+                //console.log("raydium: ", rayAMM.status.toString(), rayAMM.baseNeedTakePnl.toString(), rayAMM.quoteNeedTakePnl.toString())
                 return;
             }
 
@@ -780,6 +784,7 @@ const BuyAndSell = ({
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
     const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
     const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(launch);
+    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
 
     const { userSOLBalance } = useAppRoot();
 
@@ -792,41 +797,50 @@ const BuyAndSell = ({
 
     let amm_provider = launch.flags[LaunchFlags.AMMProvider];
 
+    let base_raw = Math.floor(token_amount * Math.pow(10, launch.decimals));
+    let total_base_fee = 0;
     let transfer_fee = 0;
     let max_transfer_fee = 0;
     let transfer_fee_config = getTransferFeeConfig(mint_data);
     if (transfer_fee_config !== null) {
         transfer_fee = transfer_fee_config.newerTransferFee.transferFeeBasisPoints;
         max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, launch.decimals);
+        total_base_fee +=  Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
 
-    let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
+    let amm_base_fee = Math.ceil((base_raw - total_base_fee)* amm.fee/100/100);
+    total_base_fee += amm_base_fee;
 
-    let base_output =
-        (sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)) / Math.pow(10, launch.decimals);
+    let base_input_amount = base_raw - total_base_fee;
+
     let quote_output =
-        (token_amount * Math.pow(10, launch.decimals) * quote_balance) /
-        (token_amount * Math.pow(10, launch.decimals) + base_balance) /
+        (base_input_amount * quote_balance) /
+        (base_input_amount + base_balance) /
         Math.pow(10, 9);
 
-    let base_int = Math.floor((sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)));
-    let output_fee = transfer_fee_config !== null ? Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_int))) : 0;
-    base_output = (base_int - output_fee) / Math.pow(10, launch.decimals);
+    console.log("base in/out", base_input_amount / Math.pow(10, launch.decimals), quote_output)
 
+    let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
+    let amm_quote_fee = Math.ceil(quote_raw * amm.fee/100/100);
+    let quote_input_amount = quote_raw - amm_quote_fee;
+    let base_output =
+        (quote_input_amount * base_balance) / (quote_balance + quote_input_amount) / Math.pow(10, launch.decimals);
+    
+    console.log("quote in/out", quote_input_amount / Math.pow(10, 9), amm_quote_fee, base_output)
+
+
+    let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
+    
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
-
-    //console.log("no slip", quote_no_slip, quote_output)
-    //console.log("fees",  quote_output - quote_no_slip * 0.0025);
-
-    console.log("base ratio", base_balance, token_amount, token_amount / base_balance);
 
     let max_sol_amount = Math.floor(quote_no_slip * Math.pow(10, 9) * 2);
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
-    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
+
+    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(5);
     quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
     let base_output_string =
@@ -982,26 +996,21 @@ const BuyAndSell = ({
                             color="white"
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
-                            value={amm_provider === 0 ? sol_amount : token_amount}
+                            value={sol_amount}
                             onChange={(e) => {
-                                amm_provider === 0
-                                    ? setSOLAmount(
+                               setSOLAmount(
                                           !isNaN(parseFloat(e.target.value)) || e.target.value === ""
                                               ? parseFloat(e.target.value)
                                               : sol_amount,
                                       )
-                                    : setTokenAmount(
-                                          !isNaN(parseFloat(e.target.value)) || e.target.value === ""
-                                              ? parseFloat(e.target.value)
-                                              : token_amount,
-                                      );
+                                    
                             }}
                             type="number"
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
                             <Image
-                                src={amm_provider === 0 ? "/images/sol.png" : launch.icon}
+                                src={"/images/sol.png"}
                                 width={30}
                                 height={30}
                                 alt="SOL Icon"
@@ -1057,19 +1066,16 @@ const BuyAndSell = ({
                             size="lg"
                             borderColor="rgba(134, 142, 150, 0.5)"
                             value={
-                                amm_provider === 0
-                                    ? base_output_string === "NaN"
+                                base_output_string === "NaN"
                                         ? "0"
                                         : base_output_string
-                                    : quote_output_string === "NaN"
-                                      ? "0"
-                                      : quote_output_string
+                                   
                             }
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
                             <Image
-                                src={amm_provider === 0 ? launch.icon : "/images/sol.png"}
+                                src={ launch.icon }
                                 width={30}
                                 height={30}
                                 alt=""
@@ -1109,7 +1115,7 @@ const BuyAndSell = ({
                         !wallet.connected
                             ? handleConnectWallet()
                             : amm_provider === 0
-                              ? {}
+                              ? UpdateCookLiquidity(launch, token_amount, 0 )
                               : AddLiquidityRaydium(token_amount * Math.pow(10, launch.decimals), max_sol_amount);
                     }}
                 >
@@ -1154,8 +1160,8 @@ const BuyAndSell = ({
                                 : amm_provider === 0
                                   ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
                                   : SwapRaydium(
-                                        token_amount * Math.pow(10, launch.decimals),
-                                        order_type === 1 ? 0 : max_sol_amount,
+                                        order_type === 1 ? token_amount * Math.pow(10, launch.decimals) : 0,
+                                        order_type === 1 ? 0 : sol_amount * Math.pow(10, 9),
                                         order_type,
                                     );
                         }}

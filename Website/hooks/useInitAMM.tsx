@@ -118,6 +118,11 @@ const useInitAMM = (launchData: LaunchData) => {
             TOKEN_PROGRAM_ID,
         );
 
+        let cook_lp_mint_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), Buffer.from("LP")],
+            PROGRAM,
+        )[0];
+
         let user_data_account = PublicKey.findProgramAddressSync(
             [launchData.keys[LaunchKeys.Seller].toBytes(), Buffer.from("User")],
             PROGRAM,
@@ -180,6 +185,7 @@ const useInitAMM = (launchData: LaunchData) => {
 
             { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: cook_lp_mint_account, isSigner: false, isWritable: true },
 
             { pubkey: base_pda_account, isSigner: false, isWritable: true },
             { pubkey: quote_pda_account, isSigner: false, isWritable: true },
