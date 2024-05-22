@@ -121,7 +121,7 @@ const useRemoveLiquidityRaydium = (launchData: LaunchData) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
-
+getRaydiumPrograms
         const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
         const targetMargetId = await generatePubKey({
             fromPublicKey: launchData.keys[LaunchKeys.Seller],
