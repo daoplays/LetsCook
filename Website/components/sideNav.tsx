@@ -10,6 +10,8 @@ import { RiGalleryFill, RiGalleryLine } from "react-icons/ri";
 import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
 import { FaHome } from "react-icons/fa";
+import { useWallet } from "@solana/wallet-adapter-react";
+import UseWalletConnection from "../hooks/useWallet";
 
 const tabs = {
     create: [
@@ -142,7 +144,9 @@ const SideNav = () => {
 };
 
 const Tab = ({ isActive, icon, tab, url }: TabProps) => {
+    const wallet = useWallet();
     const router = useRouter();
+    const { handleConnectWallet } = UseWalletConnection();
     const { sidePanelCollapsed } = useAppRoot();
 
     return (
@@ -157,7 +161,20 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
             spacing={4}
             py={sidePanelCollapsed ? 2 : 2.5}
             px={sidePanelCollapsed ? 4 : 2}
-            onClick={() => router.push(url)}
+            onClick={() => {
+                if (
+                    (tab === "New Token" ||
+                        tab === "New Hybrid" ||
+                        tab === "Creator Dashboard" ||
+                        tab === "My Bags" ||
+                        tab === "Leaderboard") &&
+                    !wallet.connected
+                ) {
+                    handleConnectWallet();
+                } else {
+                    router.push(url);
+                }
+            }}
         >
             {tab === "My Bags" && isActive ? <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} /> : icon}
             {sidePanelCollapsed && (
