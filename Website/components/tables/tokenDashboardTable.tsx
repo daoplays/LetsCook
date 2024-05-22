@@ -201,7 +201,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     );
 
     return (
-        <TableContainer>
+        <TableContainer w="100%">
             <table
                 width="100%"
                 className="custom-centered-table font-face-rk"

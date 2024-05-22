@@ -46,12 +46,16 @@ function Navigation() {
                 backgroundSize="cover"
                 height={50}
                 px={4}
-                w="100%"
                 alignItems="center"
                 justify="space-between"
-                position={"fixed"}
+                position="fixed"
                 top={0}
+                left={0}
+                right={0}
                 zIndex={1000}
+                style={{
+                    boxShadow: "0px 2px 13px 0px rgba(0, 0, 0, 0.50)",
+                }}
             >
                 <HStack>
                     <Text
@@ -138,7 +142,7 @@ function Navigation() {
                         </Tooltip>
                     </Show>
 
-                    <Show breakpoint="(min-width: 1024px)">
+                    {/* <Show breakpoint="(min-width: 1024px)">
                         <Tooltip label="Hybrids" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={isHomePageOnly ? "#" : "/hybrids"}>
                                 <div
@@ -228,7 +232,7 @@ function Navigation() {
                                 style={{ cursor: isHomePageOnly ? "not-allowed" : "pointer" }}
                             />
                         </Tooltip>
-                    </Show>
+                    </Show> */}
 
                     <Show breakpoint="(max-width: 1024px)">
                         <Image

@@ -17,6 +17,7 @@ import "../styles/fonts.css";
 import "../styles/table.css";
 import { usePathname } from "next/navigation";
 import useResponsive from "../hooks/useResponsive";
+import AppRootPage from "./_layout";
 
 function MyApp({ Component, pageProps }) {
     const { sm } = useResponsive();
@@ -49,11 +50,9 @@ function MyApp({ Component, pageProps }) {
                     <WalletProvider wallets={wallets} autoConnect>
                         <WalletModalProvider>
                             <ContextProviders>
-                                {!hide.includes(pathname) && <Navigation />}
-                                <div style={{ minHeight: "calc(100vh - 47.5px)", paddingTop: !hide.includes(pathname) && "50px" }}>
+                                <AppRootPage>
                                     <Component {...pageProps} />
-                                </div>
-                                {hide.includes(pathname) || (!sm && <Footer />)}
+                                </AppRootPage>
                             </ContextProviders>
                         </WalletModalProvider>
                     </WalletProvider>

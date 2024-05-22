@@ -1,4 +1,4 @@
-import { Button, Flex, HStack, Link, Text } from "@chakra-ui/react";
+import { Button, Flex, HStack, Link, Text, VStack } from "@chakra-ui/react";
 import React, { useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -42,7 +42,7 @@ const DashboardPage = () => {
     if (!creatorLaunches) return <Loader />;
 
     return (
-        <>
+        <VStack>
             <Flex
                 px={4}
                 py={18}
@@ -50,7 +50,7 @@ const DashboardPage = () => {
                 alignItems="center"
                 justifyContent={!sm ? "space-between" : "end"}
                 style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-                w={"100"}
+                w={"100%"}
             >
                 <Text
                     fontSize={sm ? 25 : 35}
@@ -113,6 +113,7 @@ const DashboardPage = () => {
                 >
                     Creator Dashboard
                 </Text>
+
                 {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
                 <HStack w={sm ? "100%" : ""}>
                     <Button
@@ -149,7 +150,7 @@ const DashboardPage = () => {
                     </Text>
                 </HStack>
             )}
-        </>
+        </VStack>
     );
 };
 

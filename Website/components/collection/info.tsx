@@ -245,8 +245,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
