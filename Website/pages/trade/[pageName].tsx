@@ -460,7 +460,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, amm, base_mint, wallet.publicKey]);
+    }, [launch, amm, base_mint, wallet.publicKey, connection]);
 
     useEffect(() => {
         CheckMarketData();
