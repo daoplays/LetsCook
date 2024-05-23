@@ -11,6 +11,7 @@ import {
     request_raw_account_data,
     ExtraAccountMetaHead,
     ExtraAccountMeta,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
@@ -257,9 +258,11 @@ const usePlaceMarketOrder = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(instruction);
+        getRecentPrioritizationFees();
+
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
+        transaction.add(instruction);
 
         console.log("sending transaction");
 

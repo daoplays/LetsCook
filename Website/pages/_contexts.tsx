@@ -300,9 +300,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
-            //if (data[0] === 0) {
-            //    closeAccounts.push(program_data[i].pubkey)
-            //}
+            
+            //closeAccounts.push(program_data[i].pubkey)
+            //continue  
 
             if (data[0] === 0) {
                 try {
