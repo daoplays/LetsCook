@@ -172,7 +172,11 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                 ) {
                     handleConnectWallet();
                 } else {
-                    router.push(url);
+                    if (tab === "Documentation") {
+                        window.open("https://docs.letscook.wtf/", "_blank");
+                    } else {
+                        router.push(url);
+                    }
                 }
             }}
         >
