@@ -56,13 +56,19 @@ export class UpdateLiquidity_Instruction {
     );
 }
 
-export function serialise_update_liquidity(side: number, in_amount: bignum): Buffer {
+function serialise_update_liquidity(side: number, in_amount: bignum): Buffer {
     const data = new UpdateLiquidity_Instruction(LaunchInstruction.update_cook_liquidity, side, in_amount);
     const [buf] = UpdateLiquidity_Instruction.struct.serialize(data);
 
     return buf;
 }
 
+function serialise_remove_liquidity(side: number, in_amount: bignum): Buffer {
+    const data = new UpdateLiquidity_Instruction(LaunchInstruction.remove_cook_liquidity, side, in_amount);
+    const [buf] = UpdateLiquidity_Instruction.struct.serialize(data);
+
+    return buf;
+}
 const useUpdateCookLiquidity = () => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
@@ -171,6 +177,11 @@ const useUpdateCookLiquidity = () => {
             mint_account.program,
         );
 
+        let temp_wsol_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
+            PROGRAM,
+        )[0];
+
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let transfer_hook = getTransferHook(mint_account.mint);
@@ -207,7 +218,7 @@ const useUpdateCookLiquidity = () => {
                 extra_hook_accounts.push(meta);
             }
         }
-        const instruction_data = serialise_update_liquidity(0, token_amount);
+        const instruction_data = order_type == 0 ? serialise_update_liquidity(0, token_amount) : serialise_remove_liquidity(0, token_amount);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -216,6 +227,7 @@ const useUpdateCookLiquidity = () => {
             { pubkey: wsol_mint, isSigner: false, isWritable: true },
             { pubkey: cook_lp_mint_account, isSigner: false, isWritable: true },
 
+            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: user_lp_token_account_key, isSigner: false, isWritable: true },
 

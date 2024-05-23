@@ -615,6 +615,7 @@ export const enum LaunchInstruction {
     create_raydium = 20,
     raydium_swap = 21,
     update_cook_liquidity = 22,
+    remove_cook_liquidity = 23,
 
 }
 

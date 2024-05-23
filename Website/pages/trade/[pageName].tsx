@@ -179,7 +179,7 @@ const TradePage = () => {
     const [quote_amount, setQuoteAmount] = useState<number | null>(null);
     const [lp_amount, setLPAmount] = useState<number | null>(null);
 
-    const [user_amount, setUserAmount] = useState<number>(0);
+    const [user_base_amount, setUserBaseAmount] = useState<number>(0);
 
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [num_holders, setNumHolders] = useState<number>(0);
@@ -304,7 +304,7 @@ const TradePage = () => {
         let amount = bignum_to_num(token_account.amount);
         // console.log("update quote amount", amount);
 
-        setUserAmount(amount);
+        setUserBaseAmount(amount);
     }, []);
 
     // launch account subscription handler
@@ -389,20 +389,23 @@ const TradePage = () => {
 
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
-            setUserAmount(user_amount);
+            setUserBaseAmount(user_amount);
 
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
             if (launch.flags[LaunchFlags.AMMProvider] > 0) {
                 getBirdEyeData(setMarketData);
-                //let market = await getLaunchOBMAccount(Config, launch);
-                //let ray_key = Liquidity.getAssociatedId({programId: getRaydiumPrograms(Config).AmmV4, marketId : market.publicKey})
-                //let ray_account = await connection.getAccountInfo(ray_key)
-                //const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
+                let market = await getLaunchOBMAccount(Config, launch);
+                let ray_key = Liquidity.getAssociatedId({programId: getRaydiumPrograms(Config).AmmV4, marketId : market.publicKey})
+                let ray_account = await connection.getAccountInfo(ray_key)
+                const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
+                setLPAmount(Number(rayAMM.lpReserve))
                 //console.log("raydium: ", rayAMM.status.toString(), rayAMM.baseNeedTakePnl.toString(), rayAMM.quoteNeedTakePnl.toString())
                 return;
             }
+
+            setLPAmount(amm.lp_amount)
 
             let index_buffer = uInt32ToLEBytes(0);
             let price_data_account = PublicKey.findProgramAddressSync(
@@ -589,7 +592,8 @@ const TradePage = () => {
                                     mint_data={base_mint.mint}
                                     base_balance={base_amount}
                                     quote_balance={quote_amount}
-                                    user_balance={user_amount}
+                                    amm_lp_balance={lp_amount}
+                                    user_balance={user_base_amount}
                                 />
                             )}
                         </VStack>
@@ -764,6 +768,7 @@ const BuyAndSell = ({
     mint_data,
     base_balance,
     quote_balance,
+    amm_lp_balance,
     user_balance,
 }: {
     launch: LaunchData;
@@ -771,6 +776,7 @@ const BuyAndSell = ({
     mint_data: Mint;
     base_balance: number;
     quote_balance: number;
+    amm_lp_balance: number;
     user_balance: number;
 }) => {
     const { xs } = useResponsive();
@@ -808,7 +814,7 @@ const BuyAndSell = ({
         total_base_fee +=  Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
 
-    let amm_base_fee = Math.ceil((base_raw - total_base_fee)* amm.fee/100/100);
+    let amm_base_fee = (selected == "Buy" || selected == "Sell") ? Math.ceil((base_raw - total_base_fee)* amm.fee/100/100) : 0;
     total_base_fee += amm_base_fee;
 
     let base_input_amount = base_raw - total_base_fee;
@@ -825,6 +831,7 @@ const BuyAndSell = ({
     let quote_input_amount = quote_raw - amm_quote_fee;
     let base_output =
         (quote_input_amount * base_balance) / (quote_balance + quote_input_amount) / Math.pow(10, launch.decimals);
+    
     
     console.log("quote in/out", quote_input_amount / Math.pow(10, 9), amm_quote_fee, base_output)
 
@@ -851,6 +858,17 @@ const BuyAndSell = ({
               : base_output.toLocaleString("en-US", { minimumFractionDigits: launch.decimals, maximumFractionDigits: launch.decimals });
 
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
+
+    let lp_generated = base_raw * (amm_lp_balance / base_balance) / Math.pow(10, launch.decimals);
+
+    let lp_quote_output = quote_balance * base_raw / amm_lp_balance / Math.pow(10, 9);
+    let lp_base_output = base_balance * base_raw / amm_lp_balance / Math.pow(10, launch.decimals);
+    if (selected === "LP-") {
+        quote_output_string = lp_quote_output <= 1e-3 ? lp_quote_output.toExponential(3) : lp_quote_output.toFixed(5);
+        base_output_string = lp_base_output <= 1e-3 ? lp_base_output.toExponential(3) : lp_base_output.toFixed(launch.decimals);
+    }
+
+    console.log("lp: ", lp_base_output, lp_quote_output)
 
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
@@ -1051,7 +1069,7 @@ const BuyAndSell = ({
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                         And:
                     </Text>
-                ) : selected === "Sell" || selected === "LP+" ? (
+                ) : selected === "Sell" || selected === "LP+"  || selected === "LP-" ? (
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                         For:
                     </Text>
@@ -1083,7 +1101,7 @@ const BuyAndSell = ({
                             />
                         </InputRightElement>
                     </InputGroup>
-                ) : selected === "Sell" || selected === "LP+" ? (
+                ) : selected === "Sell" || selected === "LP+" || selected === "LP-" ? (
                     <InputGroup size="md">
                         <Input
                             readOnly={true}
@@ -1101,6 +1119,60 @@ const BuyAndSell = ({
                     <></>
                 )}
             </VStack>
+
+            {selected === "LP+" &&
+            <>
+                <VStack align="start" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        For:
+                    </Text>
+                
+                
+                    <InputGroup size="md">
+                        <Input
+                            readOnly={true}
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={lp_generated.toFixed(launch.decimals)}
+                            disabled
+                        />
+                        <InputRightElement h="100%" w={50}>
+                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                LP
+                            </Text>
+                        </InputRightElement>
+                    </InputGroup>
+                
+            </VStack>
+            </>
+            }
+
+            {selected === "LP-" &&
+            <>
+                <VStack align="start" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        And:
+                    </Text>
+                
+                
+                    <InputGroup size="md">
+                        <Input
+                            readOnly={true}
+                            color="white"
+                            size="lg"
+                            borderColor="rgba(134, 142, 150, 0.5)"
+                            value={base_output_string}
+                            disabled
+                        />
+                        <InputRightElement h="100%" w={50}>
+                        <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        </InputRightElement>
+                    </InputGroup>
+                
+            </VStack>
+            </>
+            }
 
             {selected === "LP+" ? (
                 <Button
@@ -1136,7 +1208,7 @@ const BuyAndSell = ({
                         !wallet.connected
                             ? handleConnectWallet()
                             : amm_provider === 0
-                              ? {}
+                              ? UpdateCookLiquidity(launch, token_amount, 1 )
                               : RemoveLiquidityRaydium(token_amount * Math.pow(10, launch.decimals));
                     }}
                 >
