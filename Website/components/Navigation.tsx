@@ -157,19 +157,6 @@ function Navigation() {
                                 />
                             </Link>
 
-                            <Link href="https://docs.letscook.wtf" target="_blank">
-                                <div
-                                    style={{
-                                        cursor: "pointer",
-                                        backgroundColor: "#683309",
-                                        borderRadius: "50%",
-                                        padding: 7,
-                                        color: "white",
-                                    }}
-                                >
-                                    <FaBook size={16} />
-                                </div>
-                            </Link>
                         </HStack>
                     </Show>
 
