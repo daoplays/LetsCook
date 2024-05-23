@@ -19,12 +19,13 @@ import {
     requestMultipleAccounts,
     Token22MintAccount,
     uInt32ToLEBytes,
+    MintInfo,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
-import { CollectionDataUserInput, defaultCollectionInput, CollectionData, LookupData } from "../components/collection/collectionState";
-import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction } from "@solana/web3.js";
+import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
+import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
@@ -44,11 +45,15 @@ const GetTradeMintData = async (trade_keys, setMintMap) => {
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     let result = await connection.getMultipleAccountsInfo(trade_keys, "confirmed");
 
-    let mint_map = new Map<PublicKey, Mint>();
+    let mint_map = new Map<PublicKey, MintInfo>();
     for (let i = 0; i < result.length; i++) {
-        let mint = unpackMint(trade_keys[i], result[i], TOKEN_2022_PROGRAM_ID);
+        let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
+        let mint_info: MintInfo = {
+            mint: mint,
+            program: result[i].owner,
+        };
         //console.log("mint; ", mint.address.toString());
-        mint_map.set(trade_keys[i].toString(), mint);
+        mint_map.set(trade_keys[i].toString(), mint_info);
     }
     setMintMap(mint_map);
 };
@@ -104,8 +109,8 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
-    const [selectedNetwork, setSelectedNetwork] = useState("mainnet");
-
+    const [selectedNetwork, setSelectedNetwork] = useState("devnet");
+    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(true);
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
@@ -114,11 +119,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [launch_data, setLaunchData] = useState<LaunchData[] | null>(null);
     const [collection_data, setCollectionData] = useState<CollectionData[] | null>(null);
-    const nft_lookup = useRef<Map<String, Map<String, LookupData>> | null>(null);
 
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
-    const [mintData, setMintData] = useState<Map<String, Mint> | null>(null);
+    const [mintData, setMintData] = useState<Map<String, MintInfo> | null>(null);
 
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
@@ -143,7 +147,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
-
 
     function closeFilterTable({ list }: { list: LaunchData[] }) {
         let current_time = new Date().getTime();
@@ -230,16 +233,19 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, [wallet, check_user_update, check_user_balance, checkUserBalance]);
 
     const CloseAccount = useCallback(
-        async ({ account }: { account: PublicKey }) => {
+        async ({ accounts }: { accounts: PublicKey[] }) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             const instruction_data = serialise_basic_instruction(LaunchInstruction.close_account);
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-                { pubkey: account, isSigner: false, isWritable: true },
                 { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             ];
+
+            for (let i = 0; i < accounts.length; i++) {
+                account_vector.push({ pubkey: accounts[i], isSigner: false, isWritable: true });
+            }
 
             const list_instruction = new TransactionInstruction({
                 keys: account_vector,
@@ -253,6 +259,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             transaction.feePayer = wallet.publicKey;
 
             transaction.add(list_instruction);
+            transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
             try {
                 let signed_transaction = await wallet.signTransaction(transaction);
@@ -287,21 +294,21 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
         let amm_data: AMMData[] = [];
         let collections: CollectionData[] = [];
-        let NFTLookups: Map<String, Map<String, LookupData>> = new Map();
 
         console.log("program_data", program_data.length);
-
+        let closeAccounts = [];
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
 
-            //CloseAccount({account: program_data[i].pubkey});
+            //if (data[0] === 0) {
+            //    closeAccounts.push(program_data[i].pubkey)
+            //}
 
             if (data[0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     // console.log("data ", i, launch.page_name);
-                    if (launch.flags[LaunchFlags.LPState] == 0)
-                      continue;
+                    if (launch.flags[LaunchFlags.AMMProvider] == 0 && launch.flags[LaunchFlags.LPState] == 0) continue;
 
                     launch_data.push(launch);
                 } catch (error) {
@@ -327,31 +334,17 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 6) {
                 const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
+
                 continue;
             }
             if (data[0] === 8) {
-
                 const [collection] = CollectionData.struct.deserialize(data);
+
                 collections.push(collection);
+                console.log(collection);
                 continue;
             }
 
-            if (data[0] === 10) {
-                //CloseAccount({account: program_data[i].pubkey});
-                const [lookup] = LookupData.struct.deserialize(data);
-                let collection = lookup.colection_mint.toString();
-                
-                if (NFTLookups.has(collection)) {
-                    let existing = NFTLookups.get(collection);
-                    existing.set(lookup.nft_mint.toString(), lookup);
-                    NFTLookups.set(collection, existing);
-                } else {
-                    let map = new Map<String, LookupData>();
-
-                    map.set(lookup.nft_mint.toString(), lookup);
-                    NFTLookups.set(collection, map);
-                }
-            }
             // other data depends on a wallet
             if (!have_wallet) continue;
 
@@ -382,6 +375,19 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
+        if (closeAccounts.length > 0) {
+            let start = 0;
+            while (start < closeAccounts.length) {
+                let temp = [];
+                for (let i = 0; i < 20; i++) {
+                    if (start + i < closeAccounts.length) temp.push(closeAccounts[start + i]);
+                }
+
+                //CloseAccount({accounts : temp});
+                start += 20;
+            }
+        }
+
         //console.log("launch data", launch_data);
         setLaunchData(launch_data);
         setUserData(user_data);
@@ -390,7 +396,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMUserData(mm_user_data);
         setAMMData(amm_data);
         setCollectionData(collections);
-        nft_lookup.current = NFTLookups;
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
@@ -441,9 +446,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let trade_mints: PublicKey[] = [];
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
-        for (let i = 0; i < trade_filtered.length; i++) {
+        for (let i = 0; i < launch_data.length; i++) {
             //console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
-            trade_mints.push(trade_filtered[i].keys[LaunchKeys.MintAddress]);
+            trade_mints.push(launch_data[i].keys[LaunchKeys.MintAddress]);
+        }
+        for (let i = 0; i < trade_filtered.length; i++) {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }
         for (let i = 0; i < collections.length; i++) {
@@ -480,6 +487,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     return (
         <AppRootContextProvider
+            sidePanelCollapsed={sidePanelCollapsed}
+            setSidePanelCollapsed={setSidePanelCollapsed}
             launchList={launch_data}
             homePageList={home_page_data}
             tradePageList={trade_page_data}
@@ -501,7 +510,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             mintData={mintData}
             newCollectionData={newCollectionData}
             collectionList={collection_data}
-            NFTLookup={nft_lookup}
             setSelectedNetwork={setSelectedNetwork}
             selectedNetwork={selectedNetwork}
         >

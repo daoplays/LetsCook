@@ -7,8 +7,9 @@ import {
     request_current_balance,
     request_token_supply,
     uInt32ToLEBytes,
+    MintInfo,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
+import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import {
     bignum_to_num,
@@ -21,14 +22,7 @@ import {
 import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import {
-    getAssociatedTokenAddress,
-    TOKEN_PROGRAM_ID,
-    TOKEN_2022_PROGRAM_ID,
-    Mint,
-    getTransferFeeConfig,
-    calculateFee,
-} from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
 
 import {
     HStack,
@@ -69,6 +63,12 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
+import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
+import { Liquidity } from "@raydium-io/raydium-sdk";
+import { getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
+import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
+import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
+import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -77,6 +77,37 @@ interface MarketData {
     low: number;
     close: number;
     volume: number;
+}
+
+async function getBirdEyeData(setMarketData: any) {
+    let market_address = "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN";
+    // Default options are marked with *
+    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+    let today_seconds = Math.floor(new Date().getTime() / 1000);
+
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+    let end_time = new Date(2024, 5, 1).getTime() / 1000;
+
+    let url =
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
+        market_address +
+        "&type=15m" +
+        "&time_from=" +
+        start_time +
+        "&time_to=" +
+        today_seconds;
+
+    //console.log(url);
+    let result = await fetch(url, options).then((response) => response.json());
+
+    let data: MarketData[] = [];
+    for (let i = 0; i < result["data"]["items"].length; i++) {
+        let item = result["data"]["items"][i];
+        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c, volume: item.v });
+    }
+    //console.log(data);
+    setMarketData(data);
+    //return data;
 }
 
 function findLaunch(list: LaunchData[], page_name: string | string[]) {
@@ -142,24 +173,28 @@ const TradePage = () => {
     const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
     const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
     const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
-    const [user_address, setUserAddress] = useState<PublicKey | null>(null);
+    const [user_base_address, setUserBaseAddress] = useState<PublicKey | null>(null);
+    const [user_lp_address, setUserLPAddress] = useState<PublicKey | null>(null);
 
-    const [base_amount, setBaseAmount] = useState<number | null>(null);
-    const [quote_amount, setQuoteAmount] = useState<number | null>(null);
+    const [amm_base_amount, setBaseAmount] = useState<number | null>(null);
+    const [amm_quote_amount, setQuoteAmount] = useState<number | null>(null);
+    const [amm_lp_amount, setLPAmount] = useState<number | null>(null);
 
-    const [user_amount, setUserAmount] = useState<number>(0);
+    const [user_base_amount, setUserBaseAmount] = useState<number>(0);
+    const [user_lp_amount, setUserLPAmount] = useState<number>(0);
 
     const [total_supply, setTotalSupply] = useState<number>(0);
     const [num_holders, setNumHolders] = useState<number>(0);
 
     const [launch, setLaunch] = useState<LaunchData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
-    const [base_mint, setBaseMint] = useState<Mint | null>(null);
+    const [base_mint, setBaseMint] = useState<MintInfo | null>(null);
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
     const price_ws_id = useRef<number | null>(null);
-    const user_token_ws_id = useRef<number | null>(null);
+    const user_base_token_ws_id = useRef<number | null>(null);
+    const user_lp_token_ws_id = useRef<number | null>(null);
 
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
@@ -199,17 +234,17 @@ const TradePage = () => {
     }, [launchList, ammData, mintData, pageName]);
 
     useEffect(() => {
-        if (base_amount === null || quote_amount === null) {
+        if (amm_base_amount === null || amm_quote_amount === null) {
             return;
         }
 
-        if (base_amount === last_base_amount.current && quote_amount === last_quote_amount.current) {
+        if (amm_base_amount === last_base_amount.current && amm_quote_amount === last_quote_amount.current) {
             return;
         }
 
-        last_base_amount.current = base_amount;
-        last_quote_amount.current = quote_amount;
-    }, [base_amount, quote_amount, market_data]);
+        last_base_amount.current = amm_base_amount;
+        last_quote_amount.current = amm_quote_amount;
+    }, [amm_base_amount, amm_quote_amount, market_data]);
 
     const check_base_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -218,7 +253,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        //console.log("update base amount", amount);
+        //("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
@@ -229,7 +264,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        // console.log("update quote amount", amount);
+        //console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
     }, []);
@@ -241,7 +276,7 @@ const TradePage = () => {
 
             let event_data = result.data;
             const [price_data] = TimeSeriesData.struct.deserialize(event_data);
-            console.log("updated price data", price_data);
+            //console.log("updated price data", price_data);
 
             let data: MarketData[] = [];
 
@@ -272,7 +307,19 @@ const TradePage = () => {
         let amount = bignum_to_num(token_account.amount);
         // console.log("update quote amount", amount);
 
-        setUserAmount(amount);
+        setUserBaseAmount(amount);
+    }, []);
+
+    const check_user_lp_update = useCallback(async (result: any) => {
+        //console.log(result);
+        // if we have a subscription field check against ws_id
+
+        let event_data = result.data;
+        const [token_account] = TokenAccount.struct.deserialize(event_data);
+        let amount = bignum_to_num(token_account.amount);
+        // console.log("update quote amount", amount);
+
+        setUserLPAmount(amount);
     }, []);
 
     // launch account subscription handler
@@ -293,23 +340,29 @@ const TradePage = () => {
             price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
         }
 
-        if (user_token_ws_id.current === null && price_address !== null) {
-            user_token_ws_id.current = connection.onAccountChange(user_address, check_user_token_update, "confirmed");
+        if (user_base_token_ws_id.current === null && user_base_address !== null) {
+            user_base_token_ws_id.current = connection.onAccountChange(user_base_address, check_user_token_update, "confirmed");
+        }
+        if (user_lp_token_ws_id.current === null && user_lp_address !== null) {
+            user_lp_token_ws_id.current = connection.onAccountChange(user_lp_address, check_user_lp_update, "confirmed");
         }
     }, [
         connection,
         base_address,
         quote_address,
         price_address,
-        user_address,
+        user_base_address,
+        user_lp_address,
         check_price_update,
         check_base_update,
         check_quote_update,
         check_user_token_update,
+        check_user_lp_update,
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        if (launch === null) return;
+        //("check market data");
+        if (launch === null || amm === null) return;
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -328,50 +381,59 @@ const TradePage = () => {
             PROGRAM,
         )[0];
 
-        let base_amm_account = await getAssociatedTokenAddress(
-            token_mint, // mint
-            amm_data_account, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
+        let base_amm_account = amm.base_key;
+        let quote_amm_account = amm.quote_key;
+        let lp_mint = amm.lp_mint;
 
-        let quote_amm_account = await getAssociatedTokenAddress(
-            wsol_mint, // mint
-            amm_data_account, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
+        //console.log("base key", base_amm_account.toString());
 
-        let user_token_account_key = await getAssociatedTokenAddress(
+        let user_base_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            base_mint.program,
         );
 
+        let user_lp_token_account_key = await getAssociatedTokenAddress(
+            lp_mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            base_mint.program,
+        );
         // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
         if (check_market_data.current === true) {
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
-            setUserAddress(user_token_account_key);
+            setUserBaseAddress(user_base_token_account_key);
+            setUserLPAddress(user_lp_token_account_key);
 
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
-            let user_amount = await request_token_amount("", user_token_account_key);
+            let user_base_amount = await request_token_amount("", user_base_token_account_key);
+            let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
 
+            //console.log("user amounts", user_base_amount, user_lp_amount)
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
-            setUserAmount(user_amount);
+            setUserBaseAmount(user_base_amount);
+            setUserLPAmount(user_lp_amount);
 
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
-            //let token_holders = await RequestTokenHolders(token_mint);
-            //setNumHolders(token_holders);
-            let current_price = quote_amount / Math.pow(10, 9) / (base_amount / Math.pow(10, launch.decimals));
+            if (launch.flags[LaunchFlags.AMMProvider] > 0) {
+                getBirdEyeData(setMarketData);
+                let market = await getLaunchOBMAccount(Config, launch);
+                let ray_key = Liquidity.getAssociatedId({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market.publicKey });
+                let ray_account = await connection.getAccountInfo(ray_key);
+                const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
+                setLPAmount(Number(rayAMM.lpReserve));
+                //console.log("raydium: ", rayAMM.status.toString(), rayAMM.baseNeedTakePnl.toString(), rayAMM.quoteNeedTakePnl.toString())
+                return;
+            }
 
-            // console.log(base_amount / Math.pow(10, launch.decimals), quote_amount / Math.pow(10, 9), current_price);
+            setLPAmount(amm.lp_amount);
 
             let index_buffer = uInt32ToLEBytes(0);
             let price_data_account = PublicKey.findProgramAddressSync(
@@ -401,7 +463,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
+                let volume = bignum_to_num(item.volume / Math.pow(10, launch.decimals));
 
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;
@@ -426,7 +488,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, wallet.publicKey]);
+    }, [launch, amm, base_mint, wallet.publicKey, connection]);
 
     useEffect(() => {
         CheckMarketData();
@@ -546,7 +608,7 @@ const TradePage = () => {
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}
-                                    quote_amount={quote_amount}
+                                    quote_amount={amm_quote_amount}
                                     num_holders={num_holders}
                                 />
                             )}
@@ -555,10 +617,12 @@ const TradePage = () => {
                                 <BuyAndSell
                                     launch={launch}
                                     amm={amm}
-                                    mint_data={base_mint}
-                                    base_balance={base_amount}
-                                    quote_balance={quote_amount}
-                                    user_balance={user_amount}
+                                    mint_data={base_mint.mint}
+                                    base_balance={amm_base_amount}
+                                    quote_balance={amm_quote_amount}
+                                    amm_lp_balance={amm_lp_amount}
+                                    user_base_balance={user_base_amount}
+                                    user_lp_balance={user_lp_amount}
                                 />
                             )}
                         </VStack>
@@ -733,14 +797,18 @@ const BuyAndSell = ({
     mint_data,
     base_balance,
     quote_balance,
-    user_balance,
+    amm_lp_balance,
+    user_base_balance,
+    user_lp_balance,
 }: {
     launch: LaunchData;
     amm: AMMData;
     mint_data: Mint;
     base_balance: number;
     quote_balance: number;
-    user_balance: number;
+    amm_lp_balance: number;
+    user_base_balance: number;
+    user_lp_balance: number;
 }) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
@@ -750,6 +818,11 @@ const BuyAndSell = ({
     const [sol_amount, setSOLAmount] = useState<number>(0);
     const [order_type, setOrderType] = useState<number>(0);
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
+    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
+    const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(launch);
+    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
+
     const { userSOLBalance } = useAppRoot();
 
     const handleClick = (tab: string) => {
@@ -759,34 +832,47 @@ const BuyAndSell = ({
         if (tab == "Sell") setOrderType(1);
     };
 
+    let amm_provider = launch.flags[LaunchFlags.AMMProvider];
+
+    let base_raw = Math.floor(token_amount * Math.pow(10, launch.decimals));
+    let total_base_fee = 0;
     let transfer_fee = 0;
     let max_transfer_fee = 0;
     let transfer_fee_config = getTransferFeeConfig(mint_data);
     if (transfer_fee_config !== null) {
         transfer_fee = transfer_fee_config.newerTransferFee.transferFeeBasisPoints;
         max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, launch.decimals);
+        total_base_fee += Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
 
+    let amm_base_fee = selected == "Buy" || selected == "Sell" ? Math.ceil(((base_raw - total_base_fee) * amm.fee) / 100 / 100) : 0;
+    total_base_fee += amm_base_fee;
+
+    let base_input_amount = base_raw - total_base_fee;
+
+    let quote_output = (base_input_amount * quote_balance) / (base_input_amount + base_balance) / Math.pow(10, 9);
+
+    //console.log("base in/out", base_input_amount / Math.pow(10, launch.decimals), quote_output)
+
+    let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
+    let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
+    let quote_input_amount = quote_raw - amm_quote_fee;
+    let base_output = (quote_input_amount * base_balance) / (quote_balance + quote_input_amount) / Math.pow(10, launch.decimals);
+
+    //console.log("quote in/out", quote_input_amount / Math.pow(10, 9), amm_quote_fee, base_output)
+
     let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
-
-    let base_output =
-        (sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)) / Math.pow(10, launch.decimals);
-    let quote_output =
-        (token_amount * Math.pow(10, launch.decimals) * quote_balance) /
-        (token_amount * Math.pow(10, launch.decimals) + base_balance) /
-        Math.pow(10, 9);
-
-    let base_int = Math.floor((sol_amount * Math.pow(10, 9) * base_balance) / (quote_balance + sol_amount * Math.pow(10, 9)));
-    let output_fee = Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_int)));
-    base_output = (base_int - output_fee) / Math.pow(10, launch.decimals);
 
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
 
+    let max_sol_amount = Math.floor(quote_no_slip * Math.pow(10, 9) * 2);
+
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
-    let quote_output_string = base_output === 0 ? "0" : quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(3);
+
+    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(5);
     quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
     let base_output_string =
@@ -798,10 +884,21 @@ const BuyAndSell = ({
 
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
+    let lp_generated = (base_raw * (amm_lp_balance / base_balance)) / Math.pow(10, launch.decimals);
+
+    let lp_quote_output = (quote_balance * base_raw) / amm_lp_balance / Math.pow(10, 9);
+    let lp_base_output = (base_balance * base_raw) / amm_lp_balance / Math.pow(10, launch.decimals);
+    if (selected === "LP-") {
+        quote_output_string = lp_quote_output <= 1e-3 ? lp_quote_output.toExponential(3) : lp_quote_output.toFixed(5);
+        base_output_string = lp_base_output <= 1e-3 ? lp_base_output.toExponential(3) : lp_base_output.toFixed(launch.decimals);
+    }
+
+    //console.log("lp: ", lp_base_output, lp_quote_output)
+
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
             <HStack align="center" spacing={0} zIndex={99} w="100%">
-                {["Buy", "Sell"].map((name, i) => {
+                {["Buy", "Sell", "LP+", "LP-"].map((name, i) => {
                     const isActive = selected === name;
 
                     const baseStyle = {
@@ -846,10 +943,14 @@ const BuyAndSell = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                     {selected === "Buy"
                         ? userSOLBalance.toFixed(5)
-                        : (user_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                          })}{" "}
-                    {selected === "Buy" ? "SOL" : launch.symbol}
+                        : selected === "LP-"
+                          ? (user_lp_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                            })
+                          : (user_base_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                            })}{" "}
+                    {selected === "Buy" ? "SOL" : selected === "LP-" ? "LP" : launch.symbol}
                 </Text>
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
@@ -879,10 +980,19 @@ const BuyAndSell = ({
 
             <VStack align="start" w="100%">
                 <HStack w="100%" justify="space-between">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Swap:
-                    </Text>
-
+                    {selected === "LP+" ? (
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            Add:
+                        </Text>
+                    ) : selected == "LP-" ? (
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            Remove:
+                        </Text>
+                    ) : (
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            Swap:
+                        </Text>
+                    )}
                     <HStack spacing={2}>
                         <Text
                             m={0}
@@ -897,7 +1007,7 @@ const BuyAndSell = ({
                                 }
 
                                 if (selected === "Sell") {
-                                    setTokenAmount(user_balance / Math.pow(10, launch.decimals) / 2);
+                                    setTokenAmount(user_base_balance / Math.pow(10, launch.decimals) / 2);
                                 }
                             }}
                         >
@@ -919,7 +1029,7 @@ const BuyAndSell = ({
                                 }
 
                                 if (selected === "Sell") {
-                                    setTokenAmount(user_balance / Math.pow(10, launch.decimals));
+                                    setTokenAmount(user_base_balance / Math.pow(10, launch.decimals));
                                 }
                             }}
                         >
@@ -943,7 +1053,7 @@ const BuyAndSell = ({
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                            <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
                 ) : (
@@ -962,16 +1072,30 @@ const BuyAndSell = ({
                             min="0"
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            {selected !== "LP-" ? (
+                                <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            ) : (
+                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                    LP
+                                </Text>
+                            )}
                         </InputRightElement>
                     </InputGroup>
                 )}
             </VStack>
 
             <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    For:
-                </Text>
+                {selected === "LP+" ? (
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        And:
+                    </Text>
+                ) : selected === "Sell" || selected === "LP+" || selected === "LP-" ? (
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        For:
+                    </Text>
+                ) : (
+                    <></>
+                )}
                 {selected === "Buy" ? (
                     <InputGroup size="md">
                         <Input
@@ -983,10 +1107,10 @@ const BuyAndSell = ({
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={launch.icon} width={30} height={30} alt="SOL Icon" />
+                            <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
-                ) : (
+                ) : selected === "Sell" || selected === "LP+" || selected === "LP-" ? (
                     <InputGroup size="md">
                         <Input
                             readOnly={true}
@@ -997,36 +1121,142 @@ const BuyAndSell = ({
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
+                            <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
+                ) : (
+                    <></>
                 )}
             </VStack>
 
-            <Button
-                mt={2}
-                size="lg"
-                w="100%"
-                px={4}
-                py={2}
-                bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
-                isLoading={placingOrder}
-                onClick={() => {
-                    !wallet.connected ? handleConnectWallet() : PlaceMarketOrder(launch, token_amount, sol_amount, order_type);
-                }}
-            >
-                <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                    {!wallet.connected ? "Connect Wallet" : selected === "Buy" ? "Buy" : selected === "Sell" ? "Sell" : ""}
-                </Text>
-            </Button>
+            {selected === "LP+" && (
+                <>
+                    <VStack align="start" w="100%">
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            For:
+                        </Text>
 
-            <Card bg="transparent">
-                <CardBody>
-                    <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        MM Rewards are only granted on Buys through Let&apos;s Cook.
+                        <InputGroup size="md">
+                            <Input
+                                readOnly={true}
+                                color="white"
+                                size="lg"
+                                borderColor="rgba(134, 142, 150, 0.5)"
+                                value={lp_generated.toFixed(launch.decimals)}
+                                disabled
+                            />
+                            <InputRightElement h="100%" w={50}>
+                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                    LP
+                                </Text>
+                            </InputRightElement>
+                        </InputGroup>
+                    </VStack>
+                </>
+            )}
+
+            {selected === "LP-" && (
+                <>
+                    <VStack align="start" w="100%">
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            And:
+                        </Text>
+
+                        <InputGroup size="md">
+                            <Input
+                                readOnly={true}
+                                color="white"
+                                size="lg"
+                                borderColor="rgba(134, 142, 150, 0.5)"
+                                value={base_output_string}
+                                disabled
+                            />
+                            <InputRightElement h="100%" w={50}>
+                                <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            </InputRightElement>
+                        </InputGroup>
+                    </VStack>
+                </>
+            )}
+
+            {selected === "LP+" ? (
+                <Button
+                    mt={2}
+                    size="lg"
+                    w="100%"
+                    px={4}
+                    py={2}
+                    bg={"#83FF81"}
+                    isLoading={addLiquidityRaydiumLoading}
+                    onClick={() => {
+                        !wallet.connected
+                            ? handleConnectWallet()
+                            : amm_provider === 0
+                              ? UpdateCookLiquidity(launch, token_amount, 0)
+                              : AddLiquidityRaydium(token_amount * Math.pow(10, launch.decimals), max_sol_amount);
+                    }}
+                >
+                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                        {!wallet.connected ? "Connect Wallet" : "Add Liquidity"}
                     </Text>
-                </CardBody>
-            </Card>
+                </Button>
+            ) : selected === "LP-" ? (
+                <Button
+                    mt={2}
+                    size="lg"
+                    w="100%"
+                    px={4}
+                    py={2}
+                    bg={"#FF6E6E"}
+                    isLoading={addLiquidityRaydiumLoading}
+                    onClick={() => {
+                        !wallet.connected
+                            ? handleConnectWallet()
+                            : amm_provider === 0
+                              ? UpdateCookLiquidity(launch, token_amount, 1)
+                              : RemoveLiquidityRaydium(token_amount * Math.pow(10, launch.decimals));
+                    }}
+                >
+                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                        {!wallet.connected ? "Connect Wallet" : "Remove Liquidity"}
+                    </Text>
+                </Button>
+            ) : (
+                <>
+                    <Button
+                        mt={2}
+                        size="lg"
+                        w="100%"
+                        px={4}
+                        py={2}
+                        bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
+                        isLoading={placingOrder}
+                        onClick={() => {
+                            !wallet.connected
+                                ? handleConnectWallet()
+                                : amm_provider === 0
+                                  ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
+                                  : SwapRaydium(
+                                        order_type === 1 ? token_amount * Math.pow(10, launch.decimals) : 0,
+                                        order_type === 1 ? 0 : sol_amount * Math.pow(10, 9),
+                                        order_type,
+                                    );
+                        }}
+                    >
+                        <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
+                            {!wallet.connected ? "Connect Wallet" : selected === "Buy" ? "Buy" : selected === "Sell" ? "Sell" : ""}
+                        </Text>
+                    </Button>
+
+                    <Card bg="transparent">
+                        <CardBody>
+                            <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                MM Rewards are only granted on Buys through Let&apos;s Cook.
+                            </Text>
+                        </CardBody>
+                    </Card>
+                </>
+            )}
         </VStack>
     );
 };

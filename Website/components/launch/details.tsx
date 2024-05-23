@@ -19,7 +19,7 @@ interface DetailsPageProps {
 
 const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const router = useRouter();
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const { newLaunchData } = useAppRoot();
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
@@ -147,9 +147,9 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
-                    Page Information
+                    Page Information:
                 </Text>
-                <form style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>

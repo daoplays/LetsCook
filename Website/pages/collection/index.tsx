@@ -17,7 +17,13 @@ const CollectionLaunch = () => {
             <Head>
                 <title>Let&apos;s Cook | Collection</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)", paddingTop: lg ? "25px" : "50px" }}>
+            <main
+                style={{
+                    background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)",
+                    height: "100%",
+                    paddingTop: lg ? "25px" : "50px",
+                }}
+            >
                 {screen === "step 1" && <CollectionInfo setScreen={setScreen} />}
                 {screen === "step 2" && <NFTData setScreen={setScreen} />}
                 {screen === "step 3" && <HybridInfo setScreen={setScreen} />}

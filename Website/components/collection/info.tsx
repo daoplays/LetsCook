@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack, Tooltip } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -18,13 +18,14 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const router = useRouter();
     const { newCollectionData } = useAppRoot();
 
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const [name, setName] = useState<string>(newCollectionData.current.collection_name);
     const [tokenStart, setTokenStart] = useState<string>("");
     const [displayImg, setDisplayImg] = useState<string>(newCollectionData.current.displayImg);
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
+    const [supplyMode, setSupplyMode] = useState<string>(newCollectionData.current.collection_type == 0 ? "fixed" : "unlimited");
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -161,6 +162,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
 
+        if (supplyMode === "fixed") {
+            newCollectionData.current.collection_type = 0;
+        }
+        if (supplyMode === "unlimited") {
+            newCollectionData.current.collection_type = 1;
+        }
+
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
             await tokenGrind();
@@ -176,8 +184,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             return;
         }
 
-        setScreen("step 2");
-    }, [grindComplete, setScreen]);
+        if (!newCollectionData.current.edit_mode) setScreen("step 2");
+        else setScreen("step 4");
+    }, [grindComplete, newCollectionData, setScreen]);
 
     async function nextPage(e) {
         await setData(e);
@@ -196,7 +205,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         }
 
         if (file) {
-            if (file.size <= 1048576) {
+            if (file.size <= 2048576) {
                 const dimensions = await getImageDimensions(file);
 
                 if (dimensions.width === dimensions.height) {
@@ -206,7 +215,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                     toast.error("Please upload an image with equal width and height.");
                 }
             } else {
-                toast.error("File size exceeds 1MB limit.");
+                toast.error("File size exceeds 2MB limit.");
             }
         }
     };
@@ -230,18 +239,18 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                 {newCollectionData.current.icon_file !== null
                     ? newCollectionData.current.icon_file.name
-                    : "No File Selected (Size Limit: 1MB)"}
+                    : "No File Selected (Size Limit: 2MB)"}
             </Text>
         </HStack>
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
@@ -321,7 +330,39 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         </div>
                                     </HStack>
                                 </Flex>
-
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                        Mode:
+                                    </div>
+                                    <RadioGroup onChange={setSupplyMode} value={supplyMode}>
+                                        <Stack direction="row" gap={5}>
+                                            <Radio value="fixed" color="white">
+                                                <Tooltip
+                                                    label="Each NFT will only be minted once"
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Fixed Supply
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="unlimited">
+                                                <Tooltip
+                                                    label="Each NFT can be minted multiple times."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Unlimited Supply
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>

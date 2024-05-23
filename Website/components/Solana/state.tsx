@@ -13,6 +13,11 @@ import {
     array,
     coption,
     COption,
+    DataEnumKeyAsKind,
+    dataEnum,
+    FixableBeetArgsStruct,
+    BeetArgsStruct,
+    FixableBeet,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -24,7 +29,7 @@ import BN from "bn.js";
 import bs58 from "bs58";
 
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, Mint } from "@solana/spl-token";
 
 export async function get_JWT_token(): Promise<any | null> {
     const token_url = `/.netlify/functions/jwt`;
@@ -178,6 +183,11 @@ export async function check_signature(bearer: string, signature: string): Promis
     if (valid_json) return transaction_response;
 
     return null;
+}
+
+export interface MintInfo {
+    mint: Mint;
+    program: PublicKey;
 }
 
 export interface MetaData {
@@ -532,6 +542,27 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+type LaunchPluginEnum = {
+    MintProbability: { mint_prob: number };
+};
+type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
+
+const launchPluginBeet = dataEnum<LaunchPluginEnum>([
+    [
+        "MintProbability",
+        new BeetArgsStruct<LaunchPluginEnum["MintProbability"]>([["mint_prob", u16]], 'LaunchPluginEnum["MintProbability"]'),
+    ],
+]) as FixableBeet<LaunchPlugin>;
+
+type LaunchMetaEnum = {
+    Raffle: {};
+};
+type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
+
+const launchInfoBeet = dataEnum<LaunchMetaEnum>([
+    ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
+]) as FixableBeet<LaunchInfo>;
+
 export interface JoinedLaunch {
     join_data: JoinData;
     launch_data: LaunchData;
@@ -545,6 +576,18 @@ export const enum Distribution {
     Airdrops,
     Team,
     Other,
+    LENGTH,
+}
+
+export const enum LaunchFlags {
+    MintedToUser,
+    LaunchFailed,
+    LPState,
+    TokenProgramVersion,
+    BookProvider,
+    AMMProvider,
+    Extensions,
+    Transferring,
     LENGTH,
 }
 
@@ -567,6 +610,12 @@ export const enum LaunchInstruction {
     mint_nft = 15,
     wrap_nft = 16,
     edit_collection = 17,
+    mint_random = 18,
+    create_openbook = 19,
+    create_raydium = 20,
+    raydium_swap = 21,
+    update_cook_liquidity = 22,
+    remove_cook_liquidity = 23,
 }
 
 export interface LaunchDataUserInput {
@@ -597,7 +646,9 @@ export interface LaunchDataUserInput {
     team_wallet: string;
     token_keypair: Keypair | null;
     amm_fee: number;
+    amm_provider: number;
     // extension data
+    token_program: PublicKey | null;
     transfer_fee: number;
     max_transfer_fee: number;
     permanent_delegate: PublicKey | null;
@@ -615,7 +666,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     banner_url: "",
     displayImg: null,
     total_supply: 0,
-    decimals: 0,
+    decimals: 1,
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
@@ -632,6 +683,8 @@ export const defaultUserInput: LaunchDataUserInput = {
     team_wallet: "",
     token_keypair: null,
     amm_fee: 0,
+    amm_provider: 0,
+    token_program: null,
     transfer_fee: 0,
     max_transfer_fee: 0,
     permanent_delegate: null,
@@ -647,6 +700,8 @@ export class myU64 {
 export class LaunchData {
     constructor(
         readonly account_type: number,
+        readonly launch_meta: LaunchMetaEnum,
+        readonly plugins: LaunchPluginEnum[],
         readonly game_id: bignum,
         readonly last_interaction: bignum,
         readonly num_interactions: number,
@@ -687,6 +742,8 @@ export class LaunchData {
     static readonly struct = new FixableBeetStruct<LaunchData>(
         [
             ["account_type", u8],
+            ["launch_meta", launchInfoBeet],
+            ["plugins", array(launchPluginBeet)],
             ["game_id", u64],
             ["last_interaction", i64],
             ["num_interactions", u16],
@@ -726,6 +783,8 @@ export class LaunchData {
         (args) =>
             new LaunchData(
                 args.account_type!,
+                args.launch_meta!,
+                args.plugins!,
                 args.game_id!,
                 args.last_interaction!,
                 args.num_interactions!,
@@ -774,8 +833,14 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     const banner_url = URL.createObjectURL(new_launch_data.banner_file);
     const icon_url = URL.createObjectURL(new_launch_data.icon_file);
 
+    const meta: LaunchMetaEnum & { __kind: "Raffle" } = {
+        __kind: "Raffle",
+        Raffle: {},
+    };
     const data = new LaunchData(
         1,
+        meta,
+        [],
         new BN(0),
         new BN(0),
         0,
@@ -849,6 +914,8 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
         amm_fee: 0,
+        amm_provider: launch_data.flags[LaunchFlags.AMMProvider],
+        token_program: null,
         transfer_fee: 0,
         max_transfer_fee: 0,
         permanent_delegate: null,
@@ -1005,6 +1072,7 @@ class CreateLaunch_Instruction {
         readonly transfer_fee: number,
         readonly max_transfer_fee: bignum,
         readonly extensions: number,
+        readonly amm_provider: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1025,6 +1093,7 @@ class CreateLaunch_Instruction {
             ["transfer_fee", u16],
             ["max_transfer_fee", u64],
             ["extensions", u8],
+            ["amm_provider", u8],
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1044,6 +1113,7 @@ class CreateLaunch_Instruction {
                 args.transfer_fee!,
                 args.max_transfer_fee!,
                 args.extensions!,
+                args.amm_provider!,
             ),
         "CreateLaunch_Instruction",
     );
@@ -1076,6 +1146,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.transfer_fee,
         new_launch_data.max_transfer_fee,
         extensions,
+        new_launch_data.amm_provider,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

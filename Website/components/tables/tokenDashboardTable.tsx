@@ -25,6 +25,7 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
+import useCreateMarket from "../../hooks/raydium/useCreateMarket";
 
 interface Header {
     text: string;
@@ -200,7 +201,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     );
 
     return (
-        <TableContainer>
+        <TableContainer w="100%">
             <table
                 width="100%"
                 className="custom-centered-table font-face-rk"
@@ -252,6 +253,8 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
+    const { CreateMarket, isLoading: createMarketLoading } = useCreateMarket(launch);
+
     const { newLaunchData } = useAppRoot();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -281,7 +284,12 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     //buttonClicked:
     const LaunchLPClicked = (e) => {
         e.stopPropagation();
-        InitAMM();
+        if (launch.flags[LaunchFlags.AMMProvider] == 0) {
+            InitAMM();
+        }
+        if (launch.flags[LaunchFlags.AMMProvider] == 1) {
+            CreateMarket();
+        }
     };
 
     const GetFeesClicked = (e) => {

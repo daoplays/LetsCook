@@ -18,6 +18,12 @@ const BagsPage = () => {
 
     if (!collectionList) return <Loader />;
 
+    function filterTable() {
+        return collectionList.filter(function (item) {
+            return item.description !== "";
+        });
+    }
+
     return (
         <>
             <Head>
@@ -44,7 +50,7 @@ const BagsPage = () => {
                     </Text>
                 </Flex>
 
-                <CollectionDashboardTable collectionList={collectionList} />
+                <CollectionDashboardTable collectionList={filterTable()} />
 
                 {collectionList.length <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>

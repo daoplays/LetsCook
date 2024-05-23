@@ -3,13 +3,13 @@ import { HStack, Text, Box, useDisclosure } from "@chakra-ui/react";
 
 import twitter from "../public/images/Twitter.png";
 import discord from "../public/images/discord.png";
+import { FaBook } from "react-icons/fa";
 
 import styles from "./header.module.css";
 import MainButton from "./Buttons/mainButton";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import { FaBook } from "react-icons/fa";
 
 function Footer() {
     const router = useRouter();

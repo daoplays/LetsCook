@@ -2,12 +2,14 @@
 
 import { PropsWithChildren, createContext, useContext, MutableRefObject, SetStateAction, Dispatch } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
-import { LaunchData, UserData, LaunchDataUserInput, JoinData } from "../components/Solana/state";
-import { CollectionDataUserInput, CollectionData, LookupData } from "../components/collection/collectionState";
+import { LaunchData, UserData, LaunchDataUserInput, JoinData, MintInfo } from "../components/Solana/state";
+import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { PublicKey } from "@solana/web3.js";
 import { Mint } from "@solana/spl-token";
 interface AppRootTypes {
+    sidePanelCollapsed: boolean;
+    setSidePanelCollapsed: Dispatch<SetStateAction<boolean>>;
     launchList: LaunchData[];
     homePageList: LaunchData[];
     tradePageList: Map<string, LaunchData>;
@@ -26,10 +28,9 @@ interface AppRootTypes {
     ammData: AMMData[];
     userSOLBalance: number;
     SOLPrice: number;
-    mintData: Map<String, Mint>;
+    mintData: Map<String, MintInfo>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
     collectionList: CollectionData[];
-    NFTLookup: MutableRefObject<Map<String, Map<String, LookupData>>>;
     selectedNetwork: string;
     setSelectedNetwork: Dispatch<SetStateAction<string>>;
 }
@@ -37,6 +38,8 @@ interface AppRootTypes {
 export const AppRootContext = createContext<AppRootTypes | null>(null);
 
 export const AppRootContextProvider = ({
+    sidePanelCollapsed,
+    setSidePanelCollapsed,
     children,
     launchList,
     homePageList,
@@ -59,13 +62,14 @@ export const AppRootContextProvider = ({
     mintData,
     newCollectionData,
     collectionList,
-    NFTLookup,
     selectedNetwork,
     setSelectedNetwork,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
             value={{
+                sidePanelCollapsed,
+                setSidePanelCollapsed,
                 launchList,
                 homePageList,
                 tradePageList,
@@ -87,7 +91,6 @@ export const AppRootContextProvider = ({
                 mintData,
                 newCollectionData,
                 collectionList,
-                NFTLookup,
                 setSelectedNetwork,
                 selectedNetwork,
             }}

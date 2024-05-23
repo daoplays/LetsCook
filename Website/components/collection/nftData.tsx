@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, Button, CloseButton } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -7,6 +7,8 @@ import useResponsive from "../../hooks/useResponsive";
 import styles2 from "../../styles/LaunchDetails.module.css";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
+import { IoMdClose } from "react-icons/io";
+import { OnChainAttributes } from "./collectionState";
 
 interface NFTDataProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -18,8 +20,49 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const [nft_name, setNFTName] = useState<string>(newCollectionData.current.nft_name);
 
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const [displayImg, setDisplayImg] = useState<string>("");
+
+    const [attributes, setAttributes] = useState<OnChainAttributes[]>([]);
+
+    const addRow = () => {
+        if (attributes.length < 10) {
+            setAttributes([...attributes, { name: "", min: "0", max: "0", saved: false, editMode: true }]);
+        } else {
+            alert("Attributes Limit Reached");
+        }
+    };
+
+    const removeRow = (index: number) => {
+        const newAttributes = [...attributes];
+        newAttributes.splice(index, 1);
+        setAttributes(newAttributes);
+    };
+
+    const handleChange = (index: number, field: string, value: string | number) => {
+        const newAttributes = [...attributes];
+        newAttributes[index][field] = value;
+        setAttributes(newAttributes);
+    };
+
+    const toggleEditMode = (index: number) => {
+        const newAttributes = [...attributes];
+        newAttributes[index].editMode = !newAttributes[index].editMode;
+        setAttributes(newAttributes);
+    };
+
+    const saveRow = (index: number) => {
+        const { name, min, max } = attributes[index];
+        if (name.trim() !== "" && !isNaN(parseFloat(min)) && !isNaN(parseFloat(max)) && parseFloat(max) >= parseFloat(min)) {
+            const newAttributes = [...attributes];
+            newAttributes[index].saved = true;
+            newAttributes[index].editMode = false;
+            setAttributes(newAttributes);
+            console.log(attributes);
+        } else {
+            alert("Please fill all the fields before saving.");
+        }
+    };
 
     function setLaunchData(e) {
         e.preventDefault();
@@ -93,6 +136,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         newCollectionData.current.total_supply = newCollectionData.current.nft_metadata.length;
         newCollectionData.current.nft_name = nft_name;
         newCollectionData.current.nft_type = "." + image_type_name;
+        newCollectionData.current.attributes = attributes;
 
         setScreen("step 3");
     }
@@ -165,19 +209,42 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
         </HStack>
     );
 
+    const AddOnChainAttributes = () => (
+        <HStack spacing={0} className={styles.eachField}>
+            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
+                Randomised On-Chain Attributes:
+            </div>
+            <div>
+                <label className={styles.label}>
+                    <span
+                        className={styles.browse}
+                        style={{
+                            cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
+                            padding: "5px 10px",
+                            marginLeft: "20px",
+                        }}
+                        onClick={addRow}
+                    >
+                        ADD
+                    </span>
+                </label>
+            </div>
+        </HStack>
+    );
+
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Individual NFT info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
+                                        NFT Name:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
@@ -198,6 +265,67 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
                                 <BrowseImages />
                                 <BrowseMetaData />
+                                <AddOnChainAttributes />
+
+                                {attributes.map((attribute, index) => (
+                                    <VStack key={index}>
+                                        <HStack gap={2} alignItems="center">
+                                            <Text mr={2} mb={0} color="white" fontSize={24} fontWeight={"bold"} w={120}>
+                                                #{index + 1}
+                                            </Text>
+
+                                            <HStack spacing={0} className={styles.eachField} gap={3}>
+                                                <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
+                                                <div className={styles.textLabelInput}>
+                                                    <Input
+                                                        size={lg ? "md" : "lg"}
+                                                        maxLength={25}
+                                                        required
+                                                        className={styles.inputBox}
+                                                        type="text"
+                                                        value={attribute.name}
+                                                        onChange={(e) => handleChange(index, "name", e.target.value)}
+                                                        disabled={!attribute.editMode && attribute.saved && attribute.name.trim() !== ""}
+                                                    />
+                                                </div>
+                                            </HStack>
+
+                                            <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
+                                                <div className={`${styles.textLabel} font-face-kg`}>Min:</div>
+                                                <div className={styles.textLabelInput}>
+                                                    <Input
+                                                        size={lg ? "md" : "lg"}
+                                                        maxLength={25}
+                                                        required
+                                                        className={styles.inputBox}
+                                                        value={attribute.min}
+                                                        onChange={(e) => handleChange(index, "min", e.target.value)}
+                                                        disabled={!attribute.editMode && attribute.saved}
+                                                    />
+                                                </div>
+                                            </HStack>
+
+                                            <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
+                                                <div className={`${styles.textLabel} font-face-kg`}>Max:</div>
+                                                <div className={styles.textLabelInput}>
+                                                    <Input
+                                                        size={lg ? "md" : "lg"}
+                                                        maxLength={25}
+                                                        required
+                                                        className={styles.inputBox}
+                                                        value={attribute.max}
+                                                        onChange={(e) => handleChange(index, "max", e.target.value)}
+                                                        disabled={!attribute.editMode && attribute.saved}
+                                                    />
+                                                </div>
+                                            </HStack>
+
+                                            <HStack ml={3}>
+                                                <Button onClick={() => removeRow(index)}>Remove</Button>
+                                            </HStack>
+                                        </HStack>
+                                    </VStack>
+                                ))}
                             </VStack>
                         </HStack>
 

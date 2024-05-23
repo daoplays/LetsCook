@@ -1,9 +1,16 @@
-import { Dispatch, SetStateAction } from "react";
-import { Box, Button, Center, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import { Dispatch, SetStateAction, MutableRefObject } from "react";
+import { Box, Button, Center, HStack, Link, Spinner, Text, VStack } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import { LaunchData } from "./state";
 import useBuyTickets from "../../hooks/useBuyTickets";
+import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
+import { PublicKey } from "@solana/web3.js";
+import { AssignmentData, CollectionData } from "../collection/collectionState";
+import useMintNFT from "../../hooks/collections/useMintNFT";
+import styles from "../../styles/LaunchDetails.module.css";
+import { SYSTEM_KEY } from "./constants";
+import Image from "next/image";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -104,6 +111,245 @@ export function WarningModal({ isWarningOpened, closeWarning, BuyTickets }: Warn
                                     Take me back
                                 </Text>
                             </VStack>
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
+
+interface RecievedAssetModalProps {
+    isWarningOpened?: boolean;
+    closeWarning?: () => void;
+    collection: CollectionData;
+    asset: MutableRefObject<AssetV1>;
+    asset_image: MutableRefObject<string>;
+    assignment_data: AssignmentData;
+    style: ReceivedAssetModalStyle;
+    curated?: boolean;
+}
+
+export interface ReceivedAssetModalStyle {
+    fontFamily: string;
+    fontColor: string;
+}
+
+export function ReceivedAssetModal({
+    isWarningOpened,
+    closeWarning,
+    collection,
+    assignment_data,
+    asset,
+    asset_image,
+    style,
+    curated,
+}: RecievedAssetModalProps) {
+    const { sm } = useResponsive();
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
+
+    function filterAttributes(attributes) {
+        return attributes.filter(function (item: Attribute) {
+            return item.key !== "CookWrapIndex";
+        });
+    }
+
+    if (assignment_data === null) return <></>;
+
+    let asset_name = collection.nft_name + " #" + (assignment_data.nft_index + 1).toString();
+    let image_url = "";
+    let description = "";
+
+    if (asset.current !== null) {
+        asset_name = asset.current.name;
+    }
+    if (asset_image.current !== null) {
+        if (asset_image.current["name"] !== undefined) {
+            asset_name = asset_image.current["name"];
+        }
+        if (asset_image.current["description"] !== undefined) {
+            description = asset_image.current["description"];
+        }
+        image_url = asset_image.current["image"];
+    }
+
+    let attributes =
+        asset.current === null
+            ? []
+            : asset.current.attributes === undefined
+              ? []
+              : filterAttributes(asset.current.attributes.attributeList);
+
+    //console.log("image_url: ", asset.current.attributes.attributeList, asset_image.current);
+
+    let success = !assignment_data.nft_address.equals(SYSTEM_KEY);
+    let failed = assignment_data.nft_address.equals(SYSTEM_KEY);
+
+    let toCatch = collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0;
+
+    return (
+        <>
+            <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
+                <ModalOverlay />
+
+                <ModalContent
+                    h={sm && curated && success ? 570 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 585}
+                    w={sm && curated && success ? 420 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 450}
+                    style={{ background: "transparent" }}
+                >
+                    <ModalBody
+                        bg={
+                            curated && failed
+                                ? "url(/curatedLaunches/pepemon/escaped.png)"
+                                : curated
+                                  ? "url(/curatedLaunches/pepemon/vertical.png)"
+                                  : "url(/images/terms-container.png)"
+                        }
+                        bgSize={curated ? "cover" : "contain"}
+                        bgRepeat={!curated && "no-repeat"}
+                        p={sm ? 10 : 14}
+                    >
+                        <VStack h="100%" position="relative">
+                            {failed && !curated && (
+                                <Text
+                                    align="center"
+                                    fontSize={curated ? 40 : "large"}
+                                    style={{
+                                        fontFamily: style.fontFamily,
+                                        color: style.fontColor,
+                                        fontWeight: "semibold",
+                                    }}
+                                >
+                                    No NFT Received!
+                                </Text>
+                            )}
+                            {success && (
+                                <VStack spacing={!curated && 5}>
+                                    <Text
+                                        m={0}
+                                        align="center"
+                                        fontSize={curated ? 40 : "large"}
+                                        style={{
+                                            fontFamily: style.fontFamily,
+                                            color: style.fontColor,
+                                            fontWeight: "semibold",
+                                        }}
+                                    >
+                                        {curated ? "Successfully caught" : "New NFT Received!"}
+
+                                        {/* {curated && toCatch
+                                            ? `A wild ${asset_name} has Appeared!`
+                                            : curated && !toCatch
+                                              ? "Successfully caught"
+                                              : "New NFT Received!"} */}
+                                    </Text>
+                                    {/* {!toCatch && ( */}
+                                    <Text
+                                        m={curated && 0}
+                                        align="center"
+                                        fontSize={curated ? 40 : "large"}
+                                        style={{
+                                            fontFamily: style.fontFamily,
+                                            color: style.fontColor,
+                                            fontWeight: "semibold",
+                                        }}
+                                    >
+                                        {asset_name}
+                                    </Text>
+                                    {/* )} */}
+                                </VStack>
+                            )}
+                            <VStack align="center" fontFamily="ReemKufiRegular">
+                                {failed && !curated && (
+                                    <img
+                                        loading="lazy"
+                                        src="/images/cooks.jpeg"
+                                        width={200}
+                                        height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
+                                )}
+
+                                {success && (
+                                    <img
+                                        loading="lazy"
+                                        src={image_url}
+                                        width={200}
+                                        height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
+                                )}
+                            </VStack>
+                            <Text
+                                m={0}
+                                fontSize={curated ? "25" : "10"}
+                                align="center"
+                                style={{
+                                    fontFamily: style.fontFamily,
+                                    color: style.fontColor,
+                                    fontWeight: "semibold",
+                                }}
+                            >
+                                {description}
+                            </Text>
+                            {attributes.length > 0 && (
+                                <VStack spacing={curated ? 0 : 4} mt={4}>
+                                    {attributes.map((attribute, index) => (
+                                        <Text
+                                            key={index}
+                                            m={0}
+                                            fontSize={curated ? 35 : "medium"}
+                                            style={{
+                                                fontFamily: style.fontFamily,
+                                                color: style.fontColor,
+                                                fontWeight: "semibold",
+                                            }}
+                                        >
+                                            {attribute.key} : {attribute.value}
+                                        </Text>
+                                    ))}
+                                </VStack>
+                            )}
+                            {curated && toCatch && (
+                                <div
+                                    style={{
+                                        cursor: "pointer",
+                                        background: "url(/curatedLaunches/pepemon/horizontal3.png)",
+                                        backgroundSize: "cover",
+                                        width: "160px",
+                                        height: "80px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}
+                                    onClick={(e) => {
+                                        MintNFT();
+                                    }}
+                                >
+                                    {isMintLoading ? (
+                                        <Spinner />
+                                    ) : (
+                                        <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
+                                            Mint
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
+                            {!curated && toCatch && (
+                                <VStack>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            MintNFT();
+                                        }}
+                                        className={`${styles.nextBtn} font-face-kg `}
+                                    >
+                                        {isMintLoading ? <Spinner /> : "Mint"}
+                                    </button>
+                                </VStack>
+                            )}
                         </VStack>
                     </ModalBody>
                 </ModalContent>

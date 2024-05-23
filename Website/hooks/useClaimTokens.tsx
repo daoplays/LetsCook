@@ -12,7 +12,6 @@ import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta
 import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
-    TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
     getMint,
     getTransferHook,
@@ -29,7 +28,7 @@ import { toast } from "react-toastify";
 
 const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData } = useAppRoot();
+    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -117,6 +116,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         )[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        let mint_account = mintData.get(launchData.keys[LaunchKeys.MintAddress].toString());
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
@@ -124,18 +124,17 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             launchData.keys[LaunchKeys.MintAddress], // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
             launchData.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
-        let mint_account = await getMint(connection, launchData.keys[LaunchKeys.MintAddress], "confirmed", TOKEN_2022_PROGRAM_ID);
-        let transfer_hook = getTransferHook(mint_account);
+        let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -188,7 +187,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: mint_account.program, isSigner: false, isWritable: true },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];

@@ -23,7 +23,6 @@ import { toast } from "react-toastify";
 import {
     getAssociatedTokenAddress,
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_2022_PROGRAM_ID,
     TOKEN_PROGRAM_ID,
     getMint,
     getTransferHook,
@@ -34,9 +33,11 @@ import {
 
 import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
 import { make_tweet } from "../components/launch/twitter";
+import useAppRoot from "../context/useAppRoot";
 
 const useInitAMM = (launchData: LaunchData) => {
     const wallet = useWallet();
+    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -67,6 +68,7 @@ const useInitAMM = (launchData: LaunchData) => {
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = launchData.keys[LaunchKeys.MintAddress];
+        let mint_account = mintData.get(launchData.keys[LaunchKeys.MintAddress].toString());
 
         var team_wallet = launchData.keys[LaunchKeys.TeamWallet];
 
@@ -74,7 +76,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             team_wallet, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -83,7 +85,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         var quote_pda_account = launchData.keys[LaunchKeys.WSOLAddress];
@@ -106,7 +108,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -115,6 +117,8 @@ const useInitAMM = (launchData: LaunchData) => {
             true, // allow owner off curve
             TOKEN_PROGRAM_ID,
         );
+
+        let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
 
         let user_data_account = PublicKey.findProgramAddressSync(
             [launchData.keys[LaunchKeys.Seller].toBytes(), Buffer.from("User")],
@@ -127,8 +131,7 @@ const useInitAMM = (launchData: LaunchData) => {
             PROGRAM,
         )[0];
 
-        let mint_account = await getMint(connection, token_mint_pubkey, "confirmed", TOKEN_2022_PROGRAM_ID);
-        let transfer_hook = getTransferHook(mint_account);
+        let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -179,6 +182,7 @@ const useInitAMM = (launchData: LaunchData) => {
 
             { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: cook_lp_mint_account, isSigner: false, isWritable: true },
 
             { pubkey: base_pda_account, isSigner: false, isWritable: true },
             { pubkey: quote_pda_account, isSigner: false, isWritable: true },
@@ -189,7 +193,7 @@ const useInitAMM = (launchData: LaunchData) => {
             { pubkey: price_data_account, isSigner: false, isWritable: true },
         ];
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: mint_account.program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 

@@ -22,7 +22,6 @@ import useAppRoot from "../../context/useAppRoot";
 
 import {
     getAssociatedTokenAddress,
-    TOKEN_2022_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
     getMint,
     getTransferHook,
@@ -32,7 +31,7 @@ import {
 
 const useGetMMRewards = () => {
     const wallet = useWallet();
-    const { checkProgramData } = useAppRoot();
+    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -85,6 +84,7 @@ const useGetMMRewards = () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
+        let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
@@ -92,7 +92,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -101,7 +101,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            mint_account.program,
         );
 
         let date_bytes = uInt32ToLEBytes(date);
@@ -118,8 +118,7 @@ const useGetMMRewards = () => {
             PROGRAM,
         )[0];
 
-        let mint_account = await getMint(connection, token_mint, "confirmed", TOKEN_2022_PROGRAM_ID);
-        let transfer_hook = getTransferHook(mint_account);
+        let transfer_hook = getTransferHook(mint_account.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -168,7 +167,7 @@ const useGetMMRewards = () => {
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: mint_account.program, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 

@@ -8,6 +8,7 @@ import {
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
     FEES_PROGRAM,
+    METAPLEX_META,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,
@@ -38,6 +39,10 @@ import {
     PopoverBody,
     IconButton,
     Spinner,
+    RadioGroup,
+    Stack,
+    Radio,
+    Tooltip,
 } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
@@ -53,7 +58,7 @@ import {
     SystemProgram,
     LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
 import styles from "../../styles/LaunchBook.module.css";
 import bs58 from "bs58";
@@ -82,7 +87,7 @@ interface BookPageProps {
 const BookPage = ({ setScreen }: BookPageProps) => {
     const router = useRouter();
     const wallet = useWallet();
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const { newLaunchData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +97,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
+    const [AMMProvider, setAMMProvider] = useState<string>("cook");
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -194,7 +200,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.opendate = localOpenDate;
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
-        newLaunchData.current.amm_fee = parseInt(amm_fee);
+        newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
+
+        if (AMMProvider === "cook") {
+            newLaunchData.current.amm_provider = 0;
+        }
+        if (AMMProvider === "raydium") {
+            newLaunchData.current.amm_provider = 1;
+        }
 
         return true;
     }
@@ -446,8 +459,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            newLaunchData.current.token_program,
         );
+
+        let token_meta_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
+            METAPLEX_META,
+        )[0];
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
@@ -477,10 +495,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
+
+            { pubkey: token_meta_key, isSigner: false, isWritable: true },
+            { pubkey: METAPLEX_META, isSigner: false, isWritable: false },
+            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
@@ -527,7 +549,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
             var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            console.log(signature)
+            console.log(signature);
             //var transaction_response = await send_transaction("", encoded_transaction);
 
             if (signature === undefined) {
@@ -569,7 +591,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Book Token Raffle
                 </Text>
-                <form style={{ width: lg ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
                         <HStack spacing={15}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
@@ -659,18 +681,41 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </div>
                         </HStack>
 
+                        <HStack spacing={0} className={styles.eachField}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                AMM Provider:
+                            </div>
+                            <RadioGroup ml={5} onChange={setAMMProvider} value={AMMProvider}>
+                                <Stack direction="row" gap={5}>
+                                    <Radio value="cook" color="white">
+                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                            Let&apos;s Cook
+                                        </Text>
+                                    </Radio>
+                                    {newLaunchData.current.token_program.equals(TOKEN_PROGRAM_ID) && (
+                                        <Radio value="raydium">
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Raydium
+                                            </Text>
+                                        </Radio>
+                                    )}
+                                </Stack>
+                            </RadioGroup>
+                        </HStack>
+
                         <HStack spacing={15} w="100%">
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
                                 AMM Fee:
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
+                                    disabled={AMMProvider === "raydium"}
                                     size={sm ? "medium" : "lg"}
                                     required
                                     placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
                                     className={styles.inputBox}
                                     type="text"
-                                    value={parseInt(amm_fee) > 0 ? amm_fee : ""}
+                                    value={AMMProvider === "raydium" ? 25 : parseInt(amm_fee) > 0 ? amm_fee : ""}
                                     onChange={(e) => {
                                         setAMMFee(e.target.value);
                                     }}

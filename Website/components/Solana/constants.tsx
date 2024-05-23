@@ -1,7 +1,7 @@
 import { isMobile } from "react-device-detect";
 import { PublicKey } from "@solana/web3.js";
 
-interface NetworkConfig {
+export interface NetworkConfig {
     PROD: boolean;
     NETWORK: string;
     PYTH_BTC: PublicKey;
@@ -28,7 +28,6 @@ const MainNetConfig: NetworkConfig = {
     IRYS_URL: "https://node2.irys.xyz",
     IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
 };
-
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");

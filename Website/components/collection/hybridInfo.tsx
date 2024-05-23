@@ -9,7 +9,17 @@ import { Keypair, PublicKey, Connection } from "@solana/web3.js";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, METAPLEX_META, Extensions } from "../Solana/constants";
-import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID, getTransferHook, getTransferFeeConfig, getPermanentDelegate, getMetadataPointerState, getTokenMetadata } from "@solana/spl-token";
+import {
+    unpackMint,
+    Mint,
+    TOKEN_2022_PROGRAM_ID,
+    getTransferHook,
+    getTransferFeeConfig,
+    getPermanentDelegate,
+    getMetadataPointerState,
+    getTokenMetadata,
+    TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { request_raw_account_data } from "../Solana/state";
 import ShowExtensions from "../Solana/extensions";
@@ -22,7 +32,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const router = useRouter();
     const { newCollectionData } = useAppRoot();
 
-    const { sm, md, lg } = useResponsive();
+    const { sm, md, lg, xl } = useResponsive();
     const [token_mint, setTokenMint] = useState<string>(
         newCollectionData.current.token_mint !== null ? newCollectionData.current.token_mint?.toString() : "",
     );
@@ -35,6 +45,9 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const [team_wallet, setTeamWallet] = useState<string>(newCollectionData.current.team_wallet);
     const [swap_fee, setSwapFee] = useState<string>(
         newCollectionData.current.swap_fee > 0 ? newCollectionData.current.swap_fee.toString() : "",
+    );
+    const [mint_prob, setMintProb] = useState<string>(
+        newCollectionData.current.mint_prob < 100 ? newCollectionData.current.mint_prob.toString() : "",
     );
     const [swap_rate, setSwapRate] = useState<string>(
         newCollectionData.current.swap_rate > 0 ? newCollectionData.current.swap_rate.toString() : "",
@@ -65,33 +78,45 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         let result = await connection.getAccountInfo(token_key, "confirmed");
 
         let mint: Mint;
-        try {
-            mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
-            console.log(mint);
-        } catch (error) {
-            toast.update(searchToken, {
-                render: `Token is not using Token2022 program`,
-                type: "error",
-                isLoading: false,
-                autoClose: 2000,
-            });
-            return;
+        if (result.owner.equals(TOKEN_PROGRAM_ID)) {
+            try {
+                mint = unpackMint(token_key, result, TOKEN_PROGRAM_ID);
+                console.log(mint);
+            } catch (error) {
+                toast.update(searchToken, {
+                    render: `Error loading token`,
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+                return;
+            }
+        } else {
+            try {
+                mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
+                console.log(mint);
+            } catch (error) {
+                toast.update(searchToken, {
+                    render: `Token is not using Token2022 program`,
+                    type: "error",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
+                return;
+            }
         }
 
         let uri = null;
         // first look for t22 metadata
         let metadata_pointer = getMetadataPointerState(mint);
-        console.log("metadata pinter:", metadata_pointer)
+        console.log("metadata pinter:", metadata_pointer);
         if (metadata_pointer !== null) {
-            let metadata = await getTokenMetadata(connection, token_key, "confirmed", TOKEN_2022_PROGRAM_ID)
+            let metadata = await getTokenMetadata(connection, token_key, "confirmed", TOKEN_2022_PROGRAM_ID);
             console.log(metadata);
-            uri = metadata.uri
+            uri = metadata.uri;
             setTokenName(metadata.name);
             setTokenSymbol(metadata.symbol);
-        }
-
-        else {
-
+        } else {
             let token_meta_key = PublicKey.findProgramAddressSync(
                 [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
                 METAPLEX_META,
@@ -110,12 +135,10 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             let meta_data = Metadata.deserialize(raw_meta_data);
             console.log(meta_data);
             console.log(meta_data[0].data.symbol, meta_data[0].data.name);
-            uri = meta_data[0].data.uri
+            uri = meta_data[0].data.uri;
             setTokenName(meta_data[0].data.name);
             setTokenSymbol(meta_data[0].data.symbol);
-
         }
-        
 
         // check the extensions we care about
         let transfer_hook = getTransferHook(mint);
@@ -129,8 +152,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         console.log("extensions", extensions);
 
         //console.log("deserialize meta data");
-        
-        
+
         let uri_json = await fetch(uri).then((res) => res.json());
         console.log(uri_json["image"]);
         setTokenIconURL(uri_json["image"]);
@@ -164,6 +186,16 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.token_decimals = token_decimals;
         newCollectionData.current.token_extensions = token_extensions;
 
+        if (mint_prob !== "") {
+            let prob = parseInt(mint_prob);
+            if (!isNaN(prob) && prob > 0 && prob <= 100) {
+                newCollectionData.current.mint_prob = prob;
+            } else {
+                toast.error("Invalid Mint Chance");
+                return;
+            }
+        }
+
         setScreen("step 4");
     }
 
@@ -173,7 +205,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     Hybrid Info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: lg ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
@@ -326,6 +358,27 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             value={swap_fee}
                                             onChange={(e) => {
                                                 setSwapFee(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+
+                                <HStack spacing={0} w="100%" className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                        Mint Chance:
+                                    </div>
+
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            bg="#494949"
+                                            placeholder="Optional - chance of getting nft on swap (default = 100%)"
+                                            size={lg ? "md" : "lg"}
+                                            maxLength={8}
+                                            className={styles.inputBox}
+                                            type="text"
+                                            value={mint_prob}
+                                            onChange={(e) => {
+                                                setMintProb(e.target.value);
                                             }}
                                         />
                                     </div>

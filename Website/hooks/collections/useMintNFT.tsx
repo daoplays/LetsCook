@@ -8,13 +8,7 @@ import {
     uInt32ToLEBytes,
     request_raw_account_data,
 } from "../../components/Solana/state";
-import {
-    CollectionData,
-    AssignmentData,
-    LookupData,
-    request_assignment_data,
-    request_lookup_data,
-} from "../../components/collection/collectionState";
+import { CollectionData, AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
@@ -25,7 +19,6 @@ import {
     Keypair,
     AccountMeta,
 } from "@solana/web3.js";
-import { TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, CORE } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -82,8 +75,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
     }, []);
 
     const MintNFT = async () => {
-        //console.log("in mint nft");
-
         if (wallet.signTransaction === undefined) {
             //console.log(wallet, "invalid wallet");
             return;
@@ -124,57 +115,37 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-        //console.log(assignment_data);
-
-        let nft_lookup_account = PublicKey.findProgramAddressSync(
-            [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Lookup")],
+        let nft_pubkey = PublicKey.findProgramAddressSync(
+            [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
             PROGRAM,
         )[0];
-
-        let lookup_data = await request_lookup_data(nft_lookup_account);
-
-        var nft_keypair: Keypair = null;
-        var nft_pubkey = null;
-        var mint_is_signer = false;
-        if (lookup_data === null) {
-            nft_pubkey = PublicKey.findProgramAddressSync(
-                    [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
-                    PROGRAM,
-                )[0];
-
-                
-        } else {
-            nft_pubkey = lookup_data.nft_mint;
-            //console.log(lookup_data);
-        }
-
-
-
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
             PROGRAM,
         )[0];
 
-
         const instruction_data = serialise_basic_instruction(LaunchInstruction.mint_nft);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
-            { pubkey: nft_lookup_account, isSigner: false, isWritable: true },
 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: nft_pubkey, isSigner: false, isWritable: true },
-          
+
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
-          ];
+
+            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
+        ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
-        
+
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
@@ -189,10 +160,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
-        if (mint_is_signer) {
-            transaction.partialSign(nft_keypair);
-        }
-
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -201,7 +168,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("mint nft sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
