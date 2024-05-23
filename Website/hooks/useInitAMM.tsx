@@ -118,10 +118,7 @@ const useInitAMM = (launchData: LaunchData) => {
             TOKEN_PROGRAM_ID,
         );
 
-        let cook_lp_mint_account = PublicKey.findProgramAddressSync(
-            [amm_data_account.toBytes(), Buffer.from("LP")],
-            PROGRAM,
-        )[0];
+        let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
 
         let user_data_account = PublicKey.findProgramAddressSync(
             [launchData.keys[LaunchKeys.Seller].toBytes(), Buffer.from("User")],

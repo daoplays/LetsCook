@@ -102,13 +102,13 @@ const useEditLaunch = () => {
         });
 
         let market_id = await getLaunchOBMAccount(Config, launch_data);
-        let raydium_lp_mint_account = Liquidity.getAssociatedLpMint({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market_id.publicKey });
+        let raydium_lp_mint_account = Liquidity.getAssociatedLpMint({
+            programId: getRaydiumPrograms(Config).AmmV4,
+            marketId: market_id.publicKey,
+        });
 
-        let cook_lp_mint_account = PublicKey.findProgramAddressSync(
-            [amm_data_account.toBytes(), Buffer.from("LP")],
-            PROGRAM,
-        )[0];
-        
+        let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
+
         let cook_amm_base_account = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
             amm_data_account, // owner

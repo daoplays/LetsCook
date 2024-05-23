@@ -196,7 +196,14 @@ const useAddLiquidityRaydium = (launchData: LaunchData) => {
             data: raydium_add_liquidity_data,
         });
 
-        let create_lp_ata = createAssociatedTokenAccountInstruction(wallet.publicKey, user_lp_account, wallet.publicKey, poolInfo.lpMint, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID);
+        let create_lp_ata = createAssociatedTokenAccountInstruction(
+            wallet.publicKey,
+            user_lp_account,
+            wallet.publicKey,
+            poolInfo.lpMint,
+            TOKEN_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+        );
 
         let ata_balance = await connection.getBalance(user_lp_account);
         console.log("ata balance", ata_balance);
@@ -207,7 +214,7 @@ const useAddLiquidityRaydium = (launchData: LaunchData) => {
         list_transaction.feePayer = wallet.publicKey;
 
         if (ata_balance === 0) {
-            list_transaction.add(create_lp_ata)
+            list_transaction.add(create_lp_ata);
         }
         list_transaction.add(list_instruction);
 

@@ -37,7 +37,6 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import { FixableBeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
 
-
 export class UpdateLiquidity_Instruction {
     constructor(
         readonly instruction: number,
@@ -93,7 +92,7 @@ const useUpdateCookLiquidity = () => {
             return;
         }
 
-        toast.success("Market order placed!", {
+        toast.success("Liquidity Updated!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
@@ -127,7 +126,7 @@ const useUpdateCookLiquidity = () => {
         let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
         token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
-        console.log(token_amount.toString())
+        console.log(token_amount.toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
@@ -165,10 +164,7 @@ const useUpdateCookLiquidity = () => {
             TOKEN_PROGRAM_ID,
         );
 
-        let cook_lp_mint_account = PublicKey.findProgramAddressSync(
-            [amm_data_account.toBytes(), Buffer.from("LP")],
-            PROGRAM,
-        )[0];
+        let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
 
         let user_lp_token_account_key = await getAssociatedTokenAddress(
             cook_lp_mint_account, // mint
@@ -218,7 +214,8 @@ const useUpdateCookLiquidity = () => {
                 extra_hook_accounts.push(meta);
             }
         }
-        const instruction_data = order_type == 0 ? serialise_update_liquidity(0, token_amount) : serialise_remove_liquidity(0, token_amount);
+        const instruction_data =
+            order_type == 0 ? serialise_update_liquidity(0, token_amount) : serialise_remove_liquidity(0, token_amount);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

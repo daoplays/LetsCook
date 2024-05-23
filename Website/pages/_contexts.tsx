@@ -332,11 +332,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 6) {
-               
                 const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
-                
-               
+
                 continue;
             }
             if (data[0] === 8) {

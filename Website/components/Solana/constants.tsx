@@ -23,8 +23,8 @@ const DevNetConfig: NetworkConfig = {
     PYTH_SOL: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE: "https://black-damp-river.solana-devnet.quiknode.pro/c5447e06dd58dec2f4568518d8fb2fd8625b1d95/",
-    WSS_NODE: "wss://black-damp-river.solana-devnet.quiknode.pro/c5447e06dd58dec2f4568518d8fb2fd8625b1d95/",
+    RPC_NODE: "https://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
+    WSS_NODE: "wss://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
 };
