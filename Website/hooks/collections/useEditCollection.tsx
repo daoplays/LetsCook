@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction, useState, useCallback, useRef } from "react";
 
-import { uInt32ToLEBytes, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction } from "../../components/Solana/state";
+import { uInt32ToLEBytes, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction, getRecentPrioritizationFees } from "../../components/Solana/state";
 import { SOL_ACCOUNT_SEED, DEBUG, SYSTEM_KEY, PROGRAM, Config, DATA_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -45,6 +45,12 @@ const useEditCollection = () => {
         newCollectionData.current.uri = "";
         newCollectionData.current.edit_mode = false;
         newCollectionData.current.token_keypair = null;
+        newCollectionData.current.image_payment = false;
+        newCollectionData.current.images_uploaded = 0;
+        newCollectionData.current.manifest = null;
+        newCollectionData.current.metadata_payment = false;
+        newCollectionData.current.metadata_uploaded = false;
+
 
         await checkProgramData();
 
@@ -135,7 +141,11 @@ const useEditCollection = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        //getRecentPrioritizationFees();
+
         transaction.add(list_instruction);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
+
         const createLaunch = toast.info("Launching your collection (2/2)...");
 
         try {

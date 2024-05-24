@@ -258,7 +258,6 @@ const usePlaceMarketOrder = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        getRecentPrioritizationFees();
 
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));

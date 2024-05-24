@@ -277,7 +277,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 for (let i = 0; i < taggedFiles.length; i++) {
                     size += taggedFiles[i].size;
                 }
-                price = await irys.getPrice(size);
+                price = await irys.getPrice(Math.ceil(1.1*size));
             } catch (e) {
                 toast.update(uploadImageToArweave, {
                     render: e,
@@ -291,46 +291,46 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             }
 
             // console.log("balance_before", balance_before.toString());
+            if (!newCollectionData.current.image_payment) {
+                try {
+                    let txArgs = await get_current_blockhash("");
 
-            try {
-                let txArgs = await get_current_blockhash("");
+                    var tx = new Transaction(txArgs).add(
+                        SystemProgram.transfer({
+                            fromPubkey: wallet.publicKey,
+                            toPubkey: new PublicKey(Config.IRYS_WALLET),
+                            lamports: Number(price),
+                        }),
+                    );
+                    tx.feePayer = wallet.publicKey;
+                    let signed_transaction = await wallet.signTransaction(tx);
+                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-                var tx = new Transaction(txArgs).add(
-                    SystemProgram.transfer({
-                        fromPubkey: wallet.publicKey,
-                        toPubkey: new PublicKey(Config.IRYS_WALLET),
-                        lamports: Number(price),
-                    }),
-                );
-                tx.feePayer = wallet.publicKey;
-                let signed_transaction = await wallet.signTransaction(tx);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                    var transaction_response = await send_transaction("", encoded_transaction);
+                    let signature = transaction_response.result;
 
-                var transaction_response = await send_transaction("", encoded_transaction);
-                let signature = transaction_response.result;
+                    let fund_check = await irys.funder.submitFundTransaction(signature);
 
-                let fund_check = await irys.funder.submitFundTransaction(signature);
+                    console.log(fund_check, fund_check.data);
+                    newCollectionData.current.image_payment = true;
+                    toast.update(uploadImageToArweave, {
+                        render: "Your account has been successfully funded.",
+                        type: "success",
+                        isLoading: false,
+                        autoClose: 2000,
+                    });
+                } catch (error) {
+                    toast.update(uploadImageToArweave, {
+                        render: "Oops! Something went wrong during funding. Please try again later. ",
+                        type: "error",
+                        isLoading: false,
+                        autoClose: 3000,
+                    });
+                    setIsLoading(false);
 
-                console.log(fund_check, fund_check.data);
-
-                toast.update(uploadImageToArweave, {
-                    render: "Your account has been successfully funded.",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 2000,
-                });
-            } catch (error) {
-                toast.update(uploadImageToArweave, {
-                    render: "Oops! Something went wrong during funding. Please try again later. ",
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                setIsLoading(false);
-
-                return;
+                    return;
+                }
             }
-
             let manifestId;
 
             let num_blocks = Math.ceil(size / 1024 / 1024 / 1024);
@@ -370,27 +370,45 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
                 const uploadToArweave = toast.loading("Uploading images on Arweave in " + num_blocks + " blocks");
 
-                let sumManifest = null;
-                for (let i = 0; i < blocks.length; i++) {
-                    const { manifest } = await irys.uploadFolder(blocks[i], {
-                        //@ts-ignore
-                        tags: block_tags[i],
-                    });
+                try {
+                    for (let i = newCollectionData.current.images_uploaded; i < blocks.length; i++) {
+                        const { manifest } = await irys.uploadFolder(blocks[i], {
+                            //@ts-ignore
+                            tags: block_tags[i],
+                        });
 
-                    if (sumManifest === null) {
-                        sumManifest = manifest;
-                    } else {
-                        sumManifest.paths = { ...sumManifest.paths, ...manifest.paths };
+                        if (newCollectionData.current.manifest === null) {
+                            newCollectionData.current.manifest = manifest;
+                        } else {
+                            newCollectionData.current.manifest.paths = { ...newCollectionData.current.manifest.paths, ...manifest.paths };
+                        }
+                        console.log(newCollectionData.current.manifest);
+                        newCollectionData.current.images_uploaded += 1;
                     }
-                    console.log(sumManifest);
+                    console.log(newCollectionData.current.manifest);
                 }
-                console.log(sumManifest);
+                catch(error) {
+                    console.log(error)
+                    toast.update(uploadToArweave, {
+                        render: "Error uploading images",
+                        type: "error",
+                        isLoading: false,
+                        autoClose: 2000,
+                    });
+                    setIsLoading(false);
+                }
+                toast.update(uploadToArweave, {
+                    render: "Images uploaded to arweave.  Uploading manifest.",
+                    type: "success",
+                    isLoading: false,
+                    autoClose: 2000,
+                });
 
-                const manifestjsn = JSON.stringify(sumManifest);
+                const manifestjsn = JSON.stringify(newCollectionData.current.manifest);
                 const manifestBlob = new Blob([manifestjsn], { type: "application/json" });
                 const manifestFile = new File([manifestBlob], "metadata.json");
 
-                let manifestPrice = await irys.getPrice(manifestFile.size);
+                let manifestPrice = await irys.getPrice(Math.ceil(1.1*manifestFile.size));
 
                 try {
                     let txArgs = await get_current_blockhash("");
@@ -429,7 +447,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     return;
                 }
 
-                const manifestRes = await irys.upload(JSON.stringify(sumManifest), {
+                const manifestRes = await irys.upload(JSON.stringify(newCollectionData.current.manifest), {
                     tags: [
                         { name: "Type", value: "manifest" },
                         { name: "Content-Type", value: "application/x.arweave-manifest+json" },
@@ -521,48 +539,49 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             const json_price = await irys.getPrice(10 * size);
 
             const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
+            if (!newCollectionData.current.metadata_payment) {
 
-            try {
-                let txArgs = await get_current_blockhash("");
+                try {
+                    let txArgs = await get_current_blockhash("");
 
-                var tx = new Transaction(txArgs).add(
-                    SystemProgram.transfer({
-                        fromPubkey: wallet.publicKey,
-                        toPubkey: new PublicKey(Config.IRYS_WALLET),
-                        lamports: Number(json_price),
-                    }),
-                );
-                tx.feePayer = wallet.publicKey;
-                let signed_transaction = await wallet.signTransaction(tx);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                    var tx = new Transaction(txArgs).add(
+                        SystemProgram.transfer({
+                            fromPubkey: wallet.publicKey,
+                            toPubkey: new PublicKey(Config.IRYS_WALLET),
+                            lamports: Number(json_price),
+                        }),
+                    );
+                    tx.feePayer = wallet.publicKey;
+                    let signed_transaction = await wallet.signTransaction(tx);
+                    const encoded_transaction = bs58.encode(signed_transaction.serialize());
 
-                var transaction_response = await send_transaction("", encoded_transaction);
+                    var transaction_response = await send_transaction("", encoded_transaction);
 
-                let signature = transaction_response.result;
+                    let signature = transaction_response.result;
 
-                let fund_check = await irys.funder.submitFundTransaction(signature);
+                    let fund_check = await irys.funder.submitFundTransaction(signature);
 
-                console.log(fund_check, fund_check.data["confirmed"]);
+                    console.log(fund_check, fund_check.data["confirmed"]);
 
-                //await irys.fund(json_price);
-                toast.update(fundMetadata, {
-                    render: "Your account has been successfully funded.",
-                    type: "success",
-                    isLoading: false,
-                    autoClose: 2000,
-                });
-            } catch (error) {
-                toast.update(fundMetadata, {
-                    render: "Something went wrong. Please try again later. ",
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                setIsLoading(false);
+                    //await irys.fund(json_price);
+                    toast.update(fundMetadata, {
+                        render: "Your account has been successfully funded.",
+                        type: "success",
+                        isLoading: false,
+                        autoClose: 2000,
+                    });
+                } catch (error) {
+                    toast.update(fundMetadata, {
+                        render: "Something went wrong. Please try again later. ",
+                        type: "error",
+                        isLoading: false,
+                        autoClose: 3000,
+                    });
+                    setIsLoading(false);
 
-                return;
+                    return;
+                }
             }
-
             // Optional parameters
             const uploadOptions = {};
 
@@ -629,7 +648,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             { pubkey: collection_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
-            { pubkey: team_wallet, isSigner: true, isWritable: false },
+            { pubkey: team_wallet, isSigner: false, isWritable: false },
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
