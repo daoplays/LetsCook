@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
@@ -127,6 +128,9 @@ const usePlaceLimitOrder = () => {
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
+
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         transaction.add(instruction);
 

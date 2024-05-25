@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
 
-import { LaunchDataUserInput, get_current_blockhash, send_transaction, serialise_EditUser_instruction } from "../components/Solana/state";
+import { LaunchDataUserInput, getRecentPrioritizationFees, get_current_blockhash, send_transaction, serialise_EditUser_instruction } from "../components/Solana/state";
 import { DEBUG, SYSTEM_KEY, PROGRAM, Config } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
@@ -94,8 +94,10 @@ const useEditUser = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

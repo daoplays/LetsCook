@@ -8,6 +8,7 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     bignum_to_num,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
@@ -121,6 +122,9 @@ const useGetMMTokens = () => {
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
+
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         transaction.add(instruction);
 

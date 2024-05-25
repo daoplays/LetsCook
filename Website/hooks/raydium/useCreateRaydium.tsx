@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     uInt32ToLEBytes,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -222,6 +223,9 @@ const useCreateAMM = (launchData: LaunchData) => {
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
+
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 

@@ -1,6 +1,7 @@
 import {
     LaunchData,
     LaunchInstruction,
+    getRecentPrioritizationFees,
     get_current_blockhash,
     myU64,
     send_transaction,
@@ -136,8 +137,10 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

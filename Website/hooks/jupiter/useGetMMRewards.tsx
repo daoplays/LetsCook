@@ -8,6 +8,7 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     request_raw_account_data,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_ClaimReward_instruction } from "../../components/Solana/jupiter_state";
 
@@ -195,8 +196,10 @@ const useGetMMRewards = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         transaction.add(instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

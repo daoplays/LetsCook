@@ -24,6 +24,7 @@ import {
     bignum_to_num,
     request_current_balance,
     uInt32ToLEBytes,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_LaunchCollection_instruction } from "./collectionState";
 import { WebIrys } from "@irys/sdk";
@@ -255,6 +256,9 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             },
         });
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+
+
         if (newCollectionData.current.icon_url == "" || newCollectionData.current.banner_url == "") {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
@@ -290,12 +294,14 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return;
             }
 
+
             // console.log("balance_before", balance_before.toString());
             if (!newCollectionData.current.image_payment) {
                 try {
                     let txArgs = await get_current_blockhash("");
 
                     var tx = new Transaction(txArgs).add(
+                        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
                             toPubkey: new PublicKey(Config.IRYS_WALLET),
@@ -414,6 +420,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     let txArgs = await get_current_blockhash("");
 
                     var tx = new Transaction(txArgs).add(
+                        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
                             toPubkey: new PublicKey(Config.IRYS_WALLET),
@@ -545,6 +552,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                     let txArgs = await get_current_blockhash("");
 
                     var tx = new Transaction(txArgs).add(
+                        ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
                             toPubkey: new PublicKey(Config.IRYS_WALLET),
@@ -663,9 +671,10 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
 
         transaction.partialSign(newCollectionData.current.token_keypair);
 

@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     uInt32ToLEBytes,
     request_raw_account_data,
+    getRecentPrioritizationFees,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta, ComputeBudgetProgram } from "@solana/web3.js";
 import {
@@ -215,8 +216,10 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
+        
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
         transaction.add(list_instruction);
 
         try {

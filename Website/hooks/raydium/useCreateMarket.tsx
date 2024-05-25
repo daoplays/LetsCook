@@ -6,6 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     request_current_balance,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -389,6 +390,9 @@ const useCreateMarket = (launchData: LaunchData) => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         for (let i = 0; i < ins1.length; i++) {
             transaction.add(ins1[i]);
         }
@@ -602,6 +606,8 @@ const useCreateMarket = (launchData: LaunchData) => {
 
         let list_transaction = new Transaction(list_txArgs);
         list_transaction.feePayer = wallet.publicKey;
+
+        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         list_transaction.add(list_instruction);
 
