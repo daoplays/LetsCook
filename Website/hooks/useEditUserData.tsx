@@ -40,6 +40,8 @@ const useEditUser = () => {
             isLoading: false,
             autoClose: 3000,
         });
+
+        router.refresh();
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -115,7 +117,7 @@ const useEditUser = () => {
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-            router.refresh();
+            
         } catch (error) {
             console.log(error);
             setIsLoading(false);
