@@ -174,7 +174,7 @@ interface SignatureResponseData {
 
 export async function  getRecentPrioritizationFees(PROD: boolean) : Promise<number> {
 
-    let feeMicroLamports = 1000000;
+    let feeMicroLamports = 10000;
     if (PROD) {
         try {
             const response = await fetch(Config.RPC_NODE, {
@@ -189,7 +189,7 @@ export async function  getRecentPrioritizationFees(PROD: boolean) : Promise<numb
                 params: [{
                 "accountKeys": ["JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"],
                 "options": {
-                    "recommended": true,
+                    //"recommended": true,
                     "includeAllPriorityFeeLevels": true,
                 }
                 }]
