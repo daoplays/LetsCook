@@ -233,12 +233,11 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-     
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

@@ -141,10 +141,9 @@ const useEditCollection = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        //getRecentPrioritizationFees();
-
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         const createLaunch = toast.info("Launching your collection (2/2)...");
 
