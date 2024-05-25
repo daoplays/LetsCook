@@ -41,7 +41,6 @@ const useEditUser = () => {
             autoClose: 3000,
         });
 
-        router.refresh();
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -107,6 +106,7 @@ const useEditUser = () => {
             if (transaction_response.result === "INVALID") {
                 console.log(transaction_response);
                 toast.error("Transaction failed, please try again");
+                setIsLoading(false);
                 return;
             }
 

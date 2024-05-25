@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     uInt32ToLEBytes,
     request_raw_account_data,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import {
@@ -21,7 +22,7 @@ import {
 } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, TIMEOUT } from "../../components/Solana/constants";
 import { useCallback, useRef, useState, useEffect } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
@@ -232,8 +233,13 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = 1000000;
+        if (Config.PROD) {
+            getRecentPrioritizationFees();
+        }
+
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
@@ -246,7 +252,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             console.log("claim nft sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, 20000);
+            setTimeout(transaction_failed, TIMEOUT);
         } catch (error) {
             console.log(error);
             setIsLoading(false);

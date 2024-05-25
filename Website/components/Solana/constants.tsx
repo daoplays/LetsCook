@@ -38,6 +38,9 @@ export const CORE = new PublicKey("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
 export const SOL_ACCOUNT_SEED = 59957379;
 export const DATA_ACCOUNT_SEED = 7571427;
 
+//timeout for transactions to be considered failed
+export const TIMEOUT = 30000;
+
 // set font size
 export var DEFAULT_FONT_SIZE = "30px";
 export var DUNGEON_FONT_SIZE = "20px";
