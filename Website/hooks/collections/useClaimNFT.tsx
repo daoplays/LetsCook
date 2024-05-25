@@ -233,10 +233,9 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        let feeMicroLamports = 1000000;
-        if (Config.PROD) {
-            getRecentPrioritizationFees();
-        }
+     
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        
 
         transaction.add(list_instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));

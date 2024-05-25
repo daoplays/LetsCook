@@ -172,26 +172,38 @@ interface SignatureResponseData {
     } | null;
 }
 
-export const getRecentPrioritizationFees = async () => {
-    const response = await fetch(Config.RPC_NODE, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "getPriorityFeeEstimate",
-        params: [{
-          //"accountKeys": ["JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"],
-          "options": {
-              "includeAllPriorityFeeLevels": true,
-          }
-        }]
-      }),
-    });
-    const data = await response.json();
-    console.log("Fee: ", data);
+export async function  getRecentPrioritizationFees(PROD: boolean) : Promise<number> {
+
+    let feeMicroLamports = 1000000;
+    if (PROD) {
+        try {
+            const response = await fetch(Config.RPC_NODE, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                jsonrpc: "2.0",
+                id: 1,
+                method: "getPriorityFeeEstimate",
+                params: [{
+                "accountKeys": ["JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"],
+                "options": {
+                    "recommended": true,
+                    "includeAllPriorityFeeLevels": true,
+                }
+                }]
+            }),
+            });
+            const data = await response.json();
+            console.log("Fee: ", data);
+        }
+        catch (error) {
+        console.log("Error: ", error);
+        }
+    }
+
+    return feeMicroLamports;
 };
   
 
