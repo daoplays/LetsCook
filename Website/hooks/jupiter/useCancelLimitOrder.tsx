@@ -6,6 +6,7 @@ import {
     send_transaction,
     serialise_basic_instruction,
     request_current_balance,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
@@ -112,6 +113,9 @@ const useCancelLimitOrder = () => {
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
+
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         transaction.add(instruction);
 

@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     uInt32ToLEBytes,
     request_raw_account_data,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { CollectionData, AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
 import {
@@ -19,10 +20,6 @@ import {
     Keypair,
     AccountMeta,
 } from "@solana/web3.js";
-import { deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
-import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { publicKey } from "@metaplex-foundation/umi";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, CORE } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -161,8 +158,11 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(list_instruction);
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+        transaction.add(list_instruction);
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

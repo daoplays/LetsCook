@@ -20,6 +20,7 @@ import {
     bignum_to_num,
     request_current_balance,
     uInt32ToLEBytes,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
@@ -257,6 +258,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             },
         });
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+
+
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.info("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
@@ -270,6 +274,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 let txArgs = await get_current_blockhash("");
 
                 var tx = new Transaction(txArgs).add(
+                    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(Config.IRYS_WALLET),
@@ -371,6 +376,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 let txArgs = await get_current_blockhash("");
 
                 var tx = new Transaction(txArgs).add(
+                    ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(Config.IRYS_WALLET),
@@ -535,7 +541,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(list_instruction);
 

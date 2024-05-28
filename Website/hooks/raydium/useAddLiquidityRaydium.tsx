@@ -8,6 +8,7 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     bignum_to_num,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -212,6 +213,9 @@ const useAddLiquidityRaydium = (launchData: LaunchData) => {
 
         let list_transaction = new Transaction(list_txArgs);
         list_transaction.feePayer = wallet.publicKey;
+
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         if (ata_balance === 0) {
             list_transaction.add(create_lp_ata);

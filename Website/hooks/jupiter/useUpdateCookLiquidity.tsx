@@ -11,6 +11,7 @@ import {
     request_raw_account_data,
     ExtraAccountMetaHead,
     ExtraAccountMeta,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { PlaceLimit_Instruction, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
@@ -263,9 +264,11 @@ const useUpdateCookLiquidity = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         transaction.add(instruction);
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         console.log("sending transaction");
 

@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     uInt32ToLEBytes,
     request_raw_account_data,
+    getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import {
@@ -215,9 +216,10 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        transaction.add(list_instruction);
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
+        transaction.add(list_instruction);
 
         transaction.partialSign(nft_mint_keypair);
         try {

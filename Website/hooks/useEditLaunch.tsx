@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from 
 
 import {
     LaunchDataUserInput,
+    getRecentPrioritizationFees,
     get_current_blockhash,
     request_launch_data,
     send_transaction,
@@ -165,8 +166,10 @@ const useEditLaunch = () => {
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

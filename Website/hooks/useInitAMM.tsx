@@ -11,6 +11,7 @@ import {
     Token22MintAccount,
     ExtraAccountMetaHead,
     MetaData,
+    getRecentPrioritizationFees,
 } from "../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -233,6 +234,9 @@ const useInitAMM = (launchData: LaunchData) => {
 
         let list_transaction = new Transaction(list_txArgs);
         list_transaction.feePayer = wallet.publicKey;
+
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         list_transaction.add(list_instruction);
         list_transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));

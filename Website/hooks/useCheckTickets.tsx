@@ -1,6 +1,7 @@
 import {
     LaunchData,
     LaunchInstruction,
+    getRecentPrioritizationFees,
     get_current_blockhash,
     myU64,
     send_transaction,
@@ -124,6 +125,9 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
+        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
         if (launchData.flags[LaunchFlags.AMMProvider] == 0 && launchData.flags[LaunchFlags.LPState] < 2) {
             let init_idx = await GetInitAMMInstruction();
             transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
@@ -131,7 +135,6 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         }
 
         transaction.add(list_instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000000 }));
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
