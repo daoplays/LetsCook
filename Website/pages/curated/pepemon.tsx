@@ -21,6 +21,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
 import Loader from "../../components/loader";
+import ReleaseModal from "./releaseModal";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -28,7 +29,7 @@ const soundCollection = {
 };
 
 const Pepemon = () => {
-    const { sm, md, lg } = useResponsive();
+    const { xs, sm, md, lg } = useResponsive();
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet, handleDisconnectWallet } = UseWalletConnection();
@@ -56,6 +57,7 @@ const Pepemon = () => {
     const asset_image = useRef<string | null>(null);
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
+    const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
@@ -383,31 +385,47 @@ const Pepemon = () => {
                         alt="Pepemon Title"
                         width={800}
                         height={400}
-                        style={{ position: "fixed", top: 30 }}
+                        style={{ position: "fixed", top: 30, padding: "0px 16x" }}
                     />
 
                     {/* // Restart Button */}
-                    {wallet.connected && !md && (
-                        <div
-                            style={{
-                                cursor: "pointer",
-                                background: "url(/curatedLaunches/pepemon/horizontal3.png)",
-                                backgroundSize: "cover",
-                                width: "160px",
-                                height: "80px",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                position: "absolute",
-                                top: 20,
-                                right: 20,
-                            }}
-                            onClick={async () => await wallet.disconnect()}
-                        >
-                            <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
-                                Restart
-                            </Text>
-                        </div>
+                    {wallet.connected && (
+                        <HStack w="100%" justify={md ? "center" : "space-between"} position="fixed" top={xs ? 24 : md ? 36 : 6} px={6}>
+                            <div
+                                style={{
+                                    cursor: "pointer",
+                                    background: "url(/curatedLaunches/pepemon/horizontal3.png)",
+                                    backgroundSize: "cover",
+                                    width: md ? "140px" : "160px",
+                                    height: md ? "68px" : "80px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}
+                                onClick={openReleaseModal}
+                            >
+                                <Text m={0} fontWeight={500} fontSize={md ? 28 : 35} className="font-face-pk">
+                                    Release
+                                </Text>
+                            </div>
+                            <div
+                                style={{
+                                    cursor: "pointer",
+                                    background: "url(/curatedLaunches/pepemon/horizontal3.png)",
+                                    backgroundSize: "cover",
+                                    width: md ? "140px" : "160px",
+                                    height: md ? "68px" : "80px",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}
+                                onClick={async () => await wallet.disconnect()}
+                            >
+                                <Text m={0} fontWeight={500} fontSize={md ? 28 : 35} className="font-face-pk">
+                                    Restart
+                                </Text>
+                            </div>
+                        </HStack>
                     )}
 
                     <VStack
@@ -418,7 +436,7 @@ const Pepemon = () => {
                             right: 0,
                             marginLeft: "auto",
                             marginRight: "auto",
-                            marginTop: sm && wallet.connected ? -280 : sm ? -150 : wallet.connected ? -50 : 0,
+                            marginTop: sm && wallet.connected ? -250 : sm ? -150 : wallet.connected ? -50 : 0,
                         }}
                     >
                         <Image
@@ -469,8 +487,8 @@ const Pepemon = () => {
                                     cursor: "pointer",
                                     background: "url(/curatedLaunches/pepemon/horizontal3.png)",
                                     backgroundSize: "cover",
-                                    width: "160px",
-                                    height: "80px",
+                                    width: md ? "140px" : "160px",
+                                    height: md ? "68px" : "80px",
                                     display: "flex",
                                     justifyContent: "center",
                                     alignItems: "center",
@@ -538,6 +556,8 @@ const Pepemon = () => {
                     asset_image={asset_image}
                     style={modalStyle}
                 />
+
+                <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} />
             </main>
         </>
     );
