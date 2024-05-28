@@ -99,7 +99,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         });
     }, []);
 
-    const WrapNFT = async () => {
+    const WrapNFT = async (asset_key : PublicKey | null) => {
         console.log("in wrap nft");
 
         if (wallet.signTransaction === undefined) {
@@ -127,33 +127,40 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-        const umi = createUmi(Config.RPC_NODE, "confirmed");
+        let wrapped_nft_key : PublicKey;
 
-        let collection_umiKey = publicKey(launchData.keys[CollectionKeys.CollectionMint].toString());
+        if (asset_key === null) {
+            const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-        const assets = await getAssetV1GpaBuilder(umi)
-            .whereField("key", Key.AssetV1)
-            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
-            .getDeserialized();
+            let collection_umiKey = publicKey(launchData.keys[CollectionKeys.CollectionMint].toString());
 
-        let valid_assets: AssetV1[] = [];
-        for (let i = 0; i < assets.length; i++) {
-            if (assets[i].owner !== wallet.publicKey.toString()) {
-                continue;
+            const assets = await getAssetV1GpaBuilder(umi)
+                .whereField("key", Key.AssetV1)
+                .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+                .getDeserialized();
+
+            let valid_assets: AssetV1[] = [];
+            for (let i = 0; i < assets.length; i++) {
+                if (assets[i].owner !== wallet.publicKey.toString()) {
+                    continue;
+                }
+
+                //console.log(account, token_mints[i].toString())
+                valid_assets.push(assets[i]);
+            }
+            //console.log(valid_lookups);
+
+            if (valid_assets.length === 0) {
+                console.log("no nfts owned by user");
+                return;
             }
 
-            //console.log(account, token_mints[i].toString())
-            valid_assets.push(assets[i]);
+            let wrapped_index = Math.floor(Math.random() * valid_assets.length);
+            wrapped_nft_key = new PublicKey(valid_assets[wrapped_index].publicKey.toString());
         }
-        //console.log(valid_lookups);
-
-        if (valid_assets.length === 0) {
-            console.log("no nfts owned by user");
-            return;
+        else {
+            wrapped_nft_key = asset_key;
         }
-
-        let wrapped_index = Math.floor(Math.random() * valid_assets.length);
-        let wrapped_nft_key = new PublicKey(valid_assets[wrapped_index].publicKey.toString());
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

@@ -28,6 +28,11 @@ const soundCollection = {
     catched: "/Catched.mp3",
 };
 
+export interface AssetWithMetadata {
+    asset: AssetV1;
+    metadata: any;
+}
+
 const Pepemon = () => {
     const { xs, sm, md, lg } = useResponsive();
     const wallet = useWallet();
@@ -40,6 +45,7 @@ const Pepemon = () => {
     const [out_amount, setOutAmount] = useState<number>(0);
     const [nft_balance, setNFTBalance] = useState<number>(0);
     const [token_balance, setTokenBalance] = useState<number>(0);
+    const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [nft_amount, setNFTAmount] = useState<number>(0);
@@ -94,13 +100,18 @@ const Pepemon = () => {
 
         console.log(assets);
         let valid_lookups = 0;
+        let owned_assets : AssetWithMetadata[] = []
         for (let i = 0; i < assets.length; i++) {
             if (assets[i].owner.toString() === wallet.publicKey.toString()) {
                 valid_lookups += 1;
+                let uri_json = await fetch(assets[i].uri).then((res) => res.json());
+                let entry : AssetWithMetadata = {asset: assets[i], metadata: uri_json};
+                owned_assets.push(entry);
             }
         }
         console.log("have ", valid_lookups, "addresses with balance");
 
+        setOwnedAssets(owned_assets);
         setNFTBalance(valid_lookups);
     }, [launch, wallet]);
 
@@ -557,7 +568,7 @@ const Pepemon = () => {
                     style={modalStyle}
                 />
 
-                <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} />
+                <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} assets={owned_assets} collection={launch}/>
             </main>
         </>
     );

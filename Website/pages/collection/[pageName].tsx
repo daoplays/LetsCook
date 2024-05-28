@@ -687,7 +687,7 @@ const CollectionSwapPage = () => {
                                                     mt={3}
                                                     onClick={() => {
                                                         if (wallet.connected) {
-                                                            WrapNFT();
+                                                            WrapNFT(null);
                                                         } else {
                                                             handleConnectWallet();
                                                         }
