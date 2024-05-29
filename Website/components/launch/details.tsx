@@ -12,12 +12,14 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
+import useCreateLaunch from "../../hooks/launch/useCreateLaunch";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
+    simpleLaunch: boolean;
 }
 
-const DetailsPage = ({ setScreen }: DetailsPageProps) => {
+const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
     const router = useRouter();
     const { sm, md, lg, xl } = useResponsive();
     const { newLaunchData } = useAppRoot();
@@ -28,6 +30,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
+
+    const { CreateLaunch } = useCreateLaunch();
 
     const { launchList } = useAppRoot();
 
@@ -133,6 +137,10 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
         newLaunchData.current.tele_url = telegram;
 
         return true;
+    }
+
+    async function confirm(e) {
+        if (await setData(e)) CreateLaunch();
     }
 
     async function nextPage(e) {
@@ -318,11 +326,15 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    // Call Create Launch
+                                    if (simpleLaunch) {
+                                        confirm(e);
+                                    } else {
+                                        nextPage(e);
+                                    }
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >
-                                Confirm
+                                {simpleLaunch ? "CONFIRM" : "NEXT (2/3)"}
                             </button>
                         </div>
                     </VStack>

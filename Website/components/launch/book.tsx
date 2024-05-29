@@ -128,7 +128,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         setCloseDateAndTime(`${endDateString} ${endTimeString}`);
     }, [localCloseDate, local_date, zone]);
 
-
     const isDesktopOrLaptop = useMediaQuery({
         query: "(max-width: 1000px)",
     });

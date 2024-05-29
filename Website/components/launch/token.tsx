@@ -46,9 +46,10 @@ import trimAddress from "../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
+    simpleLaunch: boolean;
 }
 
-const TokenPage = ({ setScreen }: TokenPageProps) => {
+const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     //console.log(newLaunchData.current)
     const router = useRouter();
     const { sm, md, lg, xl } = useResponsive();
@@ -237,20 +238,20 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     async function setData(e): Promise<boolean> {
         e.preventDefault();
 
-        // if (totalPercentage !== 100) {
-        //     toast.error("The total percentage must add up to 100%.");
-        //     return false;
-        // }
+        if (totalPercentage !== 100 && !simpleLaunch) {
+            toast.error("The total percentage must add up to 100%.");
+            return false;
+        }
 
         if (newLaunchData.current.icon_file === null) {
             toast.error("Please select an icon image.");
             return false;
         }
 
-        // if (parseFloat(ticketPrice) < 0.00001) {
-        //     toast.error("Minimum ticket price is 0.00001 SOL");
-        //     return false;
-        // }
+        if (parseFloat(ticketPrice) < 0.00001 && !simpleLaunch) {
+            toast.error("Minimum ticket price is 0.00001 SOL");
+            return false;
+        }
 
         if (symbol.length > 10) {
             toast.error("Maximum symbol length is 10 characters");
@@ -262,15 +263,15 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return false;
         }
 
-        // if (distribution[Distribution.LP] === 0) {
-        //     toast.error("Liquidity pool allocation must be greater than zero");
-        //     return false;
-        // }
+        if (distribution[Distribution.LP] === 0 && !simpleLaunch) {
+            toast.error("Liquidity pool allocation must be greater than zero");
+            return false;
+        }
 
-        // if (distribution[Distribution.Raffle] === 0) {
-        //     toast.error("Raffle allocation must be greater than zero");
-        //     return false;
-        // }
+        if (distribution[Distribution.Raffle] === 0 && !simpleLaunch) {
+            toast.error("Raffle allocation must be greater than zero");
+            return false;
+        }
 
         if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (distribution[Distribution.Raffle] / 100) < parseInt(mints)) {
             toast.error("Not enough tokens to support the raffle");
@@ -452,25 +453,27 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </div>
                                 </HStack>
 
-                                {/* <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
-                                        Token Prefix:
-                                    </div>
+                                {!simpleLaunch && (
+                                    <HStack spacing={0} className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                            Token Prefix:
+                                        </div>
 
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            maxLength={3}
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            className={styles.inputBox}
-                                            placeholder="Enter Token Prefix Grind (Max 3 Characters) - Optional"
-                                            value={tokenStart}
-                                            onChange={(e) => {
-                                                setTokenStart(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack> */}
+                                        <div className={styles.textLabelInput}>
+                                            <Input
+                                                maxLength={3}
+                                                disabled={newLaunchData.current.edit_mode === true}
+                                                size={lg ? "md" : "lg"}
+                                                className={styles.inputBox}
+                                                placeholder="Enter Token Prefix Grind (Max 3 Characters) - Optional"
+                                                value={tokenStart}
+                                                onChange={(e) => {
+                                                    setTokenStart(e.target.value);
+                                                }}
+                                            />
+                                        </div>
+                                    </HStack>
+                                )}
 
                                 {!lg && <Browse />}
                             </VStack>
@@ -497,624 +500,667 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </div>
                             </HStack>
 
-                            {/* <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
-                                    Decimals:
-                                </div>
+                            {!simpleLaunch && (
+                                <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
+                                        Decimals:
+                                    </div>
 
-                                <div className={styles.textLabelInput}>
-                                    <Input
-                                        disabled={newLaunchData.current.edit_mode === true}
-                                        size={lg ? "md" : "lg"}
-                                        required
-                                        className={styles.inputBox}
-                                        placeholder="1-9"
-                                        value={decimal}
-                                        onChange={(e) => {
-                                            setDecimal(e.target.value);
-                                        }}
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            disabled={newLaunchData.current.edit_mode === true}
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="1-9"
+                                            value={decimal}
+                                            onChange={(e) => {
+                                                setDecimal(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+                            )}
+                        </HStack>
+
+                        {simpleLaunch ? (
+                            <HStack spacing={6} className={styles.eachField} mt={3}>
+                                <HStack>
+                                    <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
+                                    <Image
+                                        width={30}
+                                        height={30}
+                                        src="/images/help.png"
+                                        alt="Help"
+                                        onClick={openTooltip}
+                                        style={{ cursor: "pointer" }}
                                     />
-                                </div>
-                            </HStack> */}
-                        </HStack>
-
-                        <HStack spacing={6} className={styles.eachField}>
-                            <HStack>
-                                <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
-                                <Image
-                                    width={30}
-                                    height={30}
-                                    src="/images/help.png"
-                                    alt="Help"
-                                    onClick={openTooltip}
-                                    style={{ cursor: "pointer" }}
-                                />
-                                <div className={`${styles.textLabel} font-face-kg`}>:</div>
-                            </HStack>
-                            <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
-                                <Stack direction="row" gap={8}>
-                                    <Radio value="none" color="white">
-                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
-                                            None
-                                        </Text>
-                                    </Radio>
-
-                                    <Radio value="5">
-                                        <Tooltip
-                                            label="Allocate 5% of the supply to Let's Cook users trading your token."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
+                                    <div className={`${styles.textLabel} font-face-kg`}>:</div>
+                                </HStack>
+                                <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
+                                    <Stack direction="row" gap={8}>
+                                        <Radio value="none" color="white">
                                             <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
-                                                5%
+                                                None
                                             </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                    <Radio value="10">
-                                        <Tooltip
-                                            label="Allocate 10% of the supply to Let's Cook users trading your token."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Text
-                                                align="center"
-                                                color="white"
-                                                m={0}
-                                                className="font-face-rk"
-                                                fontSize={lg ? "large" : "x-large"}
-                                            >
-                                                10%
-                                            </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                </Stack>
-                            </RadioGroup>
-                        </HStack>
+                                        </Radio>
 
-                        {/* <VStack spacing={lg ? 8 : 10} w="100%">
-                            <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
-                                Token Extensions:
-                            </Text>
-                            <HStack spacing={0} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                    Token Program:
-                                </div>
-                                <RadioGroup ml="5" onChange={setTokenProgram} value={tokenProgram}>
-                                    <Stack direction="row" gap={5}>
-                                        <Radio value="2022" color="white">
+                                        <Radio value="5">
                                             <Tooltip
-                                                label="Uses the new token 2022 program (supports extensions)"
+                                                label="Allocate 5% of the supply to Let's Cook users trading your token."
                                                 hasArrow
                                                 fontSize="large"
                                                 offset={[0, 10]}
                                             >
-                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                    Token 2022
+                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                                    5%
                                                 </Text>
                                             </Tooltip>
                                         </Radio>
-                                        <Radio value="classic">
+                                        <Radio value="10">
                                             <Tooltip
-                                                label="Uses the original spl token program (no extension support)."
+                                                label="Allocate 10% of the supply to Let's Cook users trading your token."
                                                 hasArrow
                                                 fontSize="large"
                                                 offset={[0, 10]}
                                             >
-                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                    Classic
+                                                <Text
+                                                    align="center"
+                                                    color="white"
+                                                    m={0}
+                                                    className="font-face-rk"
+                                                    fontSize={lg ? "large" : "x-large"}
+                                                >
+                                                    10%
                                                 </Text>
                                             </Tooltip>
                                         </Radio>
                                     </Stack>
                                 </RadioGroup>
                             </HStack>
-                            <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "115px" : "185px" }}>
-                                        Transfer Fee:
-                                    </div>
+                        ) : (
+                            <VStack w="100%">
+                                <Divider />
+                                <VStack spacing={lg ? 8 : 10} w="100%">
+                                    <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
+                                        Token Extensions:
+                                    </Text>
+                                    <HStack spacing={0} className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                            Token Program:
+                                        </div>
+                                        <RadioGroup ml="5" onChange={setTokenProgram} value={tokenProgram}>
+                                            <Stack direction="row" gap={5}>
+                                                <Radio value="2022" color="white">
+                                                    <Tooltip
+                                                        label="Uses the new token 2022 program (supports extensions)"
+                                                        hasArrow
+                                                        fontSize="large"
+                                                        offset={[0, 10]}
+                                                    >
+                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                            Token 2022
+                                                        </Text>
+                                                    </Tooltip>
+                                                </Radio>
+                                                <Radio value="classic">
+                                                    <Tooltip
+                                                        label="Uses the original spl token program (no extension support)."
+                                                        hasArrow
+                                                        fontSize="large"
+                                                        offset={[0, 10]}
+                                                    >
+                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                            Classic
+                                                        </Text>
+                                                    </Tooltip>
+                                                </Radio>
+                                            </Stack>
+                                        </RadioGroup>
+                                    </HStack>
+                                    <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
+                                        <HStack spacing={0} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "115px" : "185px" }}
+                                            >
+                                                Transfer Fee:
+                                            </div>
 
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
-                                            size={lg ? "md" : "lg"}
-                                            className={styles.inputBox}
-                                            placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
-                                            value={transferFee}
-                                            onChange={(e) => {
-                                                setTransferFee(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
+                                                    size={lg ? "md" : "lg"}
+                                                    className={styles.inputBox}
+                                                    placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
+                                                    value={transferFee}
+                                                    onChange={(e) => {
+                                                        setTransferFee(e.target.value);
+                                                    }}
+                                                />
+                                            </div>
+                                        </HStack>
 
-                                <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "115px" : "135px" }}>
-                                        Max Fee:
-                                    </div>
+                                        <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "115px" : "135px" }}
+                                            >
+                                                Max Fee:
+                                            </div>
 
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
-                                            size={lg ? "md" : "lg"}
-                                            className={styles.inputBox}
-                                            placeholder="Max number of tokens taxed in a single transaction"
-                                            value={maxTransferFee}
-                                            onChange={(e) => {
-                                                setMaxTransferFee(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
-                            </HStack>
-                            <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
-                                <HStack spacing={15} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "100px" : "172px" }}>
-                                        Permanent Delegate:
-                                    </div>
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
+                                                    size={lg ? "md" : "lg"}
+                                                    className={styles.inputBox}
+                                                    placeholder="Max number of tokens taxed in a single transaction"
+                                                    value={maxTransferFee}
+                                                    onChange={(e) => {
+                                                        setMaxTransferFee(e.target.value);
+                                                    }}
+                                                />
+                                            </div>
+                                        </HStack>
+                                    </HStack>
+                                    <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
+                                        <HStack spacing={15} className={styles.eachField}>
+                                            <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "100px" : "172px" }}>
+                                                Permanent Delegate:
+                                            </div>
 
-                                    <HStack spacing={0} style={{ flexGrow: 1 }}>
-                                        <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
+                                            <HStack spacing={0} style={{ flexGrow: 1 }}>
+                                                <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
+                                                    <Input
+                                                        disabled={
+                                                            newLaunchData.current.edit_mode === true ||
+                                                            isCustomProgramId ||
+                                                            tokenProgram == "classic"
+                                                        }
+                                                        size={lg ? "md" : "lg"}
+                                                        className={styles.inputBox}
+                                                        placeholder="Enter Permanent Delegate ID"
+                                                        value={permanentDelegate}
+                                                        onChange={(e) => {
+                                                            setPermanentDelegate(e.target.value);
+                                                            setTransferHookID(FEES_PROGRAM.toString());
+                                                        }}
+                                                    />
+                                                </div>
+                                                <Tooltip
+                                                    label="Will enforce transfer hook to stop delegate transfers from lets cook AMM"
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Image width={30} height={30} src="/images/help.png" alt="Help" />
+                                                </Tooltip>
+                                            </HStack>
+                                        </HStack>
+                                    </HStack>
+                                    <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
+                                        <HStack spacing={15} className={styles.eachField}>
+                                            <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "135px" : "174px" }}>
+                                                Transfer Hook Program ID:
+                                            </div>
+
+                                            <HStack spacing={0} style={{ flexGrow: 1 }}>
+                                                <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
+                                                    <Input
+                                                        disabled={
+                                                            newLaunchData.current.edit_mode === true ||
+                                                            isCustomProgramId ||
+                                                            permanentDelegate !== "" ||
+                                                            tokenProgram == "classic"
+                                                        }
+                                                        size={lg ? "md" : "lg"}
+                                                        className={styles.inputBox}
+                                                        placeholder="Enter Transfer Hook Program ID"
+                                                        value={transferHookID}
+                                                        onChange={(e) => {
+                                                            setTransferHookID(e.target.value);
+                                                            setPermanentDelegate("");
+                                                        }}
+                                                    />
+                                                </div>
+                                                <Tooltip
+                                                    label="Users must initialize the extra account metadata for the mint themselves"
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Image width={30} height={30} src="/images/help.png" alt="Help" />
+                                                </Tooltip>
+                                            </HStack>
+                                        </HStack>
+                                    </HStack>
+
+                                    <Divider />
+
+                                    <Text mt={-3} className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
+                                        Distribution:
+                                    </Text>
+
+                                    <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
+                                        <HStack spacing={0} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "100px" : "185px" }}
+                                            >
+                                                WINNING TICKETS:
+                                            </div>
+
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    placeholder={"Enter Total Number of Winning Tickets"}
+                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    size={lg ? "md" : "lg"}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    value={mints}
+                                                    onChange={(e) => {
+                                                        setMints(e.target.value);
+                                                    }}
+                                                />
+                                            </div>
+                                        </HStack>
+
+                                        <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "100px" : "150px" }}
+                                            >
+                                                Ticket Price:
+                                            </div>
+
+                                            <div style={{ width: "100%" }} className={styles.textLabelInput}>
+                                                <Input
+                                                    placeholder={"Enter Price Per Ticket"}
+                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    size={lg ? "md" : "lg"}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    value={ticketPrice}
+                                                    onChange={(e) => {
+                                                        setTotalPrice(e.target.value);
+                                                    }}
+                                                />
+                                                <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                            </div>
+                                        </HStack>
+                                    </HStack>
+
+                                    <HStack spacing={lg ? 0 : 1} className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                            Minimum Liquidity:
+                                        </div>
+
+                                        <div className={styles.textLabelInput}>
                                             <Input
-                                                disabled={
-                                                    newLaunchData.current.edit_mode === true ||
-                                                    isCustomProgramId ||
-                                                    tokenProgram == "classic"
-                                                }
                                                 size={lg ? "md" : "lg"}
+                                                required
                                                 className={styles.inputBox}
-                                                placeholder="Enter Permanent Delegate ID"
-                                                value={permanentDelegate}
-                                                onChange={(e) => {
-                                                    setPermanentDelegate(e.target.value);
-                                                    setTransferHookID(FEES_PROGRAM.toString());
-                                                }}
-                                            />
-                                        </div>
-                                        <Tooltip
-                                            label="Will enforce transfer hook to stop delegate transfers from lets cook AMM"
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Image width={30} height={30} src="/images/help.png" alt="Help" />
-                                        </Tooltip>
-                                    </HStack>
-                                </HStack>
-                            </HStack>
-                            <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
-                                <HStack spacing={15} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "135px" : "174px" }}>
-                                        Transfer Hook Program ID:
-                                    </div>
-
-                                    <HStack spacing={0} style={{ flexGrow: 1 }}>
-                                        <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
-                                            <Input
-                                                disabled={
-                                                    newLaunchData.current.edit_mode === true ||
-                                                    isCustomProgramId ||
-                                                    permanentDelegate !== "" ||
-                                                    tokenProgram == "classic"
+                                                value={
+                                                    !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
+                                                        ? parseFloat(mints) * parseFloat(ticketPrice)
+                                                        : 0
                                                 }
-                                                size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
-                                                placeholder="Enter Transfer Hook Program ID"
-                                                value={transferHookID}
-                                                onChange={(e) => {
-                                                    setTransferHookID(e.target.value);
-                                                    setPermanentDelegate("");
-                                                }}
+                                                disabled
+                                                style={{ cursor: "not-allowed" }}
+                                                readOnly
                                             />
+                                            <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
                                         </div>
-                                        <Tooltip
-                                            label="Users must initialize the extra account metadata for the mint themselves"
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
+                                    </HStack>
+                                </VStack>
+                                <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
+                                    <HStack
+                                        justify="space-between"
+                                        align={"center"}
+                                        w="100%"
+                                        style={{ flexDirection: md ? "column" : "row" }}
+                                        spacing={5}
+                                    >
+                                        <VStack
+                                            spacing={5}
+                                            align="start"
+                                            w={md ? "100%" : "fit-content"}
+                                            className={styles.distributionBoxFields}
                                         >
-                                            <Image width={30} height={30} src="/images/help.png" alt="Help" />
-                                        </Tooltip>
+                                            <HStack spacing={5} mt={md ? 0 : 5}>
+                                                <Box w={35} h={30} bg={distributionLabels.headers[0].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.headers[0].title}
+                                                </div>
+                                            </HStack>
+
+                                            <VStack
+                                                pl={md ? 0 : 55}
+                                                spacing={5}
+                                                align="start"
+                                                w={md ? "100%" : "530px"}
+                                                className={styles.distributionBoxFields}
+                                            >
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Raffle].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[Distribution.Raffle].title}
+                                                        </div>
+                                                    </HStack>
+                                                    <div className={styles.distributionField}>
+                                                        <Input
+                                                            size={"lg"}
+                                                            required
+                                                            value={distribution[Distribution.Raffle].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.Raffle);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.Raffle] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LP].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[Distribution.LP].title}
+                                                        </div>
+                                                    </HStack>
+                                                    <div className={styles.distributionField}>
+                                                        <Input
+                                                            size="lg"
+                                                            required
+                                                            value={distribution[Distribution.LP].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.LP);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.LP] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+                                            </VStack>
+
+                                            <HStack spacing={5} mt={md ? 0 : 5}>
+                                                <Box w={35} h={30} bg={distributionLabels.headers[1].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.headers[1].title}
+                                                </div>
+                                            </HStack>
+
+                                            <VStack
+                                                pl={md ? 0 : 55}
+                                                spacing={5}
+                                                align="start"
+                                                w={md ? "100%" : "530px"}
+                                                className={styles.distributionBoxFields}
+                                            >
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[Distribution.MMRewards].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[Distribution.MMRewards].title}
+                                                        </div>
+                                                    </HStack>
+                                                    <div className={styles.distributionField}>
+                                                        <Input
+                                                            size="lg"
+                                                            required
+                                                            value={distribution[Distribution.MMRewards].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.MMRewards);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.MMRewards] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+                                            </VStack>
+
+                                            <HStack spacing={5} mt={md ? 0 : 5}>
+                                                <Box w={35} h={30} bg={distributionLabels.headers[2].color} />
+                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    {distributionLabels.headers[2].title}
+                                                </div>
+                                            </HStack>
+
+                                            <VStack
+                                                pl={md ? 0 : 55}
+                                                spacing={5}
+                                                align="start"
+                                                w={md ? "100%" : "530px"}
+                                                className={styles.distributionBoxFields}
+                                            >
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LPRewards].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[Distribution.LPRewards].title}
+                                                        </div>
+                                                    </HStack>
+                                                    <div className={styles.distributionField}>
+                                                        <Input
+                                                            size="lg"
+                                                            value={distribution[Distribution.LPRewards].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.LPRewards);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.LPRewards] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Team].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[Distribution.Team].title}
+                                                        </div>
+                                                    </HStack>
+                                                    <div className={styles.distributionField}>
+                                                        <Input
+                                                            size="lg"
+                                                            value={distribution[Distribution.Team].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.Team);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.Team] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Airdrops].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[Distribution.Airdrops].title}
+                                                        </div>
+                                                    </HStack>
+                                                    <div className={styles.distributionField}>
+                                                        <Input
+                                                            size="lg"
+                                                            value={distribution[Distribution.Airdrops].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.Airdrops);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.Airdrops] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+
+                                                <HStack spacing={5} align="center" justify="space-between" w="100%">
+                                                    <HStack spacing={5}>
+                                                        <Box w={35} h={30} bg={distributionLabels.fields[6].color} />
+                                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                            {distributionLabels.fields[6].title}
+                                                        </div>
+                                                    </HStack>
+
+                                                    <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
+                                                        <Input
+                                                            size="lg"
+                                                            value={distribution[Distribution.Other].toFixed(0)}
+                                                            onChange={(e) => {
+                                                                handleDistributionChange(e, Distribution.Other);
+                                                            }}
+                                                            disabled={
+                                                                totalPercentage === 100 && distribution[Distribution.Other] === 0
+                                                                    ? true
+                                                                    : false
+                                                            }
+                                                        />
+                                                        <Image
+                                                            className={styles.percentage}
+                                                            width={lg ? 15 : 20}
+                                                            height={lg ? 15 : 20}
+                                                            src="/images/perc.png"
+                                                            alt="Percentage"
+                                                        />
+                                                    </div>
+                                                </HStack>
+                                            </VStack>
+                                        </VStack>
+
+                                        <VStack
+                                            spacing={6}
+                                            flexGrow={1}
+                                            justify="center"
+                                            align="center"
+                                            py={8}
+                                            h="fit-content"
+                                            style={{ position: "relative" }}
+                                        >
+                                            <PieChart
+                                                animate={true}
+                                                totalValue={100}
+                                                data={[
+                                                    {
+                                                        title: "Raffle (SOL)",
+                                                        value: distribution[Distribution.Raffle],
+                                                        color: "#FF6651",
+                                                    },
+                                                    { title: "$TOKEN", value: distribution[Distribution.LP], color: "#FF9548" },
+
+                                                    {
+                                                        title: "Market Maker Rewards",
+                                                        value: distribution[Distribution.MMRewards],
+                                                        color: "#66FFB6",
+                                                    }, // integrate MM Rewards
+                                                    {
+                                                        title: "Liquidity Provider Rewards",
+                                                        value: distribution[Distribution.LPRewards],
+                                                        color: "#61efff",
+                                                    },
+                                                    {
+                                                        title: "Airdrops / Marketing",
+                                                        value: distribution[Distribution.Airdrops],
+                                                        color: "#988FFF",
+                                                    },
+                                                    { title: "Team", value: distribution[Distribution.Team], color: "#8CB3FF" },
+                                                    { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
+                                                    { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
+                                                ]}
+                                                style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
+                                            />
+
+                                            <PieChart
+                                                animate={true}
+                                                totalValue={100}
+                                                data={[
+                                                    {
+                                                        title: distributionLabels.headers[0].title,
+                                                        value: distribution[Distribution.Raffle] + distribution[Distribution.LP],
+                                                        color: distributionLabels.headers[0].color,
+                                                    },
+                                                    {
+                                                        title: distributionLabels.headers[1].title,
+                                                        // integrate MM Rewards here
+                                                        value: distribution[Distribution.MMRewards],
+                                                        color: distributionLabels.headers[1].color,
+                                                    },
+                                                    {
+                                                        title: distributionLabels.headers[2].title,
+                                                        value:
+                                                            distribution[Distribution.LPRewards] +
+                                                            distribution[Distribution.Team] +
+                                                            distribution[Distribution.Airdrops] +
+                                                            distribution[Distribution.Other],
+                                                        color: distributionLabels.headers[2].color,
+                                                    },
+                                                ]}
+                                                style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
+                                            />
+                                        </VStack>
                                     </HStack>
-                                </HStack>
-                            </HStack>
-
-                            <Divider />
-
-                            <Text mt={-3} className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
-                                Distribution:
-                            </Text>
-
-                            <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                        WINNING TICKETS:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            placeholder={"Enter Total Number of Winning Tickets"}
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            value={mints}
-                                            onChange={(e) => {
-                                                setMints(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
-
-                                <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
-                                        Ticket Price:
-                                    </div>
-
-                                    <div style={{ width: "100%" }} className={styles.textLabelInput}>
-                                        <Input
-                                            placeholder={"Enter Price Per Ticket"}
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            value={ticketPrice}
-                                            onChange={(e) => {
-                                                setTotalPrice(e.target.value);
-                                            }}
-                                        />
-                                        <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
-                                    </div>
-                                </HStack>
-                            </HStack>
-
-                            <HStack spacing={lg ? 0 : 1} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
-                                    Minimum Liquidity:
-                                </div>
-
-                                <div className={styles.textLabelInput}>
-                                    <Input
-                                        size={lg ? "md" : "lg"}
-                                        required
-                                        className={styles.inputBox}
-                                        value={
-                                            !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
-                                                ? parseFloat(mints) * parseFloat(ticketPrice)
-                                                : 0
-                                        }
-                                        disabled
-                                        style={{ cursor: "not-allowed" }}
-                                        readOnly
-                                    />
-                                    <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
-                                </div>
-                            </HStack>
-                        </VStack>
-
-                        <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
-                            <HStack
-                                justify="space-between"
-                                align={"center"}
-                                w="100%"
-                                style={{ flexDirection: md ? "column" : "row" }}
-                                spacing={5}
-                            >
-                                <VStack spacing={5} align="start" w={md ? "100%" : "fit-content"} className={styles.distributionBoxFields}>
-                                    <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg={distributionLabels.headers[0].color} />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                            {distributionLabels.headers[0].title}
-                                        </div>
-                                    </HStack>
-
-                                    <VStack
-                                        pl={md ? 0 : 55}
-                                        spacing={5}
-                                        align="start"
-                                        w={md ? "100%" : "530px"}
-                                        className={styles.distributionBoxFields}
-                                    >
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Raffle].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[Distribution.Raffle].title}
-                                                </div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size={"lg"}
-                                                    required
-                                                    value={distribution[Distribution.Raffle].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.Raffle);
-                                                    }}
-                                                    disabled={
-                                                        totalPercentage === 100 && distribution[Distribution.Raffle] === 0 ? true : false
-                                                    }
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LP].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[Distribution.LP].title}
-                                                </div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    required
-                                                    value={distribution[Distribution.LP].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.LP);
-                                                    }}
-                                                    disabled={totalPercentage === 100 && distribution[Distribution.LP] === 0 ? true : false}
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-                                    </VStack>
-
-                                    <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg={distributionLabels.headers[1].color} />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                            {distributionLabels.headers[1].title}
-                                        </div>
-                                    </HStack>
-
-                                    <VStack
-                                        pl={md ? 0 : 55}
-                                        spacing={5}
-                                        align="start"
-                                        w={md ? "100%" : "530px"}
-                                        className={styles.distributionBoxFields}
-                                    >
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.MMRewards].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[Distribution.MMRewards].title}
-                                                </div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    required
-                                                    value={distribution[Distribution.MMRewards].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.MMRewards);
-                                                    }}
-                                                    disabled={
-                                                        totalPercentage === 100 && distribution[Distribution.MMRewards] === 0 ? true : false
-                                                    }
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-                                    </VStack>
-
-                                    <HStack spacing={5} mt={md ? 0 : 5}>
-                                        <Box w={35} h={30} bg={distributionLabels.headers[2].color} />
-                                        <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                            {distributionLabels.headers[2].title}
-                                        </div>
-                                    </HStack>
-
-                                    <VStack
-                                        pl={md ? 0 : 55}
-                                        spacing={5}
-                                        align="start"
-                                        w={md ? "100%" : "530px"}
-                                        className={styles.distributionBoxFields}
-                                    >
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LPRewards].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[Distribution.LPRewards].title}
-                                                </div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    value={distribution[Distribution.LPRewards].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.LPRewards);
-                                                    }}
-                                                    disabled={
-                                                        totalPercentage === 100 && distribution[Distribution.LPRewards] === 0 ? true : false
-                                                    }
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Team].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[Distribution.Team].title}
-                                                </div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    value={distribution[Distribution.Team].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.Team);
-                                                    }}
-                                                    disabled={
-                                                        totalPercentage === 100 && distribution[Distribution.Team] === 0 ? true : false
-                                                    }
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Airdrops].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[Distribution.Airdrops].title}
-                                                </div>
-                                            </HStack>
-                                            <div className={styles.distributionField}>
-                                                <Input
-                                                    size="lg"
-                                                    value={distribution[Distribution.Airdrops].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.Airdrops);
-                                                    }}
-                                                    disabled={
-                                                        totalPercentage === 100 && distribution[Distribution.Airdrops] === 0 ? true : false
-                                                    }
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-
-                                        <HStack spacing={5} align="center" justify="space-between" w="100%">
-                                            <HStack spacing={5}>
-                                                <Box w={35} h={30} bg={distributionLabels.fields[6].color} />
-                                                <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                    {distributionLabels.fields[6].title}
-                                                </div>
-                                            </HStack>
-
-                                            <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
-                                                <Input
-                                                    size="lg"
-                                                    value={distribution[Distribution.Other].toFixed(0)}
-                                                    onChange={(e) => {
-                                                        handleDistributionChange(e, Distribution.Other);
-                                                    }}
-                                                    disabled={
-                                                        totalPercentage === 100 && distribution[Distribution.Other] === 0 ? true : false
-                                                    }
-                                                />
-                                                <Image
-                                                    className={styles.percentage}
-                                                    width={lg ? 15 : 20}
-                                                    height={lg ? 15 : 20}
-                                                    src="/images/perc.png"
-                                                    alt="Percentage"
-                                                />
-                                            </div>
-                                        </HStack>
-                                    </VStack>
                                 </VStack>
-
-                                <VStack
-                                    spacing={6}
-                                    flexGrow={1}
-                                    justify="center"
-                                    align="center"
-                                    py={8}
-                                    h="fit-content"
-                                    style={{ position: "relative" }}
-                                >
-                                    <PieChart
-                                        animate={true}
-                                        totalValue={100}
-                                        data={[
-                                            {
-                                                title: "Raffle (SOL)",
-                                                value: distribution[Distribution.Raffle],
-                                                color: "#FF6651",
-                                            },
-                                            { title: "$TOKEN", value: distribution[Distribution.LP], color: "#FF9548" },
-
-                                            {
-                                                title: "Market Maker Rewards",
-                                                value: distribution[Distribution.MMRewards],
-                                                color: "#66FFB6",
-                                            }, // integrate MM Rewards
-                                            {
-                                                title: "Liquidity Provider Rewards",
-                                                value: distribution[Distribution.LPRewards],
-                                                color: "#61efff",
-                                            },
-                                            { title: "Airdrops / Marketing", value: distribution[Distribution.Airdrops], color: "#988FFF" },
-                                            { title: "Team", value: distribution[Distribution.Team], color: "#8CB3FF" },
-                                            { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
-                                            { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
-                                        ]}
-                                        style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
-                                    />
-
-                                    <PieChart
-                                        animate={true}
-                                        totalValue={100}
-                                        data={[
-                                            {
-                                                title: distributionLabels.headers[0].title,
-                                                value: distribution[Distribution.Raffle] + distribution[Distribution.LP],
-                                                color: distributionLabels.headers[0].color,
-                                            },
-                                            {
-                                                title: distributionLabels.headers[1].title,
-                                                // integrate MM Rewards here
-                                                value: distribution[Distribution.MMRewards],
-                                                color: distributionLabels.headers[1].color,
-                                            },
-                                            {
-                                                title: distributionLabels.headers[2].title,
-                                                value:
-                                                    distribution[Distribution.LPRewards] +
-                                                    distribution[Distribution.Team] +
-                                                    distribution[Distribution.Airdrops] +
-                                                    distribution[Distribution.Other],
-                                                color: distributionLabels.headers[2].color,
-                                            },
-                                        ]}
-                                        style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
-                                    />
-                                </VStack>
-                            </HStack>
-                        </VStack> */}
+                            </VStack>
+                        )}
 
                         <HStack mt={md ? 0 : 30}>
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
@@ -1131,7 +1177,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
                             >
-                                {isLoading ? <Spinner /> : "NEXT (1/2)"}
+                                {isLoading ? <Spinner /> : `NEXT (1/${simpleLaunch ? "2" : "3"})`}
                             </button>
                         </HStack>
                     </VStack>
