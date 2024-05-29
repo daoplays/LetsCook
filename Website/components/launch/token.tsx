@@ -62,6 +62,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
     const [tokenProgram, setTokenProgram] = useState<string>(newLaunchData.current.token_program === null ? "2022" : "2022");
 
+    const [rewardsSupply, setRewardsSupply] = useState<string>("none");
+
     const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     // token extensions
@@ -358,10 +360,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
+        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} height="100%" width="100%">
+            <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
-                    Token Information:
+                    Token Information
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
@@ -427,13 +429,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         Symbol:
                                     </div>
 
-                                    {/* <InputGroup style={{ position: "relative" }}> */}
-                                    {/* <InputLeftElement>
-                                            <FaDollarSign size={22} style={{ opacity: 0.5, marginTop: lg ? 0 : 8 }} />
-                                        </InputLeftElement> */}
                                     <div className={styles.textLabelInput}>
                                         <Input
-                                            // pl={9}
                                             bg="#494949"
                                             placeholder="Enter Token Ticker. (Ex. $SOL)"
                                             disabled={newLaunchData.current.edit_mode === true}
@@ -446,10 +443,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             onChange={handleSymbolChange}
                                         />
                                     </div>
-                                    {/* </InputGroup> */}
                                 </HStack>
 
-                                <HStack spacing={0} className={styles.eachField}>
+                                {/* <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                                         Token Prefix:
                                     </div>
@@ -467,7 +463,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             }}
                                         />
                                     </div>
-                                </HStack>
+                                </HStack> */}
 
                                 {!lg && <Browse />}
                             </VStack>
@@ -494,7 +490,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </div>
                             </HStack>
 
-                            <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
+                            {/* <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
                                     Decimals:
                                 </div>
@@ -512,11 +508,58 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         }}
                                     />
                                 </div>
-                            </HStack>
+                            </HStack> */}
                         </HStack>
 
-                        <Divider />
-                        <VStack spacing={lg ? 8 : 10} w="100%">
+                        <HStack spacing={6} className={styles.eachField}>
+                            <HStack>
+                                <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
+                                <Image width={30} height={30} src="/images/help.png" alt="Help" />{" "}
+                                <div className={`${styles.textLabel} font-face-kg`}>:</div>
+                            </HStack>
+                            <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
+                                <Stack direction="row" gap={8}>
+                                    <Radio value="none" color="white">
+                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                            None
+                                        </Text>
+                                    </Radio>
+
+                                    <Radio value="5">
+                                        <Tooltip
+                                            label="Allocate 5% of the supply to Let's Cook users trading your token."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                                5%
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="10">
+                                        <Tooltip
+                                            label="Allocate 10% of the supply to Let's Cook users trading your token."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text
+                                                align="center"
+                                                color="white"
+                                                m={0}
+                                                className="font-face-rk"
+                                                fontSize={lg ? "large" : "x-large"}
+                                            >
+                                                10%
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                </Stack>
+                            </RadioGroup>
+                        </HStack>
+
+                        {/* <VStack spacing={lg ? 8 : 10} w="100%">
                             <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                 Token Extensions:
                             </Text>
@@ -663,7 +706,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
                                 </HStack>
                             </HStack>
+
                             <Divider />
+
                             <Text mt={-3} className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                 Distribution:
                             </Text>
@@ -711,7 +756,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
                             </HStack>
 
-                            {/* <div className={styles.launchBodyLowerHorizontal}> */}
                             <HStack spacing={lg ? 0 : 1} className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
                                     Minimum Liquidity:
@@ -734,7 +778,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
                                 </div>
                             </HStack>
-                            {/* </div> */}
                         </VStack>
 
                         <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
@@ -839,7 +882,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 </div>
                                             </HStack>
                                             <div className={styles.distributionField}>
-                                                {/* integrate MM Rewards  */}
                                                 <Input
                                                     size="lg"
                                                     required
@@ -991,7 +1033,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </VStack>
                                 </VStack>
 
-                                {/* Pie Chart  */}
                                 <VStack
                                     spacing={6}
                                     flexGrow={1}
@@ -1059,7 +1100,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     />
                                 </VStack>
                             </HStack>
-                        </VStack>
+                        </VStack> */}
+
                         <HStack mt={md ? 0 : 30}>
                             <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
                                 Cancel
@@ -1075,7 +1117,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
                             >
-                                {isLoading ? <Spinner /> : "NEXT (1/3)"}
+                                {isLoading ? <Spinner /> : "NEXT (1/2)"}
                             </button>
                         </HStack>
                     </VStack>
