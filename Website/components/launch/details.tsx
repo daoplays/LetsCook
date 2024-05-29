@@ -318,11 +318,11 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    nextPage(e);
+                                    // Call Create Launch
                                 }}
                                 className={`${styles.nextBtn} font-face-kg `}
                             >
-                                NEXT
+                                Confirm
                             </button>
                         </div>
                     </VStack>

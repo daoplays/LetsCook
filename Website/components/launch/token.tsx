@@ -22,6 +22,11 @@ import {
     RadioGroup,
     Stack,
     Radio,
+    useDisclosure,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalOverlay,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
@@ -78,6 +83,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
+
+    const { isOpen: isTooltipOpened, onOpen: openTooltip, onClose: closeTooltip } = useDisclosure();
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -230,20 +237,20 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     async function setData(e): Promise<boolean> {
         e.preventDefault();
 
-        if (totalPercentage !== 100) {
-            toast.error("The total percentage must add up to 100%.");
-            return false;
-        }
+        // if (totalPercentage !== 100) {
+        //     toast.error("The total percentage must add up to 100%.");
+        //     return false;
+        // }
 
         if (newLaunchData.current.icon_file === null) {
             toast.error("Please select an icon image.");
             return false;
         }
 
-        if (parseFloat(ticketPrice) < 0.00001) {
-            toast.error("Minimum ticket price is 0.00001 SOL");
-            return false;
-        }
+        // if (parseFloat(ticketPrice) < 0.00001) {
+        //     toast.error("Minimum ticket price is 0.00001 SOL");
+        //     return false;
+        // }
 
         if (symbol.length > 10) {
             toast.error("Maximum symbol length is 10 characters");
@@ -255,15 +262,15 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return false;
         }
 
-        if (distribution[Distribution.LP] === 0) {
-            toast.error("Liquidity pool allocation must be greater than zero");
-            return false;
-        }
+        // if (distribution[Distribution.LP] === 0) {
+        //     toast.error("Liquidity pool allocation must be greater than zero");
+        //     return false;
+        // }
 
-        if (distribution[Distribution.Raffle] === 0) {
-            toast.error("Raffle allocation must be greater than zero");
-            return false;
-        }
+        // if (distribution[Distribution.Raffle] === 0) {
+        //     toast.error("Raffle allocation must be greater than zero");
+        //     return false;
+        // }
 
         if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (distribution[Distribution.Raffle] / 100) < parseInt(mints)) {
             toast.error("Not enough tokens to support the raffle");
@@ -281,10 +288,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         let decimals = parseInt(decimal);
-        if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
-            toast.error("Invalid decimal places (must be between 1 and 9)");
-            return false;
-        }
+        // if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
+        //     toast.error("Invalid decimal places (must be between 1 and 9)");
+        //     return false;
+        // }
 
         newLaunchData.current.token_keypair = Keypair.generate();
 
@@ -426,7 +433,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Symbol:
+                                        Ticker:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
@@ -514,7 +521,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         <HStack spacing={6} className={styles.eachField}>
                             <HStack>
                                 <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
-                                <Image width={30} height={30} src="/images/help.png" alt="Help" />{" "}
+                                <Image
+                                    width={30}
+                                    height={30}
+                                    src="/images/help.png"
+                                    alt="Help"
+                                    onClick={openTooltip}
+                                    style={{ cursor: "pointer" }}
+                                />
                                 <div className={`${styles.textLabel} font-face-kg`}>:</div>
                             </HStack>
                             <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
@@ -1123,8 +1137,64 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                     </VStack>
                 </form>
             </VStack>
+
+            <TooltipModal isTooltipOpened={isTooltipOpened} closeTooltip={closeTooltip} />
         </Center>
     );
 };
+
+interface TooltipProps {
+    isTooltipOpened?: boolean;
+    closeTooltip?: () => void;
+}
+
+export function TooltipModal({ isTooltipOpened, closeTooltip }: TooltipProps) {
+    const { sm } = useResponsive();
+
+    return (
+        <>
+            <Modal size="md" isCentered isOpen={isTooltipOpened} onClose={closeTooltip} motionPreset="slideInBottom">
+                <ModalOverlay />
+
+                <ModalContent h={585} w={450} style={{ background: "transparent" }}>
+                    <ModalBody bg="url(/images/terms-container.png)" bgSize={"contain"} bgRepeat={"no-repeat"} p={sm ? 10 : 14}>
+                        <VStack gap={4} h="100%" position="relative" align="start" fontFamily="ReemKufiRegular">
+                            <Text
+                                m="0 auto"
+                                align="center"
+                                fontSize={"large"}
+                                style={{
+                                    fontFamily: "KGSummerSunshineBlackout",
+                                    color: "white",
+                                    fontWeight: "semibold",
+                                }}
+                            >
+                                Market Rewards System
+                            </Text>
+                            <Text fontSize={sm ? "md" : "lg"} color="white" m={0}>
+                                Support post-launch volume by allocating 5% or 10% of the supply to Let’s Cook users trading your token.
+                            </Text>
+                            <VStack m="0 auto">
+                                <Image
+                                    src="/images/rewards-chart.png"
+                                    width={250}
+                                    height={250}
+                                    alt="Rewards Chart"
+                                    style={{ backgroundColor: "white", borderRadius: "8px", padding: "12px" }}
+                                />
+                            </VStack>
+                            <Text fontSize={sm ? "md" : "lg"} color="white" m={0}>
+                                Rewards are calculated and distributed at the end of each day based on users’ trading volumes.
+                            </Text>
+                            <Text fontSize={sm ? "md" : "lg"} color="white" m={0} align="start">
+                                Reward pools last for a period of 30 days.
+                            </Text>
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
 
 export default TokenPage;
