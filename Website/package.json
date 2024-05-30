@@ -24,7 +24,6 @@
         "@metaplex-foundation/umi": "^0.9.1",
         "@metaplex-foundation/umi-bundle-defaults": "^0.9.1",
         "@netlify/blobs": "^6.4.2",
-        "@netlify/esbuild-windows-64": "^0.14.39",
         "@netlify/functions": "^2.5.1",
         "@next/bundle-analyzer": "^14.0.4",
         "@openbook-dex/openbook": "^0.0.9",
