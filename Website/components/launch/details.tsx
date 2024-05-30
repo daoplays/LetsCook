@@ -4,7 +4,7 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
-import { DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
+import { Config, DEFAULT_FONT_SIZE, FEES_PROGRAM, PROGRAM } from "../../components/Solana/constants";
 import { LaunchData, LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
@@ -135,6 +135,19 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         newLaunchData.current.twt_url = twitter;
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
+
+        // if this is a simple launch we need to set a bunch of other stuff
+        if (simpleLaunch) {
+            let now = new Date();
+            let start = new Date(now.getTime() + 15*60000);
+            let end = new Date(start.getTime() + 24*60*60000);
+            
+            newLaunchData.current.opendate = start
+            newLaunchData.current.closedate = end
+            newLaunchData.current.team_wallet = Config.COOK_FEES;
+            newLaunchData.current.amm_fee = 25;
+            newLaunchData.current.amm_provider = 1;
+        }
 
         return true;
     }

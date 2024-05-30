@@ -66,7 +66,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
-    const [tokenProgram, setTokenProgram] = useState<string>(newLaunchData.current.token_program === null ? "2022" : "2022");
+    const [tokenProgram, setTokenProgram] = useState<string>((newLaunchData.current.token_program === null || newLaunchData.current.token_program.equals(TOKEN_2022_PROGRAM_ID)) ? "2022" : "classic");
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
@@ -289,10 +289,10 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         }
 
         let decimals = parseInt(decimal);
-        // if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
-        //     toast.error("Invalid decimal places (must be between 1 and 9)");
-        //     return false;
-        // }
+         if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
+             toast.error("Invalid decimal places (must be between 1 and 9)");
+             return false;
+        }
 
         newLaunchData.current.token_keypair = Keypair.generate();
 
@@ -301,30 +301,58 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         newLaunchData.current.displayImg = displayImg;
         newLaunchData.current.total_supply = parseInt(totalSupply);
 
-        newLaunchData.current.decimals = parseInt(decimal);
+        if (!simpleLaunch) { 
+            newLaunchData.current.decimals = decimals;
+            newLaunchData.current.num_mints = parseInt(mints);
+            newLaunchData.current.ticket_price = parseFloat(ticketPrice);
+            newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
+            newLaunchData.current.distribution = distribution;
 
-        newLaunchData.current.num_mints = parseInt(mints);
-        newLaunchData.current.ticket_price = parseFloat(ticketPrice);
-        newLaunchData.current.minimum_liquidity = Math.round(parseFloat(mints) * parseFloat(ticketPrice));
-        newLaunchData.current.distribution = distribution;
+            newLaunchData.current.transfer_fee = parseFloat(transferFee);
+            newLaunchData.current.max_transfer_fee = parseInt(maxTransferFee) * Math.pow(10, newLaunchData.current.decimals);
 
-        newLaunchData.current.transfer_fee = parseFloat(transferFee);
-        newLaunchData.current.max_transfer_fee = parseInt(maxTransferFee) * Math.pow(10, newLaunchData.current.decimals);
+            if (permanentDelegate !== "") {
+                newLaunchData.current.permanent_delegate = new PublicKey(permanentDelegate);
+            }
 
-        if (permanentDelegate !== "") {
-            newLaunchData.current.permanent_delegate = new PublicKey(permanentDelegate);
+            if (transferHookID !== "") {
+                newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID);
+            }
+
+            newLaunchData.current.token_program = tokenProgram === "2022" ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+
+            if (tokenStart !== "") {
+                // Call tokenGrind() and wait for it to finish
+                await tokenGrind();
+            } else {
+                setGrindComplete(true);
+            }
         }
+        else {
+            newLaunchData.current.decimals = 9;
+            newLaunchData.current.num_mints = 1000;
+            newLaunchData.current.ticket_price = 0.05;
+            newLaunchData.current.minimum_liquidity = Math.round(newLaunchData.current.num_mints * newLaunchData.current.ticket_price);
 
-        if (transferHookID !== "") {
-            newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID);
-        }
+            console.log("rewards suuply", rewardsSupply)
+            if (rewardsSupply === "0") {
+                newLaunchData.current.distribution = [50,50,0,0,0,0,0];
+            }
+            else if (rewardsSupply === "5") {
+                newLaunchData.current.distribution = [47.5,47.5,5,0,0,0,0];
+            }
+            else if (rewardsSupply === "10") {
+                newLaunchData.current.distribution = [45,45,10,0,0,0,0];
+            }
 
-        newLaunchData.current.token_program = tokenProgram === "2022" ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+            newLaunchData.current.transfer_fee = 0;
+            newLaunchData.current.max_transfer_fee = 0;
 
-        if (tokenStart !== "") {
-            // Call tokenGrind() and wait for it to finish
-            await tokenGrind();
-        } else {
+            newLaunchData.current.permanent_delegate = null;
+            newLaunchData.current.transfer_hook_program = null;
+            
+            newLaunchData.current.token_program = TOKEN_PROGRAM_ID;
+
             setGrindComplete(true);
         }
 
