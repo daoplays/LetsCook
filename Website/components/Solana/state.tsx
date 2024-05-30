@@ -864,9 +864,9 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
-
-    const banner_url = URL.createObjectURL(new_launch_data.banner_file);
-    const icon_url = URL.createObjectURL(new_launch_data.icon_file);
+ 
+    const banner_url = new_launch_data.banner_file ? URL.createObjectURL(new_launch_data.banner_file) : null;
+    const icon_url = new_launch_data.icon_file ? URL.createObjectURL(new_launch_data.icon_file) : null;
 
     const meta: LaunchMetaEnum & { __kind: "Raffle" } = {
         __kind: "Raffle",

@@ -3,7 +3,7 @@ import { Box, Button, Center, HStack, Link, Spinner, Text, VStack } from "@chakr
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import { LaunchData } from "./state";
-import useBuyTickets from "../../hooks/useBuyTickets";
+import useBuyTickets from "../../hooks/launch/useBuyTickets";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import { PublicKey } from "@solana/web3.js";
 import { AssignmentData, CollectionData } from "../collection/collectionState";

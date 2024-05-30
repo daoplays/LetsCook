@@ -6,22 +6,21 @@ import {
     myU64,
     send_transaction,
     serialise_basic_instruction,
-    uInt32ToLEBytes,
-} from "../components/Solana/state";
+} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
-import useAppRoot from "../context/useAppRoot";
+import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
+import useAppRoot from "../../context/useAppRoot";
+import useInitAMM from "../jupiter/useInitAMM";
 import { toast } from "react-toastify";
 
-const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) => {
+const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData } = useAppRoot();
-
+    const { GetInitAMMInstruction } = useInitAMM(launchData);
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -42,7 +41,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
             return;
         }
 
-        toast.success("Tickets Refunded!", {
+        toast.success("Tickets Checked!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
@@ -66,11 +65,12 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         });
     }, []);
 
-    const RefundTickets = async () => {
+    const CheckTickets = async () => {
+        setIsLoading(true);
+
         if (wallet.signTransaction === undefined) return;
 
-        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
-            alert("Launch creator cannot buy tickets");
+        if (launchData === null) {
             return;
         }
 
@@ -81,22 +81,14 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        if (launchData === null) {
+        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
+            alert("Launch creator cannot buy tickets");
             return;
         }
 
-        setIsLoading(true);
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
-
-        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         const game_id = new myU64(launchData.game_id);
         const [game_id_buf] = myU64.struct.serialize(game_id);
@@ -109,22 +101,18 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
             PROGRAM,
         )[0];
 
-        let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_refund);
+        const instruction_data = serialise_basic_instruction(LaunchInstruction.chcek_tickets);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
-            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
-            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
+            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
-
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -140,6 +128,12 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
+        if (launchData.flags[LaunchFlags.AMMProvider] == 0 && launchData.flags[LaunchFlags.LPState] < 2) {
+            let init_idx = await GetInitAMMInstruction();
+            transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
+            transaction.add(init_idx);
+        }
+
         transaction.add(list_instruction);
 
         try {
@@ -150,7 +144,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
 
             let signature = transaction_response.result;
 
-            console.log("join sig: ", signature);
+            console.log("reward sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
@@ -161,7 +155,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         }
     };
 
-    return { RefundTickets, isLoading };
+    return { CheckTickets, isLoading };
 };
 
-export default useRefundTickets;
+export default useCheckTickets;

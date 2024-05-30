@@ -1,11 +1,11 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, useEffect } from "react";
 import styles from "../../styles/LaunchDetails.module.css";
 
-import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement } from "@chakra-ui/react";
+import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useDisclosure } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
 import { Config, DEFAULT_FONT_SIZE, FEES_PROGRAM, PROGRAM } from "../../components/Solana/constants";
-import { LaunchData, LaunchDataUserInput, request_current_balance } from "../../components/Solana/state";
+import { LaunchData, LaunchDataUserInput, create_LaunchData, request_current_balance } from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
 import useCreateLaunch from "../../hooks/launch/useCreateLaunch";
+import LaunchPreviewModal from "../launchPreview/modal";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -33,7 +34,8 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
 
     const { CreateLaunch } = useCreateLaunch();
 
-    const { launchList } = useAppRoot();
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -150,6 +152,10 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         }
 
         return true;
+    }
+
+    async function preview(e) {
+        if (await setData(e)) onOpen();
     }
 
     async function confirm(e) {
@@ -318,41 +324,46 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
                             </div>
                         </VStack>
 
-                        <div
-                            style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                gap: 20,
-                                marginTop: -1,
-                            }}
-                        >
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    prevPage(e);
-                                }}
-                                className={`${styles.nextBtn} font-face-kg `}
-                            >
-                                Go Back
-                            </button>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    if (simpleLaunch) {
-                                        confirm(e);
-                                    } else {
-                                        nextPage(e);
-                                    }
-                                }}
-                                className={`${styles.nextBtn} font-face-kg `}
-                            >
-                                {simpleLaunch ? "CONFIRM" : "NEXT (2/3)"}
-                            </button>
-                        </div>
+                        <VStack spacing={3} align="center" justify="center" w="100%">
+                            {simpleLaunch &&
+                            <HStack>
+                                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={(e) => preview(e)}>
+                                    PREVIEW
+                                </button>
+                            </HStack>
+                            }
+                            <HStack spacing={3}>
+
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        prevPage(e);
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    Go Back
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        if (simpleLaunch) {
+                                            confirm(e);
+                                        } else {
+                                            nextPage(e);
+                                        }
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                >
+                                    {simpleLaunch ? "CONFIRM" : "NEXT (2/3)"}
+                                </button>
+                            </HStack>
+                        </VStack>
                     </VStack>
                 </form>
             </VStack>
+
+            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
+
         </Center>
     );
 };

@@ -12,10 +12,10 @@ import {
     ExtraAccountMetaHead,
     MetaData,
     getRecentPrioritizationFees,
-} from "../components/Solana/state";
+} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { SOL_ACCOUNT_SEED, PROGRAM, Config, SYSTEM_KEY, FEES_PROGRAM } from "../components/Solana/constants";
+import { SOL_ACCOUNT_SEED, PROGRAM, Config, SYSTEM_KEY, FEES_PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -32,9 +32,9 @@ import {
     ExtraAccountMeta,
 } from "@solana/spl-token";
 
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
-import { make_tweet } from "../components/launch/twitter";
-import useAppRoot from "../context/useAppRoot";
+import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
+import { make_tweet } from "../../components/launch/twitter";
+import useAppRoot from "../../context/useAppRoot";
 
 const useInitAMM = (launchData: LaunchData) => {
     const wallet = useWallet();

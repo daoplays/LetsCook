@@ -1,10 +1,10 @@
-import { LaunchData, getRecentPrioritizationFees, get_current_blockhash, myU64, send_transaction, serialise_BuyTickets_instruction } from "../components/Solana/state";
+import { LaunchData, getRecentPrioritizationFees, get_current_blockhash, myU64, send_transaction, serialise_BuyTickets_instruction } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { PROGRAM, Config, SYSTEM_KEY } from "../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { LaunchKeys, LaunchFlags } from "../components/Solana/constants";
+import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { useDisclosure } from "@chakra-ui/react";
 import { toast } from "react-toastify";
 import bs58 from "bs58";

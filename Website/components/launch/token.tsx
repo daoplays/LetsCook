@@ -330,7 +330,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         }
         else {
             newLaunchData.current.decimals = 9;
-            newLaunchData.current.num_mints = 1000;
+            newLaunchData.current.num_mints = 400;
             newLaunchData.current.ticket_price = 0.05;
             newLaunchData.current.minimum_liquidity = Math.round(newLaunchData.current.num_mints * newLaunchData.current.ticket_price);
 
@@ -339,7 +339,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                 newLaunchData.current.distribution = [50,50,0,0,0,0,0];
             }
             else if (rewardsSupply === "5") {
-                newLaunchData.current.distribution = [47.5,47.5,5,0,0,0,0];
+                newLaunchData.current.distribution = [47,48,5,0,0,0,0];
             }
             else if (rewardsSupply === "10") {
                 newLaunchData.current.distribution = [45,45,10,0,0,0,0];

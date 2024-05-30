@@ -10,7 +10,7 @@ import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
 import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
-import useInitAMM from "../../hooks/useInitAMM";
+import useInitAMM from "../../hooks/jupiter/useInitAMM";
 import convertToBlob from "../../utils/convertImageToBlob";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
 import { LaunchFlags, LaunchKeys, Config, Extensions } from "../Solana/constants";

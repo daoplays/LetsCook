@@ -9,9 +9,9 @@ import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
 import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
-import useCheckTickets from "../../hooks/useCheckTickets";
-import useRefundTickets from "../../hooks/useRefundTickets";
-import useClaimTokens from "../../hooks/useClaimTokens";
+import useCheckTickets from "../../hooks/launch/useCheckTickets";
+import useRefundTickets from "../../hooks/launch/useRefundTickets";
+import useClaimTokens from "../../hooks/launch/useClaimTokens";
 import { LaunchFlags, LaunchKeys } from "../Solana/constants";
 import { WinLoss, ButtonString } from "../user_status";
 

@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import useEditLaunch from "../useEditLaunch";
+import useEditLaunch from "./useEditLaunch";
 import { WebIrys } from "@irys/sdk";
 
 
