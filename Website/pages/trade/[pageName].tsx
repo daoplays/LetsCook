@@ -199,7 +199,7 @@ const TradePage = () => {
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
 
-    const check_mm_data = useRef<boolean>(true);
+    const check_user_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
 
     // when page unloads unsub from any active websocket listeners
@@ -360,12 +360,13 @@ const TradePage = () => {
         check_user_lp_update,
     ]);
 
+
     const CheckMarketData = useCallback(async () => {
         //("check market data");
         if (launch === null || amm === null) return;
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
-        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        const token_mint = amm.base_mint
+        const wsol_mint = amm.quote_mint
 
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
@@ -389,8 +390,7 @@ const TradePage = () => {
 
         // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
-        if (check_market_data.current === true) {
-
+        if (check_user_data.current === true) {
             if (wallet !== null && wallet.publicKey !== null) {
 
                 let user_base_token_account_key = await getAssociatedTokenAddress(
@@ -414,9 +414,14 @@ const TradePage = () => {
                 let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
                 setUserBaseAmount(user_base_amount);
                 setUserLPAmount(user_lp_amount);
-    
 
+                check_user_data.current = false;
             }
+        }
+
+        if (check_market_data.current === true) {
+
+           
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
             
@@ -496,7 +501,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, amm, base_mint, wallet.publicKey, connection]);
+    }, [launch, amm, base_mint, wallet, connection]);
 
     useEffect(() => {
         CheckMarketData();
