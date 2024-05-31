@@ -148,7 +148,7 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
             newLaunchData.current.closedate = end
             newLaunchData.current.team_wallet = Config.COOK_FEES;
             newLaunchData.current.amm_fee = 25;
-            newLaunchData.current.amm_provider = 0;
+            newLaunchData.current.amm_provider = 1;
         }
 
         return true;

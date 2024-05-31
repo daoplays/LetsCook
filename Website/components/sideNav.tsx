@@ -20,12 +20,11 @@ const tabs = {
             tab: "New Token",
             url: "/launch",
         },
- /*       {
+        {
             icon: (size: number) => <RiGalleryFill size={size} />,
             tab: "New Hybrid",
             url: "/collection",
         },
-*/
     ],
 
     trade: [
@@ -34,13 +33,11 @@ const tabs = {
             tab: "Tokens",
             url: "/trade",
         },
-  /*
         {
             icon: (size: number) => <BsPersonSquare size={size} />,
             tab: "Hybrids",
             url: "/hybrids",
         },
-*/
         {
             icon: (size: number) => <FaCalendarDays size={size} />,
             tab: "Calendar",

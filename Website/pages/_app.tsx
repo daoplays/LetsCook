@@ -30,7 +30,6 @@ function MyApp({ Component, pageProps }) {
 
     const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };
 
-    console.log(wallets)
     return (
         <NoSSR>
             <ToastContainer

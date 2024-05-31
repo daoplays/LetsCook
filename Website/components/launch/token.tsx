@@ -351,7 +351,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
             newLaunchData.current.permanent_delegate = null;
             newLaunchData.current.transfer_hook_program = null;
             
-            newLaunchData.current.token_program = TOKEN_2022_PROGRAM_ID;
+            newLaunchData.current.token_program = TOKEN_PROGRAM_ID;
 
             setGrindComplete(true);
         }
@@ -609,9 +609,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                         ) : (
                             <VStack w="100%">
                                 <Divider />
-        
                                 <VStack spacing={lg ? 8 : 10} w="100%">
-{/*
                                     <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                         Token Extensions:
                                     </Text>
@@ -766,7 +764,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                     </HStack>
 
                                     <Divider />
-                */}
 
                                     <Text mt={-3} className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                         Distribution:

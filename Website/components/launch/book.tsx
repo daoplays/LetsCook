@@ -283,7 +283,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                 </HStack>
                             </div>
                         </HStack>
-{/*
+
                         <HStack spacing={0} className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
                                 AMM Provider:
@@ -305,7 +305,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                 </Stack>
                             </RadioGroup>
                         </HStack>
-*/}
+
                         <HStack spacing={15} w="100%">
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
                                 AMM Fee:

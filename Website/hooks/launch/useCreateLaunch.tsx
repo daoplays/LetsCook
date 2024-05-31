@@ -113,7 +113,7 @@ const usuCreateLaunch = () => {
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
-/*
+
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.info("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
@@ -302,7 +302,6 @@ const usuCreateLaunch = () => {
 
             newLaunchData.current.uri = "https://gateway.irys.xyz/" + json_receipt.id;
         }
-*/
 
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
