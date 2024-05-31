@@ -13,22 +13,22 @@ export interface NetworkConfig {
     WSS_NODE: string;
     IRYS_URL: string;
     IRYS_WALLET: string;
-    COOK_FEES: string;
+    COOK_FEES: PublicKey;
 }
 
-const EclipseDevNetConfig: NetworkConfig = {
+const DevNetConfig: NetworkConfig = {
     PROD: false,
-    NETWORK: "eclipse",
+    NETWORK: "devnet",
     PYTH_BTC: new PublicKey("HovQMDrbAgAYPCmHVSrezcSmkMtXSSUsLDFANExrZh2J"),
     PYTH_ETH: new PublicKey("EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"),
     PYTH_SOL: new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"),
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE: "https://staging-rpc.dev2.eclipsenetwork.xyz",
-    WSS_NODE: "wss://staging-rpc.dev2.eclipsenetwork.xyz",
+    RPC_NODE: "https://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
+    WSS_NODE: "wss://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
-    COOK_FEES: "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
@@ -56,7 +56,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = EclipseDevNetConfig;
+export let Config = DevNetConfig;
 
 
 export const enum Screen {
