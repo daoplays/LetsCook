@@ -591,11 +591,14 @@ const launchPluginBeet = dataEnum<LaunchPluginEnum>([
 
 type LaunchMetaEnum = {
     Raffle: {};
+    FCFS: {};
 };
 type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
+    ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
+
 ]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
@@ -871,6 +874,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     const meta: LaunchMetaEnum & { __kind: "Raffle" } = {
         __kind: "Raffle",
         Raffle: {},
+        FCFS: {}
     };
     const data = new LaunchData(
         1,

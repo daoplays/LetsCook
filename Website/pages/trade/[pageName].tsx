@@ -199,7 +199,7 @@ const TradePage = () => {
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
 
-    const check_mm_data = useRef<boolean>(true);
+    const check_user_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
 
     // when page unloads unsub from any active websocket listeners
@@ -360,12 +360,13 @@ const TradePage = () => {
         check_user_lp_update,
     ]);
 
+
     const CheckMarketData = useCallback(async () => {
         //("check market data");
         if (launch === null || amm === null) return;
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
-        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        const token_mint = amm.base_mint
+        const wsol_mint = amm.quote_mint
 
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
@@ -387,38 +388,50 @@ const TradePage = () => {
 
         //console.log("base key", base_amm_account.toString());
 
-        let user_base_token_account_key = await getAssociatedTokenAddress(
-            token_mint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            base_mint.program,
-        );
-
-        let user_lp_token_account_key = await getAssociatedTokenAddress(
-            lp_mint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            base_mint.program,
-        );
         // console.log(base_amm_account.toString(), quote_amm_account.toString());
 
+        if (check_user_data.current === true) {
+            if (wallet !== null && wallet.publicKey !== null) {
+
+                let user_base_token_account_key = await getAssociatedTokenAddress(
+                    token_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    base_mint.program,
+                );
+
+                let user_lp_token_account_key = await getAssociatedTokenAddress(
+                    lp_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    base_mint.program,
+                );
+
+                setUserBaseAddress(user_base_token_account_key);
+                setUserLPAddress(user_lp_token_account_key);
+
+                let user_base_amount = await request_token_amount("", user_base_token_account_key);
+                let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
+                setUserBaseAmount(user_base_amount);
+                setUserLPAmount(user_lp_amount);
+
+                check_user_data.current = false;
+            }
+        }
+
         if (check_market_data.current === true) {
+
+           
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
-            setUserBaseAddress(user_base_token_account_key);
-            setUserLPAddress(user_lp_token_account_key);
-
+            
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
-            let user_base_amount = await request_token_amount("", user_base_token_account_key);
-            let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
-
+           
             //console.log("user amounts", user_base_amount, user_lp_amount)
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
-            setUserBaseAmount(user_base_amount);
-            setUserLPAmount(user_lp_amount);
-
+           
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
@@ -488,7 +501,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, amm, base_mint, wallet.publicKey, connection]);
+    }, [launch, amm, base_mint, wallet, connection]);
 
     useEffect(() => {
         CheckMarketData();
