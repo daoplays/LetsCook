@@ -26,6 +26,8 @@ const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
     catched: "/Catched.mp3",
+    throw: "/Throw.mp3",
+    throwing: "/Throwing.mp3",
 };
 
 export interface AssetWithMetadata {
@@ -78,6 +80,7 @@ const Pepemon = () => {
     const sound = (src) => {
         let audio = new Audio(src);
         try {
+            audio.volume = 0.5;
             audio.play();
         } catch (error) {
             console.error(`An error occurred: ${error}`);
@@ -100,12 +103,12 @@ const Pepemon = () => {
 
         console.log(assets);
         let valid_lookups = 0;
-        let owned_assets : AssetWithMetadata[] = []
+        let owned_assets: AssetWithMetadata[] = [];
         for (let i = 0; i < assets.length; i++) {
             if (assets[i].owner.toString() === wallet.publicKey.toString()) {
                 valid_lookups += 1;
                 let uri_json = await fetch(assets[i].uri).then((res) => res.json());
-                let entry : AssetWithMetadata = {asset: assets[i], metadata: uri_json};
+                let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
                 owned_assets.push(entry);
             }
         }
@@ -118,7 +121,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "pepemon_gen1");
+        let launch = findCollection(collectionList, "gen1_test1");
 
         if (launch === null) return;
 
@@ -374,6 +377,21 @@ const Pepemon = () => {
         }
     }
 
+    useEffect(() => {
+        let soundInterval;
+        if (isLoading) {
+            soundInterval = setInterval(() => {
+                sound(soundCollection.throwing);
+            }, 1000);
+        } else {
+            clearInterval(soundInterval);
+        }
+
+        return () => {
+            clearInterval(soundInterval);
+        };
+    }, [isLoading]);
+
     if (launch === null) return <Loader />;
 
     return (
@@ -401,8 +419,8 @@ const Pepemon = () => {
 
                     {/* // Restart Button */}
                     {wallet.connected && (
-                        <HStack w="100%" justify={md ? "center" : "space-between"} position="fixed" top={xs ? 24 : md ? 36 : 6} px={6}>
-                            <div
+                        <HStack w="100%" justify={"space-between"} position="fixed" top={xs ? 24 : md ? 36 : 6} px={6}>
+                            {/* <div
                                 style={{
                                     cursor: "pointer",
                                     background: "url(/curatedLaunches/pepemon/horizontal3.png)",
@@ -418,7 +436,16 @@ const Pepemon = () => {
                                 <Text m={0} fontWeight={500} fontSize={md ? 28 : 35} className="font-face-pk">
                                     Release
                                 </Text>
-                            </div>
+                            </div> */}
+
+                            <Image
+                                src={"/curatedLaunches/pepemon/pc.png"}
+                                alt="Pepemon Release"
+                                width={70}
+                                height={100}
+                                onClick={openReleaseModal}
+                                style={{ cursor: "pointer" }}
+                            />
                             <div
                                 style={{
                                     cursor: "pointer",
@@ -453,14 +480,14 @@ const Pepemon = () => {
                         <Image
                             src={"/curatedLaunches/pepemon/Grass.png"}
                             alt="Pepemon Grass"
-                            width={sm ? 300 : 400}
-                            height={sm ? 300 : 400}
+                            width={sm ? 250 : 400}
+                            height={sm ? 250 : 400}
                         />
                         <Image
                             src={"/curatedLaunches/pepemon/pikachu.png"}
                             alt="Pikachu Silhouette"
-                            width={sm ? 300 : 350}
-                            height={sm ? 300 : 350}
+                            width={sm ? 250 : 350}
+                            height={sm ? 250 : 350}
                             style={{ position: "absolute", zIndex: -1 }}
                         />
 
@@ -488,7 +515,7 @@ const Pepemon = () => {
                                               }
                                     }
                                 />
-                                <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk    ">
+                                <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk">
                                     Click to Throw
                                 </Text>
                             </VStack>
@@ -568,7 +595,7 @@ const Pepemon = () => {
                     style={modalStyle}
                 />
 
-                <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} assets={owned_assets} collection={launch}/>
+                <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} assets={owned_assets} collection={launch} />
             </main>
         </>
     );
