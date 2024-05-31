@@ -38,7 +38,7 @@ function Navigation() {
     const { xs, sm, md } = useResponsive();
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
-    const { currentUserData, setSelectedNetwork, selectedNetwork, sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
+    const { currentUserData, selectedNetwork, sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
 
     return (
         <>
@@ -81,7 +81,7 @@ function Navigation() {
                         <MenuButton>
                             <Badge px={2} py={1} borderRadius={20} bg="rgb(104,51,10, .95)" color="white">
                                 <HStack spacing={1} alignItems="center">
-                                    <Text m={0}>{selectedNetwork === "mainnet" ? "Mainnet Beta" : "Devnet"}</Text>
+                                    <Text m={0}>{selectedNetwork === "mainnet" ? "Mainnet Beta" : selectedNetwork === "devnet" ?  "Devnet" : "Eclipse"}</Text>
                                     <FaChevronDown size={12} />
                                 </HStack>
                             </Badge>
@@ -110,6 +110,19 @@ function Navigation() {
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
                                     <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
                                         Devnet
+                                    </Text>
+                                </HStack>
+                            </MenuItem>
+                            <MenuItem
+                                borderRadius={5}
+                                onClick={async () => {
+                                    await router.push("https://eclipse.letscook.wtf");
+                                }}
+                            >
+                                <HStack alignItems="start">
+                                    <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
+                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
+                                        Eclipse
                                     </Text>
                                 </HStack>
                             </MenuItem>

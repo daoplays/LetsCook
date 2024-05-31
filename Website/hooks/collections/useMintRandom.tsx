@@ -179,6 +179,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
 
             { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },

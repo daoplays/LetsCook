@@ -13,7 +13,7 @@ export interface NetworkConfig {
     WSS_NODE: string;
     IRYS_URL: string;
     IRYS_WALLET: string;
-    COOK_FEES: string;
+    COOK_FEES: PublicKey;
 }
 
 const DevNetConfig: NetworkConfig = {
@@ -28,7 +28,7 @@ const DevNetConfig: NetworkConfig = {
     WSS_NODE: "wss://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
-    COOK_FEES: "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");

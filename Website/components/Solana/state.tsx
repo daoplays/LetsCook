@@ -591,11 +591,14 @@ const launchPluginBeet = dataEnum<LaunchPluginEnum>([
 
 type LaunchMetaEnum = {
     Raffle: {};
+    FCFS: {};
 };
 type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
+    ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
+
 ]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
@@ -871,6 +874,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     const meta: LaunchMetaEnum & { __kind: "Raffle" } = {
         __kind: "Raffle",
         Raffle: {},
+        FCFS: {}
     };
     const data = new LaunchData(
         1,
@@ -1108,6 +1112,7 @@ class CreateLaunch_Instruction {
         readonly max_transfer_fee: bignum,
         readonly extensions: number,
         readonly amm_provider: number,
+        readonly launch_type: number
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1129,6 +1134,8 @@ class CreateLaunch_Instruction {
             ["max_transfer_fee", u64],
             ["extensions", u8],
             ["amm_provider", u8],
+            ["launch_type", u8],
+
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1149,6 +1156,7 @@ class CreateLaunch_Instruction {
                 args.max_transfer_fee!,
                 args.extensions!,
                 args.amm_provider!,
+                args.launch_type!
             ),
         "CreateLaunch_Instruction",
     );
@@ -1182,6 +1190,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.max_transfer_fee,
         extensions,
         new_launch_data.amm_provider,
+        0
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
