@@ -31,6 +31,21 @@ const DevNetConfig: NetworkConfig = {
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
 };
 
+const MainNetConfig: NetworkConfig = {
+    PROD: true,
+    NETWORK: "mainnet",
+    PYTH_BTC: new PublicKey("GVXRSBjFk6e6J3NbVPXohDJetcTjaeeuykUpbQF8UoMU"),
+    PYTH_ETH: new PublicKey("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"),
+    PYTH_SOL: new PublicKey("H6ARHf6YXhGYeQfUzQNGk6rDNnLBQKrenN712K4AQJEG"),
+    FEES_KEY: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
+    RAYDIUM_FEES: new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
+    RPC_NODE: "https://kimmie-wuj3pm-fast-mainnet.helius-rpc.com",
+    WSS_NODE: "wss://mainnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
+    IRYS_URL: "https://node2.irys.xyz",
+    IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
+    COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA")
+};
+
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 export const FEES_PROGRAM = new PublicKey("FEES7x83BdGUFsrJG6VmZywkquvBNiFgyBaAdAMcJfst");
@@ -56,7 +71,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = DevNetConfig;
+export let Config = MainNetConfig;
 
 
 export const enum Screen {
