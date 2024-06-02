@@ -1,4 +1,4 @@
-import { VStack, Text, Grid, GridItem, Button, Box } from "@chakra-ui/react";
+import { VStack, Text, Grid, GridItem, Button, Box, Spinner } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalBody } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
@@ -13,74 +13,88 @@ interface RecievedAssetModalProps {
     isOpened: boolean;
     onClose: () => void;
     assets: AssetWithMetadata[];
-    collection: CollectionData
+    collection: CollectionData;
 }
 
 export function ReleaseModal({ isOpened, onClose, assets, collection }: RecievedAssetModalProps) {
     const { xs, sm } = useResponsive();
     const [hoveredIndex, setHoveredIndex] = useState(null);
-    const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
+    const { WrapNFT } = useWrapNFT(collection);
 
     const userHasPepemon = assets.length > 0;
 
-    const GridEntry = ({ asset, index }: { asset: AssetWithMetadata, index : number }) => {
+    const [loadingStates, setLoadingStates] = useState(Array(assets.length).fill(false));
 
+    const GridEntry = ({ asset, index }: { asset: AssetWithMetadata; index: number }) => {
         let attributes = asset.asset.attributes.attributeList;
 
-        return(
+        return (
             <>
-            <Image
-                src={asset.metadata["image"]}
-                width={110}
-                height={110}
-                style={{ borderRadius: "8px" }}
-                alt="Pepemander"
-            />
-            <VStack style={hoveredIndex === index ? overlayVisibleStyle : overlayStyle}>
-                <Text
-                    m={0}
-                    lineHeight={0.75}
-                    align="center"
-                    fontSize="x-large"
-                    style={{
-                        fontFamily: "pokemon",
-                        color: "white",
-                        fontWeight: "semibold",
-                    }}
-                >
-                    LV: {attributes[1].value}
-                </Text>
-                <Text
-                    m={0}
-                    lineHeight={0.75}
-                    align="center"
-                    fontSize="x-large"
-                    style={{
-                        fontFamily: "pokemon",
-                        color: "white",
-                        fontWeight: "semibold",
-                    }}
-                >
-                    EV: {attributes[2].value}
-                </Text>
-                <Text
-                    m={0}
-                    lineHeight={0.75}
-                    align="center"
-                    fontSize="x-large"
-                    style={{
-                        fontFamily: "pokemon",
-                        color: "white",
-                        fontWeight: "semibold",
-                    }}
-                >
-                    IV: {attributes[3].value}
-                </Text>
-            </VStack>
+                <Image src={asset.metadata["image"]} width={110} height={110} style={{ borderRadius: "8px" }} alt="Pepemander" />
+                <VStack style={hoveredIndex === index ? overlayVisibleStyle : overlayStyle}>
+                    <Text
+                        m={0}
+                        lineHeight={0.75}
+                        align="center"
+                        fontSize="x-large"
+                        style={{
+                            fontFamily: "pokemon",
+                            color: "white",
+                            fontWeight: "semibold",
+                        }}
+                    >
+                        LV: {attributes[1].value}
+                    </Text>
+                    <Text
+                        m={0}
+                        lineHeight={0.75}
+                        align="center"
+                        fontSize="x-large"
+                        style={{
+                            fontFamily: "pokemon",
+                            color: "white",
+                            fontWeight: "semibold",
+                        }}
+                    >
+                        EV: {attributes[2].value}
+                    </Text>
+                    <Text
+                        m={0}
+                        lineHeight={0.75}
+                        align="center"
+                        fontSize="x-large"
+                        style={{
+                            fontFamily: "pokemon",
+                            color: "white",
+                            fontWeight: "semibold",
+                        }}
+                    >
+                        IV: {attributes[3].value}
+                    </Text>
+                </VStack>
             </>
-
         );
-    }
+    };
+
+    const handleReleaseButtonClick = async (index: number) => {
+        setLoadingStates((prevStates) => {
+            const newState = [...prevStates];
+            newState[index] = true;
+            return newState;
+        });
+
+        try {
+            await WrapNFT(new PublicKey(assets[index].asset.publicKey.toString()));
+        } catch (error) {
+            console.error("Error:", error);
+        }
+
+        setLoadingStates((prevStates) => {
+            const newState = [...prevStates];
+            newState[index] = false;
+            return newState;
+        });
+    };
 
     return (
         <>
@@ -94,7 +108,25 @@ export function ReleaseModal({ isOpened, onClose, assets, collection }: Recieved
                         overflowY="auto"
                         style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
                         py={9}
+                        pb={16}
                     >
+                        <Text
+                            m={0}
+                            align="center"
+                            fontSize={28}
+                            style={{
+                                fontFamily: "pokemon",
+                                color: "black",
+                                fontWeight: "semibold",
+                                position: "absolute",
+                                bottom: 20,
+                                left: 0,
+                                right: 0,
+                                margin: "auto",
+                            }}
+                        >
+                            Release to Reclaim Pepeball
+                        </Text>
                         <VStack
                             h="100%"
                             position="relative"
@@ -115,8 +147,7 @@ export function ReleaseModal({ isOpened, onClose, assets, collection }: Recieved
                                 Your Pepemons
                             </Text>
                             {userHasPepemon ? (
-                                <Grid templateColumns="repeat(3, 1fr)" gap={4}>
-                                    {/* map to actual pepemons own by the user  */}
+                                <Grid templateColumns="repeat(3, 1fr)" gap={4} pb={1}>
                                     {assets.map((asset, index) => (
                                         <GridItem key={index}>
                                             <VStack>
@@ -129,8 +160,19 @@ export function ReleaseModal({ isOpened, onClose, assets, collection }: Recieved
                                                     <GridEntry asset={asset} index={index} />
                                                 </Box>
 
-                                                <Button onClick={() => WrapNFT(new PublicKey(asset.asset.publicKey.toString()))} colorScheme="gray" variant="outline" size="sm" w="100%">
-                                                    Release
+                                                <Button
+                                                    onClick={() => handleReleaseButtonClick(index)}
+                                                    colorScheme="gray"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    w="100%"
+                                                    style={{
+                                                        fontFamily: "pokemon",
+                                                        fontSize: "x-large",
+                                                        fontWeight: "normal",
+                                                    }}
+                                                >
+                                                    {loadingStates[index] ? <Spinner /> : "Release"}
                                                 </Button>
                                             </VStack>
                                         </GridItem>
@@ -146,8 +188,6 @@ export function ReleaseModal({ isOpened, onClose, assets, collection }: Recieved
         </>
     );
 }
-
-
 
 const gridItemStyle: CSSProperties = {
     position: "relative",

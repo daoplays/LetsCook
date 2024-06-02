@@ -18,7 +18,7 @@ const DashboardPage = () => {
     const router = useRouter();
     const wallet = useWallet();
     const { sm, lg } = useResponsive();
-    const { launchList, collectionList, selectedNetwork } = useAppRoot();
+    const { launchList, collectionList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
     const [creatorCollections, setCreatorCollections] = useState<CollectionData[] | null>(null);
     const [selected, setSelected] = useState("Tokens");

@@ -200,7 +200,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
-            { pubkey: collection_metadata_account, isSigner: false, isWritable: true },
+            { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
 
             { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
             { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
