@@ -691,6 +691,7 @@ export interface LaunchDataUserInput {
     max_transfer_fee: number;
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
+    launch_type: number
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -708,7 +709,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
-    distribution: new Array(Distribution.LENGTH).fill(0),
+    distribution: [50, 50, 0, 0,0, 0, 0],
     uri: "",
     pagename: "",
     description: "",
@@ -727,6 +728,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     max_transfer_fee: 0,
     permanent_delegate: null,
     transfer_hook_program: null,
+    launch_type: 0
 };
 
 export class myU64 {
@@ -959,6 +961,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         max_transfer_fee: 0,
         permanent_delegate: null,
         transfer_hook_program: null,
+        launch_type: 0
     };
 
     return data;
@@ -1190,7 +1193,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.max_transfer_fee,
         extensions,
         new_launch_data.amm_provider,
-        0
+        new_launch_data.launch_type
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -1236,6 +1239,8 @@ class EditLaunch_Instruction {
 }
 
 export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
+
+    console.log(new_launch_data.distribution)
     const data = new EditLaunch_Instruction(
         LaunchInstruction.edit_launch,
         new_launch_data.description,

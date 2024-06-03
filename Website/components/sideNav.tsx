@@ -110,28 +110,28 @@ const SideNav = () => {
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.5}>
+                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
                         Create
                     </Text>
                     {tabs.create.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.5}>
+                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
                         Trade
                     </Text>
                     {tabs.trade.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.5}>
+                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.5}>
+                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
                         Info
                     </Text>
                     {tabs.info.map(({ tab, icon, url }, i) => (
