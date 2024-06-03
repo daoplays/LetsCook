@@ -60,8 +60,8 @@ const POOL_SEED  = "pool";
 const POOL_LP_MINT_SEED = "pool_lp_mint";
 const POOL_VAULT_SEED = "pool_vault";
 
-export const RAYDIUM_PROGRAM = new PublicKey("CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW")
-const RAYDIUM_FEES = new PublicKey("G11FKBRaAkHAKuLCgLM6K6NUc9rTjPAznRCjZifrTQe2")
+export const RAYDIUM_PROGRAM = Config.PROD === false ? new PublicKey("CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW") : new PublicKey("CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C")
+const RAYDIUM_FEES = Config.PROD === false ? new PublicKey("G11FKBRaAkHAKuLCgLM6K6NUc9rTjPAznRCjZifrTQe2") : new PublicKey("DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8")
 
 export function getAMMConfigAccount() {
     return PublicKey.findProgramAddressSync([Buffer.from(AMM_CONFIG_SEED), uInt16ToLEBytes(0)], RAYDIUM_PROGRAM)[0];
@@ -162,6 +162,11 @@ export const useCreateCP = (launch : LaunchData) => {
         true, // allow owner off curve
         TOKEN_2022_PROGRAM_ID
     );
+
+    let temp_wsol_account = PublicKey.findProgramAddressSync(
+        [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
+        PROGRAM,
+    )[0];
     //let keys  = transaction["instructions"][0]["keys"]
     let keys=[
         { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -190,6 +195,7 @@ export const useCreateCP = (launch : LaunchData) => {
         { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
         { pubkey: RAYDIUM_PROGRAM, isSigner: false, isWritable: false },
+        { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
 
     ]
 

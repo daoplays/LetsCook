@@ -99,6 +99,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
     const [AMMProvider, setAMMProvider] = useState<string>("cook");
+    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -163,6 +164,8 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
         newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
+        newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
+
 
         if (AMMProvider === "cook") {
             newLaunchData.current.amm_provider = 0;
@@ -196,6 +199,39 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
+                    <HStack spacing={0} className={styles.eachField}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                Launch Type:
+                            </div>
+                            <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
+                                <Stack direction="row" gap={5}>
+                                    <Radio value="FCFS" color="white">
+                                        <Tooltip
+                                            label="Launch ends as soon as it is funded, first come first serve."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                FCFS
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="Raffle">
+                                        <Tooltip
+                                            label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Raffle
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                </Stack>
+                            </RadioGroup>
+                        </HStack>
                         <HStack spacing={15}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
                                 OPEN DATE:

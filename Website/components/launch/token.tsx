@@ -66,7 +66,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
-    const [tokenProgram, setTokenProgram] = useState<string>((newLaunchData.current.token_program === null || newLaunchData.current.token_program.equals(TOKEN_2022_PROGRAM_ID)) ? "2022" : "classic");
+    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
@@ -300,6 +300,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         newLaunchData.current.symbol = symbol;
         newLaunchData.current.displayImg = displayImg;
         newLaunchData.current.total_supply = parseInt(totalSupply);
+        newLaunchData.current.token_program = TOKEN_2022_PROGRAM_ID;
 
         if (!simpleLaunch) { 
             newLaunchData.current.decimals = decimals;
@@ -319,8 +320,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                 newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID);
             }
 
-            newLaunchData.current.token_program = tokenProgram === "2022" ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
-
             if (tokenStart !== "") {
                 // Call tokenGrind() and wait for it to finish
                 await tokenGrind();
@@ -329,6 +328,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
             }
         }
         else {
+            newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
             newLaunchData.current.decimals = 9;
             newLaunchData.current.num_mints = 400;
             newLaunchData.current.ticket_price = 0.05;
@@ -351,7 +351,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
             newLaunchData.current.permanent_delegate = null;
             newLaunchData.current.transfer_hook_program = null;
             
-            newLaunchData.current.token_program = TOKEN_PROGRAM_ID;
 
             setGrindComplete(true);
         }
@@ -506,7 +505,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
-
                         <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                             <HStack spacing={0} className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
@@ -552,6 +550,40 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                         </HStack>
 
                         {simpleLaunch ? (
+                            <>
+                            <HStack spacing={0} className={styles.eachField}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                Launch Type:
+                            </div>
+                            <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
+                                <Stack direction="row" gap={5}>
+                                    <Radio value="FCFS" color="white">
+                                        <Tooltip
+                                            label="Launch ends as soon as it is funded, first come first serve."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                FCFS
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="Raffle">
+                                        <Tooltip
+                                            label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Raffle
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                </Stack>
+                            </RadioGroup>
+                        </HStack>
                             <HStack spacing={6} className={styles.eachField} mt={3}>
                                 <HStack>
                                     <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
@@ -606,6 +638,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                     </Stack>
                                 </RadioGroup>
                             </HStack>
+                            </>
                         ) : (
                             <VStack w="100%">
                                 <Divider />
@@ -613,39 +646,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                     <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                         Token Extensions:
                                     </Text>
-                                    <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                            Token Program:
-                                        </div>
-                                        <RadioGroup ml="5" onChange={setTokenProgram} value={tokenProgram}>
-                                            <Stack direction="row" gap={5}>
-                                                <Radio value="2022" color="white">
-                                                    <Tooltip
-                                                        label="Uses the new token 2022 program (supports extensions)"
-                                                        hasArrow
-                                                        fontSize="large"
-                                                        offset={[0, 10]}
-                                                    >
-                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                            Token 2022
-                                                        </Text>
-                                                    </Tooltip>
-                                                </Radio>
-                                                <Radio value="classic">
-                                                    <Tooltip
-                                                        label="Uses the original spl token program (no extension support)."
-                                                        hasArrow
-                                                        fontSize="large"
-                                                        offset={[0, 10]}
-                                                    >
-                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                            Classic
-                                                        </Text>
-                                                    </Tooltip>
-                                                </Radio>
-                                            </Stack>
-                                        </RadioGroup>
-                                    </HStack>
                                     <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                                         <HStack spacing={0} className={styles.eachField}>
                                             <div
@@ -657,7 +657,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
                                             <div className={styles.textLabelInput}>
                                                 <Input
-                                                    disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
+                                                    disabled={newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
@@ -679,7 +679,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
                                             <div className={styles.textLabelInput}>
                                                 <Input
-                                                    disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
+                                                    disabled={newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     placeholder="Max number of tokens taxed in a single transaction"
@@ -702,8 +702,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     <Input
                                                         disabled={
                                                             newLaunchData.current.edit_mode === true ||
-                                                            isCustomProgramId ||
-                                                            tokenProgram == "classic"
+                                                            isCustomProgramId
                                                         }
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
@@ -738,8 +737,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         disabled={
                                                             newLaunchData.current.edit_mode === true ||
                                                             isCustomProgramId ||
-                                                            permanentDelegate !== "" ||
-                                                            tokenProgram == "classic"
+                                                            permanentDelegate !== ""
                                                         }
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}

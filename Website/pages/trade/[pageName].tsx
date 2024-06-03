@@ -80,8 +80,7 @@ interface MarketData {
     volume: number;
 }
 
-async function getBirdEyeData(setMarketData: any) {
-    let market_address = "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN";
+async function getBirdEyeData(setMarketData: any, market_address : string) {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
     let today_seconds = Math.floor(new Date().getTime() / 1000);
@@ -176,6 +175,8 @@ const TradePage = () => {
     const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
     const [user_base_address, setUserBaseAddress] = useState<PublicKey | null>(null);
     const [user_lp_address, setUserLPAddress] = useState<PublicKey | null>(null);
+    const [raydium_address, setRaydiumAddress] = useState<PublicKey | null>(null);
+
 
     const [amm_base_amount, setBaseAmount] = useState<number | null>(null);
     const [amm_quote_amount, setQuoteAmount] = useState<number | null>(null);
@@ -196,6 +197,7 @@ const TradePage = () => {
     const price_ws_id = useRef<number | null>(null);
     const user_base_token_ws_id = useRef<number | null>(null);
     const user_lp_token_ws_id = useRef<number | null>(null);
+    const raydium_ws_id = useRef<number | null>(null);
 
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
@@ -323,6 +325,15 @@ const TradePage = () => {
         setUserLPAmount(amount);
     }, []);
 
+    const check_raydium_update = useCallback(async (result: any) => {
+       
+        let event_data = result.data;
+        const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
+
+        setLPAmount(bignum_to_num(poolState.lp_supply));
+
+    }, []);
+
     // launch account subscription handler
     useEffect(() => {
         if (base_ws_id.current === null && base_address !== null) {
@@ -347,6 +358,9 @@ const TradePage = () => {
         if (user_lp_token_ws_id.current === null && user_lp_address !== null) {
             user_lp_token_ws_id.current = connection.onAccountChange(user_lp_address, check_user_lp_update, "confirmed");
         }
+        if (raydium_ws_id.current === null && raydium_address !== null) {
+            raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
+        }
     }, [
         connection,
         base_address,
@@ -354,11 +368,13 @@ const TradePage = () => {
         price_address,
         user_base_address,
         user_lp_address,
+        raydium_address,
         check_price_update,
         check_base_update,
         check_quote_update,
         check_user_token_update,
         check_user_lp_update,
+        check_raydium_update
     ]);
 
 
@@ -449,18 +465,14 @@ const TradePage = () => {
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
             if (launch.flags[LaunchFlags.AMMProvider] > 0) {
-                //getBirdEyeData(setMarketData);
-                //let market = await getLaunchOBMAccount(Config, launch);
-                //let ray_key = Liquidity.getAssociatedId({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market.publicKey });
-                //let ray_account = await connection.getAccountInfo(ray_key);
-                //const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
-                //setLPAmount(Number(rayAMM.lpReserve));
-                //console.log("raydium: ", rayAMM.status.toString(), rayAMM.baseNeedTakePnl.toString(), rayAMM.quoteNeedTakePnl.toString())
+                if (Config.PROD) {getBirdEyeData(setMarketData, "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN")};
+
                 let pool_state = getPoolStateAccount(token_mint, wsol_mint)
                 let pool_state_account = await connection.getAccountInfo(pool_state);
                 console.log(pool_state_account)
                 const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
                 console.log(poolState);
+                setRaydiumAddress(pool_state)
                 setLPAmount(bignum_to_num(poolState.lp_supply));
                 return;
             }
