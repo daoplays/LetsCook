@@ -275,7 +275,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
         if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (distribution[Distribution.Raffle] / 100) < parseInt(mints)) {
             toast.error("Not enough tokens to support the raffle");
-            return false;
+            //return false;
         }
 
         if (parseInt(totalSupply) < 10) {
@@ -335,7 +335,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
             newLaunchData.current.minimum_liquidity = Math.round(newLaunchData.current.num_mints * newLaunchData.current.ticket_price);
 
             console.log("rewards suuply", rewardsSupply)
-            if (rewardsSupply === "0") {
+            if (rewardsSupply === "none") {
                 newLaunchData.current.distribution = [50,50,0,0,0,0,0];
             }
             else if (rewardsSupply === "5") {

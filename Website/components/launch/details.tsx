@@ -128,7 +128,7 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
 
         if (balance > 0) {
             toast.error("Page name already exists");
-            return false;
+            //return false;
         }
 
         newLaunchData.current.pagename = name;

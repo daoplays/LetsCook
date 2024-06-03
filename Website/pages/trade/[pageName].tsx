@@ -65,10 +65,11 @@ import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import { Liquidity } from "@raydium-io/raydium-sdk";
-import { getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
+import { RaydiumCPMM, getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
 import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
+import useCreateCP, { getPoolStateAccount }  from "../../hooks/raydium/useCreateCP";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -362,6 +363,17 @@ const TradePage = () => {
 
 
     const CheckMarketData = useCallback(async () => {
+
+       
+        let hash_string = "global:swap_base_output"
+        const msgBuffer = new TextEncoder().encode(hash_string);                    
+    
+        // hash the message
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    
+        // convert ArrayBuffer to Array
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        console.log(hashArray.slice(0,8))
         //("check market data");
         if (launch === null || amm === null) return;
 
@@ -404,7 +416,7 @@ const TradePage = () => {
                     lp_mint, // mint
                     wallet.publicKey, // owner
                     true, // allow owner off curve
-                    base_mint.program,
+                    launch.flags[LaunchFlags.AMMProvider] === 0 ?base_mint.program : TOKEN_PROGRAM_ID,
                 );
 
                 setUserBaseAddress(user_base_token_account_key);
@@ -412,6 +424,7 @@ const TradePage = () => {
 
                 let user_base_amount = await request_token_amount("", user_base_token_account_key);
                 let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
+                console.log("user lp amount", user_lp_amount, user_lp_token_account_key.toString())
                 setUserBaseAmount(user_base_amount);
                 setUserLPAmount(user_lp_amount);
 
@@ -436,13 +449,19 @@ const TradePage = () => {
             setTotalSupply(total_supply / Math.pow(10, launch.decimals));
 
             if (launch.flags[LaunchFlags.AMMProvider] > 0) {
-                getBirdEyeData(setMarketData);
-                let market = await getLaunchOBMAccount(Config, launch);
-                let ray_key = Liquidity.getAssociatedId({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market.publicKey });
-                let ray_account = await connection.getAccountInfo(ray_key);
-                const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
-                setLPAmount(Number(rayAMM.lpReserve));
+                //getBirdEyeData(setMarketData);
+                //let market = await getLaunchOBMAccount(Config, launch);
+                //let ray_key = Liquidity.getAssociatedId({ programId: getRaydiumPrograms(Config).AmmV4, marketId: market.publicKey });
+                //let ray_account = await connection.getAccountInfo(ray_key);
+                //const [rayAMM] = RaydiumAMM.struct.deserialize(ray_account.data);
+                //setLPAmount(Number(rayAMM.lpReserve));
                 //console.log("raydium: ", rayAMM.status.toString(), rayAMM.baseNeedTakePnl.toString(), rayAMM.quoteNeedTakePnl.toString())
+                let pool_state = getPoolStateAccount(token_mint, wsol_mint)
+                let pool_state_account = await connection.getAccountInfo(pool_state);
+                console.log(pool_state_account)
+                const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
+                console.log(poolState);
+                setLPAmount(bignum_to_num(poolState.lp_supply));
                 return;
             }
 
@@ -845,6 +864,8 @@ const BuyAndSell = ({
         if (tab == "Sell") setOrderType(1);
     };
 
+
+
     let amm_provider = launch.flags[LaunchFlags.AMMProvider];
 
     let base_raw = Math.floor(token_amount * Math.pow(10, launch.decimals));
@@ -879,7 +900,7 @@ const BuyAndSell = ({
     let base_no_slip = sol_amount / price;
     let quote_no_slip = token_amount * price;
 
-    let max_sol_amount = Math.floor(quote_no_slip * Math.pow(10, 9) * 2);
+    let max_sol_amount = Math.floor(quote_output * Math.pow(10, 9));
 
     let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
 
@@ -897,10 +918,12 @@ const BuyAndSell = ({
 
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
-    let lp_generated = (base_raw * (amm_lp_balance / base_balance)) / Math.pow(10, launch.decimals);
+    let lp_generated = (base_raw * (amm_lp_balance / base_balance)) / Math.pow(10, 9);
 
-    let lp_quote_output = (quote_balance * base_raw) / amm_lp_balance / Math.pow(10, 9);
-    let lp_base_output = (base_balance * base_raw) / amm_lp_balance / Math.pow(10, launch.decimals);
+    let lp_raw = Math.floor(token_amount * Math.pow(10, 9));
+    let lp_quote_output = (quote_balance * lp_raw) / amm_lp_balance / Math.pow(10, 9);
+    let lp_base_output = (base_balance * lp_raw) / amm_lp_balance / Math.pow(10, launch.decimals);
+    console.log("lp base output", user_lp_balance)
     if (selected === "LP-") {
         quote_output_string = lp_quote_output <= 1e-3 ? lp_quote_output.toExponential(3) : lp_quote_output.toFixed(5);
         base_output_string = lp_base_output <= 1e-3 ? lp_base_output.toExponential(3) : lp_base_output.toFixed(launch.decimals);
@@ -957,9 +980,7 @@ const BuyAndSell = ({
                     {selected === "Buy"
                         ? userSOLBalance.toFixed(5)
                         : selected === "LP-"
-                          ? (user_lp_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                            })
+                          ? (user_lp_balance/Math.pow(10,9) < 1e-3 ? (user_lp_balance/Math.pow(10,9)).toExponential(3) : (user_lp_balance/Math.pow(10,9)).toFixed(Math.min(3)))
                           : (user_base_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                             })}{" "}
@@ -1155,7 +1176,7 @@ const BuyAndSell = ({
                                 color="white"
                                 size="lg"
                                 borderColor="rgba(134, 142, 150, 0.5)"
-                                value={lp_generated.toFixed(launch.decimals)}
+                                value={lp_generated < 1e-3 ? lp_generated.toExponential(3) : lp_generated.toFixed(Math.min(3))}
                                 disabled
                             />
                             <InputRightElement h="100%" w={50}>
@@ -1206,7 +1227,7 @@ const BuyAndSell = ({
                             ? handleConnectWallet()
                             : amm_provider === 0
                               ? UpdateCookLiquidity(launch, token_amount, 0)
-                              : AddLiquidityRaydium(token_amount * Math.pow(10, launch.decimals), max_sol_amount);
+                              : AddLiquidityRaydium(lp_generated * Math.pow(10, 9), token_amount * Math.pow(10, launch.decimals), max_sol_amount);
                     }}
                 >
                     <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
@@ -1227,7 +1248,7 @@ const BuyAndSell = ({
                             ? handleConnectWallet()
                             : amm_provider === 0
                               ? UpdateCookLiquidity(launch, token_amount, 1)
-                              : RemoveLiquidityRaydium(token_amount * Math.pow(10, launch.decimals));
+                              : RemoveLiquidityRaydium(token_amount * Math.pow(10, 9));
                     }}
                 >
                     <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
@@ -1250,8 +1271,8 @@ const BuyAndSell = ({
                                 : amm_provider === 0
                                   ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
                                   : SwapRaydium(
-                                        order_type === 1 ? token_amount * Math.pow(10, launch.decimals) : 0,
-                                        order_type === 1 ? 0 : sol_amount * Math.pow(10, 9),
+                                        order_type === 1 ? token_amount * Math.pow(10, launch.decimals) : base_output * Math.pow(10, launch.decimals) ,
+                                        order_type === 1 ? 0 : 2 * sol_amount * Math.pow(10, 9),
                                         order_type,
                                     );
                         }}

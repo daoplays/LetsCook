@@ -708,7 +708,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
-    distribution: new Array(Distribution.LENGTH).fill(0),
+    distribution: [50, 50, 0, 0,0, 0, 0],
     uri: "",
     pagename: "",
     description: "",
@@ -1190,7 +1190,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.max_transfer_fee,
         extensions,
         new_launch_data.amm_provider,
-        0
+        1
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -1236,6 +1236,8 @@ class EditLaunch_Instruction {
 }
 
 export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
+
+    console.log(new_launch_data.distribution)
     const data = new EditLaunch_Instruction(
         LaunchInstruction.edit_launch,
         new_launch_data.description,
