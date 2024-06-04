@@ -56,7 +56,7 @@ export interface AssetWithMetadata {
     metadata: any;
 }
 
-export const check_nft_balance = async (launch_key: PublicKey, wallet : WalletContextState, setOwnedAssets : any, setNFTBalance : any) => {
+export const check_nft_balance = async (launch_key: PublicKey, wallet: WalletContextState, setOwnedAssets: any, setNFTBalance: any) => {
     if (launch_key === null || wallet === null || wallet.publicKey === null) return;
 
     console.log("CHECKING NFT BALANCE");
@@ -85,7 +85,7 @@ export const check_nft_balance = async (launch_key: PublicKey, wallet : WalletCo
 
     setOwnedAssets(owned_assets);
     setNFTBalance(valid_lookups);
-}
+};
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
@@ -108,7 +108,6 @@ const CollectionSwapPage = () => {
     const [isTokenToNFT, setIsTokenToNFT] = useState(false);
 
     const collection_key = useRef<PublicKey | null>(null);
-
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
@@ -167,7 +166,6 @@ const CollectionSwapPage = () => {
 
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
-
     }, [collectionList, pageName, mintData, wallet]);
 
     // when page unloads unsub from any active websocket listeners
@@ -273,7 +271,6 @@ const CollectionSwapPage = () => {
                     }
 
                     check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
-
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -282,11 +279,9 @@ const CollectionSwapPage = () => {
             //console.log(updated_data);
             mint_nft.current = true;
             setAssignedNFT(updated_data);
-
         },
         [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
     );
-
 
     const check_user_token_update = useCallback(
         async (result: any) => {
@@ -340,7 +335,6 @@ const CollectionSwapPage = () => {
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-
     }, [launch, wallet, mintData]);
 
     useEffect(() => {
@@ -390,7 +384,6 @@ const CollectionSwapPage = () => {
         }
 
         if (check_initial_assignment.current) {
-
             get_assignment_data();
         }
 

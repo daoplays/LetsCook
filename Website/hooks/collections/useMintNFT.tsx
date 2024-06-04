@@ -27,7 +27,6 @@ import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
-import { nextWednesday } from "date-fns";
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
@@ -68,7 +67,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         signature_ws_id.current = null;
         setIsLoading(false);
-        console.log("transaction failed at ", new Date())
+        console.log("transaction failed at ", new Date());
         toast.error("Transaction not processed, please try again", {
             type: "error",
             isLoading: false,

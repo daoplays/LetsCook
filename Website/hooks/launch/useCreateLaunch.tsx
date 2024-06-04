@@ -8,9 +8,27 @@ import {
     serialise_CreateLaunch_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, FEES_PROGRAM, METAPLEX_META, SOL_ACCOUNT_SEED, DATA_ACCOUNT_SEED } from "../../components/Solana/constants";
+import {
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    Config,
+    LaunchKeys,
+    FEES_PROGRAM,
+    METAPLEX_META,
+    SOL_ACCOUNT_SEED,
+    DATA_ACCOUNT_SEED,
+} from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, SystemProgram, SYSVAR_RENT_PUBKEY } from "@solana/web3.js";
+import {
+    PublicKey,
+    Transaction,
+    TransactionInstruction,
+    Connection,
+    ComputeBudgetProgram,
+    SystemProgram,
+    SYSVAR_RENT_PUBKEY,
+} from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
@@ -22,7 +40,6 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import useEditLaunch from "./useEditLaunch";
 import { WebIrys } from "@irys/sdk";
 
-
 // Define the Tag type
 type Tag = {
     name: string;
@@ -30,7 +47,6 @@ type Tag = {
 };
 
 const usuCreateLaunch = () => {
-
     const wallet = useWallet();
     const router = useRouter();
     const { newLaunchData, checkProgramData } = useAppRoot();
@@ -74,7 +90,7 @@ const usuCreateLaunch = () => {
             autoClose: 3000,
         });
     }, []);
-   
+
     const CreateLaunch = async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -112,7 +128,6 @@ const usuCreateLaunch = () => {
         });
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-
 
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.info("(1/4) Preparing to upload images - transferring balance to Arweave.");
@@ -404,7 +419,7 @@ const usuCreateLaunch = () => {
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            
+
             var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
             console.log(signature);
@@ -437,7 +452,7 @@ const usuCreateLaunch = () => {
             return;
         }
     };
-        
+
     return { CreateLaunch };
 };
 

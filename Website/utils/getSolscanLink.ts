@@ -3,9 +3,12 @@ import { LaunchData } from "../components/Solana/state";
 import { CollectionData } from "../components/collection/collectionState";
 
 export const getSolscanLink = (launch: CollectionData | LaunchData, type: string) => {
-
-    let network = Config.NETWORK === "devnet" ? `?cluster=devnet` : Config.NETWORK === "eclipse" ? `?cluster=custom&customUrl=https://staging-rpc.dev2.eclipsenetwork.xyz` : "";;
-
+    let network =
+        Config.NETWORK === "devnet"
+            ? `?cluster=devnet`
+            : Config.NETWORK === "eclipse"
+              ? `?cluster=custom&customUrl=https://staging-rpc.dev2.eclipsenetwork.xyz`
+              : "";
 
     if (type === "Token") {
         return `https://solscan.io/account/${

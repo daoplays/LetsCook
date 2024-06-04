@@ -166,7 +166,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
         newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
 
-
         if (AMMProvider === "cook") {
             newLaunchData.current.amm_provider = 0;
         }
@@ -199,7 +198,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
-                    <HStack spacing={0} className={styles.eachField}>
+                        <HStack spacing={0} className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
                                 Launch Type:
                             </div>
@@ -336,7 +335,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             Raydium
                                         </Text>
                                     </Radio>
-                                    
                                 </Stack>
                             </RadioGroup>
                         </HStack>

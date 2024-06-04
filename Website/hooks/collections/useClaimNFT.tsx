@@ -75,7 +75,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         signature_ws_id.current = null;
         setIsLoading(false);
 
-        console.log("transaction failed at ", new Date())
+        console.log("transaction failed at ", new Date());
         toast.error("Transaction not processed, please try again", {
             type: "error",
             isLoading: false,
@@ -238,7 +238,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
 
         transaction.add(list_instruction);
 

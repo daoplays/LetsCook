@@ -46,7 +46,6 @@ const Pepemon = () => {
 
     const collection_key = useRef<PublicKey | null>(null);
 
-
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
     const user_token_ws_id = useRef<number | null>(null);
@@ -89,15 +88,12 @@ const Pepemon = () => {
 
         if (launch === null) return;
 
-
         if (check_initial_collection.current) {
-            console.log("check intitial cllection")
+            console.log("check intitial cllection");
             setCollectionData(launch);
             collection_key.current = launch.keys[CollectionKeys.CollectionMint];
             check_initial_collection.current = false;
         }
-
-        
     }, [collectionList]);
 
     useEffect(() => {
@@ -137,7 +133,6 @@ const Pepemon = () => {
 
         mint_nft.current = false;
     }, [launch, assigned_nft, openAssetModal]);
-
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -319,7 +314,6 @@ const Pepemon = () => {
         }
 
         if (check_initial_assignment.current) {
-
             get_assignment_data();
         }
 

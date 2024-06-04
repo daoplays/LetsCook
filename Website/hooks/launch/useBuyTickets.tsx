@@ -1,4 +1,11 @@
-import { LaunchData, getRecentPrioritizationFees, get_current_blockhash, myU64, send_transaction, serialise_BuyTickets_instruction } from "../../components/Solana/state";
+import {
+    LaunchData,
+    getRecentPrioritizationFees,
+    get_current_blockhash,
+    myU64,
+    send_transaction,
+    serialise_BuyTickets_instruction,
+} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { PROGRAM, Config, SYSTEM_KEY, TIMEOUT } from "../../components/Solana/constants";
