@@ -37,10 +37,16 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const [isLoading, setIsLoading] = useState(false);
     const { MintNFT } = useMintNFT(launchData);
     const signature_ws_id = useRef<number | null>(null);
+    const timeoutId = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         // if we have a subscription field check against ws_id
+
+        if (timeoutId.current) {
+            clearTimeout(timeoutId.current);
+            timeoutId.current = null;
+        }
 
         signature_ws_id.current = null;
         setIsLoading(false);
@@ -236,7 +242,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-
         transaction.add(list_instruction);
 
         try {
@@ -250,7 +255,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             console.log("claim nft sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
+
+            timeoutId.current = setTimeout(transaction_failed, TIMEOUT);
         } catch (error) {
             console.log(error);
             setIsLoading(false);
