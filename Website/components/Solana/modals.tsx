@@ -12,6 +12,7 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { SYSTEM_KEY } from "./constants";
 import Image from "next/image";
 import BN from "bn.js";
+import useMintRandom from "../../hooks/collections/useMintRandom";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -150,6 +151,7 @@ export function ReceivedAssetModal({
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
 
     function filterAttributes(attributes) {
         return attributes.filter(function (item: Attribute) {
@@ -322,7 +324,12 @@ export function ReceivedAssetModal({
                                         alignItems: "center",
                                     }}
                                     onClick={(e) => {
-                                        MintNFT();
+                                        if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
+                                            MintNFT();
+                                        }
+                                        if (collection.collection_meta["__kind"] === "RandomUnlimited") {
+                                            MintRandom();
+                                        }
                                     }}
                                 >
                                     {isMintLoading ? (
@@ -339,7 +346,12 @@ export function ReceivedAssetModal({
                                     <button
                                         type="button"
                                         onClick={(e) => {
-                                            MintNFT();
+                                            if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                MintNFT();
+                                            }
+                                            if (collection.collection_meta["__kind"] === "RandomUnlimited") {
+                                                MintRandom();
+                                            }
                                         }}
                                         className={`${styles.nextBtn} font-face-kg `}
                                     >

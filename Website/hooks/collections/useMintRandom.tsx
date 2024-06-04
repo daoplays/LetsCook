@@ -126,6 +126,15 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             PROGRAM,
         )[0];
 
+         //console.log("get assignment data");
+         let assignment_data = await request_assignment_data(nft_assignment_account);
+
+         console.log("assignment randoms", assignment_data.random_address.toString())
+         if (assignment_data === null) {
+             // console.log("no assignment data found");
+             return;
+         }
+
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let nft_mint_keypair = new Keypair();
@@ -191,6 +200,8 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             { pubkey: CORE, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: mint_account.program, isSigner: false, isWritable: true },
+            { pubkey: assignment_data.random_address, isSigner: false, isWritable: false }
+
         ];
 
         if (transfer_hook_program_account !== null) {

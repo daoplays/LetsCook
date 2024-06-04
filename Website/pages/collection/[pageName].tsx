@@ -331,23 +331,7 @@ const CollectionSwapPage = () => {
         )[0];
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
-        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
-        console.log("user token balance", user_amount);
-
-        let randomness = await request_raw_account_data("", assignment_data.random_address);
-        console.log("randomness", randomness);
-        let seed = randomness.slice(8, 8+32);
-        let orao_random = PublicKey.findProgramAddressSync(
-            [Buffer.from("orao-vrf-randomness-request"), seed],
-            new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y"),
-        )[0];
-        console.log(orao_random.toString(), assignment_data.random_address.toString())
-        let orao_randomness = randomness.slice(8+32, 8+32+64);
-        console.log(orao_randomness)
-        let bytes = []
-        for (let i = 0; i < 8; i++) {
-            bytes.push(randomness[i])
-        }
+        
         ///generate_random_f64(bytes);
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -661,12 +645,7 @@ const CollectionSwapPage = () => {
                                                                 }
 
                                                                 if (wallet.connected && enoughTokenBalance) {
-                                                                    if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
                                                                         ClaimNFT();
-                                                                    }
-                                                                    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                                                        MintRandom();
-                                                                    }
                                                                 }
                                                             }}
                                                             isLoading={isClaimLoading}
@@ -678,7 +657,14 @@ const CollectionSwapPage = () => {
                                                         </Button>
                                                     </Tooltip>
                                                 ) : (
-                                                    <Button w="100%" mt={3} onClick={() => MintNFT()} isLoading={isMintLoading}>
+                                                    <Button w="100%" mt={3} onClick={() => {
+                                                        if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                        MintNFT();
+                                                    }
+                                                    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+                                                        MintRandom();
+                                                    }}
+                                                    } isLoading={isMintLoading}>
                                                        Check
                                                     </Button>
                                                 )}
@@ -776,65 +762,6 @@ const CollectionSwapPage = () => {
                                 </HStack>
                                 <ShowExtensions extension_flag={launch.token_extensions} />
                             </VStack>
-
-                            {/* {wallet.connected ? (
-                                <VStack spacing={3} margin="auto 0">
-                                    {assigned_nft === null ? (
-                                        <Tooltip
-                                            label="You don't have enough token balance"
-                                            hasArrow
-                                            offset={[0, 10]}
-                                            isDisabled={enoughTokenBalance}
-                                        >
-                                            <Button
-                                                onClick={() => {
-                                                    if (!wallet.connected) {
-                                                        handleConnectWallet();
-                                                    }
-
-                                                    if (wallet.connected && enoughTokenBalance) {
-                                                        ClaimNFT();
-                                                    }
-                                                }}
-                                                isLoading={isClaimLoading}
-                                                isDisabled={!enoughTokenBalance || isClaimLoading || isMintLoading || isWrapLoading}
-                                            >
-                                                {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}{" "}
-                                                {launch.token_symbol} = 1 NFT
-                                            </Button>
-                                        </Tooltip>
-                                    ) : (
-                                        <Button onClick={() => MintNFT()} isLoading={isMintLoading}>
-                                            Claim NFT {assigned_nft.nft_index + 1}
-                                        </Button>
-                                    )}
-
-                                    <Tooltip
-                                        label={`You don't have ${launch.collection_name} NFTs`}
-                                        hasArrow
-                                        offset={[0, 10]}
-                                        isDisabled={nft_balance > 0 || isClaimLoading || isMintLoading || isWrapLoading}
-                                    >
-                                        <Button
-                                            onClick={() => {
-                                                if (wallet.connected) {
-                                                    WrapNFT();
-                                                } else {
-                                                    handleConnectWallet();
-                                                }
-                                            }}
-                                            isLoading={isWrapLoading}
-                                            isDisabled={nft_balance <= 0 || isClaimLoading || isMintLoading || isWrapLoading}
-                                        >
-                                            1 NFT = {out_amount.toLocaleString()} {launch.token_symbol}
-                                        </Button>
-                                    </Tooltip>
-                                </VStack>
-                            ) : (
-                                <Button margin="auto 0" onClick={() => handleConnectWallet()}>
-                                    Connect your wallet
-                                </Button>
-                            )} */}
                         </Flex>
 
                         <VStack mt={5} spacing={0} w="100%" style={{ position: "relative" }}>

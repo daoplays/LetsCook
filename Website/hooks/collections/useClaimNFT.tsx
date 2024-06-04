@@ -32,6 +32,7 @@ import useMintNFT from "./useMintNFT";
 import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
+import useMintRandom from "./useMintRandom";
 
 
 class OraoTokenFeeConfig {
@@ -192,6 +193,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const [OraoRandoms, setOraoRandoms] = useState<number[]>([]);
 
     const { MintNFT } = useMintNFT(launchData);
+    const { MintRandom} = useMintRandom(launchData);
     const signature_ws_id = useRef<number | null>(null);
     const orao_ws_id = useRef<number | null>(null);
     const orao_randomness = useRef<PublicKey | null>(null);
@@ -274,7 +276,12 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             console.log(assignment_data.random_address.toString(), assignment_data.status);
             if (!assignment_data.random_address.equals(SYSTEM_KEY) && assignment_data.status === 0) {
                 console.log("assignment data found, minting nft");
-                await MintNFT();
+                if (launchData.collection_meta["__kind"] === "RandomFixedSupply") {
+                    MintNFT();
+                }
+                if (launchData.collection_meta["__kind"] === "RandomUnlimited") {
+                    MintRandom();
+                }
                 return;
             }
         }
