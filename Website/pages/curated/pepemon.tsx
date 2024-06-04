@@ -62,7 +62,7 @@ const Pepemon = () => {
     const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
-    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms } = useClaimNFT(launch);
 
     let isLoading = isClaimLoading || isMintRandomLoading;
 
@@ -84,7 +84,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "pepemon_gen1");
+        let launch = findCollection(collectionList, "gen1_test1");
 
         if (launch === null) return;
 
@@ -114,25 +114,14 @@ const Pepemon = () => {
     }, [connection]);
 
     useEffect(() => {
-        if (assigned_nft === null || !mint_nft.current) {
-            return;
-        }
+        if (!mint_nft.current) return;
 
-        console.log(assigned_nft, assigned_nft.nft_address.toString());
+        if (OraoRandoms.length === 0) return;
 
-        if (
-            launch.collection_meta["__kind"] === "RandomFixedSupply" &&
-            assigned_nft.status === 0 &&
-            !assigned_nft.nft_address.equals(SYSTEM_KEY)
-        ) {
-            return;
-        }
-
-        console.log("open asset modal");
         openAssetModal();
 
         mint_nft.current = false;
-    }, [launch, assigned_nft, openAssetModal]);
+    }, [OraoRandoms, openAssetModal]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -172,9 +161,7 @@ const Pepemon = () => {
                 return;
             }
 
-            if (updated_data.nft_address.equals(SYSTEM_KEY)) {
-                console.log("no asset recieved");
-
+            if (updated_data.status < 2) {
                 asset_received.current = null;
                 asset_image.current = null;
 
@@ -563,6 +550,7 @@ const Pepemon = () => {
                     asset={asset_received}
                     asset_image={asset_image}
                     style={modalStyle}
+                    randoms={OraoRandoms}
                 />
 
                 <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} assets={owned_assets} collection={launch} />

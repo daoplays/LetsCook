@@ -21,7 +21,7 @@ import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, dese
 import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
-import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
+import { bignum_to_num, TokenAccount, request_token_amount, request_raw_account_data } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet, useConnection, WalletContextState } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -50,6 +50,7 @@ import { LuArrowUpDown } from "react-icons/lu";
 import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { findCollection } from "../../components/collection/utils";
+import BN from "bn.js";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -87,6 +88,19 @@ export const check_nft_balance = async (launch_key: PublicKey, wallet: WalletCon
     setNFTBalance(valid_lookups);
 };
 
+const convertHashToHex = (value) => {
+    return value.map(v => v.toString(16).padStart(2, '0')).join('');
+  } 
+function generate_random_f64(bytes : number[])  {
+
+    let ubn  = BigInt(convertHashToHex(bytes));
+    let or = BigInt("0x3FF0000000000000")
+    let and = BigInt("0xFFFFFFFFFFFFF")
+
+    console.log(bytes, ubn.toString(), or.toString(), and.toString())
+    
+}
+
 const CollectionSwapPage = () => {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -123,7 +137,7 @@ const CollectionSwapPage = () => {
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
-    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms } = useClaimNFT(launch);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
@@ -188,21 +202,15 @@ const CollectionSwapPage = () => {
     }, [connection]);
 
     useEffect(() => {
-        if (assigned_nft === null || !mint_nft.current) {
-            return;
-        }
+        
+        if (!mint_nft.current) return;
 
-        if (
-            launch.collection_meta["__kind"] === "RandomFixedSupply" &&
-            assigned_nft.status === 0 &&
-            !assigned_nft.nft_address.equals(SYSTEM_KEY)
-        ) {
-            return;
-        }
+        if (OraoRandoms.length === 0) return;
+
         openAssetModal();
 
         mint_nft.current = false;
-    }, [launch, assigned_nft, openAssetModal]);
+    }, [OraoRandoms, openAssetModal]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -242,9 +250,7 @@ const CollectionSwapPage = () => {
                 return;
             }
 
-            if (updated_data.nft_address.equals(SYSTEM_KEY)) {
-                console.log("no asset recieved");
-
+            if (updated_data.status < 2) {
                 asset_received.current = null;
                 asset_image.current = null;
             } else {
@@ -328,6 +334,21 @@ const CollectionSwapPage = () => {
         console.log("check assignment", nft_assignment_account.toString(), assignment_data);
         console.log("user token balance", user_amount);
 
+        let randomness = await request_raw_account_data("", assignment_data.random_address);
+        console.log("randomness", randomness);
+        let seed = randomness.slice(8, 8+32);
+        let orao_random = PublicKey.findProgramAddressSync(
+            [Buffer.from("orao-vrf-randomness-request"), seed],
+            new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y"),
+        )[0];
+        console.log(orao_random.toString(), assignment_data.random_address.toString())
+        let orao_randomness = randomness.slice(8+32, 8+32+64);
+        console.log(orao_randomness)
+        let bytes = []
+        for (let i = 0; i < 8; i++) {
+            bytes.push(randomness[i])
+        }
+        ///generate_random_f64(bytes);
         check_initial_assignment.current = false;
         if (assignment_data === null) {
             return;
@@ -624,10 +645,7 @@ const CollectionSwapPage = () => {
                                         {isTokenToNFT ? (
                                             <HStack w="100%">
                                                 {assigned_nft === null ||
-                                                launch.collection_meta["__kind"] === "RandomUnlimited" ||
-                                                (launch.collection_meta["__kind"] === "RandomFixedSupply" &&
-                                                    assigned_nft.nft_address.equals(SYSTEM_KEY)) ||
-                                                (!assigned_nft.nft_address.equals(SYSTEM_KEY) && assigned_nft.status === 0) ? (
+                                                assigned_nft.status > 0 ? (
                                                     <Tooltip
                                                         label="You don't have enough token balance"
                                                         hasArrow
@@ -661,7 +679,7 @@ const CollectionSwapPage = () => {
                                                     </Tooltip>
                                                 ) : (
                                                     <Button w="100%" mt={3} onClick={() => MintNFT()} isLoading={isMintLoading}>
-                                                        Claim NFT {assigned_nft.nft_index + 1}
+                                                       Check
                                                     </Button>
                                                 )}
                                             </HStack>
@@ -859,6 +877,7 @@ const CollectionSwapPage = () => {
                     asset={asset_received}
                     asset_image={asset_image}
                     style={modalStyle}
+                    randoms={OraoRandoms}
                 />
             </main>
         </>

@@ -116,10 +116,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-        let nft_pubkey = PublicKey.findProgramAddressSync(
-            [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
-            PROGRAM,
-        )[0];
+        let asset_keypair = new Keypair();
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
@@ -135,7 +132,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: nft_pubkey, isSigner: false, isWritable: true },
+            { pubkey: asset_keypair.publicKey, isSigner: true, isWritable: true },
 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
 
@@ -146,6 +143,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -163,6 +161,9 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(list_instruction);
+
+        transaction.partialSign(asset_keypair);
+
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);

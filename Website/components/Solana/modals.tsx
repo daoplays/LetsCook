@@ -11,6 +11,7 @@ import useMintNFT from "../../hooks/collections/useMintNFT";
 import styles from "../../styles/LaunchDetails.module.css";
 import { SYSTEM_KEY } from "./constants";
 import Image from "next/image";
+import BN from "bn.js";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -128,6 +129,7 @@ interface RecievedAssetModalProps {
     assignment_data: AssignmentData;
     style: ReceivedAssetModalStyle;
     curated?: boolean;
+    randoms: number[]
 }
 
 export interface ReceivedAssetModalStyle {
@@ -144,6 +146,7 @@ export function ReceivedAssetModal({
     asset_image,
     style,
     curated,
+    randoms
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
@@ -182,10 +185,10 @@ export function ReceivedAssetModal({
 
     //console.log("image_url: ", asset.current.attributes.attributeList, asset_image.current);
 
-    let success = !assignment_data.nft_address.equals(SYSTEM_KEY);
-    let failed = assignment_data.nft_address.equals(SYSTEM_KEY);
+    let success = assignment_data.status === 2;
+    let failed = assignment_data.status === 1;
 
-    let toCatch = collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0;
+    let toCatch = assignment_data.status === 0;
 
     return (
         <>
@@ -236,14 +239,8 @@ export function ReceivedAssetModal({
                                         }}
                                     >
                                         {curated ? "Successfully caught" : "New NFT Received!"}
-
-                                        {/* {curated && toCatch
-                                            ? `A wild ${asset_name} has Appeared!`
-                                            : curated && !toCatch
-                                              ? "Successfully caught"
-                                              : "New NFT Received!"} */}
+                                        
                                     </Text>
-                                    {/* {!toCatch && ( */}
                                     <Text
                                         m={curated && 0}
                                         align="center"
@@ -332,7 +329,7 @@ export function ReceivedAssetModal({
                                         <Spinner />
                                     ) : (
                                         <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
-                                            Mint
+                                            Check
                                         </Text>
                                     )}
                                 </div>
@@ -346,7 +343,7 @@ export function ReceivedAssetModal({
                                         }}
                                         className={`${styles.nextBtn} font-face-kg `}
                                     >
-                                        {isMintLoading ? <Spinner /> : "Mint"}
+                                        {isMintLoading ? <Spinner /> : "Check"}
                                     </button>
                                 </VStack>
                             )}
