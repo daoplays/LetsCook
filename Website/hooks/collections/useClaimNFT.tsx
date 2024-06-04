@@ -21,7 +21,7 @@ import {
     AccountMeta,
 } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, TIMEOUT } from "../../components/Solana/constants";
 import { useCallback, useRef, useState, useEffect } from "react";
 import bs58 from "bs58";
@@ -33,6 +33,8 @@ import { toast } from "react-toastify";
 
 const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
+    const { connection } = useConnection();
+
     const { checkProgramData, mintData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
     const { MintNFT } = useMintNFT(launchData);
@@ -67,6 +69,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
     const transaction_failed = useCallback(async () => {
         if (signature_ws_id.current == null) return;
+
+        await connection.removeAccountChangeListener(signature_ws_id.current);
 
         signature_ws_id.current = null;
         setIsLoading(false);
@@ -111,8 +115,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             alert("Transaction pending, please wait");
             return;
         }
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (launchData === null) {
             return;

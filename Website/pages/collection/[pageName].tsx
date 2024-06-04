@@ -23,7 +23,7 @@ import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { bignum_to_num, TokenAccount, request_token_amount } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useWallet, useConnection, WalletContextState } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
@@ -51,6 +51,42 @@ import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { findCollection } from "../../components/collection/utils";
 
+export interface AssetWithMetadata {
+    asset: AssetV1;
+    metadata: any;
+}
+
+export const check_nft_balance = async (launch_key: PublicKey, wallet : WalletContextState, setOwnedAssets : any, setNFTBalance : any) => {
+    if (launch_key === null || wallet === null || wallet.publicKey === null) return;
+
+    console.log("CHECKING NFT BALANCE");
+
+    const umi = createUmi(Config.RPC_NODE, "confirmed");
+
+    let collection_umiKey = publicKey(launch_key.toString());
+
+    const assets = await getAssetV1GpaBuilder(umi)
+        .whereField("key", Key.AssetV1)
+        .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+        .getDeserialized();
+
+    console.log(assets);
+    let valid_lookups = 0;
+    let owned_assets: AssetWithMetadata[] = [];
+    for (let i = 0; i < assets.length; i++) {
+        if (assets[i].owner.toString() === wallet.publicKey.toString()) {
+            valid_lookups += 1;
+            let uri_json = await fetch(assets[i].uri).then((res) => res.json());
+            let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
+            owned_assets.push(entry);
+        }
+    }
+    console.log("have ", valid_lookups, "addresses with balance");
+
+    setOwnedAssets(owned_assets);
+    setNFTBalance(valid_lookups);
+}
+
 const CollectionSwapPage = () => {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -65,10 +101,14 @@ const CollectionSwapPage = () => {
     const [out_amount, setOutAmount] = useState<number>(0);
     const [nft_balance, setNFTBalance] = useState<number>(0);
     const [token_balance, setTokenBalance] = useState<number>(0);
+    const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [nft_amount, setNFTAmount] = useState<number>(0);
     const [isTokenToNFT, setIsTokenToNFT] = useState(false);
+
+    const collection_key = useRef<PublicKey | null>(null);
+
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
@@ -77,6 +117,7 @@ const CollectionSwapPage = () => {
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
     const check_initial_collection = useRef<boolean>(true);
+    const check_initial_nft_balance = useRef<boolean>(true);
 
     const asset_received = useRef<AssetV1 | null>(null);
     const asset_image = useRef<string | null>(null);
@@ -93,32 +134,6 @@ const CollectionSwapPage = () => {
         fontColor: "white",
     };
 
-    const check_nft_balance = useCallback(async () => {
-        if (launch === null || wallet === null || wallet.publicKey === null) return;
-
-        console.log("CHECKING NFT BALANCE");
-
-        const umi = createUmi(Config.RPC_NODE, "confirmed");
-
-        let collection_umiKey = publicKey(launch.keys[CollectionKeys.CollectionMint].toString());
-
-        const assets = await getAssetV1GpaBuilder(umi)
-            .whereField("key", Key.AssetV1)
-            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
-            .getDeserialized();
-
-        console.log(assets);
-        let valid_lookups = 0;
-        for (let i = 0; i < assets.length; i++) {
-            if (assets[i].owner.toString() === wallet.publicKey.toString()) {
-                valid_lookups += 1;
-            }
-        }
-        console.log("have ", valid_lookups, "addresses with balance");
-
-        setNFTBalance(valid_lookups);
-    }, [launch, wallet]);
-
     useEffect(() => {
         if (collectionList === null || mintData === null) return;
 
@@ -130,6 +145,7 @@ const CollectionSwapPage = () => {
 
         if (check_initial_collection.current) {
             setCollectionData(launch);
+            collection_key.current = launch.keys[CollectionKeys.CollectionMint];
             check_initial_collection.current = false;
         }
 
@@ -152,8 +168,7 @@ const CollectionSwapPage = () => {
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
-        check_nft_balance();
-    }, [collectionList, pageName, mintData, check_nft_balance, wallet]);
+    }, [collectionList, pageName, mintData, wallet]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -256,6 +271,9 @@ const CollectionSwapPage = () => {
                     } else {
                         asset_received.current = null;
                     }
+
+                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -264,41 +282,11 @@ const CollectionSwapPage = () => {
             //console.log(updated_data);
             mint_nft.current = true;
             setAssignedNFT(updated_data);
+
         },
-        [launch, assigned_nft],
+        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
     );
 
-    const check_program_update = useCallback(async (result: any) => {
-        //console.log("program data", result);
-        // if we have a subscription field check against ws_id
-
-        if (result === undefined) return;
-
-        let event_data = result.accountInfo.data;
-
-        //console.log("have program data", event_data);
-        let account_data = Buffer.from(event_data, "base64");
-
-        if (account_data.length === 0) {
-            //console.log("account deleted");
-            return;
-        }
-        /*if (account_data[0] === 10) {
-                console.log("lookup data update")
-                const [updated_data] = LookupData.struct.deserialize(account_data);
-                console.log(updated_data);
-                console.log(updated_data.colection_mint.toString(), updated_data.nft_mint.toString());
-                let current_map = NFTLookup.current.get(updated_data.colection_mint.toString());
-                if (current_map === undefined) {
-                    current_map = new Map<String, LookupData>();
-                }
-
-                current_map.set(updated_data.nft_mint.toString(), updated_data);
-
-                NFTLookup.current.set(updated_data.colection_mint.toString(), current_map);
-                check_nft_balance();
-            }*/
-    }, []);
 
     const check_user_token_update = useCallback(
         async (result: any) => {
@@ -352,6 +340,7 @@ const CollectionSwapPage = () => {
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
+
     }, [launch, wallet, mintData]);
 
     useEffect(() => {
@@ -399,9 +388,17 @@ const CollectionSwapPage = () => {
         if (wallet === null || wallet.publicKey === null) {
             return;
         }
-        console.log("get initial assignment data");
-        get_assignment_data();
-    }, [launch, wallet, get_assignment_data]);
+
+        if (check_initial_assignment.current) {
+
+            get_assignment_data();
+        }
+
+        if (check_initial_nft_balance.current) {
+            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+            check_initial_nft_balance.current = false;
+        }
+    }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     if (!pageName) return;
 
