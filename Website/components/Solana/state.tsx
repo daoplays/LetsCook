@@ -172,40 +172,39 @@ interface SignatureResponseData {
     } | null;
 }
 
-export async function  getRecentPrioritizationFees(PROD: boolean) : Promise<number> {
-
+export async function getRecentPrioritizationFees(PROD: boolean): Promise<number> {
     let feeMicroLamports = 100000;
     if (PROD) {
         try {
             const response = await fetch(Config.RPC_NODE, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                jsonrpc: "2.0",
-                id: 1,
-                method: "getPriorityFeeEstimate",
-                params: [{
-                "accountKeys": ["JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"],
-                "options": {
-                    //"recommended": true,
-                    "includeAllPriorityFeeLevels": true,
-                }
-                }]
-            }),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 1,
+                    method: "getPriorityFeeEstimate",
+                    params: [
+                        {
+                            accountKeys: ["JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4"],
+                            options: {
+                                //"recommended": true,
+                                includeAllPriorityFeeLevels: true,
+                            },
+                        },
+                    ],
+                }),
             });
             const data = await response.json();
             console.log("Fee: ", data);
-        }
-        catch (error) {
-        console.log("Error: ", error);
+        } catch (error) {
+            console.log("Error: ", error);
         }
     }
 
     return feeMicroLamports;
-};
-  
+}
 
 export async function check_signature(bearer: string, signature: string): Promise<SignatureResponseData | null> {
     var body = { id: 1, jsonrpc: "2.0", method: "getSignatureStatuses", params: [[signature], { searchTransactionHistory: true }] };
@@ -598,7 +597,6 @@ type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
     ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
-
 ]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
@@ -691,6 +689,7 @@ export interface LaunchDataUserInput {
     max_transfer_fee: number;
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
+    launch_type: number;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -708,7 +707,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     num_mints: 0,
     minimum_liquidity: 0,
     ticket_price: 0,
-    distribution: new Array(Distribution.LENGTH).fill(0),
+    distribution: [50, 50, 0, 0, 0, 0, 0],
     uri: "",
     pagename: "",
     description: "",
@@ -727,6 +726,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     max_transfer_fee: 0,
     permanent_delegate: null,
     transfer_hook_program: null,
+    launch_type: 0,
 };
 
 export class myU64 {
@@ -867,14 +867,14 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
- 
+
     const banner_url = new_launch_data.banner_file ? URL.createObjectURL(new_launch_data.banner_file) : null;
     const icon_url = new_launch_data.icon_file ? URL.createObjectURL(new_launch_data.icon_file) : null;
 
     const meta: LaunchMetaEnum & { __kind: "Raffle" } = {
         __kind: "Raffle",
         Raffle: {},
-        FCFS: {}
+        FCFS: {},
     };
     const data = new LaunchData(
         1,
@@ -959,6 +959,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         max_transfer_fee: 0,
         permanent_delegate: null,
         transfer_hook_program: null,
+        launch_type: 0,
     };
 
     return data;
@@ -1112,7 +1113,7 @@ class CreateLaunch_Instruction {
         readonly max_transfer_fee: bignum,
         readonly extensions: number,
         readonly amm_provider: number,
-        readonly launch_type: number
+        readonly launch_type: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1135,7 +1136,6 @@ class CreateLaunch_Instruction {
             ["extensions", u8],
             ["amm_provider", u8],
             ["launch_type", u8],
-
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1156,7 +1156,7 @@ class CreateLaunch_Instruction {
                 args.max_transfer_fee!,
                 args.extensions!,
                 args.amm_provider!,
-                args.launch_type!
+                args.launch_type!,
             ),
         "CreateLaunch_Instruction",
     );
@@ -1190,7 +1190,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.max_transfer_fee,
         extensions,
         new_launch_data.amm_provider,
-        0
+        new_launch_data.launch_type,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -1236,6 +1236,7 @@ class EditLaunch_Instruction {
 }
 
 export function serialise_EditLaunch_instruction(new_launch_data: LaunchDataUserInput): Buffer {
+    console.log(new_launch_data.distribution);
     const data = new EditLaunch_Instruction(
         LaunchInstruction.edit_launch,
         new_launch_data.description,

@@ -7,7 +7,7 @@ import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import { CollectionData } from "../../components/collection/collectionState";
 import { PublicKey } from "@solana/web3.js";
-import { AssetWithMetadata } from "./pepemon";
+import { AssetWithMetadata } from "../collection/[pageName]";
 
 interface RecievedAssetModalProps {
     isOpened: boolean;

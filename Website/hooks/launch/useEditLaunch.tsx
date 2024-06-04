@@ -21,6 +21,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { generatePubKey, getRaydiumPrograms, getMarketSeedBase, getLaunchOBMAccount } from "../raydium/utils";
 import { Liquidity } from "@raydium-io/raydium-sdk";
+import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -87,26 +88,9 @@ const useEditLaunch = () => {
             PROGRAM,
         )[0];
 
-        const market = await generatePubKey({
-            fromPublicKey: wallet.publicKey,
-            seed: getMarketSeedBase(launch_data) + "1",
-            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
-        });
-
-        let raydium_base_account = Liquidity.getAssociatedBaseVault({
-            programId: getRaydiumPrograms(Config).AmmV4,
-            marketId: market.publicKey,
-        });
-        let raydium_quote_account = Liquidity.getAssociatedQuoteVault({
-            programId: getRaydiumPrograms(Config).AmmV4,
-            marketId: market.publicKey,
-        });
-
-        let market_id = await getLaunchOBMAccount(Config, launch_data);
-        let raydium_lp_mint_account = Liquidity.getAssociatedLpMint({
-            programId: getRaydiumPrograms(Config).AmmV4,
-            marketId: market_id.publicKey,
-        });
+        let raydium_base_account = getAMMBaseAccount(token_mint_pubkey, wrapped_sol_mint);
+        let raydium_quote_account = getAMMQuoteAccount(token_mint_pubkey, wrapped_sol_mint);
+        let raydium_lp_mint_account = getLPMintAccount(token_mint_pubkey, wrapped_sol_mint);
 
         let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
 

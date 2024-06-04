@@ -66,7 +66,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
-    const [tokenProgram, setTokenProgram] = useState<string>((newLaunchData.current.token_program === null || newLaunchData.current.token_program.equals(TOKEN_2022_PROGRAM_ID)) ? "2022" : "classic");
+    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
@@ -289,9 +289,9 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         }
 
         let decimals = parseInt(decimal);
-         if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
-             toast.error("Invalid decimal places (must be between 1 and 9)");
-             return false;
+        if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
+            toast.error("Invalid decimal places (must be between 1 and 9)");
+            return false;
         }
 
         newLaunchData.current.token_keypair = Keypair.generate();
@@ -300,8 +300,9 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         newLaunchData.current.symbol = symbol;
         newLaunchData.current.displayImg = displayImg;
         newLaunchData.current.total_supply = parseInt(totalSupply);
+        newLaunchData.current.token_program = TOKEN_2022_PROGRAM_ID;
 
-        if (!simpleLaunch) { 
+        if (!simpleLaunch) {
             newLaunchData.current.decimals = decimals;
             newLaunchData.current.num_mints = parseInt(mints);
             newLaunchData.current.ticket_price = parseFloat(ticketPrice);
@@ -319,30 +320,26 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                 newLaunchData.current.transfer_hook_program = new PublicKey(transferHookID);
             }
 
-            newLaunchData.current.token_program = tokenProgram === "2022" ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
-
             if (tokenStart !== "") {
                 // Call tokenGrind() and wait for it to finish
                 await tokenGrind();
             } else {
                 setGrindComplete(true);
             }
-        }
-        else {
+        } else {
+            newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
             newLaunchData.current.decimals = 9;
             newLaunchData.current.num_mints = 400;
             newLaunchData.current.ticket_price = 0.05;
             newLaunchData.current.minimum_liquidity = Math.round(newLaunchData.current.num_mints * newLaunchData.current.ticket_price);
 
-            console.log("rewards suuply", rewardsSupply)
-            if (rewardsSupply === "0") {
-                newLaunchData.current.distribution = [50,50,0,0,0,0,0];
-            }
-            else if (rewardsSupply === "5") {
-                newLaunchData.current.distribution = [47,48,5,0,0,0,0];
-            }
-            else if (rewardsSupply === "10") {
-                newLaunchData.current.distribution = [45,45,10,0,0,0,0];
+            console.log("rewards suuply", rewardsSupply);
+            if (rewardsSupply === "none") {
+                newLaunchData.current.distribution = [50, 50, 0, 0, 0, 0, 0];
+            } else if (rewardsSupply === "5") {
+                newLaunchData.current.distribution = [47, 48, 5, 0, 0, 0, 0];
+            } else if (rewardsSupply === "10") {
+                newLaunchData.current.distribution = [45, 45, 10, 0, 0, 0, 0];
             }
 
             newLaunchData.current.transfer_fee = 0;
@@ -350,8 +347,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
             newLaunchData.current.permanent_delegate = null;
             newLaunchData.current.transfer_hook_program = null;
-            
-            newLaunchData.current.token_program = TOKEN_PROGRAM_ID;
 
             setGrindComplete(true);
         }
@@ -506,7 +501,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
-
                         <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                             <HStack spacing={0} className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
@@ -552,60 +546,95 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                         </HStack>
 
                         {simpleLaunch ? (
-                            <HStack spacing={6} className={styles.eachField} mt={3}>
-                                <HStack>
-                                    <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
-                                    <Image
-                                        width={30}
-                                        height={30}
-                                        src="/images/help.png"
-                                        alt="Help"
-                                        onClick={openTooltip}
-                                        style={{ cursor: "pointer" }}
-                                    />
-                                    <div className={`${styles.textLabel} font-face-kg`}>:</div>
-                                </HStack>
-                                <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
-                                    <Stack direction="row" gap={8}>
-                                        <Radio value="none" color="white">
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
-                                                None
-                                            </Text>
-                                        </Radio>
-
-                                        <Radio value="5">
-                                            <Tooltip
-                                                label="Allocate 5% of the supply to Let's Cook users trading your token."
-                                                hasArrow
-                                                fontSize="large"
-                                                offset={[0, 10]}
-                                            >
-                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
-                                                    5%
-                                                </Text>
-                                            </Tooltip>
-                                        </Radio>
-                                        <Radio value="10">
-                                            <Tooltip
-                                                label="Allocate 10% of the supply to Let's Cook users trading your token."
-                                                hasArrow
-                                                fontSize="large"
-                                                offset={[0, 10]}
-                                            >
-                                                <Text
-                                                    align="center"
-                                                    color="white"
-                                                    m={0}
-                                                    className="font-face-rk"
-                                                    fontSize={lg ? "large" : "x-large"}
+                            <>
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                        Launch Type:
+                                    </div>
+                                    <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
+                                        <Stack direction="row" gap={5}>
+                                            <Radio value="FCFS" color="white">
+                                                <Tooltip
+                                                    label="Launch ends as soon as it is funded, first come first serve."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
                                                 >
-                                                    10%
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        FCFS
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="Raffle">
+                                                <Tooltip
+                                                    label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Raffle
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
+                                <HStack spacing={6} className={styles.eachField} mt={3}>
+                                    <HStack>
+                                        <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
+                                        <Image
+                                            width={30}
+                                            height={30}
+                                            src="/images/help.png"
+                                            alt="Help"
+                                            onClick={openTooltip}
+                                            style={{ cursor: "pointer" }}
+                                        />
+                                        <div className={`${styles.textLabel} font-face-kg`}>:</div>
+                                    </HStack>
+                                    <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
+                                        <Stack direction="row" gap={8}>
+                                            <Radio value="none" color="white">
+                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                                    None
                                                 </Text>
-                                            </Tooltip>
-                                        </Radio>
-                                    </Stack>
-                                </RadioGroup>
-                            </HStack>
+                                            </Radio>
+
+                                            <Radio value="5">
+                                                <Tooltip
+                                                    label="Allocate 5% of the supply to Let's Cook users trading your token."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                                        5%
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="10">
+                                                <Tooltip
+                                                    label="Allocate 10% of the supply to Let's Cook users trading your token."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text
+                                                        align="center"
+                                                        color="white"
+                                                        m={0}
+                                                        className="font-face-rk"
+                                                        fontSize={lg ? "large" : "x-large"}
+                                                    >
+                                                        10%
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
+                            </>
                         ) : (
                             <VStack w="100%">
                                 <Divider />
@@ -613,39 +642,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                     <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
                                         Token Extensions:
                                     </Text>
-                                    <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                            Token Program:
-                                        </div>
-                                        <RadioGroup ml="5" onChange={setTokenProgram} value={tokenProgram}>
-                                            <Stack direction="row" gap={5}>
-                                                <Radio value="2022" color="white">
-                                                    <Tooltip
-                                                        label="Uses the new token 2022 program (supports extensions)"
-                                                        hasArrow
-                                                        fontSize="large"
-                                                        offset={[0, 10]}
-                                                    >
-                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                            Token 2022
-                                                        </Text>
-                                                    </Tooltip>
-                                                </Radio>
-                                                <Radio value="classic">
-                                                    <Tooltip
-                                                        label="Uses the original spl token program (no extension support)."
-                                                        hasArrow
-                                                        fontSize="large"
-                                                        offset={[0, 10]}
-                                                    >
-                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                            Classic
-                                                        </Text>
-                                                    </Tooltip>
-                                                </Radio>
-                                            </Stack>
-                                        </RadioGroup>
-                                    </HStack>
                                     <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                                         <HStack spacing={0} className={styles.eachField}>
                                             <div
@@ -657,7 +653,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
                                             <div className={styles.textLabelInput}>
                                                 <Input
-                                                    disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
+                                                    disabled={newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
@@ -679,7 +675,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
                                             <div className={styles.textLabelInput}>
                                                 <Input
-                                                    disabled={newLaunchData.current.edit_mode === true || tokenProgram == "classic"}
+                                                    disabled={newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     placeholder="Max number of tokens taxed in a single transaction"
@@ -700,11 +696,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={
-                                                            newLaunchData.current.edit_mode === true ||
-                                                            isCustomProgramId ||
-                                                            tokenProgram == "classic"
-                                                        }
+                                                        disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Permanent Delegate ID"
@@ -738,8 +730,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         disabled={
                                                             newLaunchData.current.edit_mode === true ||
                                                             isCustomProgramId ||
-                                                            permanentDelegate !== "" ||
-                                                            tokenProgram == "classic"
+                                                            permanentDelegate !== ""
                                                         }
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}

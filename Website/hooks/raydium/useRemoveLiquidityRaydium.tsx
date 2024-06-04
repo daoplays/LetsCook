@@ -12,26 +12,13 @@ import {
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import {
-    Token,
-    DEVNET_PROGRAM_ID,
-    MAINNET_PROGRAM_ID,
-    Liquidity,
-    SYSTEM_PROGRAM_ID,
-    RENT_PROGRAM_ID,
-    LOOKUP_TABLE_CACHE,
-    LiquidityPoolKeys,
-    TokenAmount,
-    Percent,
-    jsonInfo2PoolKeys,
-    LiquidityPoolJsonInfo,
-} from "@raydium-io/raydium-sdk";
+import { Token } from "@raydium-io/raydium-sdk";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
@@ -45,18 +32,25 @@ import {
 } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
-import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
+import { BeetStruct, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { getRaydiumPrograms } from "./utils";
+import {
+    RAYDIUM_PROGRAM,
+    getAMMBaseAccount,
+    getAMMQuoteAccount,
+    getAuthorityAccount,
+    getLPMintAccount,
+    getPoolStateAccount,
+} from "./useCreateCP";
+import { MEMO_PROGRAM_ID } from "@raydium-io/raydium-sdk-v2";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
 
-const DEFAULT_TOKEN = {
-    WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
-};
-
 function serialise_raydium_remove_liquidity_instruction(amount: number): Buffer {
-    const data = new RaydiumRemoveLiquidity_Instruction(4, amount);
+    let discriminator: number[] = [183, 18, 70, 156, 148, 109, 161, 34];
+
+    const data = new RaydiumRemoveLiquidity_Instruction(discriminator, amount, 0, 0);
 
     const [buf] = RaydiumRemoveLiquidity_Instruction.struct.serialize(data);
 
@@ -65,34 +59,25 @@ function serialise_raydium_remove_liquidity_instruction(amount: number): Buffer 
 
 class RaydiumRemoveLiquidity_Instruction {
     constructor(
-        readonly instruction: number,
-        readonly amount: bignum,
+        readonly discriminator: number[],
+        readonly lp_amount: bignum,
+        readonly min_token_0: bignum,
+        readonly min_token_1: bignum,
     ) {}
 
     static readonly struct = new BeetStruct<RaydiumRemoveLiquidity_Instruction>(
         [
-            ["instruction", u8],
-            ["amount", u64],
+            ["discriminator", uniformFixedSizeArray(u8, 8)],
+            ["lp_amount", u64],
+            ["min_token_0", u64],
+            ["min_token_1", u64],
         ],
-        (args) => new RaydiumRemoveLiquidity_Instruction(args.instruction!, args.amount!),
+        (args) => new RaydiumRemoveLiquidity_Instruction(args.discriminator!, args.lp_amount!, args.min_token_0!, args.min_token_1!),
         "RaydiumRemoveLiquidity_Instruction",
     );
 }
 
-async function generatePubKey({
-    fromPublicKey,
-    seed,
-    programId = TOKEN_PROGRAM_ID,
-}: {
-    fromPublicKey: PublicKey;
-    seed: string;
-    programId: PublicKey;
-}) {
-    const publicKey = await PublicKey.createWithSeed(fromPublicKey, seed, programId);
-    return { publicKey, seed };
-}
-
-const useRemoveLiquidityRaydium = (launchData: LaunchData) => {
+const useRemoveLiquidityRaydium = (launch: LaunchData) => {
     const wallet = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -105,120 +90,98 @@ const useRemoveLiquidityRaydium = (launchData: LaunchData) => {
         setIsLoading(false);
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
-            alert("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
 
-        if (Config.PROD) {
-            let response = await make_tweet(launchData.page_name);
-            console.log(response);
-        }
+        toast.success("Transaction Successfull!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }, []);
 
     const RemoveLiquidityRaydium = async (lp_amount: number) => {
-        // if we have already done this then just skip this step
-        console.log(launchData);
-
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
-        getRaydiumPrograms;
-        const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
-        const targetMargetId = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "1",
-            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
-        });
+        let base_mint = launch.keys[LaunchKeys.MintAddress];
+        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        const poolInfo = Liquidity.getAssociatedPoolKeys({
-            version: 4,
-            marketVersion: 3,
-            marketId: targetMargetId.publicKey,
-            baseMint: launchData.keys[LaunchKeys.MintAddress],
-            quoteMint: quoteToken.mint,
-            baseDecimals: launchData.decimals,
-            quoteDecimals: quoteToken.decimals,
-            programId: getRaydiumPrograms(Config).AmmV4,
-            marketProgramId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
-        });
+        const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
+            ? [quote_mint, base_mint]
+            : [base_mint, quote_mint];
+
+        let authority = getAuthorityAccount();
+        let pool_state = getPoolStateAccount(base_mint, quote_mint);
+
+        let lp_mint = getLPMintAccount(base_mint, quote_mint);
+        let amm_0 = token0.equals(base_mint) ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
+        let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
 
         let user_base_account = await getAssociatedTokenAddress(
-            launchData.keys[LaunchKeys.MintAddress], // mint
+            launch.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
-            quoteToken.mint, // mint
+            quote_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
         );
+
+        let user_0 = token0.equals(base_mint) ? user_base_account : user_quote_account;
+        let user_1 = token0.equals(base_mint) ? user_quote_account : user_base_account;
 
         let user_lp_account = await getAssociatedTokenAddress(
-            poolInfo.lpMint, // mint
+            lp_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
         );
 
-        const eventQueue = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "3",
-            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
-        });
-
-        const bids = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "4",
-            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
-        });
-        const asks = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "5",
-            programId: getRaydiumPrograms(Config).OPENBOOK_MARKET,
-        });
-
-        const baseVault = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "6",
-            programId: TOKEN_PROGRAM_ID,
-        });
-        const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
-
         const keys = [
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.id, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.openOrders, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
-
-            { pubkey: poolInfo.withdrawQueue, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.lpVault, isSigner: false, isWritable: true },
-
-            { pubkey: getRaydiumPrograms(Config).OPENBOOK_MARKET, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
-            { pubkey: baseVault.publicKey, isSigner: false, isWritable: false },
-            { pubkey: quoteVault.publicKey, isSigner: false, isWritable: false },
-            { pubkey: launchData.keys[LaunchKeys.Seller], isSigner: false, isWritable: false },
-
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
+            { pubkey: authority, isSigner: false, isWritable: false },
+            { pubkey: pool_state, isSigner: false, isWritable: true },
             { pubkey: user_lp_account, isSigner: false, isWritable: true },
-            { pubkey: user_base_account, isSigner: false, isWritable: true },
-            { pubkey: user_quote_account, isSigner: false, isWritable: true },
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_0, isSigner: false, isWritable: true },
+            { pubkey: user_1, isSigner: false, isWritable: true },
+            { pubkey: amm_0, isSigner: false, isWritable: true },
+            { pubkey: amm_1, isSigner: false, isWritable: true },
 
-            { pubkey: eventQueue.publicKey, isSigner: false, isWritable: false },
-            { pubkey: bids.publicKey, isSigner: false, isWritable: false },
-            { pubkey: asks.publicKey, isSigner: false, isWritable: false },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: token0, isSigner: false, isWritable: false },
+            { pubkey: token1, isSigner: false, isWritable: false },
+            { pubkey: lp_mint, isSigner: false, isWritable: true },
+            { pubkey: MEMO_PROGRAM_ID, isSigner: false, isWritable: false },
         ];
 
-        let raydium_add_liquidity_data = serialise_raydium_remove_liquidity_instruction(lp_amount);
+        let raydium_remove_liquidity_data = serialise_raydium_remove_liquidity_instruction(lp_amount);
 
         const list_instruction = new TransactionInstruction({
             keys: keys,
-            programId: getRaydiumPrograms(Config).AmmV4,
-            data: raydium_add_liquidity_data,
+            programId: RAYDIUM_PROGRAM,
+            data: raydium_remove_liquidity_data,
         });
 
         let list_txArgs = await get_current_blockhash("");
@@ -237,6 +200,9 @@ const useRemoveLiquidityRaydium = (launchData: LaunchData) => {
             var transaction_response = await send_transaction("", encoded_transaction);
 
             let signature = transaction_response.result;
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, TIMEOUT);
 
             console.log("swap sig: ", signature);
         } catch (error) {

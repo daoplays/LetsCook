@@ -258,7 +258,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
-
         if (newCollectionData.current.icon_url == "" || newCollectionData.current.banner_url == "") {
             const uploadImageToArweave = toast.loading("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
@@ -281,7 +280,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 for (let i = 0; i < taggedFiles.length; i++) {
                     size += taggedFiles[i].size;
                 }
-                price = await irys.getPrice(Math.ceil(1.1*size));
+                price = await irys.getPrice(Math.ceil(1.1 * size));
             } catch (e) {
                 toast.update(uploadImageToArweave, {
                     render: e,
@@ -293,7 +292,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
                 return;
             }
-
 
             // console.log("balance_before", balance_before.toString());
             if (!newCollectionData.current.image_payment) {
@@ -392,9 +390,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                         newCollectionData.current.images_uploaded += 1;
                     }
                     console.log(newCollectionData.current.manifest);
-                }
-                catch(error) {
-                    console.log(error)
+                } catch (error) {
+                    console.log(error);
                     toast.update(uploadToArweave, {
                         render: "Error uploading images",
                         type: "error",
@@ -414,7 +411,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const manifestBlob = new Blob([manifestjsn], { type: "application/json" });
                 const manifestFile = new File([manifestBlob], "metadata.json");
 
-                let manifestPrice = await irys.getPrice(Math.ceil(1.1*manifestFile.size));
+                let manifestPrice = await irys.getPrice(Math.ceil(1.1 * manifestFile.size));
 
                 try {
                     let txArgs = await get_current_blockhash("");
@@ -547,7 +544,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
             const fundMetadata = toast.loading("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
             if (!newCollectionData.current.metadata_payment) {
-
                 try {
                     let txArgs = await get_current_blockhash("");
 

@@ -67,7 +67,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         signature_ws_id.current = null;
         setIsLoading(false);
-
+        console.log("transaction failed at ", new Date());
         toast.error("Transaction not processed, please try again", {
             type: "error",
             isLoading: false,
@@ -172,7 +172,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
             let signature = transaction_response.result;
 
-            console.log("mint nft sig: ", signature);
+            console.log("mint nft sig at ", new Date(), signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

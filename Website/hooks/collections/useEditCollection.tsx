@@ -1,6 +1,12 @@
 import { Dispatch, SetStateAction, useState, useCallback, useRef } from "react";
 
-import { uInt32ToLEBytes, get_current_blockhash, send_transaction, serialise_EditLaunch_instruction, getRecentPrioritizationFees } from "../../components/Solana/state";
+import {
+    uInt32ToLEBytes,
+    get_current_blockhash,
+    send_transaction,
+    serialise_EditLaunch_instruction,
+    getRecentPrioritizationFees,
+} from "../../components/Solana/state";
 import { SOL_ACCOUNT_SEED, DEBUG, SYSTEM_KEY, PROGRAM, Config, DATA_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
@@ -50,7 +56,6 @@ const useEditCollection = () => {
         newCollectionData.current.manifest = null;
         newCollectionData.current.metadata_payment = false;
         newCollectionData.current.metadata_uploaded = false;
-
 
         await checkProgramData();
 

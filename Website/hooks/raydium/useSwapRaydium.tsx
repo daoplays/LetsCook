@@ -18,42 +18,36 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import {
-    Token,
-    DEVNET_PROGRAM_ID,
-    MAINNET_PROGRAM_ID,
-    Liquidity,
-    SYSTEM_PROGRAM_ID,
-    RENT_PROGRAM_ID,
-    LOOKUP_TABLE_CACHE,
-    LiquidityPoolKeys,
-    TokenAmount,
-    Percent,
-    jsonInfo2PoolKeys,
-    LiquidityPoolJsonInfo,
-} from "@raydium-io/raydium-sdk";
-
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
+import { LaunchKeys, TIMEOUT } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
-import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
-
-const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
+import { BeetStruct, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
+import {
+    RAYDIUM_PROGRAM,
+    getObservationAccount,
+    getAMMConfigAccount,
+    getAMMBaseAccount,
+    getAMMQuoteAccount,
+    getAuthorityAccount,
+    getLPMintAccount,
+    getPoolStateAccount,
+} from "./useCreateCP";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
 
-const DEFAULT_TOKEN = {
-    WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
-};
-
 function serialise_raydium_swap_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
+    let base_in_discriminator: number[] = [143, 190, 90, 218, 196, 30, 51, 222];
+    let base_out_discriminator: number[] = [55, 217, 98, 86, 163, 74, 180, 173];
+
+    let discriminator = order_type === 0 ? base_out_discriminator : base_in_discriminator;
     let inAmount = order_type === 0 ? sol_amount : token_amount;
     let outAmount = order_type === 0 ? token_amount : sol_amount;
 
-    const data = new RaydiumSwap_Instruction(LaunchInstruction.raydium_swap, order_type, inAmount, outAmount);
+    console.log("in and out:", inAmount, outAmount);
+    const data = new RaydiumSwap_Instruction(LaunchInstruction.raydium_swap, order_type, discriminator, inAmount, outAmount);
 
     const [buf] = RaydiumSwap_Instruction.struct.serialize(data);
 
@@ -64,6 +58,7 @@ class RaydiumSwap_Instruction {
     constructor(
         readonly instruction: number,
         readonly side: number,
+        readonly discriminator: number[],
         readonly in_amount: bignum,
         readonly out_amount: bignum,
     ) {}
@@ -72,10 +67,11 @@ class RaydiumSwap_Instruction {
         [
             ["instruction", u8],
             ["side", u8],
+            ["discriminator", uniformFixedSizeArray(u8, 8)],
             ["in_amount", u64],
             ["out_amount", u64],
         ],
-        (args) => new RaydiumSwap_Instruction(args.instruction!, args.side!, args.in_amount!, args.out_amount!),
+        (args) => new RaydiumSwap_Instruction(args.instruction!, args.side!, args.discriminator!, args.in_amount!, args.out_amount!),
         "RaydiumSwap_Instruction",
     );
 }
@@ -93,7 +89,7 @@ async function generatePubKey({
     return { publicKey, seed };
 }
 
-const useSwapRaydium = (launchData: LaunchData) => {
+const useSwapRaydium = (launch: LaunchData) => {
     const wallet = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -106,128 +102,103 @@ const useSwapRaydium = (launchData: LaunchData) => {
         setIsLoading(false);
         // if we have a subscription field check against ws_id
         if (result.err !== null) {
-            alert("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
 
-        if (Config.PROD) {
-            let response = await make_tweet(launchData.page_name);
-            console.log(response);
-        }
+        toast.success("Transaction Successfull!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }, []);
 
     const SwapRaydium = async (token_amount: number, sol_amount: number, order_type: number) => {
         // if we have already done this then just skip this step
-        console.log(launchData);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        const quoteToken = DEFAULT_TOKEN.WSOL; // RAY
+        let base_mint = launch.keys[LaunchKeys.MintAddress];
+        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        const seed_base = launchData.keys[LaunchKeys.MintAddress].toBase58().slice(0, 31);
-        const targetMargetId = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "1",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
+        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
-        const poolInfo = Liquidity.getAssociatedPoolKeys({
-            version: 4,
-            marketVersion: 3,
-            marketId: targetMargetId.publicKey,
-            baseMint: launchData.keys[LaunchKeys.MintAddress],
-            quoteMint: quoteToken.mint,
-            baseDecimals: launchData.decimals,
-            quoteDecimals: quoteToken.decimals,
-            programId: PROGRAMIDS.AmmV4,
-            marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-
-        let user_base_account = await getAssociatedTokenAddress(
-            launchData.keys[LaunchKeys.MintAddress], // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        let user_quote_account = await getAssociatedTokenAddress(
-            quoteToken.mint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        const bids = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "4",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-        const asks = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "5",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-
-        const eventQueue = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "3",
-            programId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-
-        const baseVault = await generatePubKey({
-            fromPublicKey: launchData.keys[LaunchKeys.Seller],
-            seed: seed_base + "6",
-            programId: TOKEN_PROGRAM_ID,
-        });
-        const quoteVault = await generatePubKey({ fromPublicKey: wallet.publicKey, seed: seed_base + "7", programId: TOKEN_PROGRAM_ID });
-
-        let inKey = order_type === 0 ? user_quote_account : user_base_account;
-        let outKey = order_type === 0 ? user_base_account : user_quote_account;
-
-        let inMint = order_type === 0 ? quoteToken.mint : launchData.keys[LaunchKeys.MintAddress];
-        let outMint = order_type === 0 ? launchData.keys[LaunchKeys.MintAddress] : quoteToken.mint;
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launchData.last_interaction)) / 24 / 60 / 60);
+        let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
         let date_bytes = uInt32ToLEBytes(current_date);
 
         let launch_date_account = PublicKey.findProgramAddressSync(
-            [launchData.keys[LaunchKeys.MintAddress].toBytes(), date_bytes, Buffer.from("LaunchDate")],
+            [base_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
             PROGRAM,
         )[0];
 
-        let user_date_account = PublicKey.findProgramAddressSync(
-            [launchData.keys[LaunchKeys.MintAddress].toBytes(), wallet.publicKey.toBytes(), date_bytes],
-            PROGRAM,
-        )[0];
+        let user_date_account = PublicKey.findProgramAddressSync([base_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
+
+        let authority = getAuthorityAccount();
+        let pool_state = getPoolStateAccount(base_mint, quote_mint);
+        let amm_config = getAMMConfigAccount();
+        let observation = getObservationAccount(base_mint, quote_mint);
+
+        let amm_input = order_type === 0 ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
+        let amm_output = order_type === 0 ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
+
+        let tp_input = order_type === 0 ? TOKEN_PROGRAM_ID : TOKEN_2022_PROGRAM_ID;
+        let tp_output = order_type === 0 ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+
+        let user_base_account = await getAssociatedTokenAddress(
+            launch.keys[LaunchKeys.MintAddress], // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            TOKEN_2022_PROGRAM_ID,
+        );
+
+        let user_quote_account = await getAssociatedTokenAddress(
+            quote_mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            TOKEN_PROGRAM_ID,
+        );
+
+        let user_input = order_type === 0 ? user_quote_account : user_base_account;
+        let user_output = order_type === 0 ? user_base_account : user_quote_account;
+
+        let mint_input = order_type === 0 ? quote_mint : base_mint;
+        let mint_output = order_type === 0 ? base_mint : quote_mint;
 
         const keys = [
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.id, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.openOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
+            { pubkey: authority, isSigner: false, isWritable: false },
+            { pubkey: amm_config, isSigner: false, isWritable: false },
+            { pubkey: pool_state, isSigner: false, isWritable: true },
+            { pubkey: user_input, isSigner: false, isWritable: true },
+            { pubkey: user_output, isSigner: false, isWritable: true },
+            { pubkey: amm_input, isSigner: false, isWritable: true },
+            { pubkey: amm_output, isSigner: false, isWritable: true },
 
-            { pubkey: poolInfo.marketProgramId, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.marketId, isSigner: false, isWritable: true },
-            { pubkey: bids.publicKey, isSigner: false, isWritable: true },
-            { pubkey: asks.publicKey, isSigner: false, isWritable: true },
-            { pubkey: eventQueue.publicKey, isSigner: false, isWritable: true },
-            { pubkey: baseVault.publicKey, isSigner: false, isWritable: true },
-            { pubkey: quoteVault.publicKey, isSigner: false, isWritable: true },
-            { pubkey: launchData.keys[LaunchKeys.Seller], isSigner: false, isWritable: true },
-
-            { pubkey: inKey, isSigner: false, isWritable: true },
-            { pubkey: outKey, isSigner: false, isWritable: true },
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: PROGRAMIDS.AmmV4, isSigner: false, isWritable: false },
-
+            { pubkey: tp_input, isSigner: false, isWritable: false },
+            { pubkey: tp_output, isSigner: false, isWritable: false },
+            { pubkey: mint_input, isSigner: false, isWritable: false },
+            { pubkey: mint_output, isSigner: false, isWritable: false },
+            { pubkey: observation, isSigner: false, isWritable: true },
+            { pubkey: RAYDIUM_PROGRAM, isSigner: false, isWritable: false },
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: inMint, isSigner: false, isWritable: true },
-            { pubkey: outMint, isSigner: false, isWritable: true },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
@@ -256,6 +227,9 @@ const useSwapRaydium = (launchData: LaunchData) => {
             var transaction_response = await send_transaction("", encoded_transaction);
 
             let signature = transaction_response.result;
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, TIMEOUT);
 
             console.log("swap sig: ", signature);
         } catch (error) {

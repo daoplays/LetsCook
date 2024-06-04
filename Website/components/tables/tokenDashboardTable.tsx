@@ -26,6 +26,7 @@ import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } f
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import useCreateMarket from "../../hooks/raydium/useCreateMarket";
+import useCreateCP from "../../hooks/raydium/useCreateCP";
 
 interface Header {
     text: string;
@@ -254,6 +255,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
     const { CreateMarket, isLoading: createMarketLoading } = useCreateMarket(launch);
+    const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(launch);
 
     const { newLaunchData } = useAppRoot();
 
@@ -288,7 +290,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             InitAMM();
         }
         if (launch.flags[LaunchFlags.AMMProvider] == 1) {
-            CreateMarket();
+            CreateCP();
         }
     };
 

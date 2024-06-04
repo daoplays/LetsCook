@@ -36,7 +36,6 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
 
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-
     const handleNameChange = (e) => {
         setName(e.target.value);
     };
@@ -141,11 +140,11 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         // if this is a simple launch we need to set a bunch of other stuff
         if (simpleLaunch) {
             let now = new Date();
-            let start = new Date(now.getTime() + 15*60000);
-            let end = new Date(start.getTime() + 24*60*60000);
-            
-            newLaunchData.current.opendate = start
-            newLaunchData.current.closedate = end
+            let start = new Date(now.getTime() + 15 * 60000);
+            let end = new Date(start.getTime() + 24 * 60 * 60000);
+
+            newLaunchData.current.opendate = start;
+            newLaunchData.current.closedate = end;
             newLaunchData.current.team_wallet = Config.COOK_FEES.toString();
             newLaunchData.current.amm_fee = 25;
             newLaunchData.current.amm_provider = 1;
@@ -325,15 +324,14 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
                         </VStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
-                            {simpleLaunch &&
-                            <HStack>
-                                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={(e) => preview(e)}>
-                                    PREVIEW
-                                </button>
-                            </HStack>
-                            }
+                            {simpleLaunch && (
+                                <HStack>
+                                    <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={(e) => preview(e)}>
+                                        PREVIEW
+                                    </button>
+                                </HStack>
+                            )}
                             <HStack spacing={3}>
-
                                 <button
                                     type="button"
                                     onClick={(e) => {
@@ -363,7 +361,6 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
             </VStack>
 
             <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
-
         </Center>
     );
 };

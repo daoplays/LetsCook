@@ -18,6 +18,28 @@ body {
     background-color: red;
 }
 
+::-webkit-scrollbar {
+    width: 7px;
+    height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: var(--lightestgrey);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background-color: #babac0;
+    border-radius: 16px;
+    border: 4px solid #fff;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 a {
     color: inherit;
     text-decoration: none;

@@ -7,7 +7,7 @@ import useMintRandom from "../../hooks/collections/useMintRandom";
 import { findCollection } from "../../components/collection/utils";
 import useAppRoot from "../../context/useAppRoot";
 import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
 import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
@@ -22,6 +22,7 @@ import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
 import Loader from "../../components/loader";
 import ReleaseModal from "./releaseModal";
+import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -29,11 +30,6 @@ const soundCollection = {
     throw: "/Throw.mp3",
     throwing: "/Throwing.mp3",
 };
-
-export interface AssetWithMetadata {
-    asset: AssetV1;
-    metadata: any;
-}
 
 const Pepemon = () => {
     const { xs, sm, md, lg } = useResponsive();
@@ -44,14 +40,11 @@ const Pepemon = () => {
     const { collectionList, mintData } = useAppRoot();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
-    const [out_amount, setOutAmount] = useState<number>(0);
     const [nft_balance, setNFTBalance] = useState<number>(0);
     const [token_balance, setTokenBalance] = useState<number>(0);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
-    const [token_amount, setTokenAmount] = useState<number>(0);
-    const [nft_amount, setNFTAmount] = useState<number>(0);
-    const [isTokenToNFT, setIsTokenToNFT] = useState(false);
+    const collection_key = useRef<PublicKey | null>(null);
 
     const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
@@ -60,6 +53,7 @@ const Pepemon = () => {
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
     const check_initial_collection = useRef<boolean>(true);
+    const check_initial_nft_balance = useRef<boolean>(true);
 
     const asset_received = useRef<AssetV1 | null>(null);
     const asset_image = useRef<string | null>(null);
@@ -87,37 +81,6 @@ const Pepemon = () => {
         }
     };
 
-    const check_nft_balance = useCallback(async () => {
-        if (launch === null || wallet === null || wallet.publicKey === null) return;
-
-        console.log("CHECKING NFT BALANCE");
-
-        const umi = createUmi(Config.RPC_NODE, "confirmed");
-
-        let collection_umiKey = publicKey(launch.keys[CollectionKeys.CollectionMint].toString());
-
-        const assets = await getAssetV1GpaBuilder(umi)
-            .whereField("key", Key.AssetV1)
-            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
-            .getDeserialized();
-
-        console.log(assets);
-        let valid_lookups = 0;
-        let owned_assets: AssetWithMetadata[] = [];
-        for (let i = 0; i < assets.length; i++) {
-            if (assets[i].owner.toString() === wallet.publicKey.toString()) {
-                valid_lookups += 1;
-                let uri_json = await fetch(assets[i].uri).then((res) => res.json());
-                let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
-                owned_assets.push(entry);
-            }
-        }
-        console.log("have ", valid_lookups, "addresses with balance");
-
-        setOwnedAssets(owned_assets);
-        setNFTBalance(valid_lookups);
-    }, [launch, wallet]);
-
     useEffect(() => {
         if (collectionList === null) return;
 
@@ -125,15 +88,13 @@ const Pepemon = () => {
 
         if (launch === null) return;
 
-        console.log("swap price", launch.swap_price.toString());
-
         if (check_initial_collection.current) {
+            console.log("check intitial cllection");
             setCollectionData(launch);
+            collection_key.current = launch.keys[CollectionKeys.CollectionMint];
             check_initial_collection.current = false;
         }
-
-        check_nft_balance();
-    }, [collectionList, check_nft_balance]);
+    }, [collectionList]);
 
     useEffect(() => {
         return () => {
@@ -241,6 +202,8 @@ const Pepemon = () => {
                         sound(soundCollection.success);
                         asset_received.current = null;
                     }
+
+                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -250,7 +213,7 @@ const Pepemon = () => {
             mint_nft.current = true;
             setAssignedNFT(updated_data);
         },
-        [launch, assigned_nft],
+        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
     );
 
     const check_user_token_update = useCallback(
@@ -261,7 +224,7 @@ const Pepemon = () => {
             let event_data = result.data;
             const [token_account] = TokenAccount.struct.deserialize(event_data);
             let amount = bignum_to_num(token_account.amount);
-            console.log("update quote amount", amount);
+            //console.log("update quote amount", amount);
 
             setTokenBalance(amount / Math.pow(10, launch.token_decimals));
         },
@@ -293,7 +256,7 @@ const Pepemon = () => {
         )[0];
 
         let assignment_data = await request_assignment_data(nft_assignment_account);
-        console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+        //console.log("check assignment", nft_assignment_account.toString(), assignment_data);
 
         check_initial_assignment.current = false;
         if (assignment_data === null) {
@@ -349,9 +312,16 @@ const Pepemon = () => {
         if (wallet === null || wallet.publicKey === null) {
             return;
         }
-        console.log("get initial assignment data");
-        get_assignment_data();
-    }, [launch, wallet, get_assignment_data]);
+
+        if (check_initial_assignment.current) {
+            get_assignment_data();
+        }
+
+        if (check_initial_nft_balance.current) {
+            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+            check_initial_nft_balance.current = false;
+        }
+    }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     const tiltShaking = `@keyframes tilt-shaking {
         0% { transform: translate(0, 0) rotate(0deg); }
@@ -372,7 +342,7 @@ const Pepemon = () => {
         for (let i = 0; i < launch.plugins.length; i++) {
             if (launch.plugins[i]["__kind"] === "MintProbability") {
                 prob_string = `${launch.plugins[i]["mint_prob"].toString()}%`;
-                console.log("Have mint prob", prob_string);
+                //console.log("Have mint prob", prob_string);
             }
         }
     }
