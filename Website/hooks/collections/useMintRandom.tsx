@@ -126,6 +126,15 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             PROGRAM,
         )[0];
 
+        //console.log("get assignment data");
+        let assignment_data = await request_assignment_data(nft_assignment_account);
+
+        console.log("assignment randoms", assignment_data.random_address.toString());
+        if (assignment_data === null) {
+            // console.log("no assignment data found");
+            return;
+        }
+
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let nft_mint_keypair = new Keypair();
@@ -170,27 +179,15 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
-
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
-
-            { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
-
             { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: nft_mint_account, isSigner: true, isWritable: true },
 
-            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: CORE, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-            { pubkey: mint_account.program, isSigner: false, isWritable: true },
+            { pubkey: assignment_data.random_address, isSigner: false, isWritable: false },
         ];
 
         if (transfer_hook_program_account !== null) {

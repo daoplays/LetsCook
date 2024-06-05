@@ -255,7 +255,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
     const { CreateMarket, isLoading: createMarketLoading } = useCreateMarket(launch);
-    const { CreateCP, isLoading: initRaydiumLoading} = useCreateCP(launch);
+    const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(launch);
 
     const { newLaunchData } = useAppRoot();
 

@@ -216,7 +216,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
-        
+
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 

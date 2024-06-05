@@ -261,7 +261,6 @@ const usePlaceMarketOrder = () => {
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(instruction);
 

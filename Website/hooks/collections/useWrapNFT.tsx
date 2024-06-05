@@ -99,7 +99,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         });
     }, []);
 
-    const WrapNFT = async (asset_key : PublicKey | null) => {
+    const WrapNFT = async (asset_key: PublicKey | null) => {
         console.log("in wrap nft");
 
         if (wallet.signTransaction === undefined) {
@@ -127,7 +127,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-        let wrapped_nft_key : PublicKey;
+        let wrapped_nft_key: PublicKey;
 
         if (asset_key === null) {
             const umi = createUmi(Config.RPC_NODE, "confirmed");
@@ -157,8 +157,7 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
             let wrapped_index = Math.floor(Math.random() * valid_assets.length);
             wrapped_nft_key = new PublicKey(valid_assets[wrapped_index].publicKey.toString());
-        }
-        else {
+        } else {
             wrapped_nft_key = asset_key;
         }
 

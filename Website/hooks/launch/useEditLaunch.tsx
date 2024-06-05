@@ -90,7 +90,7 @@ const useEditLaunch = () => {
 
         let raydium_base_account = getAMMBaseAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_quote_account = getAMMQuoteAccount(token_mint_pubkey, wrapped_sol_mint);
-        let raydium_lp_mint_account = getLPMintAccount(token_mint_pubkey, wrapped_sol_mint)
+        let raydium_lp_mint_account = getLPMintAccount(token_mint_pubkey, wrapped_sol_mint);
 
         let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
 

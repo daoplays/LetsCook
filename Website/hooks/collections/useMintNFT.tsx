@@ -51,7 +51,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
-        toast.success("Successfuly Claimed NFT!", {
+        toast.success("Transaction Successfull!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
@@ -67,7 +67,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         signature_ws_id.current = null;
         setIsLoading(false);
-
+        console.log("transaction failed at ", new Date());
         toast.error("Transaction not processed, please try again", {
             type: "error",
             isLoading: false,
@@ -116,10 +116,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         setIsLoading(true);
 
-        let nft_pubkey = PublicKey.findProgramAddressSync(
-            [launchData.keys[CollectionKeys.CollectionMint].toBytes(), uInt32ToLEBytes(assignment_data.nft_index), Buffer.from("Asset")],
-            PROGRAM,
-        )[0];
+        let asset_keypair = new Keypair();
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
@@ -135,7 +132,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: nft_pubkey, isSigner: false, isWritable: true },
+            { pubkey: asset_keypair.publicKey, isSigner: true, isWritable: true },
 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
 
@@ -146,6 +143,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
@@ -164,6 +162,8 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         transaction.add(list_instruction);
 
+        transaction.partialSign(asset_keypair);
+
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());
@@ -172,7 +172,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
             let signature = transaction_response.result;
 
-            console.log("mint nft sig: ", signature);
+            console.log("mint nft sig at ", new Date(), signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

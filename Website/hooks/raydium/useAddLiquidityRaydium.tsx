@@ -18,9 +18,7 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import {
-    Token,
-} from "@raydium-io/raydium-sdk";
+import { Token } from "@raydium-io/raydium-sdk";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
@@ -36,7 +34,14 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { BeetStruct, bignum, fixedSizeArray, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { RaydiumCPMM, getRaydiumPrograms } from "./utils";
-import { RAYDIUM_PROGRAM, getAMMBaseAccount, getAMMQuoteAccount, getAuthorityAccount, getLPMintAccount, getPoolStateAccount } from "./useCreateCP";
+import {
+    RAYDIUM_PROGRAM,
+    getAMMBaseAccount,
+    getAMMQuoteAccount,
+    getAuthorityAccount,
+    getLPMintAccount,
+    getPoolStateAccount,
+} from "./useCreateCP";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -45,10 +50,8 @@ const DEFAULT_TOKEN = {
     WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
 };
 
-function serialise_raydium_add_liquidity_instruction(lp_amount : number, base_amount: number, quote_amount: number): Buffer {
-    let discriminator : number[] = [242, 35, 198, 137, 82, 225, 242, 182]
-
-
+function serialise_raydium_add_liquidity_instruction(lp_amount: number, base_amount: number, quote_amount: number): Buffer {
+    let discriminator: number[] = [242, 35, 198, 137, 82, 225, 242, 182];
 
     console.log("max:", base_amount, quote_amount);
     const data = new RaydiumAddLiquidity_Instruction(discriminator, lp_amount, base_amount, quote_amount);
@@ -77,7 +80,6 @@ class RaydiumAddLiquidity_Instruction {
         "RaydiumAddLiquidity_Instruction",
     );
 }
-
 
 const useAddLiquidityRaydium = (launch: LaunchData) => {
     const wallet = useWallet();
@@ -124,49 +126,44 @@ const useAddLiquidityRaydium = (launch: LaunchData) => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        let base_mint = launch.keys[LaunchKeys.MintAddress]
-        let quote_mint = new PublicKey('So11111111111111111111111111111111111111112');
+        let base_mint = launch.keys[LaunchKeys.MintAddress];
+        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
-          ? [quote_mint, base_mint]
-          : [base_mint, quote_mint]
-    
-    
-        let authority = getAuthorityAccount()
-        let pool_state = getPoolStateAccount(base_mint, quote_mint)
-    
-    
-        let lp_mint = getLPMintAccount(base_mint, quote_mint)
-        let amm_0 = token0.equals(base_mint) ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint)
-        let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint)
-    
-        
+            ? [quote_mint, base_mint]
+            : [base_mint, quote_mint];
+
+        let authority = getAuthorityAccount();
+        let pool_state = getPoolStateAccount(base_mint, quote_mint);
+
+        let lp_mint = getLPMintAccount(base_mint, quote_mint);
+        let amm_0 = token0.equals(base_mint) ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
+        let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
+
         let user_base_account = await getAssociatedTokenAddress(
             launch.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID
+            TOKEN_2022_PROGRAM_ID,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
             quote_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID
+            TOKEN_PROGRAM_ID,
         );
 
-        let user_0 = token0.equals(base_mint) ? user_base_account : user_quote_account
-        let user_1 = token0.equals(base_mint) ? user_quote_account : user_base_account
+        let user_0 = token0.equals(base_mint) ? user_base_account : user_quote_account;
+        let user_1 = token0.equals(base_mint) ? user_quote_account : user_base_account;
 
-        
         let user_lp_account = await getAssociatedTokenAddress(
             lp_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID
+            TOKEN_PROGRAM_ID,
         );
 
-       
         const keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
             { pubkey: authority, isSigner: false, isWritable: false },

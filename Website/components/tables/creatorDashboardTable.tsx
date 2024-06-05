@@ -257,7 +257,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: initAMMLoading } = useInitAMM(launch);
     const { newLaunchData } = useAppRoot();
-    const { CreateCP, isLoading: initRaydiumLoading} = useCreateCP(launch);
+    const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(launch);
 
     const [isEditing, setIsEditing] = useState(false);
 

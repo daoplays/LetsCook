@@ -275,7 +275,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
         if (Math.pow(10, parseInt(decimal)) * parseInt(totalSupply) * (distribution[Distribution.Raffle] / 100) < parseInt(mints)) {
             toast.error("Not enough tokens to support the raffle");
-            //return false;
+            return false;
         }
 
         if (parseInt(totalSupply) < 10) {
@@ -289,9 +289,9 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         }
 
         let decimals = parseInt(decimal);
-         if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
-             toast.error("Invalid decimal places (must be between 1 and 9)");
-             return false;
+        if (isNaN(decimals) || decimals <= 0 || decimals > 9) {
+            toast.error("Invalid decimal places (must be between 1 and 9)");
+            return false;
         }
 
         newLaunchData.current.token_keypair = Keypair.generate();
@@ -302,7 +302,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
         newLaunchData.current.total_supply = parseInt(totalSupply);
         newLaunchData.current.token_program = TOKEN_2022_PROGRAM_ID;
 
-        if (!simpleLaunch) { 
+        if (!simpleLaunch) {
             newLaunchData.current.decimals = decimals;
             newLaunchData.current.num_mints = parseInt(mints);
             newLaunchData.current.ticket_price = parseFloat(ticketPrice);
@@ -326,23 +326,20 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
             } else {
                 setGrindComplete(true);
             }
-        }
-        else {
+        } else {
             newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
             newLaunchData.current.decimals = 9;
             newLaunchData.current.num_mints = 400;
             newLaunchData.current.ticket_price = 0.05;
             newLaunchData.current.minimum_liquidity = Math.round(newLaunchData.current.num_mints * newLaunchData.current.ticket_price);
 
-            console.log("rewards suuply", rewardsSupply)
+            console.log("rewards suuply", rewardsSupply);
             if (rewardsSupply === "none") {
-                newLaunchData.current.distribution = [50,50,0,0,0,0,0];
-            }
-            else if (rewardsSupply === "5") {
-                newLaunchData.current.distribution = [47,48,5,0,0,0,0];
-            }
-            else if (rewardsSupply === "10") {
-                newLaunchData.current.distribution = [45,45,10,0,0,0,0];
+                newLaunchData.current.distribution = [50, 50, 0, 0, 0, 0, 0];
+            } else if (rewardsSupply === "5") {
+                newLaunchData.current.distribution = [47, 48, 5, 0, 0, 0, 0];
+            } else if (rewardsSupply === "10") {
+                newLaunchData.current.distribution = [45, 45, 10, 0, 0, 0, 0];
             }
 
             newLaunchData.current.transfer_fee = 0;
@@ -350,7 +347,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
             newLaunchData.current.permanent_delegate = null;
             newLaunchData.current.transfer_hook_program = null;
-            
 
             setGrindComplete(true);
         }
@@ -551,93 +547,93 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
 
                         {simpleLaunch ? (
                             <>
-                            <HStack spacing={0} className={styles.eachField}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                Launch Type:
-                            </div>
-                            <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
-                                <Stack direction="row" gap={5}>
-                                    <Radio value="FCFS" color="white">
-                                        <Tooltip
-                                            label="Launch ends as soon as it is funded, first come first serve."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                FCFS
-                                            </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                    <Radio value="Raffle">
-                                        <Tooltip
-                                            label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                Raffle
-                                            </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                </Stack>
-                            </RadioGroup>
-                        </HStack>
-                            <HStack spacing={6} className={styles.eachField} mt={3}>
-                                <HStack>
-                                    <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
-                                    <Image
-                                        width={30}
-                                        height={30}
-                                        src="/images/help.png"
-                                        alt="Help"
-                                        onClick={openTooltip}
-                                        style={{ cursor: "pointer" }}
-                                    />
-                                    <div className={`${styles.textLabel} font-face-kg`}>:</div>
-                                </HStack>
-                                <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
-                                    <Stack direction="row" gap={8}>
-                                        <Radio value="none" color="white">
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
-                                                None
-                                            </Text>
-                                        </Radio>
-
-                                        <Radio value="5">
-                                            <Tooltip
-                                                label="Allocate 5% of the supply to Let's Cook users trading your token."
-                                                hasArrow
-                                                fontSize="large"
-                                                offset={[0, 10]}
-                                            >
-                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
-                                                    5%
-                                                </Text>
-                                            </Tooltip>
-                                        </Radio>
-                                        <Radio value="10">
-                                            <Tooltip
-                                                label="Allocate 10% of the supply to Let's Cook users trading your token."
-                                                hasArrow
-                                                fontSize="large"
-                                                offset={[0, 10]}
-                                            >
-                                                <Text
-                                                    align="center"
-                                                    color="white"
-                                                    m={0}
-                                                    className="font-face-rk"
-                                                    fontSize={lg ? "large" : "x-large"}
+                                <HStack spacing={0} className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                        Launch Type:
+                                    </div>
+                                    <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
+                                        <Stack direction="row" gap={5}>
+                                            <Radio value="FCFS" color="white">
+                                                <Tooltip
+                                                    label="Launch ends as soon as it is funded, first come first serve."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
                                                 >
-                                                    10%
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        FCFS
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="Raffle">
+                                                <Tooltip
+                                                    label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        Raffle
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
+                                <HStack spacing={6} className={styles.eachField} mt={3}>
+                                    <HStack>
+                                        <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>
+                                        <Image
+                                            width={30}
+                                            height={30}
+                                            src="/images/help.png"
+                                            alt="Help"
+                                            onClick={openTooltip}
+                                            style={{ cursor: "pointer" }}
+                                        />
+                                        <div className={`${styles.textLabel} font-face-kg`}>:</div>
+                                    </HStack>
+                                    <RadioGroup onChange={setRewardsSupply} value={rewardsSupply}>
+                                        <Stack direction="row" gap={8}>
+                                            <Radio value="none" color="white">
+                                                <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                                    None
                                                 </Text>
-                                            </Tooltip>
-                                        </Radio>
-                                    </Stack>
-                                </RadioGroup>
-                            </HStack>
+                                            </Radio>
+
+                                            <Radio value="5">
+                                                <Tooltip
+                                                    label="Allocate 5% of the supply to Let's Cook users trading your token."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "large" : "x-large"}>
+                                                        5%
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="10">
+                                                <Tooltip
+                                                    label="Allocate 10% of the supply to Let's Cook users trading your token."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text
+                                                        align="center"
+                                                        color="white"
+                                                        m={0}
+                                                        className="font-face-rk"
+                                                        fontSize={lg ? "large" : "x-large"}
+                                                    >
+                                                        10%
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </HStack>
                             </>
                         ) : (
                             <VStack w="100%">
@@ -700,10 +696,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={
-                                                            newLaunchData.current.edit_mode === true ||
-                                                            isCustomProgramId
-                                                        }
+                                                        disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Permanent Delegate ID"

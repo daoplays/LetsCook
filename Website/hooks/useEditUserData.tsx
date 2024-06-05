@@ -1,6 +1,12 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
 
-import { LaunchDataUserInput, getRecentPrioritizationFees, get_current_blockhash, send_transaction, serialise_EditUser_instruction } from "../components/Solana/state";
+import {
+    LaunchDataUserInput,
+    getRecentPrioritizationFees,
+    get_current_blockhash,
+    send_transaction,
+    serialise_EditUser_instruction,
+} from "../components/Solana/state";
 import { DEBUG, SYSTEM_KEY, PROGRAM, Config } from "../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
@@ -40,7 +46,6 @@ const useEditUser = () => {
             isLoading: false,
             autoClose: 3000,
         });
-
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -119,7 +124,6 @@ const useEditUser = () => {
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
-            
         } catch (error) {
             console.log(error);
             setIsLoading(false);

@@ -20,7 +20,7 @@ export function WinLoss({ join_data }: { join_data: JoinData }) {
     }
 
     let w: number = join_data.num_winning_tickets;
-    let l: number = join_data.num_tickets - join_data.num_winning_tickets;
+    let l: number = join_data.num_claimed_tickets - join_data.num_winning_tickets;
 
     return (
         <>

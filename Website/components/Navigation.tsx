@@ -81,7 +81,13 @@ function Navigation() {
                         <MenuButton>
                             <Badge px={2} py={1} borderRadius={20} bg="rgb(104,51,10, .95)" color="white">
                                 <HStack spacing={1} alignItems="center">
-                                    <Text m={0}>{selectedNetwork === "mainnet" ? "Mainnet Beta" : selectedNetwork === "devnet" ?  "Devnet" : "Eclipse"}</Text>
+                                    <Text m={0}>
+                                        {selectedNetwork === "mainnet"
+                                            ? "Mainnet Beta"
+                                            : selectedNetwork === "devnet"
+                                              ? "Devnet"
+                                              : "Eclipse"}
+                                    </Text>
                                     <FaChevronDown size={12} />
                                 </HStack>
                             </Badge>
@@ -169,7 +175,6 @@ function Navigation() {
                                     }}
                                 />
                             </Link>
-
                         </HStack>
                     </Show>
 

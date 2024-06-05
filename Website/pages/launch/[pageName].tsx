@@ -62,7 +62,7 @@ const TokenMintPage = () => {
         step: 1,
         defaultValue: 1,
         min: 1,
-        max: 100,
+        max: 1000,
     });
 
     const inc = getIncrementButtonProps();
