@@ -212,7 +212,7 @@ export function ReceivedAssetModal({
         height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
         width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
     }
-    
+
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">

@@ -399,7 +399,15 @@ export class AssignmentData {
             ["status", u8],
             ["num_interations", u32],
         ],
-        (args) => new AssignmentData(args.account_type!, args.nft_address!, args.random_address!, args.nft_index!, args.status!, args.num_interations!),
+        (args) =>
+            new AssignmentData(
+                args.account_type!,
+                args.nft_address!,
+                args.random_address!,
+                args.nft_index!,
+                args.status!,
+                args.num_interations!,
+            ),
         "AssignmentData",
     );
 }
@@ -416,13 +424,10 @@ export async function request_assignment_data(pubkey: PublicKey): Promise<Assign
     try {
         const [data] = AssignmentData.struct.deserialize(account_data);
         return data;
-    }
-    catch(error) {
+    } catch (error) {
         console.log("Error deserializing assignment data", error);
         return null;
     }
-
-    
 }
 
 class Attribute {

@@ -82,7 +82,7 @@ const Pepemon = () => {
         sm_checking_h: 570,
         sm_success_w: 420,
         sm_failed_w: 350,
-        sm_checking_w: 420
+        sm_checking_w: 420,
     };
 
     const sound = (src) => {
@@ -128,7 +128,7 @@ const Pepemon = () => {
     }, [connection]);
 
     useEffect(() => {
-        console.log("randoms have been updated", OraoRandoms)
+        console.log("randoms have been updated", OraoRandoms);
         if (!mint_nft.current) return;
 
         if (OraoRandoms.length === 0) return;
@@ -266,19 +266,19 @@ const Pepemon = () => {
         }
 
         if (!assignment_data.random_address.equals(SYSTEM_KEY) && assignment_data.status == 0) {
-            let orao_data = await request_raw_account_data("", assignment_data.random_address)
-            let orao_randomness : number[] = Array.from(orao_data.slice(8+32, 8+32+64));
+            let orao_data = await request_raw_account_data("", assignment_data.random_address);
+            let orao_randomness: number[] = Array.from(orao_data.slice(8 + 32, 8 + 32 + 64));
 
             let valid = false;
             for (let i = 0; i < orao_randomness.length; i++) {
                 if (orao_randomness[i] != 0) {
                     valid = true;
-                    break
+                    break;
                 }
             }
             if (valid) {
                 mint_nft.current = true;
-                setOraoRandoms(orao_randomness)
+                setOraoRandoms(orao_randomness);
             }
         }
 

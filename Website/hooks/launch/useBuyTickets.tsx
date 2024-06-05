@@ -111,27 +111,19 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-
-        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y")
-        let orao_network = PublicKey.findProgramAddressSync(
-            [Buffer.from("orao-vrf-network-configuration")],
-            orao_program,
-        )[0];
+        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
+        let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
 
         let randomKey = new Keypair();
         let key_bytes = randomKey.publicKey.toBytes();
 
-        let orao_random = PublicKey.findProgramAddressSync(
-            [Buffer.from("orao-vrf-randomness-request"), key_bytes],
-            orao_program,
-        )[0];
+        let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
 
-    
-        console.log("get orao network data")
+        console.log("get orao network data");
         let orao_network_data = await request_raw_account_data("", orao_network);
         //let [orao_network_config] = OraoNetworkState.struct.deserialize(orao_network_data);
 
-        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40))
+        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
 
         const instruction_data = serialise_BuyTickets_instruction(value, Array.from(key_bytes));
 
@@ -149,10 +141,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: orao_network, isSigner: false, isWritable: true },
             { pubkey: orao_program, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
-
         ];
-
-
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

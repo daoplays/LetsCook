@@ -164,7 +164,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         transaction.partialSign(asset_keypair);
 
-
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             const encoded_transaction = bs58.encode(signed_transaction.serialize());

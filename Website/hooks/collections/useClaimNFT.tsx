@@ -34,7 +34,6 @@ import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSize
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
 
-
 class OraoTokenFeeConfig {
     constructor(
         readonly discriminator: number[],
@@ -50,13 +49,7 @@ class OraoTokenFeeConfig {
             ["treasury", publicKey],
             ["fee", u64],
         ],
-        (args) =>
-            new OraoTokenFeeConfig(
-                args.discriminator!,
-                args.mint!,
-                args.treasury!,
-                args.fee!,
-            ),
+        (args) => new OraoTokenFeeConfig(args.discriminator!, args.mint!, args.treasury!, args.fee!),
         "OraoTokenFeeConfig",
     );
 }
@@ -79,17 +72,10 @@ class OraoNetworkConfig {
             ["tokenFeeConfig", OraoTokenFeeConfig.struct],
         ],
         (args) =>
-            new OraoNetworkConfig(
-                args.discriminator!,
-                args.treasury!,
-                args.requestFee!,
-                args.fulfilmentAuthorities!,
-                args.tokenFeeConfig!,
-            ),
+            new OraoNetworkConfig(args.discriminator!, args.treasury!, args.requestFee!, args.fulfilmentAuthorities!, args.tokenFeeConfig!),
         "OraoNetworkConfig",
     );
 }
-
 
 class OraoNetworkState {
     constructor(
@@ -104,16 +90,10 @@ class OraoNetworkState {
             ["config", OraoNetworkConfig.struct],
             ["numRecieved", u64],
         ],
-        (args) =>
-            new OraoNetworkState(
-                args.discriminator!,
-                args.config!,
-                args.numRecieved!,
-            ),
+        (args) => new OraoNetworkState(args.discriminator!, args.config!, args.numRecieved!),
         "OraoNetworkState",
     );
 }
-
 
 class OraoRandomnessResponse {
     constructor(
@@ -126,11 +106,7 @@ class OraoRandomnessResponse {
             ["pubkey", publicKey],
             ["randomness", uniformFixedSizeArray(u8, 64)],
         ],
-        (args) =>
-            new OraoRandomnessResponse(
-                args.pubkey!,
-                args.randomness!,
-            ),
+        (args) => new OraoRandomnessResponse(args.pubkey!, args.randomness!),
         "OraoRandomnessResponse",
     );
 }
@@ -148,19 +124,12 @@ export class OraoRandomness {
             ["randomness", uniformFixedSizeArray(u8, 64)],
             ["responses", array(OraoRandomnessResponse.struct)],
         ],
-        (args) =>
-            new OraoRandomness(
-                args.seed!,
-                args.randomness!,
-                args.responses!
-            ),
+        (args) => new OraoRandomness(args.seed!, args.randomness!, args.responses!),
         "OraoRandomness",
     );
 }
 
-
-function serialise_claim_nft_instruction(seed : number[]): Buffer {
-   
+function serialise_claim_nft_instruction(seed: number[]): Buffer {
     const data = new ClaimNFT_Instruction(LaunchInstruction.claim_nft, seed);
 
     const [buf] = ClaimNFT_Instruction.struct.serialize(data);
@@ -193,7 +162,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const [OraoRandoms, setOraoRandoms] = useState<number[]>([]);
 
     const { MintNFT } = useMintNFT(launchData);
-    const { MintRandom} = useMintRandom(launchData);
+    const { MintRandom } = useMintRandom(launchData);
     const signature_ws_id = useRef<number | null>(null);
     const orao_ws_id = useRef<number | null>(null);
     const orao_randomness = useRef<PublicKey | null>(null);
@@ -206,21 +175,20 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         //console.log("have collection data", event_data, launch_account_ws_id.current);
         let account_data = Buffer.from(event_data, "base64");
-        let orao_randomness = Array.from(account_data.slice(8+32, 8+32+64));
+        let orao_randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
 
         let valid = false;
         for (let i = 0; i < orao_randomness.length; i++) {
             if (orao_randomness[i] != 0) {
                 valid = true;
-                break
+                break;
             }
         }
         if (valid) {
-            setOraoRandoms(orao_randomness)
-            console.log(orao_randomness)
+            setOraoRandoms(orao_randomness);
+            console.log(orao_randomness);
             setIsLoading(false);
         }
-        
     }, []);
 
     const check_signature_update = useCallback(async (result: any) => {
@@ -238,7 +206,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             return;
         }
 
-       
         orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
 
         toast.success("Transaction successful! Waiting for Randomness", {
@@ -265,7 +232,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     }, []);
 
     const ClaimNFT = async () => {
-
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
@@ -308,7 +274,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         setIsLoading(true);
         setOraoRandoms([]);
-
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
@@ -377,28 +342,22 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             }
         }
 
-        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y")
-        let orao_network = PublicKey.findProgramAddressSync(
-            [Buffer.from("orao-vrf-network-configuration")],
-            orao_program,
-        )[0];
+        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
+        let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
 
         let randomKey = new Keypair();
         let key_bytes = randomKey.publicKey.toBytes();
 
-        let orao_random = PublicKey.findProgramAddressSync(
-            [Buffer.from("orao-vrf-randomness-request"), key_bytes],
-            orao_program,
-        )[0];
+        let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
 
         orao_randomness.current = orao_random;
 
-        console.log("get orao network data")
+        console.log("get orao network data");
         let orao_network_data = await request_raw_account_data("", orao_network);
         //let [orao_network_config] = OraoNetworkState.struct.deserialize(orao_network_data);
 
-        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40))
-        console.log(orao_treasury.toString())
+        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
+        console.log(orao_treasury.toString());
 
         const instruction_data = serialise_claim_nft_instruction(Array.from(key_bytes));
 
@@ -428,7 +387,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: orao_treasury, isSigner: false, isWritable: true },
             { pubkey: orao_network, isSigner: false, isWritable: true },
             { pubkey: orao_program, isSigner: false, isWritable: true },
-
         ];
 
         if (transfer_hook_program_account !== null) {

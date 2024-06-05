@@ -976,7 +976,6 @@ export class JoinData {
         readonly ticket_status: number,
         readonly random_address: PublicKey,
         readonly last_slot: bignum,
-
     ) {}
 
     static readonly struct = new BeetStruct<JoinData>(
@@ -990,7 +989,6 @@ export class JoinData {
             ["ticket_status", u8],
             ["random_address", publicKey],
             ["last_slot", u64],
-
         ],
         (args) =>
             new JoinData(
@@ -1314,7 +1312,7 @@ class BuyTickets_Instruction {
     constructor(
         readonly instruction: number,
         readonly num_tickets: number,
-        readonly seed : number[]
+        readonly seed: number[],
     ) {}
 
     static readonly struct = new BeetStruct<BuyTickets_Instruction>(
@@ -1322,7 +1320,6 @@ class BuyTickets_Instruction {
             ["instruction", u8],
             ["num_tickets", u16],
             ["seed", uniformFixedSizeArray(u8, 32)],
-
         ],
         (args) => new BuyTickets_Instruction(args.instruction!, args.num_tickets!, args.seed!),
         "BuyTickets_Instruction",

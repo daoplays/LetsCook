@@ -119,8 +119,6 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
             { pubkey: join_data.random_address, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];

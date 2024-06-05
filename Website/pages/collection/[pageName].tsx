@@ -142,7 +142,7 @@ const CollectionSwapPage = () => {
 
     let isRandomCLaimLoading = isClaimLoading || isMintRandomLoading;
 
-    console.log("loading? ", isClaimLoading)
+    console.log("loading? ", isClaimLoading);
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/images/cooks.jpeg",
         failed_image: "/images/cooks.jpeg",
