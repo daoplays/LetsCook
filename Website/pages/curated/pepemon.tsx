@@ -284,7 +284,7 @@ const Pepemon = () => {
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-    }, [launch, mintData, wallet]);
+    }, [launch, mintData, wallet, setOraoRandoms]);
 
     useEffect(() => {
         if (launch === null || mintData === null) return;

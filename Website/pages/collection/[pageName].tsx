@@ -371,7 +371,7 @@ const CollectionSwapPage = () => {
 
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-    }, [launch, wallet, mintData]);
+    }, [launch, wallet, mintData, setOraoRandoms]);
 
     useEffect(() => {
         if (launch === null) return;
