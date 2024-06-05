@@ -23,6 +23,7 @@ import useClaimNFT from "../../hooks/collections/useClaimNFT";
 import Loader from "../../components/loader";
 import ReleaseModal from "./releaseModal";
 import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
+import useMintNFT from "../../hooks/collections/useMintNFT";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -61,10 +62,10 @@ const Pepemon = () => {
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
     const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
-    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
 
-    let isLoading = isClaimLoading || isMintRandomLoading;
+    let isLoading = isClaimLoading || isMintLoading;
 
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/curatedLaunches/pepemon/Pepeball.png",
@@ -476,9 +477,9 @@ const Pepemon = () => {
                                     onClick={
                                         isLoading
                                             ? () => {}
-                                            : () => {
-                                                      ClaimNFT();
-                                              }
+                                            : assigned_nft === null || assigned_nft.status > 0 
+                                            ? () => ClaimNFT()
+                                            : () => {openAssetModal(); MintNFT();}
                                     }
                                 />
                                 <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk">
@@ -559,7 +560,7 @@ const Pepemon = () => {
                     asset={asset_received}
                     asset_image={asset_image}
                     style={modalStyle}
-                    randoms={OraoRandoms}
+                    isLoading={isLoading}
                 />
 
                 <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} assets={owned_assets} collection={launch} />

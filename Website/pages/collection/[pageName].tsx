@@ -140,9 +140,8 @@ const CollectionSwapPage = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
     const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
 
-    let isRandomCLaimLoading = isClaimLoading || isMintRandomLoading;
+    let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
-    console.log("loading? ", isClaimLoading);
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/images/cooks.jpeg",
         failed_image: "/images/cooks.jpeg",
@@ -678,12 +677,10 @@ const CollectionSwapPage = () => {
                                                                     ClaimNFT();
                                                                 }
                                                             }}
-                                                            isLoading={isRandomCLaimLoading}
+                                                            isLoading={isLoading}
                                                             isDisabled={
                                                                 !enoughTokenBalance ||
-                                                                isRandomCLaimLoading ||
-                                                                isMintLoading ||
-                                                                isWrapLoading
+                                                                isLoading
                                                             }
                                                         >
                                                             Confirm {prob_string}
@@ -695,13 +692,13 @@ const CollectionSwapPage = () => {
                                                         mt={3}
                                                         onClick={() => {
                                                             if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-                                                                MintNFT();
+                                                                openAssetModal(); MintNFT();
                                                             }
                                                             if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                                                MintRandom();
+                                                                openAssetModal(); MintRandom();
                                                             }
                                                         }}
-                                                        isLoading={isMintLoading || isRandomCLaimLoading}
+                                                        isLoading={isLoading}
                                                     >
                                                         Check
                                                     </Button>
@@ -712,7 +709,7 @@ const CollectionSwapPage = () => {
                                                 label={`You don't have ${launch.collection_name} NFTs`}
                                                 hasArrow
                                                 offset={[0, 10]}
-                                                isDisabled={nft_balance > 0 || isRandomCLaimLoading || isMintLoading || isWrapLoading}
+                                                isDisabled={nft_balance > 0 || isLoading}
                                             >
                                                 <Button
                                                     w="100%"
@@ -725,7 +722,7 @@ const CollectionSwapPage = () => {
                                                         }
                                                     }}
                                                     isLoading={isWrapLoading}
-                                                    isDisabled={nft_balance <= 0 || isRandomCLaimLoading || isMintLoading || isWrapLoading}
+                                                    isDisabled={nft_balance <= 0 || isLoading}
                                                 >
                                                     Confirm
                                                 </Button>
@@ -842,7 +839,7 @@ const CollectionSwapPage = () => {
                     asset={asset_received}
                     asset_image={asset_image}
                     style={modalStyle}
-                    randoms={OraoRandoms}
+                    isLoading={isLoading}
                 />
             </main>
         </>

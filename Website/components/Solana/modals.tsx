@@ -130,7 +130,7 @@ interface RecievedAssetModalProps {
     assignment_data: AssignmentData;
     style: ReceivedAssetModalStyle;
     curated?: boolean;
-    randoms: number[];
+    isLoading: boolean;
 }
 
 export interface ReceivedAssetModalStyle {
@@ -161,7 +161,7 @@ export function ReceivedAssetModal({
     asset_image,
     style,
     curated,
-    randoms,
+    isLoading,
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
@@ -212,6 +212,9 @@ export function ReceivedAssetModal({
         height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
         width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
     }
+
+    let globalLoading = isLoading || isMintLoading || isMintRandomLoading;
+    console.log("globalLoading: ", globalLoading, isLoading, isMintLoading, isMintRandomLoading);
 
     return (
         <>
@@ -278,7 +281,7 @@ export function ReceivedAssetModal({
                                         fontWeight: "semibold",
                                     }}
                                 >
-                                    {curated ? "ATTEMPING CATCH" : "Check your NFT!"}
+                                    {curated ? "ATTEMPTING CATCH" : "Check your NFT!"}
                                 </Text>
                             )}
                             <VStack align="center" fontFamily="ReemKufiRegular">
@@ -365,7 +368,7 @@ export function ReceivedAssetModal({
                                         }
                                     }}
                                 >
-                                    {isMintLoading ? (
+                                    {globalLoading ? (
                                         <Spinner />
                                     ) : (
                                         <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
@@ -388,7 +391,7 @@ export function ReceivedAssetModal({
                                         }}
                                         className={`${styles.nextBtn} font-face-kg `}
                                     >
-                                        {isMintLoading ? <Spinner /> : "Check"}
+                                        {globalLoading ? <Spinner /> : "Check"}
                                     </button>
                                 </VStack>
                             )}
