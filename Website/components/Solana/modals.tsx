@@ -130,7 +130,7 @@ interface RecievedAssetModalProps {
     assignment_data: AssignmentData;
     style: ReceivedAssetModalStyle;
     curated?: boolean;
-    randoms: number[]
+    randoms: number[];
 }
 
 export interface ReceivedAssetModalStyle {
@@ -161,7 +161,7 @@ export function ReceivedAssetModal({
     asset_image,
     style,
     curated,
-    randoms
+    randoms,
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
@@ -206,7 +206,8 @@ export function ReceivedAssetModal({
     let Checking = assignment_data.status === 0;
 
     let height = success ? style.succsss_h : failed ? style.failed_h : style.checking_h;
-    let width = success ? style.success_w : failed ? style.failed_w : style.checking_w; 
+    let width = success ? style.success_w : failed ? style.failed_w : style.checking_w;
+
     if (sm) {
         height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
         width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
@@ -217,24 +218,14 @@ export function ReceivedAssetModal({
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
                 <ModalOverlay />
 
-
-                <ModalContent
-                    h={height}
-                    w={width}
-                    style={{ background: "transparent" }}
-                >
+                <ModalContent h={height} w={width} style={{ background: "transparent" }}>
                     <ModalBody
-                        bg={
-                                curated
-                                  ? "url(/curatedLaunches/pepemon/vertical.png)"
-                                  : "url(/images/terms-container.png)"
-                        }
+                        bg={curated ? "url(/curatedLaunches/pepemon/vertical.png)" : "url(/images/terms-container.png)"}
                         bgSize={curated ? "cover" : "contain"}
                         bgRepeat={!curated && "no-repeat"}
                         p={sm ? 10 : 14}
                     >
                         <VStack h="100%" position="relative">
-    
                             {success && (
                                 <VStack spacing={!curated && 5}>
                                     <Text
@@ -248,7 +239,6 @@ export function ReceivedAssetModal({
                                         }}
                                     >
                                         {curated ? "Successfully caught" : "New NFT Received!"}
-                                        
                                     </Text>
                                     <Text
                                         m={curated && 0}
@@ -265,36 +255,34 @@ export function ReceivedAssetModal({
                                     {/* )} */}
                                 </VStack>
                             )}
-                            {failed &&
-                            
-                            <Text
-                                align="center"
-                                fontSize={curated ? 50 : "large"}
-                                style={{
-                                    fontFamily: style.fontFamily,
-                                    color: style.fontColor,
-                                    fontWeight: "semibold",
-                                }}
-                            >
-                                {curated ? "PEPEMON ESCAPED" : "No NFT Received!"}
-                            </Text>
-                            }
-                            {Checking &&
-                            
-                            <Text
-                                align="center"
-                                fontSize={curated ? 50 : "large"}
-                                style={{
-                                    fontFamily: style.fontFamily,
-                                    color: style.fontColor,
-                                    fontWeight: "semibold",
-                                }}
-                            >
-                                {curated ? "ATTEMPING CATCH" : "Check your NFT!"}
-                            </Text>
-                            }
-                            <VStack align="center" fontFamily="ReemKufiRegular">
+                            {failed && (
+                                <Text
+                                    align="center"
+                                    fontSize={curated ? 50 : "large"}
+                                    style={{
+                                        fontFamily: style.fontFamily,
+                                        color: style.fontColor,
+                                        fontWeight: "semibold",
+                                    }}
+                                >
+                                    {curated ? "PEPEMON ESCAPED" : "No NFT Received!"}
+                                </Text>
+                            )}
                             {Checking && (
+                                <Text
+                                    align="center"
+                                    fontSize={curated ? 50 : "large"}
+                                    style={{
+                                        fontFamily: style.fontFamily,
+                                        color: style.fontColor,
+                                        fontWeight: "semibold",
+                                    }}
+                                >
+                                    {curated ? "ATTEMPING CATCH" : "Check your NFT!"}
+                                </Text>
+                            )}
+                            <VStack align="center" fontFamily="ReemKufiRegular">
+                                {Checking && (
                                     <img
                                         loading="lazy"
                                         src={style.check_image}
