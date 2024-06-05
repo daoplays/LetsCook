@@ -241,7 +241,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
        
         orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
 
-        toast.success("Transaction successful!", {
+        toast.success("Transaction successful! Waiting for Randomness", {
             type: "success",
             isLoading: false,
             autoClose: 3000,

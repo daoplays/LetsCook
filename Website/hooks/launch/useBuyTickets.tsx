@@ -3,12 +3,14 @@ import {
     getRecentPrioritizationFees,
     get_current_blockhash,
     myU64,
+    request_raw_account_data,
     send_transaction,
     serialise_BuyTickets_instruction,
+    uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, Keypair } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { PROGRAM, Config, SYSTEM_KEY, TIMEOUT } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, TIMEOUT, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
@@ -107,7 +109,31 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             PROGRAM,
         )[0];
 
-        const instruction_data = serialise_BuyTickets_instruction(value);
+        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+
+
+        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y")
+        let orao_network = PublicKey.findProgramAddressSync(
+            [Buffer.from("orao-vrf-network-configuration")],
+            orao_program,
+        )[0];
+
+        let randomKey = new Keypair();
+        let key_bytes = randomKey.publicKey.toBytes();
+
+        let orao_random = PublicKey.findProgramAddressSync(
+            [Buffer.from("orao-vrf-randomness-request"), key_bytes],
+            orao_program,
+        )[0];
+
+    
+        console.log("get orao network data")
+        let orao_network_data = await request_raw_account_data("", orao_network);
+        //let [orao_network_config] = OraoNetworkState.struct.deserialize(orao_network_data);
+
+        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40))
+
+        const instruction_data = serialise_BuyTickets_instruction(value, Array.from(key_bytes));
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -115,11 +141,18 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
-            { pubkey: launchData.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
+            { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: orao_random, isSigner: false, isWritable: true },
+            { pubkey: orao_treasury, isSigner: false, isWritable: true },
+            { pubkey: orao_network, isSigner: false, isWritable: true },
+            { pubkey: orao_program, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+
         ];
 
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
+
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

@@ -142,16 +142,17 @@ const CollectionSwapPage = () => {
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
+    console.log("loading? ", isClaimLoading)
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/images/cooks.jpeg",
         failed_image:  "/images/cooks.jpeg",
         fontFamily: "KGSummerSunshineBlackout",
         fontColor: "white",
         succsss_h: 620,
-        failed_h: 450,
+        failed_h: 620,
         checking_h: 620,
         success_w: 620,
-        failed_w: 450,
+        failed_w: 620,
         checking_w: 620,
         sm_succsss_h: 570,
         sm_failed_h: 350,
