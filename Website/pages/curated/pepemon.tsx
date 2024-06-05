@@ -409,24 +409,6 @@ const Pepemon = () => {
                     {/* // Restart Button */}
                     {wallet.connected && (
                         <HStack w="100%" justify={"space-between"} position="fixed" top={xs ? 24 : md ? 36 : 6} px={6}>
-                            {/* <div
-                                style={{
-                                    cursor: "pointer",
-                                    background: "url(/curatedLaunches/pepemon/horizontal3.png)",
-                                    backgroundSize: "cover",
-                                    width: md ? "140px" : "160px",
-                                    height: md ? "68px" : "80px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                                onClick={openReleaseModal}
-                            >
-                                <Text m={0} fontWeight={500} fontSize={md ? 28 : 35} className="font-face-pk">
-                                    Release
-                                </Text>
-                            </div> */}
-
                             <Image
                                 src={"/curatedLaunches/pepemon/pc.png"}
                                 alt="Pepemon Release"
@@ -495,12 +477,7 @@ const Pepemon = () => {
                                         isLoading
                                             ? () => {}
                                             : () => {
-                                                  if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
                                                       ClaimNFT();
-                                                  }
-                                                  if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                                      MintRandom();
-                                                  }
                                               }
                                     }
                                 />
