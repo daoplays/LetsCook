@@ -701,7 +701,7 @@ const CollectionSwapPage = () => {
                                                                 MintRandom();
                                                             }
                                                         }}
-                                                        isLoading={isMintLoading}
+                                                        isLoading={isMintLoading || isRandomCLaimLoading}
                                                     >
                                                         Check
                                                     </Button>
