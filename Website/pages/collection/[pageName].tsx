@@ -137,14 +137,28 @@ const CollectionSwapPage = () => {
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
-    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms } = useClaimNFT(launch);
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
     const modalStyle: ReceivedAssetModalStyle = {
+        check_image: "/images/cooks.jpeg",
+        failed_image:  "/images/cooks.jpeg",
         fontFamily: "KGSummerSunshineBlackout",
         fontColor: "white",
+        succsss_h: 620,
+        failed_h: 450,
+        checking_h: 620,
+        success_w: 620,
+        failed_w: 450,
+        checking_w: 620,
+        sm_succsss_h: 570,
+        sm_failed_h: 350,
+        sm_checking_h: 570,
+        sm_success_w: 420,
+        sm_failed_w: 350,
+        sm_checking_w: 420
     };
 
     useEffect(() => {
@@ -282,6 +296,8 @@ const CollectionSwapPage = () => {
                 }
             }
 
+
+
             //console.log(updated_data);
             mint_nft.current = true;
             setAssignedNFT(updated_data);
@@ -336,6 +352,23 @@ const CollectionSwapPage = () => {
         check_initial_assignment.current = false;
         if (assignment_data === null) {
             return;
+        }
+
+        if (!assignment_data.random_address.equals(SYSTEM_KEY) && assignment_data.status == 0) {
+            let orao_data = await request_raw_account_data("", assignment_data.random_address)
+            let orao_randomness : number[] = Array.from(orao_data.slice(8+32, 8+32+64));
+
+            let valid = false;
+            for (let i = 0; i < orao_randomness.length; i++) {
+                if (orao_randomness[i] != 0) {
+                    valid = true;
+                    break
+                }
+            }
+            if (valid) {
+                mint_nft.current = true;
+                setOraoRandoms(orao_randomness)
+            }
         }
 
         console.log(assignment_data);

@@ -16,7 +16,7 @@ import { publicKey } from "@metaplex-foundation/umi";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { PublicKey } from "@solana/web3.js";
 import { unpackMint, Mint, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
-import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
+import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
@@ -62,13 +62,27 @@ const Pepemon = () => {
     const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
-    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms } = useClaimNFT(launch);
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
 
     let isLoading = isClaimLoading || isMintRandomLoading;
 
     const modalStyle: ReceivedAssetModalStyle = {
+        check_image: "/curatedLaunches/pepemon/Pepeball.png",
+        failed_image: "/curatedLaunches/pepemon/failedPepe.png",
         fontFamily: "pokemon",
         fontColor: "black",
+        succsss_h: 620,
+        failed_h: 620,
+        checking_h: 620,
+        success_w: 620,
+        failed_w: 450,
+        checking_w: 620,
+        sm_succsss_h: 570,
+        sm_failed_h: 350,
+        sm_checking_h: 570,
+        sm_success_w: 420,
+        sm_failed_w: 350,
+        sm_checking_w: 420
     };
 
     const sound = (src) => {
@@ -114,6 +128,7 @@ const Pepemon = () => {
     }, [connection]);
 
     useEffect(() => {
+        console.log("randoms have been updated", OraoRandoms)
         if (!mint_nft.current) return;
 
         if (OraoRandoms.length === 0) return;
@@ -248,6 +263,23 @@ const Pepemon = () => {
         check_initial_assignment.current = false;
         if (assignment_data === null) {
             return;
+        }
+
+        if (!assignment_data.random_address.equals(SYSTEM_KEY) && assignment_data.status == 0) {
+            let orao_data = await request_raw_account_data("", assignment_data.random_address)
+            let orao_randomness : number[] = Array.from(orao_data.slice(8+32, 8+32+64));
+
+            let valid = false;
+            for (let i = 0; i < orao_randomness.length; i++) {
+                if (orao_randomness[i] != 0) {
+                    valid = true;
+                    break
+                }
+            }
+            if (valid) {
+                mint_nft.current = true;
+                setOraoRandoms(orao_randomness)
+            }
         }
 
         console.log(assignment_data);

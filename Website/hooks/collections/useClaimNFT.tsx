@@ -479,7 +479,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         }
     };
 
-    return { ClaimNFT, isLoading, OraoRandoms };
+    return { ClaimNFT, isLoading, OraoRandoms, setOraoRandoms };
 };
 
 export default useClaimNFT;

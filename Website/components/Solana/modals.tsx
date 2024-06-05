@@ -134,8 +134,22 @@ interface RecievedAssetModalProps {
 }
 
 export interface ReceivedAssetModalStyle {
+    check_image: string;
+    failed_image: string;
     fontFamily: string;
     fontColor: string;
+    succsss_h: number;
+    success_w: number;
+    failed_h: number;
+    failed_w: number;
+    checking_h: number;
+    checking_w: number;
+    sm_succsss_h: number;
+    sm_success_w: number;
+    sm_failed_h: number;
+    sm_failed_w: number;
+    sm_checking_h: number;
+    sm_checking_w: number;
 }
 
 export function ReceivedAssetModal({
@@ -189,24 +203,29 @@ export function ReceivedAssetModal({
 
     let success = assignment_data.status === 2;
     let failed = assignment_data.status === 1;
+    let Checking = assignment_data.status === 0;
 
-    let toCatch = assignment_data.status === 0;
+    let height = success ? style.succsss_h : failed ? style.failed_h : style.checking_h;
+    let width = success ? style.success_w : failed ? style.failed_w : style.checking_w; 
+    if (sm) {
+        height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
+        width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
+    }
 
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
                 <ModalOverlay />
 
+
                 <ModalContent
-                    h={sm && curated && success ? 570 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 585}
-                    w={sm && curated && success ? 420 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 450}
+                    h={height}
+                    w={width}
                     style={{ background: "transparent" }}
                 >
                     <ModalBody
                         bg={
-                            curated && failed
-                                ? "url(/curatedLaunches/pepemon/escaped.png)"
-                                : curated
+                                curated
                                   ? "url(/curatedLaunches/pepemon/vertical.png)"
                                   : "url(/images/terms-container.png)"
                         }
@@ -215,19 +234,7 @@ export function ReceivedAssetModal({
                         p={sm ? 10 : 14}
                     >
                         <VStack h="100%" position="relative">
-                            {failed && !curated && (
-                                <Text
-                                    align="center"
-                                    fontSize={curated ? 40 : "large"}
-                                    style={{
-                                        fontFamily: style.fontFamily,
-                                        color: style.fontColor,
-                                        fontWeight: "semibold",
-                                    }}
-                                >
-                                    No NFT Received!
-                                </Text>
-                            )}
+    
                             {success && (
                                 <VStack spacing={!curated && 5}>
                                     <Text
@@ -258,13 +265,51 @@ export function ReceivedAssetModal({
                                     {/* )} */}
                                 </VStack>
                             )}
+                            {failed &&
+                            
+                            <Text
+                                align="center"
+                                fontSize={curated ? 50 : "large"}
+                                style={{
+                                    fontFamily: style.fontFamily,
+                                    color: style.fontColor,
+                                    fontWeight: "semibold",
+                                }}
+                            >
+                                {curated ? "PEPEMON ESCAPED" : "No NFT Received!"}
+                            </Text>
+                            }
+                            {Checking &&
+                            
+                            <Text
+                                align="center"
+                                fontSize={curated ? 50 : "large"}
+                                style={{
+                                    fontFamily: style.fontFamily,
+                                    color: style.fontColor,
+                                    fontWeight: "semibold",
+                                }}
+                            >
+                                {curated ? "ATTEMPING CATCH" : "Check your NFT!"}
+                            </Text>
+                            }
                             <VStack align="center" fontFamily="ReemKufiRegular">
-                                {failed && !curated && (
+                            {Checking && (
                                     <img
                                         loading="lazy"
-                                        src="/images/cooks.jpeg"
+                                        src={style.check_image}
                                         width={200}
                                         height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
+                                )}
+                                {failed && (
+                                    <Image
+                                        loading="lazy"
+                                        src={style.failed_image}
+                                        width={width}
+                                        height={height}
                                         alt="the cooks"
                                         style={{ borderRadius: "12px" }}
                                     />
@@ -311,7 +356,7 @@ export function ReceivedAssetModal({
                                     ))}
                                 </VStack>
                             )}
-                            {curated && toCatch && (
+                            {curated && Checking && (
                                 <div
                                     style={{
                                         cursor: "pointer",
@@ -341,7 +386,7 @@ export function ReceivedAssetModal({
                                     )}
                                 </div>
                             )}
-                            {!curated && toCatch && (
+                            {!curated && Checking && (
                                 <VStack>
                                     <button
                                         type="button"
