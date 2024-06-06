@@ -203,6 +203,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
                 isLoading: false,
                 autoClose: 3000,
             });
+            setIsLoading(false);
+
             return;
         }
 
