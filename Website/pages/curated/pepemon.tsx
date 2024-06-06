@@ -63,9 +63,11 @@ const Pepemon = () => {
     const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
+
     const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
 
-    let isLoading = isClaimLoading || isMintLoading;
+    let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/curatedLaunches/pepemon/Pepeball.png",
