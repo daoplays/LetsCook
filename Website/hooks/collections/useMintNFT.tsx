@@ -135,10 +135,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: asset_keypair.publicKey, isSigner: true, isWritable: true },
 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
-
-            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });

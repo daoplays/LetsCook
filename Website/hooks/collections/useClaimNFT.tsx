@@ -377,9 +377,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
 
-            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: mint_info.program, isSigner: false, isWritable: true },
 
