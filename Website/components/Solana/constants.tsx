@@ -37,6 +37,18 @@ const MainNetConfig: NetworkConfig = {
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
 };
 
+const EclipseDevNetConfig: NetworkConfig = {
+    PROD: false,
+    NETWORK: "eclipse",
+    FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
+    RPC_NODE: "https://staging-rpc.dev2.eclipsenetwork.xyz",
+    WSS_NODE: "wss://staging-rpc.dev2.eclipsenetwork.xyz",
+    IRYS_URL: "https://devnet.irys.xyz",
+    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
+};
+
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 export const FEES_PROGRAM = new PublicKey("FEES7x83BdGUFsrJG6VmZywkquvBNiFgyBaAdAMcJfst");
@@ -62,7 +74,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = DevNetConfig;
+export let Config = EclipseDevNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,
