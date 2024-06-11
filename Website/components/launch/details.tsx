@@ -140,10 +140,10 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         // if this is a simple launch we need to set a bunch of other stuff
         if (simpleLaunch) {
             let now = new Date();
-            let start = new Date(now.getTime() + 15 * 60000);
+            let start = new Date(now.getTime());
             let end = new Date(start.getTime() + 24 * 60 * 60000);
 
-            newLaunchData.current.opendate = start;
+            newLaunchData.current.opendate = new Date(0);
             newLaunchData.current.closedate = end;
             newLaunchData.current.team_wallet = Config.COOK_FEES.toString();
             newLaunchData.current.amm_fee = 25;

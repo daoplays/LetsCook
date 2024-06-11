@@ -130,12 +130,6 @@ const useCreateAMM = (launchData: LaunchData) => {
             true, // allow owner off curve
         );
 
-        let program_quote_account = await getAssociatedTokenAddress(
-            quoteToken.mint, // mint
-            sol_account, // owner
-            true, // allow owner off curve
-        );
-
         let program_lp_account = await getAssociatedTokenAddress(
             poolInfo.lpMint, // mint
             sol_account, // owner
@@ -163,7 +157,6 @@ const useCreateAMM = (launchData: LaunchData) => {
         console.log(user_base_account.toString());
         console.log(user_quote_account.toString());
         console.log(user_lp_account.toString());
-        console.log(program_quote_account.toString());
         console.log(program_base_account.toString());
 
         const keys = [

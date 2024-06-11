@@ -16,13 +16,14 @@ import { publicKey } from "@metaplex-foundation/umi";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { PublicKey } from "@solana/web3.js";
 import { unpackMint, Mint, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
-import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
+import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
 import UseWalletConnection from "../../hooks/useWallet";
 import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
 import Loader from "../../components/loader";
 import ReleaseModal from "./releaseModal";
 import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
+import useMintNFT from "../../hooks/collections/useMintNFT";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -61,14 +62,30 @@ const Pepemon = () => {
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
     const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
-    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(launch);
 
-    let isLoading = isClaimLoading || isMintRandomLoading;
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
+
+    let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
     const modalStyle: ReceivedAssetModalStyle = {
+        check_image: "/curatedLaunches/pepemon/Pepeball.png",
+        failed_image: "/curatedLaunches/pepemon/failedPepe.png",
         fontFamily: "pokemon",
         fontColor: "black",
+        succsss_h: 620,
+        failed_h: 620,
+        checking_h: 620,
+        success_w: 620,
+        failed_w: 450,
+        checking_w: 620,
+        sm_succsss_h: 570,
+        sm_failed_h: 350,
+        sm_checking_h: 570,
+        sm_success_w: 420,
+        sm_failed_w: 350,
+        sm_checking_w: 420,
     };
 
     const sound = (src) => {
@@ -84,7 +101,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "pepemon_gen1");
+        let launch = findCollection(collectionList, "gen1_test1");
 
         if (launch === null) return;
 
@@ -114,25 +131,15 @@ const Pepemon = () => {
     }, [connection]);
 
     useEffect(() => {
-        if (assigned_nft === null || !mint_nft.current) {
-            return;
-        }
+        console.log("randoms have been updated", OraoRandoms);
+        if (!mint_nft.current) return;
 
-        console.log(assigned_nft, assigned_nft.nft_address.toString());
+        if (OraoRandoms.length === 0) return;
 
-        if (
-            launch.collection_meta["__kind"] === "RandomFixedSupply" &&
-            assigned_nft.status === 0 &&
-            !assigned_nft.nft_address.equals(SYSTEM_KEY)
-        ) {
-            return;
-        }
-
-        console.log("open asset modal");
         openAssetModal();
 
         mint_nft.current = false;
-    }, [launch, assigned_nft, openAssetModal]);
+    }, [OraoRandoms, openAssetModal]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -172,9 +179,7 @@ const Pepemon = () => {
                 return;
             }
 
-            if (updated_data.nft_address.equals(SYSTEM_KEY)) {
-                console.log("no asset recieved");
-
+            if (updated_data.status < 2) {
                 asset_received.current = null;
                 asset_image.current = null;
 
@@ -263,9 +268,26 @@ const Pepemon = () => {
             return;
         }
 
+        if (!assignment_data.random_address.equals(SYSTEM_KEY) && assignment_data.status == 0) {
+            let orao_data = await request_raw_account_data("", assignment_data.random_address);
+            let orao_randomness: number[] = Array.from(orao_data.slice(8 + 32, 8 + 32 + 64));
+
+            let valid = false;
+            for (let i = 0; i < orao_randomness.length; i++) {
+                if (orao_randomness[i] != 0) {
+                    valid = true;
+                    break;
+                }
+            }
+            if (valid) {
+                mint_nft.current = true;
+                setOraoRandoms(orao_randomness);
+            }
+        }
+
         console.log(assignment_data);
         setAssignedNFT(assignment_data);
-    }, [launch, mintData, wallet]);
+    }, [launch, mintData, wallet, setOraoRandoms]);
 
     useEffect(() => {
         if (launch === null || mintData === null) return;
@@ -390,24 +412,6 @@ const Pepemon = () => {
                     {/* // Restart Button */}
                     {wallet.connected && (
                         <HStack w="100%" justify={"space-between"} position="fixed" top={xs ? 24 : md ? 36 : 6} px={6}>
-                            {/* <div
-                                style={{
-                                    cursor: "pointer",
-                                    background: "url(/curatedLaunches/pepemon/horizontal3.png)",
-                                    backgroundSize: "cover",
-                                    width: md ? "140px" : "160px",
-                                    height: md ? "68px" : "80px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}
-                                onClick={openReleaseModal}
-                            >
-                                <Text m={0} fontWeight={500} fontSize={md ? 28 : 35} className="font-face-pk">
-                                    Release
-                                </Text>
-                            </div> */}
-
                             <Image
                                 src={"/curatedLaunches/pepemon/pc.png"}
                                 alt="Pepemon Release"
@@ -475,14 +479,12 @@ const Pepemon = () => {
                                     onClick={
                                         isLoading
                                             ? () => {}
-                                            : () => {
-                                                  if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-                                                      ClaimNFT();
-                                                  }
-                                                  if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                                      MintRandom();
-                                                  }
-                                              }
+                                            : assigned_nft === null || assigned_nft.status > 0
+                                              ? () => ClaimNFT()
+                                              : () => {
+                                                    openAssetModal();
+                                                    MintNFT();
+                                                }
                                     }
                                 />
                                 <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk">
@@ -563,6 +565,7 @@ const Pepemon = () => {
                     asset={asset_received}
                     asset_image={asset_image}
                     style={modalStyle}
+                    isLoading={isLoading}
                 />
 
                 <ReleaseModal isOpened={isReleaseModalOpen} onClose={closeReleaseModal} assets={owned_assets} collection={launch} />

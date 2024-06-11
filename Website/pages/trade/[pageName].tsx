@@ -70,6 +70,10 @@ import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
+import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
+import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
+import SellPanel from "../../components/tradePanels/sellPanel";
+import BuyPanel from "../../components/tradePanels/buyPanel";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -375,6 +379,15 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
+        let hash_string = "global:request";
+        const msgBuffer = new TextEncoder().encode(hash_string);
+
+        // hash the message
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+
+        // convert ArrayBuffer to Array
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        console.log(hashArray.slice(0, 8));
         //("check market data");
         if (launch === null || amm === null) return;
 
@@ -645,7 +658,7 @@ const TradePage = () => {
                                 <BuyAndSell
                                     launch={launch}
                                     amm={amm}
-                                    mint_data={base_mint.mint}
+                                    base_mint={base_mint.mint}
                                     base_balance={amm_base_amount}
                                     quote_balance={amm_quote_amount}
                                     amm_lp_balance={amm_lp_amount}
@@ -822,7 +835,7 @@ const TradePage = () => {
 const BuyAndSell = ({
     launch,
     amm,
-    mint_data,
+    base_mint,
     base_balance,
     quote_balance,
     amm_lp_balance,
@@ -831,7 +844,7 @@ const BuyAndSell = ({
 }: {
     launch: LaunchData;
     amm: AMMData;
-    mint_data: Mint;
+    base_mint: Mint;
     base_balance: number;
     quote_balance: number;
     amm_lp_balance: number;
@@ -844,86 +857,20 @@ const BuyAndSell = ({
     const [selected, setSelected] = useState("Buy");
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [sol_amount, setSOLAmount] = useState<number>(0);
-    const [order_type, setOrderType] = useState<number>(0);
-    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
-    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
-    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
-    const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(launch);
-    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
 
     const { userSOLBalance } = useAppRoot();
 
     const handleClick = (tab: string) => {
         setSelected(tab);
-
-        if (tab == "Buy") setOrderType(0);
-        if (tab == "Sell") setOrderType(1);
     };
 
-    let amm_provider = launch.flags[LaunchFlags.AMMProvider];
-
-    let base_raw = Math.floor(token_amount * Math.pow(10, launch.decimals));
-    let total_base_fee = 0;
     let transfer_fee = 0;
     let max_transfer_fee = 0;
-    let transfer_fee_config = getTransferFeeConfig(mint_data);
+    let transfer_fee_config = getTransferFeeConfig(base_mint);
     if (transfer_fee_config !== null) {
         transfer_fee = transfer_fee_config.newerTransferFee.transferFeeBasisPoints;
-        max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, launch.decimals);
-        total_base_fee += Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(base_raw)));
+        max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, base_mint.decimals);
     }
-
-    let amm_base_fee = selected == "Buy" || selected == "Sell" ? Math.ceil(((base_raw - total_base_fee) * amm.fee) / 100 / 100) : 0;
-    total_base_fee += amm_base_fee;
-
-    let base_input_amount = base_raw - total_base_fee;
-
-    let quote_output = (base_input_amount * quote_balance) / (base_input_amount + base_balance) / Math.pow(10, 9);
-
-    //console.log("base in/out", base_input_amount / Math.pow(10, launch.decimals), quote_output)
-
-    let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
-    let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
-    let quote_input_amount = quote_raw - amm_quote_fee;
-    let base_output = (quote_input_amount * base_balance) / (quote_balance + quote_input_amount) / Math.pow(10, launch.decimals);
-
-    //console.log("quote in/out", quote_input_amount / Math.pow(10, 9), amm_quote_fee, base_output)
-
-    let price = quote_balance / Math.pow(10, 9) / (base_balance / Math.pow(10, launch.decimals));
-
-    let base_no_slip = sol_amount / price;
-    let quote_no_slip = token_amount * price;
-
-    let max_sol_amount = Math.floor(quote_output * Math.pow(10, 9));
-
-    let slippage = order_type == 0 ? base_no_slip / base_output - 1 : quote_no_slip / quote_output - 1;
-
-    let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
-
-    let quote_output_string = quote_output <= 1e-3 ? quote_output.toExponential(3) : quote_output.toFixed(5);
-    quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
-
-    let base_output_string =
-        base_output === 0
-            ? "0"
-            : base_output <= 1e-3
-              ? base_output.toExponential(3)
-              : base_output.toLocaleString("en-US", { minimumFractionDigits: launch.decimals, maximumFractionDigits: launch.decimals });
-
-    base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
-
-    let lp_generated = (base_raw * (amm_lp_balance / base_balance)) / Math.pow(10, 9);
-
-    let lp_raw = Math.floor(token_amount * Math.pow(10, 9));
-    let lp_quote_output = (quote_balance * lp_raw) / amm_lp_balance / Math.pow(10, 9);
-    let lp_base_output = (base_balance * lp_raw) / amm_lp_balance / Math.pow(10, launch.decimals);
-    console.log("lp base output", user_lp_balance);
-    if (selected === "LP-") {
-        quote_output_string = lp_quote_output <= 1e-3 ? lp_quote_output.toExponential(3) : lp_quote_output.toFixed(5);
-        base_output_string = lp_base_output <= 1e-3 ? lp_base_output.toExponential(3) : lp_base_output.toFixed(launch.decimals);
-    }
-
-    //console.log("lp: ", lp_base_output, lp_quote_output)
 
     return (
         <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
@@ -1008,290 +955,79 @@ const BuyAndSell = ({
                 </Text>
             </HStack>
 
-            <VStack align="start" w="100%">
-                <HStack w="100%" justify="space-between">
-                    {selected === "LP+" ? (
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            Add:
-                        </Text>
-                    ) : selected == "LP-" ? (
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            Remove:
-                        </Text>
-                    ) : (
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            Swap:
-                        </Text>
-                    )}
-                    <HStack spacing={2}>
-                        <Text
-                            m={0}
-                            color={"white"}
-                            fontFamily="ReemKufiRegular"
-                            fontSize={"medium"}
-                            opacity={0.5}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => {
-                                if (selected === "Buy") {
-                                    setSOLAmount(parseFloat(userSOLBalance.toFixed(5)) / 2);
-                                }
+            {selected === "Buy" && (
+                <BuyPanel
+                    amm={amm}
+                    base_mint={base_mint}
+                    user_base_balance={user_base_balance}
+                    user_quote_balance={userSOLBalance}
+                    sol_amount={sol_amount}
+                    token_amount={token_amount}
+                    connected={wallet.connected}
+                    setSOLAmount={setSOLAmount}
+                    setTokenAmount={setTokenAmount}
+                    handleConnectWallet={handleConnectWallet}
+                    launch={launch}
+                    amm_base_balance={base_balance}
+                    amm_quote_balance={quote_balance}
+                />
+            )}
 
-                                if (selected === "Sell") {
-                                    setTokenAmount(user_base_balance / Math.pow(10, launch.decimals) / 2);
-                                }
-                            }}
-                        >
-                            Half
-                        </Text>
-                        <Center height="15px">
-                            <Divider orientation="vertical" opacity={0.25} />
-                        </Center>
-                        <Text
-                            m={0}
-                            color={"white"}
-                            fontFamily="ReemKufiRegular"
-                            fontSize={"medium"}
-                            opacity={0.5}
-                            style={{ cursor: "pointer" }}
-                            onClick={() => {
-                                if (selected === "Buy") {
-                                    setSOLAmount(parseFloat(userSOLBalance.toFixed(5)) - 0.01);
-                                }
-
-                                if (selected === "Sell") {
-                                    setTokenAmount(user_base_balance / Math.pow(10, launch.decimals));
-                                }
-                            }}
-                        >
-                            Max
-                        </Text>
-                    </HStack>
-                </HStack>
-                {selected === "Buy" ? (
-                    <InputGroup size="md">
-                        <Input
-                            color="white"
-                            size="lg"
-                            borderColor="rgba(134, 142, 150, 0.5)"
-                            value={sol_amount}
-                            onChange={(e) => {
-                                setSOLAmount(
-                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : sol_amount,
-                                );
-                            }}
-                            type="number"
-                            min="0"
-                        />
-                        <InputRightElement h="100%" w={50}>
-                            <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
-                        </InputRightElement>
-                    </InputGroup>
-                ) : (
-                    <InputGroup size="md">
-                        <Input
-                            color="white"
-                            size="lg"
-                            borderColor="rgba(134, 142, 150, 0.5)"
-                            value={token_amount}
-                            onChange={(e) => {
-                                setTokenAmount(
-                                    !isNaN(parseFloat(e.target.value)) || e.target.value === "" ? parseFloat(e.target.value) : token_amount,
-                                );
-                            }}
-                            type="number"
-                            min="0"
-                        />
-                        <InputRightElement h="100%" w={50}>
-                            {selected !== "LP-" ? (
-                                <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
-                            ) : (
-                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                                    LP
-                                </Text>
-                            )}
-                        </InputRightElement>
-                    </InputGroup>
-                )}
-            </VStack>
-
-            <VStack align="start" w="100%">
-                {selected === "LP+" ? (
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        And:
-                    </Text>
-                ) : selected === "Sell" || selected === "LP+" || selected === "LP-" ? (
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        For:
-                    </Text>
-                ) : (
-                    <></>
-                )}
-                {selected === "Buy" ? (
-                    <InputGroup size="md">
-                        <Input
-                            readOnly={true}
-                            color="white"
-                            size="lg"
-                            borderColor="rgba(134, 142, 150, 0.5)"
-                            value={base_output_string === "NaN" ? "0" : base_output_string}
-                            disabled
-                        />
-                        <InputRightElement h="100%" w={50}>
-                            <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
-                        </InputRightElement>
-                    </InputGroup>
-                ) : selected === "Sell" || selected === "LP+" || selected === "LP-" ? (
-                    <InputGroup size="md">
-                        <Input
-                            readOnly={true}
-                            color="white"
-                            size="lg"
-                            borderColor="rgba(134, 142, 150, 0.5)"
-                            value={quote_output_string === "NaN" ? "0" : quote_output_string}
-                            disabled
-                        />
-                        <InputRightElement h="100%" w={50}>
-                            <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
-                        </InputRightElement>
-                    </InputGroup>
-                ) : (
-                    <></>
-                )}
-            </VStack>
+            {selected === "Sell" && (
+                <SellPanel
+                    amm={amm}
+                    base_mint={base_mint}
+                    user_base_balance={user_base_balance}
+                    user_quote_balance={userSOLBalance}
+                    sol_amount={sol_amount}
+                    token_amount={token_amount}
+                    connected={wallet.connected}
+                    setSOLAmount={setSOLAmount}
+                    setTokenAmount={setTokenAmount}
+                    handleConnectWallet={handleConnectWallet}
+                    launch={launch}
+                    amm_base_balance={base_balance}
+                    amm_quote_balance={quote_balance}
+                />
+            )}
 
             {selected === "LP+" && (
-                <>
-                    <VStack align="start" w="100%">
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            For:
-                        </Text>
-
-                        <InputGroup size="md">
-                            <Input
-                                readOnly={true}
-                                color="white"
-                                size="lg"
-                                borderColor="rgba(134, 142, 150, 0.5)"
-                                value={lp_generated < 1e-3 ? lp_generated.toExponential(3) : lp_generated.toFixed(Math.min(3))}
-                                disabled
-                            />
-                            <InputRightElement h="100%" w={50}>
-                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                                    LP
-                                </Text>
-                            </InputRightElement>
-                        </InputGroup>
-                    </VStack>
-                </>
+                <AddLiquidityPanel
+                    amm={amm}
+                    base_mint={base_mint}
+                    user_base_balance={user_base_balance}
+                    user_quote_balance={userSOLBalance}
+                    sol_amount={sol_amount}
+                    token_amount={token_amount}
+                    connected={wallet.connected}
+                    setSOLAmount={setSOLAmount}
+                    setTokenAmount={setTokenAmount}
+                    handleConnectWallet={handleConnectWallet}
+                    launch={launch}
+                    amm_base_balance={base_balance}
+                    amm_quote_balance={quote_balance}
+                    amm_lp_balance={amm_lp_balance}
+                />
             )}
 
             {selected === "LP-" && (
-                <>
-                    <VStack align="start" w="100%">
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            And:
-                        </Text>
-
-                        <InputGroup size="md">
-                            <Input
-                                readOnly={true}
-                                color="white"
-                                size="lg"
-                                borderColor="rgba(134, 142, 150, 0.5)"
-                                value={base_output_string}
-                                disabled
-                            />
-                            <InputRightElement h="100%" w={50}>
-                                <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
-                            </InputRightElement>
-                        </InputGroup>
-                    </VStack>
-                </>
-            )}
-
-            {selected === "LP+" ? (
-                <Button
-                    mt={2}
-                    size="lg"
-                    w="100%"
-                    px={4}
-                    py={2}
-                    bg={"#83FF81"}
-                    isLoading={addLiquidityRaydiumLoading}
-                    onClick={() => {
-                        !wallet.connected
-                            ? handleConnectWallet()
-                            : amm_provider === 0
-                              ? UpdateCookLiquidity(launch, token_amount, 0)
-                              : AddLiquidityRaydium(
-                                    lp_generated * Math.pow(10, 9),
-                                    token_amount * Math.pow(10, launch.decimals),
-                                    max_sol_amount,
-                                );
-                    }}
-                >
-                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                        {!wallet.connected ? "Connect Wallet" : "Add Liquidity"}
-                    </Text>
-                </Button>
-            ) : selected === "LP-" ? (
-                <Button
-                    mt={2}
-                    size="lg"
-                    w="100%"
-                    px={4}
-                    py={2}
-                    bg={"#FF6E6E"}
-                    isLoading={addLiquidityRaydiumLoading}
-                    onClick={() => {
-                        !wallet.connected
-                            ? handleConnectWallet()
-                            : amm_provider === 0
-                              ? UpdateCookLiquidity(launch, token_amount, 1)
-                              : RemoveLiquidityRaydium(token_amount * Math.pow(10, 9));
-                    }}
-                >
-                    <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                        {!wallet.connected ? "Connect Wallet" : "Remove Liquidity"}
-                    </Text>
-                </Button>
-            ) : (
-                <>
-                    <Button
-                        mt={2}
-                        size="lg"
-                        w="100%"
-                        px={4}
-                        py={2}
-                        bg={selected === "Buy" ? "#83FF81" : "#FF6E6E"}
-                        isLoading={placingOrder}
-                        onClick={() => {
-                            !wallet.connected
-                                ? handleConnectWallet()
-                                : amm_provider === 0
-                                  ? PlaceMarketOrder(launch, token_amount, sol_amount, order_type)
-                                  : SwapRaydium(
-                                        order_type === 1
-                                            ? token_amount * Math.pow(10, launch.decimals)
-                                            : base_output * Math.pow(10, launch.decimals),
-                                        order_type === 1 ? 0 : 2 * sol_amount * Math.pow(10, 9),
-                                        order_type,
-                                    );
-                        }}
-                    >
-                        <Text m={"0 auto"} fontSize="large" fontWeight="semibold">
-                            {!wallet.connected ? "Connect Wallet" : selected === "Buy" ? "Buy" : selected === "Sell" ? "Sell" : ""}
-                        </Text>
-                    </Button>
-
-                    <Card bg="transparent">
-                        <CardBody>
-                            <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                                MM Rewards are only granted on Buys through Let&apos;s Cook.
-                            </Text>
-                        </CardBody>
-                    </Card>
-                </>
+                <RemoveLiquidityPanel
+                    amm={amm}
+                    base_mint={base_mint}
+                    user_base_balance={user_base_balance}
+                    user_quote_balance={userSOLBalance}
+                    user_lp_balance={user_lp_balance}
+                    sol_amount={sol_amount}
+                    token_amount={token_amount}
+                    connected={wallet.connected}
+                    setSOLAmount={setSOLAmount}
+                    setTokenAmount={setTokenAmount}
+                    handleConnectWallet={handleConnectWallet}
+                    launch={launch}
+                    amm_base_balance={base_balance}
+                    amm_quote_balance={quote_balance}
+                    amm_lp_balance={amm_lp_balance}
+                />
             )}
         </VStack>
     );

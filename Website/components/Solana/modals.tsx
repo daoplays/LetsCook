@@ -11,6 +11,8 @@ import useMintNFT from "../../hooks/collections/useMintNFT";
 import styles from "../../styles/LaunchDetails.module.css";
 import { SYSTEM_KEY } from "./constants";
 import Image from "next/image";
+import BN from "bn.js";
+import useMintRandom from "../../hooks/collections/useMintRandom";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;
@@ -128,11 +130,26 @@ interface RecievedAssetModalProps {
     assignment_data: AssignmentData;
     style: ReceivedAssetModalStyle;
     curated?: boolean;
+    isLoading: boolean;
 }
 
 export interface ReceivedAssetModalStyle {
+    check_image: string;
+    failed_image: string;
     fontFamily: string;
     fontColor: string;
+    succsss_h: number;
+    success_w: number;
+    failed_h: number;
+    failed_w: number;
+    checking_h: number;
+    checking_w: number;
+    sm_succsss_h: number;
+    sm_success_w: number;
+    sm_failed_h: number;
+    sm_failed_w: number;
+    sm_checking_h: number;
+    sm_checking_w: number;
 }
 
 export function ReceivedAssetModal({
@@ -144,9 +161,11 @@ export function ReceivedAssetModal({
     asset_image,
     style,
     curated,
+    isLoading,
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
 
     function filterAttributes(attributes) {
         return attributes.filter(function (item: Attribute) {
@@ -182,47 +201,34 @@ export function ReceivedAssetModal({
 
     //console.log("image_url: ", asset.current.attributes.attributeList, asset_image.current);
 
-    let success = !assignment_data.nft_address.equals(SYSTEM_KEY);
-    let failed = assignment_data.nft_address.equals(SYSTEM_KEY);
+    let success = assignment_data.status === 2;
+    let failed = assignment_data.status === 1;
+    let Checking = assignment_data.status === 0;
 
-    let toCatch = collection.collection_meta["__kind"] === "RandomFixedSupply" && assignment_data.status !== 0;
+    let height = success ? style.succsss_h : failed ? style.failed_h : style.checking_h;
+    let width = success ? style.success_w : failed ? style.failed_w : style.checking_w;
+
+    if (sm) {
+        height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
+        width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
+    }
+
+    let globalLoading = isLoading || isMintLoading || isMintRandomLoading;
+    console.log("globalLoading: ", globalLoading, isLoading, isMintLoading, isMintRandomLoading);
 
     return (
         <>
             <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
                 <ModalOverlay />
 
-                <ModalContent
-                    h={sm && curated && success ? 570 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 585}
-                    w={sm && curated && success ? 420 : curated && success ? 620 : sm && curated && failed ? 350 : curated ? 450 : 450}
-                    style={{ background: "transparent" }}
-                >
+                <ModalContent h={height} w={width} style={{ background: "transparent" }}>
                     <ModalBody
-                        bg={
-                            curated && failed
-                                ? "url(/curatedLaunches/pepemon/escaped.png)"
-                                : curated
-                                  ? "url(/curatedLaunches/pepemon/vertical.png)"
-                                  : "url(/images/terms-container.png)"
-                        }
+                        bg={curated ? "url(/curatedLaunches/pepemon/vertical.png)" : "url(/images/terms-container.png)"}
                         bgSize={curated ? "cover" : "contain"}
                         bgRepeat={!curated && "no-repeat"}
                         p={sm ? 10 : 14}
                     >
                         <VStack h="100%" position="relative">
-                            {failed && !curated && (
-                                <Text
-                                    align="center"
-                                    fontSize={curated ? 40 : "large"}
-                                    style={{
-                                        fontFamily: style.fontFamily,
-                                        color: style.fontColor,
-                                        fontWeight: "semibold",
-                                    }}
-                                >
-                                    No NFT Received!
-                                </Text>
-                            )}
                             {success && (
                                 <VStack spacing={!curated && 5}>
                                     <Text
@@ -236,14 +242,7 @@ export function ReceivedAssetModal({
                                         }}
                                     >
                                         {curated ? "Successfully caught" : "New NFT Received!"}
-
-                                        {/* {curated && toCatch
-                                            ? `A wild ${asset_name} has Appeared!`
-                                            : curated && !toCatch
-                                              ? "Successfully caught"
-                                              : "New NFT Received!"} */}
                                     </Text>
-                                    {/* {!toCatch && ( */}
                                     <Text
                                         m={curated && 0}
                                         align="center"
@@ -259,13 +258,49 @@ export function ReceivedAssetModal({
                                     {/* )} */}
                                 </VStack>
                             )}
+                            {failed && (
+                                <Text
+                                    align="center"
+                                    fontSize={curated ? 50 : "large"}
+                                    style={{
+                                        fontFamily: style.fontFamily,
+                                        color: style.fontColor,
+                                        fontWeight: "semibold",
+                                    }}
+                                >
+                                    {curated ? "PEPEMON ESCAPED" : "No NFT Received!"}
+                                </Text>
+                            )}
+                            {Checking && (
+                                <Text
+                                    align="center"
+                                    fontSize={curated ? 50 : "large"}
+                                    style={{
+                                        fontFamily: style.fontFamily,
+                                        color: style.fontColor,
+                                        fontWeight: "semibold",
+                                    }}
+                                >
+                                    {curated ? "ATTEMPTING CATCH" : "Check your NFT!"}
+                                </Text>
+                            )}
                             <VStack align="center" fontFamily="ReemKufiRegular">
-                                {failed && !curated && (
+                                {Checking && (
                                     <img
                                         loading="lazy"
-                                        src="/images/cooks.jpeg"
+                                        src={style.check_image}
                                         width={200}
                                         height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
+                                )}
+                                {failed && (
+                                    <Image
+                                        loading="lazy"
+                                        src={style.failed_image}
+                                        width={width}
+                                        height={height}
                                         alt="the cooks"
                                         style={{ borderRadius: "12px" }}
                                     />
@@ -312,7 +347,7 @@ export function ReceivedAssetModal({
                                     ))}
                                 </VStack>
                             )}
-                            {curated && toCatch && (
+                            {curated && Checking && (
                                 <div
                                     style={{
                                         cursor: "pointer",
@@ -325,28 +360,38 @@ export function ReceivedAssetModal({
                                         alignItems: "center",
                                     }}
                                     onClick={(e) => {
-                                        MintNFT();
+                                        if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
+                                            MintNFT();
+                                        }
+                                        if (collection.collection_meta["__kind"] === "RandomUnlimited") {
+                                            MintRandom();
+                                        }
                                     }}
                                 >
-                                    {isMintLoading ? (
+                                    {globalLoading ? (
                                         <Spinner />
                                     ) : (
                                         <Text m={0} fontWeight={500} fontSize={35} className="font-face-pk">
-                                            Mint
+                                            Check
                                         </Text>
                                     )}
                                 </div>
                             )}
-                            {!curated && toCatch && (
+                            {!curated && Checking && (
                                 <VStack>
                                     <button
                                         type="button"
                                         onClick={(e) => {
-                                            MintNFT();
+                                            if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                MintNFT();
+                                            }
+                                            if (collection.collection_meta["__kind"] === "RandomUnlimited") {
+                                                MintRandom();
+                                            }
                                         }}
                                         className={`${styles.nextBtn} font-face-kg `}
                                     >
-                                        {isMintLoading ? <Spinner /> : "Mint"}
+                                        {globalLoading ? <Spinner /> : "Check"}
                                     </button>
                                 </VStack>
                             )}

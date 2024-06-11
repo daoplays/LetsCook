@@ -974,6 +974,8 @@ export class JoinData {
         readonly num_claimed_tickets: number,
         readonly num_winning_tickets: number,
         readonly ticket_status: number,
+        readonly random_address: PublicKey,
+        readonly last_slot: bignum,
     ) {}
 
     static readonly struct = new BeetStruct<JoinData>(
@@ -985,6 +987,8 @@ export class JoinData {
             ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
             ["ticket_status", u8],
+            ["random_address", publicKey],
+            ["last_slot", u64],
         ],
         (args) =>
             new JoinData(
@@ -995,6 +999,8 @@ export class JoinData {
                 args.num_claimed_tickets!,
                 args.num_winning_tickets!,
                 args.ticket_status!,
+                args.random_address!,
+                args.last_slot!,
             ),
         "JoinData",
     );
@@ -1306,20 +1312,22 @@ class BuyTickets_Instruction {
     constructor(
         readonly instruction: number,
         readonly num_tickets: number,
+        readonly seed: number[],
     ) {}
 
     static readonly struct = new BeetStruct<BuyTickets_Instruction>(
         [
             ["instruction", u8],
             ["num_tickets", u16],
+            ["seed", uniformFixedSizeArray(u8, 32)],
         ],
-        (args) => new BuyTickets_Instruction(args.instruction!, args.num_tickets!),
+        (args) => new BuyTickets_Instruction(args.instruction!, args.num_tickets!, args.seed!),
         "BuyTickets_Instruction",
     );
 }
 
-export function serialise_BuyTickets_instruction(num_tickets: number): Buffer {
-    const data = new BuyTickets_Instruction(LaunchInstruction.buy_tickets, num_tickets);
+export function serialise_BuyTickets_instruction(num_tickets: number, seed: number[]): Buffer {
+    const data = new BuyTickets_Instruction(LaunchInstruction.buy_tickets, num_tickets, seed);
     const [buf] = BuyTickets_Instruction.struct.serialize(data);
 
     return buf;

@@ -1,9 +1,11 @@
 import {
+    JoinData,
     LaunchData,
     LaunchInstruction,
     getRecentPrioritizationFees,
     get_current_blockhash,
     myU64,
+    request_raw_account_data,
     send_transaction,
     serialise_basic_instruction,
 } from "../../components/Solana/state";
@@ -101,6 +103,15 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             PROGRAM,
         )[0];
 
+        //console.log("get assignment data");
+        let join_account_data = await request_raw_account_data("", user_join_account);
+
+        if (join_account_data === null) {
+            // console.log("no assignment data found");
+            return;
+        }
+        const [join_data] = JoinData.struct.deserialize(join_account_data);
+
         const instruction_data = serialise_basic_instruction(LaunchInstruction.chcek_tickets);
 
         var account_vector = [
@@ -108,9 +119,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_BTC, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_ETH, isSigner: false, isWritable: true },
-            { pubkey: Config.PYTH_SOL, isSigner: false, isWritable: true },
+            { pubkey: join_data.random_address, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 
