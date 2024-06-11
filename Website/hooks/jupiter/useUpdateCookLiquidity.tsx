@@ -126,7 +126,7 @@ const useUpdateCookLiquidity = () => {
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
-        token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
+        token_amount = new BN(token_amount * Math.pow(10, 9));
         console.log(token_amount.toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint

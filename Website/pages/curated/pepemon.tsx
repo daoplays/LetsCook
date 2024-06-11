@@ -479,9 +479,12 @@ const Pepemon = () => {
                                     onClick={
                                         isLoading
                                             ? () => {}
-                                            : assigned_nft === null || assigned_nft.status > 0 
-                                            ? () => ClaimNFT()
-                                            : () => {openAssetModal(); MintNFT();}
+                                            : assigned_nft === null || assigned_nft.status > 0
+                                              ? () => ClaimNFT()
+                                              : () => {
+                                                    openAssetModal();
+                                                    MintNFT();
+                                                }
                                     }
                                 />
                                 <Text mt={-5} fontWeight={500} fontSize={30} className="font-face-pk">

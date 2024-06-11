@@ -112,7 +112,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     //console.log(zone);
 
     useEffect(() => {
-        let splitLaunchDate = localOpenDate.toString().split(" ");
+        let splitLaunchDate = localOpenDate.getTime() > 0 ? localOpenDate.toString().split(" ") : new Date().toString().split(" ");
         let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
         let splitLaunchTime = splitLaunchDate[4].split(":");
         let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
@@ -155,7 +155,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
-        if (!newLaunchData.current.edit_mode && localOpenDate.getTime() < new Date().getTime()) {
+        if (!newLaunchData.current.edit_mode && localOpenDate.getTime() > 0 && localOpenDate.getTime() < new Date().getTime()) {
             toast.error("Open date must be set after now");
             return false;
         }

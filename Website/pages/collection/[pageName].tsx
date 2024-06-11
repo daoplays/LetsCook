@@ -88,17 +88,6 @@ export const check_nft_balance = async (launch_key: PublicKey, wallet: WalletCon
     setNFTBalance(valid_lookups);
 };
 
-const convertHashToHex = (value) => {
-    return value.map((v) => v.toString(16).padStart(2, "0")).join("");
-};
-function generate_random_f64(bytes: number[]) {
-    let ubn = BigInt(convertHashToHex(bytes));
-    let or = BigInt("0x3FF0000000000000");
-    let and = BigInt("0xFFFFFFFFFFFFF");
-
-    console.log(bytes, ubn.toString(), or.toString(), and.toString());
-}
-
 const CollectionSwapPage = () => {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -678,10 +667,7 @@ const CollectionSwapPage = () => {
                                                                 }
                                                             }}
                                                             isLoading={isLoading}
-                                                            isDisabled={
-                                                                !enoughTokenBalance ||
-                                                                isLoading
-                                                            }
+                                                            isDisabled={!enoughTokenBalance || isLoading}
                                                         >
                                                             Confirm {prob_string}
                                                         </Button>
@@ -692,10 +678,12 @@ const CollectionSwapPage = () => {
                                                         mt={3}
                                                         onClick={() => {
                                                             if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-                                                                openAssetModal(); MintNFT();
+                                                                openAssetModal();
+                                                                MintNFT();
                                                             }
                                                             if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                                                openAssetModal(); MintRandom();
+                                                                openAssetModal();
+                                                                MintRandom();
                                                             }
                                                         }}
                                                         isLoading={isLoading}
