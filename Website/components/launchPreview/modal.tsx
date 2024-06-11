@@ -151,7 +151,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                             <VStack>
                                                 <HStack>
                                                     <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                                        Platform fee: 0.01
+                                                        Platform fee: 0.001
                                                     </Text>
                                                     <Image
                                                         src="/images/sol.png"
