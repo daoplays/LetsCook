@@ -223,8 +223,8 @@ const FAQ = () => {
                                 </h2>
                                 <HStack spacing={12} align="center">
                                     <Text m={0} align={sm ? "center" : "start"} fontSize={sm ? "large" : "x-large"} lineHeight={1.25}>
-                                        LET&apos;S COOK charges a non-refundable platform fee of 0.001 SOL per ticket purchased. There are
-                                        no fees to set up a Cook. This fee supports additional feature development and marketing.
+                                        LET&apos;S COOK charges a non-refundable platform fee of 0.01 SOL on every mint. There are no fees
+                                        to set up a Cook. This fee supports additional feature development and marketing.
                                     </Text>
                                     <Image src={fries.src} width={150} height={120} alt={"Fries"} hidden={sm} />
                                 </HStack>
