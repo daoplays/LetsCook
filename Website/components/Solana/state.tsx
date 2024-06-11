@@ -219,6 +219,16 @@ export async function check_signature(bearer: string, signature: string): Promis
     return null;
 }
 
+export interface MintData {
+    mint: Mint;
+    uri: string;
+    name: string;
+    symbol: string;
+    icon: string;
+    extensions: number;
+    token_program: PublicKey;
+}
+
 export interface MintInfo {
     mint: Mint;
     program: PublicKey;
