@@ -114,7 +114,7 @@ const AddLiquidityPanel = ({
                     !connected
                         ? handleConnectWallet()
                         : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? UpdateCookLiquidity(launch, token_amount, 0)
+                          ? UpdateCookLiquidity(launch, token_amount * Math.pow(10, launch.decimals), 0)
                           : AddLiquidityRaydium(
                                 lp_generated * Math.pow(10, 9),
                                 token_amount * Math.pow(10, launch.decimals),

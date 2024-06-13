@@ -14,7 +14,6 @@ import {
     PROGRAM,
     Config,
     LaunchKeys,
-    FEES_PROGRAM,
     METAPLEX_META,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
@@ -388,14 +387,7 @@ const usuCreateLaunch = () => {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
 
-            if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
-                console.log("add hook extra");
-                let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
-                    [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
-                    FEES_PROGRAM,
-                )[0];
-                account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-            }
+            
         }
 
         const list_instruction = new TransactionInstruction({

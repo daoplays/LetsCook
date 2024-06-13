@@ -92,7 +92,7 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
+            [wallet.publicKey.toBytes(), Buffer.from("Temp")],
             PROGRAM,
         )[0];
 

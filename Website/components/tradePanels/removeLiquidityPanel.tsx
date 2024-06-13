@@ -147,8 +147,8 @@ const RemoveLiquidityPanel = ({
                     !connected
                         ? handleConnectWallet()
                         : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? UpdateCookLiquidity(launch, token_amount, 1)
-                          : RemoveLiquidityRaydium(token_amount * Math.pow(10, 9));
+                          ? UpdateCookLiquidity(launch, lp_raw, 1)
+                          : RemoveLiquidityRaydium(lp_raw);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

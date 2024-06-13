@@ -15,7 +15,7 @@ import {
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { SOL_ACCOUNT_SEED, PROGRAM, Config, SYSTEM_KEY, FEES_PROGRAM } from "../../components/Solana/constants";
+import { SOL_ACCOUNT_SEED, PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -101,7 +101,7 @@ const useInitAMM = (launchData: LaunchData) => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
             PROGRAM,
         )[0];
 
@@ -118,6 +118,11 @@ const useInitAMM = (launchData: LaunchData) => {
             true, // allow owner off curve
             TOKEN_PROGRAM_ID,
         );
+
+        let trade_to_earn_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), Buffer.from("TradeToEarn")],
+            PROGRAM,
+        )[0];
 
         let cook_lp_mint_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("LP")], PROGRAM)[0];
 
@@ -190,6 +195,7 @@ const useInitAMM = (launchData: LaunchData) => {
 
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
 
             { pubkey: price_data_account, isSigner: false, isWritable: true },
         ];

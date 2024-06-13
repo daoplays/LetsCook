@@ -42,7 +42,6 @@ import {
     SOL_ACCOUNT_SEED,
     CollectionKeys,
     METAPLEX_META,
-    FEES_PROGRAM,
     CORE,
 } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
@@ -227,10 +226,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                 console.log(meta);
                 extra_hook_accounts.push(meta);
             }
-
-            if (transfer_hook_program_account === FEES_PROGRAM) {
-                extra_hook_accounts[0].isWritable = true;
-            }
         }
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.wrap_nft);
@@ -258,15 +253,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
-
-            if (transfer_hook_program_account.equals(FEES_PROGRAM)) {
-                account_vector.push({
-                    pubkey: extra_hook_accounts[0].pubkey,
-                    isSigner: extra_hook_accounts[0].isSigner,
-                    isWritable: true,
-                });
-            }
-
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
 
             for (let i = 0; i < extra_hook_accounts.length; i++) {

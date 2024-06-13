@@ -126,7 +126,7 @@ const useUpdateCookLiquidity = () => {
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
-        token_amount = new BN(token_amount * Math.pow(10, 9));
+        token_amount = new BN(token_amount);
         console.log(token_amount.toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
@@ -147,7 +147,7 @@ const useUpdateCookLiquidity = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
             PROGRAM,
         )[0];
 
@@ -175,7 +175,7 @@ const useUpdateCookLiquidity = () => {
         );
 
         let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
+            [wallet.publicKey.toBytes(), Buffer.from("Temp")],
             PROGRAM,
         )[0];
 
@@ -220,7 +220,6 @@ const useUpdateCookLiquidity = () => {
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: wsol_mint, isSigner: false, isWritable: true },
             { pubkey: cook_lp_mint_account, isSigner: false, isWritable: true },

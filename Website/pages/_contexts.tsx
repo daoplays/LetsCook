@@ -330,8 +330,15 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
 
             if (data[0] === 6) {
+                try{
                 const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
+                console.log(amm)
+                }
+                catch(error) {
+                    console.log(error)
+                    //closeAccounts.push(program_data[i].pubkey)
+                }
 
                 continue;
             }
@@ -339,7 +346,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 const [collection] = CollectionData.struct.deserialize(data);
 
                 collections.push(collection);
-                console.log(collection);
+                //console.log(collection);
                 continue;
             }
 

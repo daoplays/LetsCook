@@ -192,7 +192,7 @@ export const useCreateCP = (launch: LaunchData) => {
         );
 
         let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
+            [wallet.publicKey.toBytes(),Buffer.from("Temp")],
             PROGRAM,
         )[0];
         //let keys  = transaction["instructions"][0]["keys"]
