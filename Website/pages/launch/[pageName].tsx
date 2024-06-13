@@ -509,7 +509,7 @@ const TokenMintPage = () => {
                                         <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                             <HStack alignItems="center">
                                                 <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
-                                                    Platform fee per ticket: 0.01
+                                                    Platform fee: 0.01
                                                 </Text>
                                                 <Image
                                                     src="/images/sol.png"
