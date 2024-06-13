@@ -77,7 +77,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             team_wallet, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -86,7 +86,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         var quote_pda_account = launchData.keys[LaunchKeys.WSOLAddress];
@@ -109,7 +109,7 @@ const useInitAMM = (launchData: LaunchData) => {
             token_mint_pubkey, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -197,7 +197,7 @@ const useInitAMM = (launchData: LaunchData) => {
             { pubkey: price_data_account, isSigner: false, isWritable: true },
         ];
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: mint_account.program, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: mint_account.token_program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
 

@@ -10,7 +10,11 @@ import {
     getTransferFeeConfig,
     getTransferHook,
     unpackMint,
+    getExtensionData,
+    ExtensionType,
+    
 } from "@solana/spl-token";
+import { unpack, TokenMetadata } from "@solana/spl-token-metadata";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -23,6 +27,73 @@ import { MintData } from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
+
+export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
+    let uri = null;
+    let metadata_pointer = null;
+    let name: string;
+    let symbol: string;
+    if (token_program.equals(TOKEN_2022_PROGRAM_ID)) {
+        // first look for t22 metadata
+        metadata_pointer = getMetadataPointerState(mint);
+    }
+
+    if (metadata_pointer !== null) {
+        const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
+        let metadata : TokenMetadata = unpack(data);
+        uri = metadata.uri;
+        name = metadata.name;
+        symbol = metadata.symbol;
+    } else {
+        let token_meta_key = PublicKey.findProgramAddressSync(
+            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), mint.address.toBuffer()],
+            METAPLEX_META,
+        )[0];
+        let raw_meta_data = await connection.getAccountInfo(token_meta_key);
+
+        if (raw_meta_data === null) {
+            return null;
+        }
+
+        let meta_data = Metadata.deserialize(raw_meta_data.data);
+        //console.log(meta_data);
+        //console.log(meta_data[0].data.symbol, meta_data[0].data.name);
+        uri = meta_data[0].data.uri;
+        name = meta_data[0].data.name;
+        symbol = meta_data[0].data.symbol;
+    }
+
+    // check the extensions we care about
+    let transfer_hook = getTransferHook(mint);
+    let transfer_fee_config = getTransferFeeConfig(mint);
+    let permanent_delegate = getPermanentDelegate(mint);
+
+    let extensions =
+        (Extensions.TransferFee * Number(transfer_fee_config !== null)) |
+        (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
+        (Extensions.TransferHook * Number(transfer_hook !== null));
+    
+    let icon: string;
+    try {
+        let uri_json = await fetch(uri).then((res) => res.json());
+        icon = uri_json["image"];
+    } catch (error) {
+        console.log(error);
+        icon = "/images/sol.png";
+    }
+    let mint_data: MintData = {
+        mint: mint,
+        uri: uri,
+        name: name,
+        symbol: symbol,
+        icon: icon,
+        extensions: extensions,
+        token_program: token_program,
+    };
+
+    return mint_data
+
+}
 
 export async function setMintData(token_mint: string): Promise<MintData | null> {
     if (token_mint === "" || !token_mint) {
@@ -66,73 +137,7 @@ export async function setMintData(token_mint: string): Promise<MintData | null> 
         }
     }
 
-    let uri = null;
-    let metadata_pointer = null;
-    let name: string;
-    let symbol: string;
-    if (result.owner.equals(TOKEN_2022_PROGRAM_ID)) {
-        // first look for t22 metadata
-        metadata_pointer = getMetadataPointerState(mint);
-        //console.log("metadata pinter:", metadata_pointer);
-    }
-
-    if (metadata_pointer !== null) {
-        let metadata = await getTokenMetadata(connection, token_key, "confirmed", TOKEN_2022_PROGRAM_ID);
-        //console.log(metadata);
-        uri = metadata.uri;
-
-        name = metadata.name;
-        symbol = metadata.symbol;
-    } else {
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
-            METAPLEX_META,
-        )[0];
-        let raw_meta_data = await connection.getAccountInfo(token_meta_key);
-
-        if (raw_meta_data === null) {
-            return null;
-        }
-
-        let meta_data = Metadata.deserialize(raw_meta_data.data);
-        //console.log(meta_data);
-        //console.log(meta_data[0].data.symbol, meta_data[0].data.name);
-        uri = meta_data[0].data.uri;
-        name = meta_data[0].data.name;
-        symbol = meta_data[0].data.symbol;
-    }
-
-    // check the extensions we care about
-    let transfer_hook = getTransferHook(mint);
-    let transfer_fee_config = getTransferFeeConfig(mint);
-    let permanent_delegate = getPermanentDelegate(mint);
-
-    let extensions =
-        (Extensions.TransferFee * Number(transfer_fee_config !== null)) |
-        (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
-        (Extensions.TransferHook * Number(transfer_hook !== null));
-    // console.log("extensions", extensions);
-
-    //console.log("deserialize meta data");
-
-    //console.log("uri: ", uri)
-    let icon: string;
-    try {
-        let uri_json = await fetch(uri).then((res) => res.json());
-        icon = uri_json["image"];
-    } catch (error) {
-        console.log(error);
-        icon = "/images/sol.png";
-    }
-    let mint_data: MintData = {
-        mint: mint,
-        uri: uri,
-        name: name,
-        symbol: symbol,
-        icon: icon,
-        extensions: extensions,
-        token_program: token_program,
-    };
+   let mint_data = await getMintData(connection, mint, token_program);
 
     return mint_data;
 }

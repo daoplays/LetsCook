@@ -351,7 +351,7 @@ const usuCreateLaunch = () => {
         }
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
-
+        let whitelist = SYSTEM_KEY;
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
@@ -368,11 +368,9 @@ const usuCreateLaunch = () => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
+            { pubkey: whitelist, isSigner: false, isWritable: true },
 
-            { pubkey: token_meta_key, isSigner: false, isWritable: true },
-            { pubkey: METAPLEX_META, isSigner: false, isWritable: false },
-            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-        ];
+       ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false });

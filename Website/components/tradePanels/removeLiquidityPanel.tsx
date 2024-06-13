@@ -26,10 +26,10 @@ const RemoveLiquidityPanel = ({
 
     let lp_raw = Math.floor(token_amount * Math.pow(10, 9));
     let lp_quote_output = (amm_quote_balance * lp_raw) / amm_lp_balance / Math.pow(10, 9);
-    let lp_base_output = (amm_base_balance * lp_raw) / amm_lp_balance / Math.pow(10, base_mint.decimals);
+    let lp_base_output = (amm_base_balance * lp_raw) / amm_lp_balance / Math.pow(10, base_mint.mint.decimals);
 
     let quote_output_string = formatPrice(lp_quote_output, 5);
-    let base_output_string = formatPrice(lp_base_output, base_mint.decimals);
+    let base_output_string = formatPrice(lp_base_output, base_mint.mint.decimals);
 
     return (
         <>
@@ -130,7 +130,7 @@ const RemoveLiquidityPanel = ({
                             disabled
                         />
                         <InputRightElement h="100%" w={50}>
-                            <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                            <Image src={base_mint.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                         </InputRightElement>
                     </InputGroup>
                 </VStack>

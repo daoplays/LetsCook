@@ -292,14 +292,14 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_info.program,
+            mint_info.token_program,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_info.program,
+            mint_info.token_program,
         );
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
@@ -380,7 +380,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-            { pubkey: mint_info.program, isSigner: false, isWritable: true },
+            { pubkey: mint_info.token_program, isSigner: false, isWritable: true },
 
             { pubkey: orao_random, isSigner: false, isWritable: true },
             { pubkey: orao_treasury, isSigner: false, isWritable: true },

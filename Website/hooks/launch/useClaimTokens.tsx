@@ -122,14 +122,14 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             launchData.keys[LaunchKeys.MintAddress], // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
             launchData.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let transfer_hook = getTransferHook(mint_account.mint);
@@ -185,7 +185,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: mint_account.program, isSigner: false, isWritable: true },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: true },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];

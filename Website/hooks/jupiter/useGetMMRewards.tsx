@@ -93,7 +93,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -102,7 +102,7 @@ const useGetMMRewards = () => {
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let date_bytes = uInt32ToLEBytes(date);
@@ -168,7 +168,7 @@ const useGetMMRewards = () => {
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: mint_account.program, isSigner: false, isWritable: true },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 
