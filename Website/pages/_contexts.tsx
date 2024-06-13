@@ -324,7 +324,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(data);
-                // console.log("launch mm", mm);
+                 console.log("launch mm", program_data[i].pubkey.toString());
                 mm_launch_data.push(mm);
                 continue;
             }
@@ -333,7 +333,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try{
                 const [amm] = AMMData.struct.deserialize(data);
                 amm_data.push(amm);
-                console.log(amm)
+                //console.log(amm)
                 }
                 catch(error) {
                     console.log(error)
