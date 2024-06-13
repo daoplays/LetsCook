@@ -20,7 +20,7 @@ const AddLiquidityPanel = ({
     amm_quote_balance,
     amm_lp_balance,
 }: PanelProps) => {
-    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
+    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(amm);
     const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
 
     let isLoading = addLiquidityRaydiumLoading || updateCookLiquidityLoading;

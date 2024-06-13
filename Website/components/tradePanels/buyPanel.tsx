@@ -39,7 +39,7 @@ const BuyPanel = ({
     amm_quote_balance,
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
-    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
     const [sliderValue, setSliderValue] = useState<number>(1);
     const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
@@ -51,16 +51,17 @@ const BuyPanel = ({
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
-    if (launch === null || launch === undefined || base_mint === undefined) {
+    if (base_mint === null || base_mint === undefined || amm === null || amm === undefined) {
         return <></>;
     }
 
     let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
     let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
     let quote_input_amount = quote_raw - amm_quote_fee;
-    let base_output = (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, launch.decimals);
+    let base_output = (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, base_mint.decimals);
     let base_output_string = formatPrice(base_output, base_mint.decimals);
 
+    console.log(amm_base_balance, amm_quote_balance)
     let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.decimals));
     let base_no_slip = sol_amount / price;
     let slippage = base_no_slip / base_output - 1;
@@ -70,7 +71,7 @@ const BuyPanel = ({
 
     let quote_deposit_amount = quote_raw / sliderValue;
     let base_deposit_amount =
-        (quote_deposit_amount * amm_base_balance) / (quote_deposit_amount + quote_input_amount) / Math.pow(10, launch.decimals);
+        (quote_deposit_amount * amm_base_balance) / (quote_deposit_amount + quote_input_amount) / Math.pow(10, base_mint.decimals);
 
     let liquidation_price = quote_input_amount / (base_deposit_amount + base_output);
 

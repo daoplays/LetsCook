@@ -8,7 +8,7 @@ import {
     send_transaction,
     serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys } from "../../components/Solana/constants";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -84,7 +84,7 @@ const useEditLaunch = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch_data.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
             PROGRAM,
         )[0];
 

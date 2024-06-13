@@ -7,6 +7,7 @@ import { LaunchFlags } from "../Solana/constants";
 import formatPrice from "../../utils/formatPrice";
 
 const RemoveLiquidityPanel = ({
+    amm,
     token_amount,
     base_mint,
     connected,
@@ -18,7 +19,7 @@ const RemoveLiquidityPanel = ({
     amm_base_balance,
     amm_lp_balance,
 }: PanelProps) => {
-    const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(launch);
+    const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(amm);
     const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
 
     let isLoading = removeLiquidityRaydiumLoading || updateCookLiquidityLoading;

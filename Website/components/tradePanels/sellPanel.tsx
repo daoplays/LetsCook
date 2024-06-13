@@ -21,7 +21,7 @@ const SellPanel = ({
     amm_quote_balance,
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
-    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
