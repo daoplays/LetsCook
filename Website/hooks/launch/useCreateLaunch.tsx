@@ -386,8 +386,6 @@ const usuCreateLaunch = () => {
         if (newLaunchData.current.transfer_hook_program !== null) {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
-
-            
         }
 
         const list_instruction = new TransactionInstruction({

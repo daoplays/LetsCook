@@ -111,10 +111,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             PROGRAM,
         )[0];
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let mint_account = mintData.get(launchData.keys[LaunchKeys.MintAddress].toString());

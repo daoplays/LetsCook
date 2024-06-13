@@ -1,4 +1,22 @@
-import { VStack, HStack, Center, Divider, Input, InputRightElement, Text, InputGroup, Button, Card, CardBody, SliderMark, SliderTrack, SliderFilledTrack, SliderThumb, Slider, Tooltip } from "@chakra-ui/react";
+import {
+    VStack,
+    HStack,
+    Center,
+    Divider,
+    Input,
+    InputRightElement,
+    Text,
+    InputGroup,
+    Button,
+    Card,
+    CardBody,
+    SliderMark,
+    SliderTrack,
+    SliderFilledTrack,
+    SliderThumb,
+    Slider,
+    Tooltip,
+} from "@chakra-ui/react";
 import { PanelProps } from "./panelProps";
 import Image from "next/image";
 import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
@@ -22,16 +40,15 @@ const BuyPanel = ({
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
-    const [sliderValue, setSliderValue] = useState<number>(1)
-    const [showTooltip, setShowTooltip] = useState<boolean>(false)
+    const [sliderValue, setSliderValue] = useState<number>(1);
+    const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
     const labelStyles = {
-      mt: '2',
-      ml: '-2.5',
-      fontSize: 'sm',
-    }
-  
-  
+        mt: "2",
+        ml: "-2.5",
+        fontSize: "sm",
+    };
+
     let isLoading = placingOrder || placingRaydiumOrder;
 
     if (launch === null || launch === undefined || base_mint === undefined) {
@@ -52,12 +69,12 @@ const BuyPanel = ({
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
     let quote_deposit_amount = quote_raw / sliderValue;
-    let base_deposit_amount = (quote_deposit_amount * amm_base_balance) / (quote_deposit_amount + quote_input_amount) / Math.pow(10, launch.decimals);
-    
-  let liquidation_price = quote_input_amount / (base_deposit_amount + base_output);
+    let base_deposit_amount =
+        (quote_deposit_amount * amm_base_balance) / (quote_deposit_amount + quote_input_amount) / Math.pow(10, launch.decimals);
 
-  let liquidation_price_string = formatPrice(liquidation_price, 5);
+    let liquidation_price = quote_input_amount / (base_deposit_amount + base_output);
 
+    let liquidation_price_string = formatPrice(liquidation_price, 5);
 
     return (
         <>
@@ -144,44 +161,36 @@ const BuyPanel = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Leverage:
                 </Text>
-            <Slider 
-            id='slider'
-            defaultValue={1}
-            min={1}
-            max={100}
-            colorScheme='teal'
-            onChange={(v) => setSliderValue(v)}
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
-            >
-        <SliderMark value={25} {...labelStyles}>
-          25
-        </SliderMark>
-        <SliderMark value={50} {...labelStyles}>
-          50
-        </SliderMark>
-        <SliderMark value={75} {...labelStyles}>
-          75
-        </SliderMark>
-      
-        <SliderTrack>
-          <SliderFilledTrack />
-        </SliderTrack>
-        <Tooltip
-        hasArrow
-        bg='teal.500'
-        color='white'
-        placement='top'
-        isOpen={showTooltip}
-        label={`${sliderValue}x`}
-      >
-        <SliderThumb />
-      </Tooltip>
-            </Slider>
-      </VStack>
+                <Slider
+                    id="slider"
+                    defaultValue={1}
+                    min={1}
+                    max={100}
+                    colorScheme="teal"
+                    onChange={(v) => setSliderValue(v)}
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                >
+                    <SliderMark value={25} {...labelStyles}>
+                        25
+                    </SliderMark>
+                    <SliderMark value={50} {...labelStyles}>
+                        50
+                    </SliderMark>
+                    <SliderMark value={75} {...labelStyles}>
+                        75
+                    </SliderMark>
 
+                    <SliderTrack>
+                        <SliderFilledTrack />
+                    </SliderTrack>
+                    <Tooltip hasArrow bg="teal.500" color="white" placement="top" isOpen={showTooltip} label={`${sliderValue}x`}>
+                        <SliderThumb />
+                    </Tooltip>
+                </Slider>
+            </VStack>
 
-      <VStack align="start" w="100%">
+            <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Liquidation Price:
                 </Text>

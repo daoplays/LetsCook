@@ -104,14 +104,9 @@ const usePlaceMarketOrder = () => {
             mint_account.program,
         );
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        
 
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
@@ -162,11 +157,7 @@ const usePlaceMarketOrder = () => {
             PROGRAM,
         )[0];
 
-        let trade_to_earn_account = PublicKey.findProgramAddressSync(
-            [amm_data_account.toBytes(), Buffer.from("TradeToEarn")],
-            PROGRAM,
-        )[0];
-
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
 
         let transfer_hook = getTransferHook(mint_account.mint);
 
@@ -219,7 +210,7 @@ const usePlaceMarketOrder = () => {
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
 
             { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
-            
+
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
 

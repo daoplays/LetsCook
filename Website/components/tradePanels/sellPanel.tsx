@@ -35,7 +35,7 @@ const SellPanel = ({
     total_base_fee += Math.ceil(((base_raw - total_base_fee) * amm.fee) / 100 / 100);
 
     let base_input_amount = base_raw - total_base_fee;
-    console.log("sell fee", total_base_fee)
+    console.log("sell fee", total_base_fee);
     let quote_output = (base_input_amount * amm_quote_balance) / (base_input_amount + amm_base_balance) / Math.pow(10, 9);
     let quote_output_string = formatPrice(quote_output, 5);
 

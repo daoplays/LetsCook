@@ -31,7 +31,7 @@ const CreateAMM = () => {
                     position: "relative",
                 }}
             >
-               <LaunchAMM/>
+                <LaunchAMM />
             </main>
         </>
     );

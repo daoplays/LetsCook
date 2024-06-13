@@ -324,19 +324,18 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(data);
-                 console.log("launch mm", program_data[i].pubkey.toString());
+                console.log("launch mm", program_data[i].pubkey.toString());
                 mm_launch_data.push(mm);
                 continue;
             }
 
             if (data[0] === 6) {
-                try{
-                const [amm] = AMMData.struct.deserialize(data);
-                amm_data.push(amm);
-                //console.log(amm)
-                }
-                catch(error) {
-                    console.log(error)
+                try {
+                    const [amm] = AMMData.struct.deserialize(data);
+                    amm_data.push(amm);
+                    //console.log(amm)
+                } catch (error) {
+                    console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
                 }
 

@@ -404,7 +404,11 @@ const TradePage = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+            ],
             PROGRAM,
         )[0];
 
@@ -485,7 +489,7 @@ const TradePage = () => {
             setPriceAddress(price_data_account);
 
             let price_data_buffer = await request_raw_account_data("", price_data_account);
-            console.log(price_data_buffer)
+            console.log(price_data_buffer);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
             //console.log(price_data.data);
@@ -505,7 +509,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume =  Buffer.from(item.volume).readFloatLE(0);
+                let volume = Buffer.from(item.volume).readFloatLE(0);
 
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;

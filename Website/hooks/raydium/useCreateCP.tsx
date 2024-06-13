@@ -191,10 +191,7 @@ export const useCreateCP = (launch: LaunchData) => {
             TOKEN_2022_PROGRAM_ID,
         );
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(),Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
         //let keys  = transaction["instructions"][0]["keys"]
         let keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

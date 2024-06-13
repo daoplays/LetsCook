@@ -99,15 +99,20 @@ export class TimeSeriesData {
 }
 
 type AMMPluginEnum = {
-    
-    TradeToEarn: { total_tokens: bignum, last_reward_date: number };
+    TradeToEarn: { total_tokens: bignum; last_reward_date: number };
 };
 type AMMPlugin = DataEnumKeyAsKind<AMMPluginEnum>;
 
 const ammPluginBeet = dataEnum<AMMPluginEnum>([
     [
         "TradeToEarn",
-        new BeetArgsStruct<AMMPluginEnum["TradeToEarn"]>([["total_tokens", u64], ["last_reward_date", u32]], 'AMMPluginEnum["TradeToEarn"]'),
+        new BeetArgsStruct<AMMPluginEnum["TradeToEarn"]>(
+            [
+                ["total_tokens", u64],
+                ["last_reward_date", u32],
+            ],
+            'AMMPluginEnum["TradeToEarn"]',
+        ),
     ],
 ]) as FixableBeet<AMMPlugin>;
 
@@ -173,7 +178,7 @@ export class AMMData {
                 args.short_base_amount!,
                 args.long_quote_amount!,
                 args.start_time!,
-                args.plugins!
+                args.plugins!,
             ),
         "AMMData",
     );

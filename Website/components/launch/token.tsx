@@ -723,9 +723,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={
-                                                            newLaunchData.current.edit_mode === true
-                                                        }
+                                                        disabled={newLaunchData.current.edit_mode === true}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Transfer Hook Program ID"

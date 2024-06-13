@@ -108,10 +108,7 @@ const useEditLaunch = () => {
             TOKEN_PROGRAM_ID,
         );
 
-        let trade_to_earn_account = PublicKey.findProgramAddressSync(
-            [amm_data_account.toBytes(), Buffer.from("TradeToEarn")],
-            PROGRAM,
-        )[0];
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
 
         console.log(wrapped_sol_mint.toString(), amm_data_account.toString(), cook_amm_quote_account.toString());
 
