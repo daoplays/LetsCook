@@ -587,14 +587,14 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type LaunchPluginEnum = {
-    MintProbability: { mint_prob: number };
+    Whitelist: { key: PublicKey, amount: bignum };
 };
 type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
 
 const launchPluginBeet = dataEnum<LaunchPluginEnum>([
     [
-        "MintProbability",
-        new BeetArgsStruct<LaunchPluginEnum["MintProbability"]>([["mint_prob", u16]], 'LaunchPluginEnum["MintProbability"]'),
+        "Whitelist",
+        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>([["key", publicKey], ["amount", u64]], 'LaunchPluginEnum["Whitelist"]'),
     ],
 ]) as FixableBeet<LaunchPlugin>;
 
@@ -700,6 +700,8 @@ export interface LaunchDataUserInput {
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
     launch_type: number;
+    whitelist_key : string;
+    whitelist_amount : number
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -736,7 +738,9 @@ export const defaultUserInput: LaunchDataUserInput = {
     max_transfer_fee: 0,
     permanent_delegate: null,
     transfer_hook_program: null,
-    launch_type: 0,
+    launch_type: 1,
+    whitelist_key : "",
+    whitelist_amount : 0
 };
 
 export class myU64 {
@@ -969,7 +973,9 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         max_transfer_fee: 0,
         permanent_delegate: null,
         transfer_hook_program: null,
-        launch_type: 0,
+        launch_type: 1,
+        whitelist_key : "",
+        whitelist_amount : 0
     };
 
     return data;
@@ -1212,7 +1218,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         extensions,
         new_launch_data.amm_provider,
         new_launch_data.launch_type,
-        0
+        new_launch_data.whitelist_amount
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

@@ -453,6 +453,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < launch_data.length; i++) {
             //console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
             trade_mints.push(launch_data[i].keys[LaunchKeys.MintAddress]);
+            // check if we have a whitelist token
+            for (let p = 0; p < launch_data[i].plugins.length; p++) {
+                if (launch_data[i].plugins[i]["__kind"] === "Whitelist") {
+                    trade_mints.push(launch_data[i].plugins[i]["key"]);
+                }
+            }
         }
         for (let i = 0; i < trade_filtered.length; i++) {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);

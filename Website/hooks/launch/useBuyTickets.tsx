@@ -17,7 +17,11 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { useDisclosure } from "@chakra-ui/react";
 import { toast } from "react-toastify";
 import bs58 from "bs58";
-
+import useAppRoot from "../../context/useAppRoot";
+import {
+    getAssociatedTokenAddress,
+   
+} from "@solana/spl-token";
 interface BuyTicketsProps {
     launchData: LaunchData;
     value: number;
@@ -25,6 +29,8 @@ interface BuyTicketsProps {
 
 const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     const wallet = useWallet();
+    const { mintData } = useAppRoot();
+
     const { isOpen: isWarningOpened, onOpen: openWarning, onClose: closeWarning } = useDisclosure();
 
     const ticketLabel = value <= 1 ? "ticket" : "tickets";
@@ -125,6 +131,28 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
         let orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
 
+        // check if we have the whitelist plugin
+        let whitelist_mint = SYSTEM_KEY;
+        let whitelist_account = SYSTEM_KEY;
+        let whitelist_token_program = SYSTEM_KEY;
+
+        for (let i = 0; i < launchData.plugins.length; i++) {
+            if (launchData.plugins[i]["__kind"] === "Whitelist") {
+                whitelist_mint = launchData.plugins[i]["key"];
+                let whitelist = mintData.get(whitelist_mint.toString());
+
+                whitelist_account = await getAssociatedTokenAddress(
+                    whitelist_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    whitelist.token_program,
+                );
+
+                whitelist_token_program = whitelist.token_program;
+                
+            }
+        }
+
         const instruction_data = serialise_BuyTickets_instruction(value, Array.from(key_bytes));
 
         var account_vector = [
@@ -141,6 +169,10 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: orao_network, isSigner: false, isWritable: true },
             { pubkey: orao_program, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: whitelist_mint, isSigner: false, isWritable: true },
+            { pubkey: whitelist_account, isSigner: false, isWritable: true },
+            { pubkey: whitelist_token_program, isSigner: false, isWritable: true },
+
         ];
 
         const list_instruction = new TransactionInstruction({

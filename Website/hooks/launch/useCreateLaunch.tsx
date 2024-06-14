@@ -351,7 +351,7 @@ const usuCreateLaunch = () => {
         }
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
-        let whitelist = SYSTEM_KEY;
+        let whitelist = newLaunchData.current.whitelist_key !== "" ? new PublicKey(newLaunchData.current.whitelist_key) :  SYSTEM_KEY;
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
