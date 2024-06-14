@@ -595,7 +595,7 @@ const TradePage = () => {
                         </Tooltip>
 
                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                            <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                            <Link href={getSolscanLink(launch.keys[LaunchKeys.MintAddress], "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
                                 <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
                             </Link>
                         </Tooltip>

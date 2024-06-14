@@ -13,7 +13,7 @@ import {
     Progress,
     Divider,
 } from "@chakra-ui/react";
-import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../../components/Solana/state";
+import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data, MintData } from "../../components/Solana/state";
 import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -40,10 +40,15 @@ import Loader from "../../components/loader";
 import { WarningModal } from "../../components/Solana/modals";
 import { ButtonString } from "../../components/user_status";
 import Head from "next/head";
+import useAppRoot from "../../context/useAppRoot";
+import { getSolscanLink } from "../../utils/getSolscanLink";
+import Link from "next/link";
 
 const TokenMintPage = () => {
     const wallet = useWallet();
     const router = useRouter();
+    const { mintData } = useAppRoot();
+
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
@@ -55,6 +60,7 @@ const TokenMintPage = () => {
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
     const [cookState, setCookState] = useState<CookState | null>(null);
+    const [whitelist, setWhitelist] = useState<MintData | null>(null);
 
     let current_time = new Date().getTime();
 
@@ -75,6 +81,7 @@ const TokenMintPage = () => {
     const { CheckTickets, isLoading: isCheckingTickets } = useCheckTickets(launchData);
     const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launchData);
     const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(launchData);
+
     const { InitAMM } = useInitAMM(launchData);
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data });
@@ -228,6 +235,7 @@ const TokenMintPage = () => {
             }
         }
 
+        
         if (wallet === null || wallet.publicKey === null) {
             setIsLoading(false);
             return;
@@ -266,6 +274,19 @@ const TokenMintPage = () => {
         checkLaunchData.current = false;
         setIsLoading(false);
     }, [wallet, pageName, launchData, join_data]);
+
+    useEffect(() => {
+        if (mintData !== null && launchData !== null) {
+            for (let i = 0; i < launchData.plugins.length; i++) {
+                if (launchData.plugins[i]["__kind"] === "Whitelist") {
+                    let whitelist_mint : PublicKey = launchData.plugins[i]["key"];
+                    console.log("have whitelist ", whitelist_mint.toString())
+                    setWhitelist(mintData.get(whitelist_mint.toString()))
+                    
+                }
+            }
+        }
+    }, [mintData, launchData]);
 
     useEffect(() => {
         checkLaunchData.current = true;
@@ -519,6 +540,26 @@ const TokenMintPage = () => {
                                                     style={{ marginLeft: -3 }}
                                                 />
                                             </HStack>
+                                            {whitelist !== null &&
+                                                <HStack alignItems="center">
+                                                    <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
+                                                        Whitelist Required
+                                                    </Text>
+                                                    <Link
+                                                        href={getSolscanLink(whitelist.mint.address, "Token")}
+                                                        target="_blank"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                    <Image
+                                                        src={whitelist.icon}
+                                                        width={20}
+                                                        height={20}
+                                                        alt="SOL Icon"
+                                                        style={{ marginLeft: -3 }}
+                                                    />
+                                                    </Link>
+                                                </HStack>
+                                            }
                                         </VStack>
                                     ) : (
                                         <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
