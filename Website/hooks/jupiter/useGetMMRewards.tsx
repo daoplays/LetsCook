@@ -14,7 +14,7 @@ import { serialise_ClaimReward_instruction } from "../../components/Solana/jupit
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { LaunchKeys, PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
+import { LaunchKeys, PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, LaunchFlags } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
@@ -86,6 +86,7 @@ const useGetMMRewards = () => {
 
         const token_mint = launch.keys[LaunchKeys.MintAddress];
         let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
+        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
@@ -105,19 +106,37 @@ const useGetMMRewards = () => {
             mint_account.token_program,
         );
 
+        let amm_seed_keys = [];
+        if (token_mint.toString() < wsol_mint.toString()) {
+            amm_seed_keys.push(token_mint);
+            amm_seed_keys.push(wsol_mint);
+        } else {
+            amm_seed_keys.push(wsol_mint);
+            amm_seed_keys.push(token_mint);
+        }
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
+            PROGRAM,
+        )[0];
+
+
         let date_bytes = uInt32ToLEBytes(date);
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let launch_date_account = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
+            [amm_data_account.toBytes(), date_bytes, Buffer.from("LaunchDate")],
             PROGRAM,
         )[0];
 
         let user_date_account = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            [amm_data_account.toBytes(), wallet.publicKey.toBytes(), date_bytes],
             PROGRAM,
         )[0];
+
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
+
 
         let transfer_hook = getTransferHook(mint_account.mint);
 
@@ -154,20 +173,21 @@ const useGetMMRewards = () => {
             }
         }
 
-        const instruction_data = serialise_ClaimReward_instruction(date);
+        const instruction_data = serialise_ClaimReward_instruction(date, launch.flags[LaunchFlags.AMMProvider]);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_pda_account, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
 
-            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
+            { pubkey: wsol_mint, isSigner: false, isWritable: true },
             { pubkey: mint_account.token_program, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];

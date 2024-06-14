@@ -301,20 +301,22 @@ class ClaimReward_Instruction {
     constructor(
         readonly instruction: number,
         readonly date: number,
+        readonly amm_provider: number
     ) {}
 
     static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(
         [
             ["instruction", u8],
             ["date", u32],
+            ["amm_provider", u8],
         ],
-        (args) => new ClaimReward_Instruction(args.instruction!, args.date!),
+        (args) => new ClaimReward_Instruction(args.instruction!, args.date!, args.amm_provider!),
         "ClaimReward_Instruction",
     );
 }
 
-export function serialise_ClaimReward_instruction(date: number): Buffer {
-    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date);
+export function serialise_ClaimReward_instruction(date: number, amm_provider: number): Buffer {
+    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date, amm_provider);
     const [buf] = ClaimReward_Instruction.struct.serialize(data);
 
     return buf;
