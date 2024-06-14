@@ -126,13 +126,13 @@ const useUpdateCookLiquidity = () => {
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
 
-        token_amount = new BN(token_amount * Math.pow(10, 9));
+        token_amount = new BN(token_amount);
         console.log(token_amount.toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
@@ -147,7 +147,7 @@ const useUpdateCookLiquidity = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
             PROGRAM,
         )[0];
 
@@ -155,7 +155,7 @@ const useUpdateCookLiquidity = () => {
             token_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -171,13 +171,10 @@ const useUpdateCookLiquidity = () => {
             cook_lp_mint_account, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
@@ -220,7 +217,6 @@ const useUpdateCookLiquidity = () => {
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: wsol_mint, isSigner: false, isWritable: true },
             { pubkey: cook_lp_mint_account, isSigner: false, isWritable: true },
@@ -235,7 +231,7 @@ const useUpdateCookLiquidity = () => {
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: mint_account.program, isSigner: false, isWritable: false },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];

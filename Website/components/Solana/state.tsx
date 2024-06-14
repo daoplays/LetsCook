@@ -219,6 +219,16 @@ export async function check_signature(bearer: string, signature: string): Promis
     return null;
 }
 
+export interface MintData {
+    mint: Mint;
+    uri: string;
+    name: string;
+    symbol: string;
+    icon: string;
+    extensions: number;
+    token_program: PublicKey;
+}
+
 export interface MintInfo {
     mint: Mint;
     program: PublicKey;
@@ -577,14 +587,14 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type LaunchPluginEnum = {
-    MintProbability: { mint_prob: number };
+    Whitelist: { key: PublicKey, amount: bignum };
 };
 type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
 
 const launchPluginBeet = dataEnum<LaunchPluginEnum>([
     [
-        "MintProbability",
-        new BeetArgsStruct<LaunchPluginEnum["MintProbability"]>([["mint_prob", u16]], 'LaunchPluginEnum["MintProbability"]'),
+        "Whitelist",
+        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>([["key", publicKey], ["amount", u64]], 'LaunchPluginEnum["Whitelist"]'),
     ],
 ]) as FixableBeet<LaunchPlugin>;
 
@@ -690,6 +700,8 @@ export interface LaunchDataUserInput {
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
     launch_type: number;
+    whitelist_key : string;
+    whitelist_amount : number
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -726,7 +738,9 @@ export const defaultUserInput: LaunchDataUserInput = {
     max_transfer_fee: 0,
     permanent_delegate: null,
     transfer_hook_program: null,
-    launch_type: 0,
+    launch_type: 1,
+    whitelist_key : "",
+    whitelist_amount : 0
 };
 
 export class myU64 {
@@ -959,7 +973,9 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         max_transfer_fee: 0,
         permanent_delegate: null,
         transfer_hook_program: null,
-        launch_type: 0,
+        launch_type: 1,
+        whitelist_key : "",
+        whitelist_amount : 0
     };
 
     return data;
@@ -1120,6 +1136,7 @@ class CreateLaunch_Instruction {
         readonly extensions: number,
         readonly amm_provider: number,
         readonly launch_type: number,
+        readonly whitelist_tokens: bignum
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1142,6 +1159,8 @@ class CreateLaunch_Instruction {
             ["extensions", u8],
             ["amm_provider", u8],
             ["launch_type", u8],
+            ["whitelist_tokens", u64],
+
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1163,6 +1182,8 @@ class CreateLaunch_Instruction {
                 args.extensions!,
                 args.amm_provider!,
                 args.launch_type!,
+                args.whitelist_tokens!,
+
             ),
         "CreateLaunch_Instruction",
     );
@@ -1197,6 +1218,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         extensions,
         new_launch_data.amm_provider,
         new_launch_data.launch_type,
+        new_launch_data.whitelist_amount
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

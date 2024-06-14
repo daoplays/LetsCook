@@ -115,7 +115,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(featuredLaunch, "Token")}
+                                            href={getSolscanLink(featuredLaunch.keys[LaunchKeys.MintAddress], "Token")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >

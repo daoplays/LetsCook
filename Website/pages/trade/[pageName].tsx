@@ -8,6 +8,7 @@ import {
     request_token_supply,
     uInt32ToLEBytes,
     MintInfo,
+    MintData,
 } from "../../components/Solana/state";
 import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
@@ -193,7 +194,7 @@ const TradePage = () => {
 
     const [launch, setLaunch] = useState<LaunchData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
-    const [base_mint, setBaseMint] = useState<MintInfo | null>(null);
+    const [base_mint, setBaseMint] = useState<MintData | null>(null);
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
@@ -259,7 +260,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        //("update base amount", amount);
+        console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
@@ -294,14 +295,14 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = bignum_to_num(item.volume) / Math.pow(10, launch.decimals);
+                let volume = bignum_to_num(item.volume) / Math.pow(10, base_mint.mint.decimals);
 
                 data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
                 //console.log("new data", data);
             }
             setMarketData(data);
         },
-        [launch],
+        [base_mint],
     );
 
     const check_user_token_update = useCallback(async (result: any) => {
@@ -404,7 +405,11 @@ const TradePage = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+            ],
             PROGRAM,
         )[0];
 
@@ -422,14 +427,14 @@ const TradePage = () => {
                     token_mint, // mint
                     wallet.publicKey, // owner
                     true, // allow owner off curve
-                    base_mint.program,
+                    base_mint.token_program,
                 );
 
                 let user_lp_token_account_key = await getAssociatedTokenAddress(
                     lp_mint, // mint
                     wallet.publicKey, // owner
                     true, // allow owner off curve
-                    launch.flags[LaunchFlags.AMMProvider] === 0 ? base_mint.program : TOKEN_PROGRAM_ID,
+                    launch.flags[LaunchFlags.AMMProvider] === 0 ? base_mint.token_program : TOKEN_PROGRAM_ID,
                 );
 
                 setUserBaseAddress(user_base_token_account_key);
@@ -485,6 +490,7 @@ const TradePage = () => {
             setPriceAddress(price_data_account);
 
             let price_data_buffer = await request_raw_account_data("", price_data_account);
+            console.log(price_data_buffer);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
             //console.log(price_data.data);
@@ -504,7 +510,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = bignum_to_num(item.volume / Math.pow(10, launch.decimals));
+                let volume = Buffer.from(item.volume).readFloatLE(0);
 
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;
@@ -562,18 +568,18 @@ const TradePage = () => {
             <HStack spacing={5} w="100%" px={5} pb={sm ? 5 : 0} style={{ borderBottom: sm ? "0.5px solid rgba(134, 142, 150, 0.5)" : "" }}>
                 <Image
                     alt="Launch icon"
-                    src={launch.icon}
+                    src={base_mint.icon}
                     width={65}
                     height={65}
                     style={{ borderRadius: "8px", backgroundSize: "cover" }}
                 />
                 <VStack align="start" spacing={1}>
                     <Text m={0} fontSize={20} color="white" className="font-face-kg" style={{ wordBreak: "break-all" }} align={"center"}>
-                        {launch.symbol}
+                        {base_mint.symbol}
                     </Text>
                     <HStack spacing={3} align="start" justify="start">
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {trimAddress(launch.keys[LaunchKeys.MintAddress].toString())}
+                            {trimAddress(base_mint.mint.address.toString())}
                         </Text>
 
                         <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -581,7 +587,7 @@ const TradePage = () => {
                                 style={{ cursor: "pointer" }}
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    navigator.clipboard.writeText(launch.keys[LaunchKeys.MintAddress].toString());
+                                    navigator.clipboard.writeText(base_mint.mint.address.toString());
                                 }}
                             >
                                 <MdOutlineContentCopy color="white" size={25} />
@@ -589,7 +595,7 @@ const TradePage = () => {
                         </Tooltip>
 
                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                            <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                            <Link href={getSolscanLink(launch.keys[LaunchKeys.MintAddress], "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
                                 <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
                             </Link>
                         </Tooltip>
@@ -644,13 +650,14 @@ const TradePage = () => {
                             {leftPanel === "Info" && (
                                 <InfoContent
                                     launch={launch}
+                                    amm={amm}
+                                    base_mint={base_mint}
                                     volume={last_day_volume}
                                     mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}
                                     quote_amount={amm_quote_amount}
-                                    num_holders={num_holders}
                                 />
                             )}
 
@@ -658,7 +665,7 @@ const TradePage = () => {
                                 <BuyAndSell
                                     launch={launch}
                                     amm={amm}
-                                    base_mint={base_mint.mint}
+                                    base_mint={base_mint}
                                     base_balance={amm_base_amount}
                                     quote_balance={amm_quote_amount}
                                     amm_lp_balance={amm_lp_amount}
@@ -844,7 +851,7 @@ const BuyAndSell = ({
 }: {
     launch: LaunchData;
     amm: AMMData;
-    base_mint: Mint;
+    base_mint: MintData;
     base_balance: number;
     quote_balance: number;
     amm_lp_balance: number;
@@ -866,10 +873,10 @@ const BuyAndSell = ({
 
     let transfer_fee = 0;
     let max_transfer_fee = 0;
-    let transfer_fee_config = getTransferFeeConfig(base_mint);
+    let transfer_fee_config = getTransferFeeConfig(base_mint.mint);
     if (transfer_fee_config !== null) {
         transfer_fee = transfer_fee_config.newerTransferFee.transferFeeBasisPoints;
-        max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, base_mint.decimals);
+        max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, base_mint.mint.decimals);
     }
 
     return (
@@ -924,10 +931,10 @@ const BuyAndSell = ({
                           ? user_lp_balance / Math.pow(10, 9) < 1e-3
                               ? (user_lp_balance / Math.pow(10, 9)).toExponential(3)
                               : (user_lp_balance / Math.pow(10, 9)).toFixed(Math.min(3))
-                          : (user_base_balance / Math.pow(10, launch.decimals)).toLocaleString("en-US", {
+                          : (user_base_balance / Math.pow(10, base_mint.mint.decimals)).toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                             })}{" "}
-                    {selected === "Buy" ? "SOL" : selected === "LP-" ? "LP" : launch.symbol}
+                    {selected === "Buy" ? "SOL" : selected === "LP-" ? "LP" : base_mint.symbol}
                 </Text>
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
@@ -948,7 +955,7 @@ const BuyAndSell = ({
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Max Transfer Fee ({launch.symbol}):
+                    Max Transfer Fee ({base_mint.symbol}):
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                     {max_transfer_fee}
@@ -1035,30 +1042,33 @@ const BuyAndSell = ({
 
 const InfoContent = ({
     launch,
+    amm,
+    base_mint,
     price,
     sol_price,
     quote_amount,
     volume,
     total_supply,
     mm_data,
-    num_holders,
+    
 }: {
     launch: LaunchData;
+    amm: AMMData;
+    base_mint: MintData;
     price: number;
     sol_price: number;
     quote_amount: number;
     volume: number;
     total_supply: number;
     mm_data: MMLaunchData | null;
-    num_holders: number;
 }) => {
     const wallet = useWallet();
     const { GetMMTokens } = useGetMMTokens();
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, launch);
     if (mm_data !== null) {
-        reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, launch.decimals);
+        reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
 
     return (
@@ -1069,7 +1079,7 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(launch.decimals, 3))}
+                        {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(base_mint.mint.decimals, 3))}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
                 </HStack>
@@ -1083,7 +1093,7 @@ const InfoContent = ({
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                         {volume.toLocaleString()}
                     </Text>
-                    <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
+                    <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
                 </HStack>
             </HStack>
 
@@ -1095,7 +1105,7 @@ const InfoContent = ({
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                         {reward.toLocaleString()}
                     </Text>
-                    <Image src={launch.icon} width={30} height={30} alt="Token Icon" />
+                    <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
                 </HStack>
             </HStack>
 
@@ -1104,7 +1114,7 @@ const InfoContent = ({
                     MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, launch.decimals)).toLocaleString() : 0}
+                    {mm_data !== null ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
                 </Text>
             </HStack>
 
@@ -1168,7 +1178,7 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     EXTENSIONS:
                 </Text>
-                <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
+                <ShowExtensions extension_flag={base_mint.extensions} />
             </HStack>
         </VStack>
     );

@@ -8,7 +8,7 @@ import {
     send_transaction,
     serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys } from "../../components/Solana/constants";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -84,7 +84,7 @@ const useEditLaunch = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch_data.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
             PROGRAM,
         )[0];
 
@@ -107,6 +107,8 @@ const useEditLaunch = () => {
             true, // allow owner off curve
             TOKEN_PROGRAM_ID,
         );
+
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
 
         console.log(wrapped_sol_mint.toString(), amm_data_account.toString(), cook_amm_quote_account.toString());
 
@@ -131,6 +133,7 @@ const useEditLaunch = () => {
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
             { pubkey: amm_lp_mint, isSigner: false, isWritable: true },
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },

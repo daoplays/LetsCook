@@ -161,9 +161,9 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                         style={{ marginLeft: -3 }}
                                                     />
                                                 </HStack>
-                                                <Text m="0" mt={-3} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                                {/* <Text m="0" mt={-3} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                                     per ticket
-                                                </Text>
+                                                </Text> */}
                                             </VStack>
                                         </VStack>
                                     </Flex>

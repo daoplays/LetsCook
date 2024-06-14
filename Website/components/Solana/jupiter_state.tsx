@@ -13,6 +13,11 @@ import {
     array,
     fixedSizeArray,
     u128,
+    BeetArgsStruct,
+    dataEnum,
+    DataEnumKeyAsKind,
+    FixableBeetArgsStruct,
+    FixableBeet,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
@@ -60,7 +65,7 @@ export class OHLCV {
         readonly high: number[],
         readonly low: number[],
         readonly close: number[],
-        readonly volume: number,
+        readonly volume: number[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<OHLCV>(
@@ -70,7 +75,7 @@ export class OHLCV {
             ["high", uniformFixedSizeArray(u8, 4)],
             ["low", uniformFixedSizeArray(u8, 4)],
             ["close", uniformFixedSizeArray(u8, 4)],
-            ["volume", u64],
+            ["volume", uniformFixedSizeArray(u8, 4)],
         ],
         (args) => new OHLCV(args.timestamp!, args.open!, args.high!, args.low!, args.close!, args.volume!),
         "OHLCV",
@@ -93,6 +98,24 @@ export class TimeSeriesData {
     );
 }
 
+type AMMPluginEnum = {
+    TradeToEarn: { total_tokens: bignum; last_reward_date: number };
+};
+type AMMPlugin = DataEnumKeyAsKind<AMMPluginEnum>;
+
+const ammPluginBeet = dataEnum<AMMPluginEnum>([
+    [
+        "TradeToEarn",
+        new BeetArgsStruct<AMMPluginEnum["TradeToEarn"]>(
+            [
+                ["total_tokens", u64],
+                ["last_reward_date", u32],
+            ],
+            'AMMPluginEnum["TradeToEarn"]',
+        ),
+    ],
+]) as FixableBeet<AMMPlugin>;
+
 export class AMMData {
     constructor(
         readonly account_type: number,
@@ -104,8 +127,15 @@ export class AMMData {
         readonly fee: number,
         readonly num_data_accounts: number,
         readonly last_price: number[],
-        readonly transferring: number,
         readonly lp_amount: bignum,
+        readonly borrow_cost: number,
+        readonly leverage_fraction: number,
+        readonly amm_base_amount: bignum,
+        readonly amm_quote_amount: bignum,
+        readonly short_base_amount: bignum,
+        readonly long_quote_amount: bignum,
+        readonly start_time: bignum,
+        readonly plugins: AMMPluginEnum[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<AMMData>(
@@ -119,8 +149,15 @@ export class AMMData {
             ["fee", u16],
             ["num_data_accounts", u32],
             ["last_price", uniformFixedSizeArray(u8, 4)],
-            ["transferring", u8],
             ["lp_amount", u64],
+            ["borrow_cost", u16],
+            ["leverage_fraction", u16],
+            ["amm_base_amount", u64],
+            ["amm_quote_amount", u64],
+            ["short_base_amount", u64],
+            ["long_quote_amount", u64],
+            ["start_time", u64],
+            ["plugins", array(ammPluginBeet)],
         ],
         (args) =>
             new AMMData(
@@ -133,8 +170,15 @@ export class AMMData {
                 args.fee!,
                 args.num_data_accounts!,
                 args.last_price!,
-                args.transferring!,
                 args.lp_amount!,
+                args.borrow_cost!,
+                args.leverage_fraction!,
+                args.amm_base_amount!,
+                args.amm_quote_amount!,
+                args.short_base_amount!,
+                args.long_quote_amount!,
+                args.start_time!,
+                args.plugins!,
             ),
         "AMMData",
     );
@@ -257,20 +301,22 @@ class ClaimReward_Instruction {
     constructor(
         readonly instruction: number,
         readonly date: number,
+        readonly amm_provider: number
     ) {}
 
     static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(
         [
             ["instruction", u8],
             ["date", u32],
+            ["amm_provider", u8],
         ],
-        (args) => new ClaimReward_Instruction(args.instruction!, args.date!),
+        (args) => new ClaimReward_Instruction(args.instruction!, args.date!, args.amm_provider!),
         "ClaimReward_Instruction",
     );
 }
 
-export function serialise_ClaimReward_instruction(date: number): Buffer {
-    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date);
+export function serialise_ClaimReward_instruction(date: number, amm_provider: number): Buffer {
+    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date, amm_provider);
     const [buf] = ClaimReward_Instruction.struct.serialize(data);
 
     return buf;

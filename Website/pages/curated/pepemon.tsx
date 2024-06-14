@@ -249,7 +249,7 @@ const Pepemon = () => {
             launch.keys[CollectionKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint.program,
+            mint.token_program,
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
@@ -322,7 +322,7 @@ const Pepemon = () => {
                 launch.keys[CollectionKeys.MintAddress], // mint
                 wallet.publicKey, // owner
                 true, // allow owner off curve
-                mint.program,
+                mint.token_program,
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }

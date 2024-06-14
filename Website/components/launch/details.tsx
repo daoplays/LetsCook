@@ -4,7 +4,7 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useDisclosure } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
-import { Config, DEFAULT_FONT_SIZE, FEES_PROGRAM, PROGRAM } from "../../components/Solana/constants";
+import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
 import { LaunchData, LaunchDataUserInput, create_LaunchData, request_current_balance } from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";

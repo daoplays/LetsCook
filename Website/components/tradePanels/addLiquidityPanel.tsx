@@ -20,14 +20,14 @@ const AddLiquidityPanel = ({
     amm_quote_balance,
     amm_lp_balance,
 }: PanelProps) => {
-    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
+    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(amm);
     const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
 
     let isLoading = addLiquidityRaydiumLoading || updateCookLiquidityLoading;
 
-    let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.decimals));
+    let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.mint.decimals));
     let total_base_fee = 0;
-    let base_transfer_fee_config = getTransferFeeConfig(base_mint);
+    let base_transfer_fee_config = getTransferFeeConfig(base_mint.mint);
     if (base_transfer_fee_config !== null) {
         total_base_fee += Number(calculateFee(base_transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
@@ -67,7 +67,7 @@ const AddLiquidityPanel = ({
                         min="0"
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        <Image src={base_mint.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
@@ -114,7 +114,7 @@ const AddLiquidityPanel = ({
                     !connected
                         ? handleConnectWallet()
                         : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? UpdateCookLiquidity(launch, token_amount, 0)
+                          ? UpdateCookLiquidity(launch, token_amount * Math.pow(10, launch.decimals), 0)
                           : AddLiquidityRaydium(
                                 lp_generated * Math.pow(10, 9),
                                 token_amount * Math.pow(10, launch.decimals),

@@ -30,7 +30,6 @@ import {
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
-import { DEFAULT_FONT_SIZE, FEES_PROGRAM } from "../../components/Solana/constants";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import WoodenButton from "../Buttons/woodenButton";
@@ -69,8 +68,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
-
-    const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     // token extensions
     const [transferFee, setTransferFee] = useState<string>(
@@ -696,14 +693,13 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
+                                                        disabled={newLaunchData.current.edit_mode === true}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Permanent Delegate ID"
                                                         value={permanentDelegate}
                                                         onChange={(e) => {
                                                             setPermanentDelegate(e.target.value);
-                                                            setTransferHookID(FEES_PROGRAM.toString());
                                                         }}
                                                     />
                                                 </div>
@@ -727,18 +723,13 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={
-                                                            newLaunchData.current.edit_mode === true ||
-                                                            isCustomProgramId ||
-                                                            permanentDelegate !== ""
-                                                        }
+                                                        disabled={newLaunchData.current.edit_mode === true}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Transfer Hook Program ID"
                                                         value={transferHookID}
                                                         onChange={(e) => {
                                                             setTransferHookID(e.target.value);
-                                                            setPermanentDelegate("");
                                                         }}
                                                     />
                                                 </div>

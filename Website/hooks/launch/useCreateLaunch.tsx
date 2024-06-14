@@ -14,7 +14,6 @@ import {
     PROGRAM,
     Config,
     LaunchKeys,
-    FEES_PROGRAM,
     METAPLEX_META,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
@@ -352,7 +351,7 @@ const usuCreateLaunch = () => {
         }
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
-
+        let whitelist = newLaunchData.current.whitelist_key !== "" ? new PublicKey(newLaunchData.current.whitelist_key) :  SYSTEM_KEY;
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
@@ -369,11 +368,9 @@ const usuCreateLaunch = () => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
+            { pubkey: whitelist, isSigner: false, isWritable: true },
 
-            { pubkey: token_meta_key, isSigner: false, isWritable: true },
-            { pubkey: METAPLEX_META, isSigner: false, isWritable: false },
-            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-        ];
+       ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false });
@@ -387,15 +384,6 @@ const usuCreateLaunch = () => {
         if (newLaunchData.current.transfer_hook_program !== null) {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
-
-            if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
-                console.log("add hook extra");
-                let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
-                    [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
-                    FEES_PROGRAM,
-                )[0];
-                account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-            }
         }
 
         const list_instruction = new TransactionInstruction({

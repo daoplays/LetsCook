@@ -20,7 +20,7 @@ import {
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, FEES_PROGRAM } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
@@ -111,10 +111,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             PROGRAM,
         )[0];
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let mint_account = mintData.get(launchData.keys[LaunchKeys.MintAddress].toString());
@@ -125,14 +122,14 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             launchData.keys[LaunchKeys.MintAddress], // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
             launchData.keys[LaunchKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let transfer_hook = getTransferHook(mint_account.mint);
@@ -188,7 +185,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: mint_account.program, isSigner: false, isWritable: true },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: true },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];

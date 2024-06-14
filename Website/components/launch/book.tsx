@@ -1,16 +1,4 @@
 import {
-    DEBUG,
-    SYSTEM_KEY,
-    PROGRAM,
-    DEFAULT_FONT_SIZE,
-    LaunchKeys,
-    Config,
-    SOL_ACCOUNT_SEED,
-    DATA_ACCOUNT_SEED,
-    FEES_PROGRAM,
-    METAPLEX_META,
-} from "../../components/Solana/constants";
-import {
     LaunchDataUserInput,
     get_current_blockhash,
     send_transaction,
@@ -97,6 +85,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const [localCloseDate, setLocalCloseDate] = useState<Date>(newLaunchData.current.closedate);
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
+    const [whitelist_key, setWhitelistKey] = useState<string>(newLaunchData.current.whitelist_key);
+    const [whitelist_amount, setWhitelistAmount] = useState<number>(newLaunchData.current.whitelist_amount);
+
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
     const [AMMProvider, setAMMProvider] = useState<string>("cook");
     const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
@@ -150,6 +141,25 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
+        if (whitelist_key !== "") {
+            try {
+                let whitelist = new PublicKey(whitelist_key);
+                balance = await request_current_balance("", whitelist);
+
+                //console.log("check balance", teamPubKey.toString(), balance);
+
+                if (balance == 0) {
+                    toast.error("Whitelist token does not exist");
+                    return false;
+                }
+            } catch (error) {
+                toast.error("Invalid Whitelist token");
+                return false;
+            }
+
+            newLaunchData.current.whitelist_key = whitelist_key;
+            newLaunchData.current.whitelist_amount = 1;
+        }
         if (!newLaunchData.current.edit_mode && localCloseDate.getTime() <= localOpenDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
@@ -374,6 +384,26 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     value={teamWallet}
                                     onChange={(e) => {
                                         setTeamWallet(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        </HStack>
+
+                        <HStack spacing={15} w="100%">
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                WHITELIST TOKEN:
+                            </div>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    disabled={newLaunchData.current.edit_mode === true}
+                                    size={sm ? "medium" : "lg"}
+                                    required
+                                    placeholder="Optional - Enter Whitelist Token Address"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    value={whitelist_key}
+                                    onChange={(e) => {
+                                        setWhitelistKey(e.target.value);
                                     }}
                                 />
                             </div>

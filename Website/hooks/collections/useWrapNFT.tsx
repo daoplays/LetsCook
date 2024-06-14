@@ -35,16 +35,7 @@ import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { useWallet } from "@solana/wallet-adapter-react";
-import {
-    PROGRAM,
-    Config,
-    SYSTEM_KEY,
-    SOL_ACCOUNT_SEED,
-    CollectionKeys,
-    METAPLEX_META,
-    FEES_PROGRAM,
-    CORE,
-} from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, CORE } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
@@ -177,21 +168,21 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let team_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             launchData.keys[CollectionKeys.TeamWallet], // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let transfer_hook = getTransferHook(mint_account.mint);
@@ -227,10 +218,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
                 console.log(meta);
                 extra_hook_accounts.push(meta);
             }
-
-            if (transfer_hook_program_account === FEES_PROGRAM) {
-                extra_hook_accounts[0].isWritable = true;
-            }
         }
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.wrap_nft);
@@ -251,22 +238,13 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: mint_account.program, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: mint_account.token_program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: true });
 
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
-
-            if (transfer_hook_program_account.equals(FEES_PROGRAM)) {
-                account_vector.push({
-                    pubkey: extra_hook_accounts[0].pubkey,
-                    isSigner: extra_hook_accounts[0].isSigner,
-                    isWritable: true,
-                });
-            }
-
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
 
             for (let i = 0; i < extra_hook_accounts.length; i++) {
