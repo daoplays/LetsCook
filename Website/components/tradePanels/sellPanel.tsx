@@ -16,18 +16,18 @@ const SellPanel = ({
     connected,
     setTokenAmount,
     handleConnectWallet,
-    launch,
     amm_base_balance,
     amm_quote_balance,
+    launch
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
-    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
-    let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.decimals));
+    let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.mint.decimals));
     let total_base_fee = 0;
-    let base_transfer_fee_config = getTransferFeeConfig(base_mint);
+    let base_transfer_fee_config = getTransferFeeConfig(base_mint.mint);
     if (base_transfer_fee_config !== null) {
         total_base_fee += Number(calculateFee(base_transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
@@ -35,11 +35,11 @@ const SellPanel = ({
     total_base_fee += Math.ceil(((base_raw - total_base_fee) * amm.fee) / 100 / 100);
 
     let base_input_amount = base_raw - total_base_fee;
-
+    console.log("sell fee", total_base_fee);
     let quote_output = (base_input_amount * amm_quote_balance) / (base_input_amount + amm_base_balance) / Math.pow(10, 9);
     let quote_output_string = formatPrice(quote_output, 5);
 
-    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.decimals));
+    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
     let quote_no_slip = token_amount * price;
     let slippage = quote_no_slip / quote_output - 1;
 
@@ -63,7 +63,7 @@ const SellPanel = ({
                             opacity={0.5}
                             style={{ cursor: "pointer" }}
                             onClick={() => {
-                                setTokenAmount(user_base_balance / Math.pow(10, base_mint.decimals) / 2);
+                                setTokenAmount(user_base_balance / Math.pow(10, base_mint.mint.decimals) / 2);
                             }}
                         >
                             Half
@@ -79,7 +79,7 @@ const SellPanel = ({
                             opacity={0.5}
                             style={{ cursor: "pointer" }}
                             onClick={() => {
-                                setTokenAmount(user_base_balance / Math.pow(10, base_mint.decimals));
+                                setTokenAmount(user_base_balance / Math.pow(10, base_mint.mint.decimals));
                             }}
                         >
                             Max
@@ -102,7 +102,7 @@ const SellPanel = ({
                         min="0"
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        <Image src={base_mint.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
@@ -140,7 +140,7 @@ const SellPanel = ({
                         ? handleConnectWallet()
                         : launch.flags[LaunchFlags.AMMProvider] === 0
                           ? PlaceMarketOrder(launch, token_amount, sol_amount, 1)
-                          : SwapRaydium(token_amount * Math.pow(10, base_mint.decimals), 0, 1);
+                          : SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

@@ -13,7 +13,6 @@ import {
     Config,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
-    FEES_PROGRAM,
 } from "../../components/Solana/constants";
 import {
     LaunchDataUserInput,

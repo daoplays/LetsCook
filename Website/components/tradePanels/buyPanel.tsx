@@ -1,10 +1,29 @@
-import { VStack, HStack, Center, Divider, Input, InputRightElement, Text, InputGroup, Button, Card, CardBody } from "@chakra-ui/react";
+import {
+    VStack,
+    HStack,
+    Center,
+    Divider,
+    Input,
+    InputRightElement,
+    Text,
+    InputGroup,
+    Button,
+    Card,
+    CardBody,
+    SliderMark,
+    SliderTrack,
+    SliderFilledTrack,
+    SliderThumb,
+    Slider,
+    Tooltip,
+} from "@chakra-ui/react";
 import { PanelProps } from "./panelProps";
 import Image from "next/image";
 import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import { LaunchFlags } from "../Solana/constants";
 import formatPrice from "../../utils/formatPrice";
+import { useState } from "react";
 
 const BuyPanel = ({
     amm,
@@ -20,26 +39,43 @@ const BuyPanel = ({
     amm_quote_balance,
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
-    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(launch);
+    const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
+    const [sliderValue, setSliderValue] = useState<number>(1);
+    const [showTooltip, setShowTooltip] = useState<boolean>(false);
+
+    const labelStyles = {
+        mt: "2",
+        ml: "-2.5",
+        fontSize: "sm",
+    };
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
-    if (launch === null || launch === undefined || base_mint === undefined) {
+    if (base_mint === null || base_mint === undefined || amm === null || amm === undefined) {
         return <></>;
     }
 
     let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
     let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
     let quote_input_amount = quote_raw - amm_quote_fee;
-    let base_output = (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, launch.decimals);
-    let base_output_string = formatPrice(base_output, base_mint.decimals);
+    let base_output = (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, base_mint.mint.decimals);
+    let base_output_string = formatPrice(base_output, base_mint.mint.decimals);
 
-    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.decimals));
+    console.log(amm_base_balance, amm_quote_balance)
+    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
     let base_no_slip = sol_amount / price;
     let slippage = base_no_slip / base_output - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
+
+    let quote_deposit_amount = quote_raw / sliderValue;
+    let base_deposit_amount =
+        (quote_deposit_amount * amm_base_balance) / (quote_deposit_amount + quote_input_amount) / Math.pow(10, base_mint.mint.decimals);
+
+    let liquidation_price = quote_input_amount / (base_deposit_amount + base_output);
+
+    let liquidation_price_string = formatPrice(liquidation_price, 5);
 
     return (
         <>
@@ -117,11 +153,64 @@ const BuyPanel = ({
                         disabled
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        <Image src={base_mint.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
+{/*
+            <VStack align="start" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    Leverage:
+                </Text>
+                <Slider
+                    id="slider"
+                    defaultValue={1}
+                    min={1}
+                    max={100}
+                    colorScheme="teal"
+                    onChange={(v) => setSliderValue(v)}
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                >
+                    <SliderMark value={25} {...labelStyles}>
+                        25
+                    </SliderMark>
+                    <SliderMark value={50} {...labelStyles}>
+                        50
+                    </SliderMark>
+                    <SliderMark value={75} {...labelStyles}>
+                        75
+                    </SliderMark>
 
+                    <SliderTrack>
+                        <SliderFilledTrack />
+                    </SliderTrack>
+                    <Tooltip hasArrow bg="teal.500" color="white" placement="top" isOpen={showTooltip} label={`${sliderValue}x`}>
+                        <SliderThumb />
+                    </Tooltip>
+                </Slider>
+            </VStack>
+
+            <VStack align="start" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    Liquidation Price:
+                </Text>
+
+                <InputGroup size="md">
+                    <Input
+                        readOnly={true}
+                        color="white"
+                        size="lg"
+                        borderColor="rgba(134, 142, 150, 0.5)"
+                        value={sliderValue === 1 ? "" : liquidation_price_string}
+                        disabled
+                    />
+                    <InputRightElement h="100%" w={50}>
+                        <Image src={"/images/sol.png"} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                    </InputRightElement>
+                </InputGroup>
+            </VStack>
+*/}
             <Button
                 mt={2}
                 size="lg"

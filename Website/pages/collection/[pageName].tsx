@@ -320,7 +320,7 @@ const CollectionSwapPage = () => {
             launch.keys[CollectionKeys.MintAddress], // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint.program,
+            mint.token_program,
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
@@ -394,7 +394,7 @@ const CollectionSwapPage = () => {
                 launch.keys[CollectionKeys.MintAddress], // mint
                 wallet.publicKey, // owner
                 true, // allow owner off curve
-                mint.program,
+                mint.token_program,
             );
             user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
         }
@@ -493,7 +493,7 @@ const CollectionSwapPage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(launch, "Collection")}
+                                            href={getSolscanLink(launch.keys[CollectionKeys.CollectionMint], "Collection")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -753,7 +753,7 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link href={getSolscanLink(launch, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                        <Link href={getSolscanLink(launch.keys[CollectionKeys.CollectionMint], "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
                                             <Image
                                                 src="/images/solscan.png"
                                                 width={lg ? 22 : 22}

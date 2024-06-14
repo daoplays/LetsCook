@@ -25,7 +25,6 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import useCreateMarket from "../../hooks/raydium/useCreateMarket";
 import useCreateCP from "../../hooks/raydium/useCreateCP";
 
 interface Header {
@@ -254,7 +253,6 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
-    const { CreateMarket, isLoading: createMarketLoading } = useCreateMarket(launch);
     const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(launch);
 
     const { newLaunchData } = useAppRoot();

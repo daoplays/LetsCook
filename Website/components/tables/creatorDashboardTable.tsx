@@ -25,7 +25,6 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import useCreateMarket from "../../hooks/raydium/useCreateMarket";
 import useCreateCP from "../../hooks/raydium/useCreateCP";
 
 interface Header {

@@ -20,6 +20,7 @@ import {
     Token22MintAccount,
     uInt32ToLEBytes,
     MintInfo,
+    MintData,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
@@ -31,6 +32,7 @@ import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
+import { getMintData } from "../components/amm/launch";
 
 const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
@@ -45,15 +47,13 @@ const GetTradeMintData = async (trade_keys, setMintMap) => {
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     let result = await connection.getMultipleAccountsInfo(trade_keys, "confirmed");
 
-    let mint_map = new Map<PublicKey, MintInfo>();
+    let mint_map = new Map<PublicKey, MintData>();
     for (let i = 0; i < result.length; i++) {
         let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
-        let mint_info: MintInfo = {
-            mint: mint,
-            program: result[i].owner,
-        };
+        let mint_data = await getMintData(connection, mint, result[i].owner)
+        
         //console.log("mint; ", mint.address.toString());
-        mint_map.set(trade_keys[i].toString(), mint_info);
+        mint_map.set(trade_keys[i].toString(), mint_data);
     }
     setMintMap(mint_map);
 };
@@ -122,7 +122,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [home_page_data, setHomePageData] = useState<LaunchData[] | null>(null);
     const [trade_page_data, setTradePageData] = useState<Map<string, LaunchData> | null>(null);
-    const [mintData, setMintData] = useState<Map<String, MintInfo> | null>(null);
+    const [mintData, setMintData] = useState<Map<String, MintData> | null>(null);
 
     const [user_data, setUserData] = useState<UserData[]>([]);
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
@@ -324,14 +324,20 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 5) {
                 const [mm] = MMLaunchData.struct.deserialize(data);
-                // console.log("launch mm", mm);
+                //console.log("launch mm", program_data[i].pubkey.toString());
                 mm_launch_data.push(mm);
                 continue;
             }
 
             if (data[0] === 6) {
-                const [amm] = AMMData.struct.deserialize(data);
-                amm_data.push(amm);
+                try {
+                    const [amm] = AMMData.struct.deserialize(data);
+                    amm_data.push(amm);
+                    console.log(amm)
+                } catch (error) {
+                    console.log(error);
+                    //closeAccounts.push(program_data[i].pubkey)
+                }
 
                 continue;
             }
@@ -339,7 +345,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 const [collection] = CollectionData.struct.deserialize(data);
 
                 collections.push(collection);
-                console.log(collection);
+                //console.log(collection);
                 continue;
             }
 
@@ -447,6 +453,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         for (let i = 0; i < launch_data.length; i++) {
             //console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
             trade_mints.push(launch_data[i].keys[LaunchKeys.MintAddress]);
+            // check if we have a whitelist token
+            for (let p = 0; p < launch_data[i].plugins.length; p++) {
+                if (launch_data[i].plugins[p]["__kind"] === "Whitelist") {
+                    trade_mints.push(launch_data[i].plugins[p]["key"]);
+                }
+            }
         }
         for (let i = 0; i < trade_filtered.length; i++) {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
