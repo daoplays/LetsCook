@@ -455,8 +455,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             trade_mints.push(launch_data[i].keys[LaunchKeys.MintAddress]);
             // check if we have a whitelist token
             for (let p = 0; p < launch_data[i].plugins.length; p++) {
-                if (launch_data[i].plugins[i]["__kind"] === "Whitelist") {
-                    trade_mints.push(launch_data[i].plugins[i]["key"]);
+                if (launch_data[i].plugins[p]["__kind"] === "Whitelist") {
+                    trade_mints.push(launch_data[i].plugins[p]["key"]);
                 }
             }
         }
