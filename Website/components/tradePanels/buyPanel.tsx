@@ -157,7 +157,7 @@ const BuyPanel = ({
                     </InputRightElement>
                 </InputGroup>
             </VStack>
-
+{/*
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Leverage:
@@ -210,6 +210,7 @@ const BuyPanel = ({
                     </InputRightElement>
                 </InputGroup>
             </VStack>
+*/}
             <Button
                 mt={2}
                 size="lg"
