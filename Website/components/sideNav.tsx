@@ -58,7 +58,7 @@ const tabs = {
         },
         {
             icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
-            tab: "My Bags",
+            tab: "My Tickets",
             url: "/bags",
         },
         {
@@ -171,7 +171,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                     (tab === "New Token" ||
                         tab === "New Hybrid" ||
                         tab === "Creator Dashboard" ||
-                        tab === "My Bags" ||
+                        tab === "My Tickets" ||
                         tab === "Leaderboard") &&
                     !wallet.connected
                 ) {
@@ -185,7 +185,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                 }
             }}
         >
-            {tab === "My Bags" && isActive ? <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} /> : icon}
+            {tab === "My Tickets" && isActive ? <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} /> : icon}
             {sidePanelCollapsed && (
                 <Text m={0} fontFamily="ReemKufiRegular" fontWeight="regular" fontSize={"large"} align="center">
                     {tab}
