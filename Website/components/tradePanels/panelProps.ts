@@ -1,5 +1,5 @@
 import { AMMData } from "../Solana/jupiter_state";
-import { LaunchData, MintData, MintInfo } from "../Solana/state";
+import { LaunchData, MintData } from "../Solana/state";
 import { Mint } from "@solana/spl-token";
 
 export interface PanelProps {

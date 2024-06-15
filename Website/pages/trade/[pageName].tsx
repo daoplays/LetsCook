@@ -7,7 +7,6 @@ import {
     request_current_balance,
     request_token_supply,
     uInt32ToLEBytes,
-    MintInfo,
     MintData,
 } from "../../components/Solana/state";
 import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM } from "../../components/Solana/jupiter_state";

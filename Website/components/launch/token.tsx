@@ -29,7 +29,7 @@ import {
     ModalOverlay,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
+import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes, getLaunchType, getLaunchTypeIndex } from "../../components/Solana/state";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import WoodenButton from "../Buttons/woodenButton";
@@ -65,7 +65,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
-    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
+    const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
@@ -324,7 +324,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                 setGrindComplete(true);
             }
         } else {
-            newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
+            newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
             newLaunchData.current.decimals = 9;
             newLaunchData.current.num_mints = 400;
             newLaunchData.current.ticket_price = 0.05;
@@ -571,6 +571,18 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                 >
                                                     <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                                         Raffle
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="Raffle">
+                                                <Tooltip
+                                                    label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        IDO
                                                     </Text>
                                                 </Tooltip>
                                             </Radio>
