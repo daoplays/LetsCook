@@ -574,7 +574,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     </Text>
                                                 </Tooltip>
                                             </Radio>
-                                            <Radio value="Raffle">
+                                            <Radio value="IDO">
                                                 <Tooltip
                                                     label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
                                                     hasArrow

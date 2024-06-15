@@ -622,14 +622,14 @@ const launchPluginBeet = dataEnum<LaunchPluginEnum>([
 type LaunchMetaEnum = {
     Raffle: {};
     FCFS: {};
-    IDO: {fraction_distributed : number[]};
+    IDO: {fraction_distributed : number[], tokens_distributed : bignum};
 };
 type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
     ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
-    ["IDO", new BeetArgsStruct<LaunchMetaEnum["IDO"]>([["fraction_distributed", uniformFixedSizeArray(u8, 8)]], 'LaunchMetaEnum["IDO"]')],
+    ["IDO", new BeetArgsStruct<LaunchMetaEnum["IDO"]>([["fraction_distributed", uniformFixedSizeArray(u8, 8)], ["tokens_distributed", u64]], 'LaunchMetaEnum["IDO"]')],
 
 ]) as FixableBeet<LaunchInfo>;
 
@@ -913,7 +913,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         __kind: "Raffle",
         Raffle: {},
         FCFS: {},
-        IDO: {fraction_distributed: [0,0,0,0,0,0,0,0]}
+        IDO: {fraction_distributed: [0,0,0,0,0,0,0,0], tokens_distributed : 0}
     };
     const data = new LaunchData(
         1,
