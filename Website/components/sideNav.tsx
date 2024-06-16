@@ -12,6 +12,7 @@ import useAppRoot from "../context/useAppRoot";
 import { FaHome } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
+import * as NProgress from "nprogress";
 
 const tabs = {
     create: [
@@ -25,10 +26,15 @@ const tabs = {
             tab: "New Hybrid",
             url: "/collection",
         },
-         {
+        {
             icon: (size: number) => <RiGalleryFill size={size} />,
             tab: "New Listing",
             url: "/listing",
+        },
+        {
+            icon: (size: number) => <GiCook size={size} />,
+            tab: "Creator Dashboard",
+            url: "/dashboard",
         },
     ],
 
@@ -51,11 +57,6 @@ const tabs = {
     ],
 
     profile: [
-        {
-            icon: (size: number) => <GiCook size={size} />,
-            tab: "Creator Dashboard",
-            url: "/dashboard",
-        },
         {
             icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
             tab: "My Tickets",
@@ -180,6 +181,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                     if (tab === "Documentation") {
                         window.open("https://docs.letscook.wtf/", "_blank");
                     } else {
+                        NProgress.start();
                         router.push(url);
                     }
                 }

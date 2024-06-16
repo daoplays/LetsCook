@@ -658,8 +658,8 @@ export const enum Distribution {
     LP,
     MMRewards,
     LPRewards,
-    Airdrops,
     Team,
+    Airdrops,
     Other,
     LENGTH,
 }
