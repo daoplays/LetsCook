@@ -308,7 +308,7 @@ const TokenMintPage = () => {
             setTicketPrice(bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL);
 
             let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
-            if (launch_index !== 2) {
+            if (launch_index !== 2 || launchData.tickets_sold === 0) {
                 setTokensPerTicket(one_mint)
             }
             else {
