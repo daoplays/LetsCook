@@ -3,24 +3,23 @@ import { PanelProps } from "./panelProps";
 import Image from "next/image";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
-import { LaunchFlags } from "../Solana/constants";
 import formatPrice from "../../utils/formatPrice";
 
 const RemoveLiquidityPanel = ({
     amm,
+    amm_provider,
     token_amount,
     base_mint,
     connected,
     setTokenAmount,
     handleConnectWallet,
-    launch,
     user_lp_balance,
     amm_quote_balance,
     amm_base_balance,
     amm_lp_balance,
 }: PanelProps) => {
     const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(amm);
-    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
+    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity(amm);
 
     let isLoading = removeLiquidityRaydiumLoading || updateCookLiquidityLoading;
 
@@ -147,8 +146,8 @@ const RemoveLiquidityPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? UpdateCookLiquidity(launch, lp_raw, 1)
+                        : amm_provider === 0
+                          ? UpdateCookLiquidity(lp_raw, 1)
                           : RemoveLiquidityRaydium(lp_raw);
                 }}
             >

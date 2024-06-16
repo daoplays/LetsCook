@@ -9,7 +9,7 @@ import {
     uInt32ToLEBytes,
     MintData,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM } from "../../components/Solana/jupiter_state";
+import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, getAMMKey } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import {
     bignum_to_num,
@@ -136,15 +136,15 @@ function findAMM(list: AMMData[], base_mint: PublicKey) {
     return launchList[0];
 }
 
-function filterLaunchRewards(list: MMLaunchData[], launch_data: LaunchData) {
+function filterLaunchRewards(list: MMLaunchData[], amm: AMMData, amm_provider: number) {
     if (list === null || list === undefined) return [];
-    if (launch_data === null || launch_data === undefined) return [];
+    if (amm === null || amm === undefined) return [];
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch_data.last_interaction)) / 24 / 60 / 60);
-
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
+    
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.mint_key.equals(launch_data.keys[LaunchKeys.MintAddress]) && item.date == current_date;
+        return item.mint_key.equals(getAMMKey(amm, amm_provider)) && item.date == current_date;
     });
 }
 
@@ -235,7 +235,7 @@ const TradePage = () => {
         let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
         setAMM(amm);
 
-        let base_mint = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
+        let base_mint = mintData.get(amm.base_mint.toString());
         setBaseMint(base_mint);
     }, [launchList, ammData, mintData, pageName]);
 
@@ -461,7 +461,7 @@ const TradePage = () => {
             setQuoteAmount(quote_amount);
 
             let total_supply = await request_token_supply("", token_mint);
-            setTotalSupply(total_supply / Math.pow(10, launch.decimals));
+            setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
             if (launch.flags[LaunchFlags.AMMProvider] > 0) {
                 if (Config.PROD) {
@@ -560,7 +560,7 @@ const TradePage = () => {
         );
     }
 
-    let latest_rewards = filterLaunchRewards(mmLaunchData, launch);
+    let latest_rewards = filterLaunchRewards(mmLaunchData, amm, launch.flags[LaunchFlags.AMMProvider]);
 
     const Details = () => {
         return (
@@ -594,7 +594,7 @@ const TradePage = () => {
                         </Tooltip>
 
                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                            <Link href={getSolscanLink(launch.keys[LaunchKeys.MintAddress], "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                            <Link href={getSolscanLink(base_mint.mint.address, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
                                 <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
                             </Link>
                         </Tooltip>
@@ -662,8 +662,8 @@ const TradePage = () => {
 
                             {leftPanel === "Trade" && (
                                 <BuyAndSell
-                                    launch={launch}
                                     amm={amm}
+                                    amm_provider={launch.flags[LaunchFlags.AMMProvider]}
                                     base_mint={base_mint}
                                     base_balance={amm_base_amount}
                                     quote_balance={amm_quote_amount}
@@ -764,11 +764,7 @@ const TradePage = () => {
                                 </HStack>
                             </HStack>
 
-                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable launch_data={launch} />}
-
-                            {(selectedTab === "Open" || selectedTab === "Filled") && wallet.connected && (
-                                <OrdersTable state={selectedTab} launch_data={launch} />
-                            )}
+                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable amm={amm} amm_provider={launch.flags[LaunchFlags.AMMProvider]} />}
 
                             {!wallet.connected && (
                                 <HStack w="100%" align="center" justify="center" mt={25}>
@@ -839,8 +835,8 @@ const TradePage = () => {
 };
 
 const BuyAndSell = ({
-    launch,
     amm,
+    amm_provider,
     base_mint,
     base_balance,
     quote_balance,
@@ -848,8 +844,8 @@ const BuyAndSell = ({
     user_base_balance,
     user_lp_balance,
 }: {
-    launch: LaunchData;
     amm: AMMData;
+    amm_provider: number;
     base_mint: MintData;
     base_balance: number;
     quote_balance: number;
@@ -964,6 +960,7 @@ const BuyAndSell = ({
             {selected === "Buy" && (
                 <BuyPanel
                     amm={amm}
+                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -973,7 +970,6 @@ const BuyAndSell = ({
                     setSOLAmount={setSOLAmount}
                     setTokenAmount={setTokenAmount}
                     handleConnectWallet={handleConnectWallet}
-                    launch={launch}
                     amm_base_balance={base_balance}
                     amm_quote_balance={quote_balance}
                 />
@@ -982,6 +978,7 @@ const BuyAndSell = ({
             {selected === "Sell" && (
                 <SellPanel
                     amm={amm}
+                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -991,7 +988,6 @@ const BuyAndSell = ({
                     setSOLAmount={setSOLAmount}
                     setTokenAmount={setTokenAmount}
                     handleConnectWallet={handleConnectWallet}
-                    launch={launch}
                     amm_base_balance={base_balance}
                     amm_quote_balance={quote_balance}
                 />
@@ -1000,6 +996,7 @@ const BuyAndSell = ({
             {selected === "LP+" && (
                 <AddLiquidityPanel
                     amm={amm}
+                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -1009,7 +1006,6 @@ const BuyAndSell = ({
                     setSOLAmount={setSOLAmount}
                     setTokenAmount={setTokenAmount}
                     handleConnectWallet={handleConnectWallet}
-                    launch={launch}
                     amm_base_balance={base_balance}
                     amm_quote_balance={quote_balance}
                     amm_lp_balance={amm_lp_balance}
@@ -1019,6 +1015,7 @@ const BuyAndSell = ({
             {selected === "LP-" && (
                 <RemoveLiquidityPanel
                     amm={amm}
+                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -1029,7 +1026,6 @@ const BuyAndSell = ({
                     setSOLAmount={setSOLAmount}
                     setTokenAmount={setTokenAmount}
                     handleConnectWallet={handleConnectWallet}
-                    launch={launch}
                     amm_base_balance={base_balance}
                     amm_quote_balance={quote_balance}
                     amm_lp_balance={amm_lp_balance}
@@ -1061,11 +1057,9 @@ const InfoContent = ({
     total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
-    const wallet = useWallet();
-    const { GetMMTokens } = useGetMMTokens();
-
+    
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    let reward = reward_schedule(current_date, launch);
+    let reward = reward_schedule(current_date, amm);
     if (mm_data !== null) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }

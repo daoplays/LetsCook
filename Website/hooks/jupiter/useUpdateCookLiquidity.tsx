@@ -13,7 +13,7 @@ import {
     ExtraAccountMeta,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { PlaceLimit_Instruction, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
+import { AMMData, PlaceLimit_Instruction, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -69,7 +69,7 @@ function serialise_remove_liquidity(side: number, in_amount: bignum): Buffer {
 
     return buf;
 }
-const useUpdateCookLiquidity = () => {
+const useUpdateCookLiquidity = (amm: AMMData) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
 
@@ -115,16 +115,16 @@ const useUpdateCookLiquidity = () => {
         });
     }, []);
 
-    const UpdateCookLiquidity = async (launch: LaunchData, token_amount: number, order_type: number) => {
+    const UpdateCookLiquidity = async (token_amount: number, order_type: number) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         setIsLoading(true);
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
-        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
+        const token_mint = amm.base_mint;
+        const wsol_mint = amm.quote_mint;
+        let mint_account = mintData.get(token_mint.toString());
 
         token_amount = new BN(token_amount);
         console.log(token_amount.toString());
@@ -134,8 +134,6 @@ const useUpdateCookLiquidity = () => {
             true, // allow owner off curve
             mint_account.token_program,
         );
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {

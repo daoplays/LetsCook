@@ -581,6 +581,7 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 export function getLaunchType(launch_type: number): string {
     switch (launch_type) {
         case 0:
@@ -606,6 +607,8 @@ export function getLaunchTypeIndex(launch_type: string): number {
             return 1;
     }
 }
+
+
 
 type LaunchPluginEnum = {
     Whitelist: { key: PublicKey, amount: bignum };
