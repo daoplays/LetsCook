@@ -18,6 +18,7 @@ import "../styles/table.css";
 import { usePathname } from "next/navigation";
 import useResponsive from "../hooks/useResponsive";
 import AppRootPage from "./_layout";
+import "../styles/global.css";
 
 function MyApp({ Component, pageProps }) {
     const { sm } = useResponsive();
