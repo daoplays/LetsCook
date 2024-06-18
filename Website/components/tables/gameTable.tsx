@@ -75,8 +75,8 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         }
 
         if (sortedField === "hype") {
-            let hype_a = a.positive_votes - a.negative_votes;
-            let hype_b = b.positive_votes - b.negative_votes;
+            let hype_a = a.listing.positive_votes - a.listing.negative_votes;
+            let hype_b = b.listing.positive_votes - b.listing.negative_votes;
             if (hype_a < hype_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -151,12 +151,12 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
 const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
     const { sm, md, lg } = useResponsive();
     const router = useRouter();
-    let name = launch.symbol;
+    let name = launch.listing.symbol;
 
     let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
-    const socialsExist = launch.socials.some((social) => social !== "");
+    const socialsExist = launch.listing.socials.some((social) => social !== "");
 
     return (
         <tr
@@ -178,20 +178,20 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={launch.listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.symbol}
+                        {launch.listing.symbol}
                     </Text>
                 </HStack>
             </td>
             <td style={{ minWidth: "180px" }}>
                 {socialsExist ? (
-                    <Links socials={launch.socials} />
+                    <Links socials={launch.listing.socials} />
                 ) : (
                     <Text fontSize={"large"} m={0}>
                         No Socials
@@ -203,8 +203,8 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                     launch_type={0}
                     launch_id={launch.game_id}
                     page_name={launch.page_name}
-                    positive_votes={launch.positive_votes}
-                    negative_votes={launch.negative_votes}
+                    positive_votes={launch.listing.positive_votes}
+                    negative_votes={launch.listing.negative_votes}
                     seller_key={launch.keys[LaunchKeys.Seller]}
                     isTradePage={false}
                 />

@@ -50,7 +50,7 @@ exports.handler = async function (event, context) {
 
         let tweet_string =
             "🔥 COOK OUT: $" +
-            new_launch_data.symbol +
+            new_launch_data.listing.symbol +
             " LP is now Live with " +
             liquidity.toFixed(2) +
             " SOL of liquidity on @RaydiumProtocol " +

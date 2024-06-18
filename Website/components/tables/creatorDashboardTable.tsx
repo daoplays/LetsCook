@@ -63,7 +63,7 @@ const CreatorDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchDat
 
     const sortedLaunches = [...creatorLaunches].sort((a, b) => {
         if (sortedField === "symbol") {
-            return reverseSort ? b.symbol.localeCompare(a.symbol) : a.symbol.localeCompare(b.symbol);
+            return reverseSort ? b.listing.symbol.localeCompare(a.listing.symbol) : a.listing.symbol.localeCompare(b.listing.symbol);
         } else if (sortedField === "liquidity") {
             return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
         } else if (sortedField === "date") {
@@ -304,8 +304,8 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
         setIsEditing(true);
         newLaunchData.current = create_LaunchDataInput(launch, true);
 
-        let bannerFile = await convertImageURLToFile(launch.banner, `${launch.name} banner image`);
-        let iconFile = await convertImageURLToFile(launch.icon, `${launch.name} icon image`);
+        let bannerFile = await convertImageURLToFile(launch.listing.banner, `${launch.listing.name} banner image`);
+        let iconFile = await convertImageURLToFile(launch.listing.icon, `${launch.listing.name} icon image`);
 
         newLaunchData.current.banner_file = bannerFile;
         newLaunchData.current.icon_file = iconFile;
@@ -335,14 +335,14 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={launch.listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.symbol}
+                        {launch.listing.symbol}
                     </Text>
                 </HStack>
             </td>

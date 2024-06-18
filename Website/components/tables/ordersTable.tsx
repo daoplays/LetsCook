@@ -141,7 +141,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
         >
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {launch.symbol}
+                    {launch.listing.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
@@ -172,7 +172,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
                     <Text fontSize={"large"} m={0}>
                         {token_amount}
                     </Text>
-                    <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
@@ -231,7 +231,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
         >
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {launch.symbol}
+                    {launch.listing.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
@@ -262,7 +262,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
                     <Text fontSize={"large"} m={0}>
                         {token_amount}
                     </Text>
-                    <Image src={launch.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 

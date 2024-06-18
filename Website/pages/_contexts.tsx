@@ -419,8 +419,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
             if (home_page_map.has(date)) {
                 let current_entry: LaunchData = home_page_map.get(date);
-                let current_hype = current_entry.positive_votes - current_entry.negative_votes;
-                let new_hype = close_filtered[i].positive_votes - close_filtered[i].negative_votes;
+                let current_hype = current_entry.listing.positive_votes - current_entry.listing.negative_votes;
+                let new_hype = close_filtered[i].listing.positive_votes - close_filtered[i].listing.negative_votes;
                 if (new_hype > current_hype) {
                     home_page_map.set(date, close_filtered[i]);
                 }

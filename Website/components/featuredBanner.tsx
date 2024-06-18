@@ -28,7 +28,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
     return (
         <Box
             h={lg ? 300 : 320}
-            bg={"url(" + featuredLaunch.banner + ")"}
+            bg={"url(" + featuredLaunch.listing.banner + ")"}
             bgSize="cover"
             boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
             style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96" }}
@@ -58,7 +58,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                     <HStack spacing={lg ? 0 : 8} w="fit-content" mt={!isHomePage ? 0 : -2}>
                         {featuredLaunch !== null && (
                             <Image
-                                src={featuredLaunch.icon}
+                                src={featuredLaunch.listing.icon}
                                 width={lg ? 130 : 200}
                                 height={lg ? 130 : 200}
                                 alt="$LOGO"
@@ -76,10 +76,10 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? featuredLaunch.symbol : ""}
+                                    {featuredLaunch !== null ? featuredLaunch.listing.symbol : ""}
                                 </Text>
 
-                                {!lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
+                                {!lg && featuredLaunch !== null && <Links socials={featuredLaunch.listing.socials} />}
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
@@ -161,12 +161,12 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 lineHeight={1.15}
                                 align={lg ? "center" : "start"}
                             >
-                                {featuredLaunch !== null ? featuredLaunch.description.substring(0, 200) : ""}
+                                {featuredLaunch !== null ? featuredLaunch.listing.description.substring(0, 200) : ""}
                             </Text>
                         </VStack>
                     </HStack>
 
-                    {lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
+                    {lg && featuredLaunch !== null && <Links socials={featuredLaunch.listing.socials} />}
 
                     {!isHomePage && (
                         // <Link href={`/launch/${featuredLaunch?.page_name}`} >

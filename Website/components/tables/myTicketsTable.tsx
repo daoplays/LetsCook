@@ -50,8 +50,8 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
         }
         if (sortedField === "symbol") {
             return reverseSort
-                ? b.launch_data.symbol.localeCompare(a.launch_data.symbol)
-                : a.launch_data.symbol.localeCompare(b.launch_data.symbol);
+                ? b.launch_data.listing.symbol.localeCompare(a.launch_data.listing.symbol)
+                : a.launch_data.listing.symbol.localeCompare(b.launch_data.listing.symbol);
         } else if (sortedField === "date") {
             return reverseSort
                 ? b.launch_data.launch_date - a.launch_data.launch_date
@@ -182,14 +182,14 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.launch_data.icon}
+                            src={launch.launch_data.listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.launch_data.symbol}
+                        {launch.launch_data.listing.symbol}
                     </Text>
                 </HStack>
             </td>

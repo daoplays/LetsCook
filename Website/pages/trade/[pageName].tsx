@@ -1140,8 +1140,8 @@ const InfoContent = ({
                     launch_type={0}
                     launch_id={launch.game_id}
                     page_name={launch.page_name}
-                    positive_votes={launch.positive_votes}
-                    negative_votes={launch.negative_votes}
+                    positive_votes={launch.listing.positive_votes}
+                    negative_votes={launch.listing.negative_votes}
                     seller_key={launch.keys[LaunchKeys.Seller]}
                     isTradePage={true}
                 />
@@ -1151,7 +1151,7 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     SOCIALS:
                 </Text>
-                <Links socials={launch.socials} isTradePage={true} />
+                <Links socials={launch.listing.socials} isTradePage={true} />
             </HStack>
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>

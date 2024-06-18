@@ -157,14 +157,14 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={amm_launch.launch_data.icon}
+                            src={amm_launch.launch_data.listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {amm_launch.launch_data.symbol}
+                        {amm_launch.launch_data.listing.symbol}
                     </Text>
                 </HStack>
             </td>
@@ -196,7 +196,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                         {mm_rewards.toLocaleString()}
                     </Text>
                     <Image
-                        src={amm_launch.launch_data.icon}
+                        src={amm_launch.launch_data.listing.icon}
                         width={30}
                         height={30}
                         alt="SOL Icon"
