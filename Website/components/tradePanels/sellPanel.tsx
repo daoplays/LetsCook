@@ -3,12 +3,12 @@ import { PanelProps } from "./panelProps";
 import Image from "next/image";
 import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
-import { LaunchFlags } from "../Solana/constants";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
 
 const SellPanel = ({
     amm,
+    amm_provider,
     base_mint,
     user_base_balance,
     sol_amount,
@@ -18,9 +18,8 @@ const SellPanel = ({
     handleConnectWallet,
     amm_base_balance,
     amm_quote_balance,
-    launch
 }: PanelProps) => {
-    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
+    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
 
     let isLoading = placingOrder || placingRaydiumOrder;
@@ -138,8 +137,8 @@ const SellPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? PlaceMarketOrder(launch, token_amount, sol_amount, 1)
+                        : amm_provider=== 0
+                          ? PlaceMarketOrder(token_amount, sol_amount, 1)
                           : SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
                 }}
             >

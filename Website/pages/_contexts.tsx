@@ -19,7 +19,6 @@ import {
     requestMultipleAccounts,
     Token22MintAccount,
     uInt32ToLEBytes,
-    MintInfo,
     MintData,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";

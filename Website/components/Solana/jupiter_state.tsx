@@ -24,17 +24,40 @@ import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-re
 import { Order } from "@jup-ag/limit-order-sdk";
 
 import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData } from "./state";
+import { PROGRAM } from "./constants";
 
 export interface OpenOrder {
     publicKey: PublicKey;
     account: Order;
 }
 
-export function reward_schedule(date: number, launch_data: LaunchData): number {
-    let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
-    let total_supply = bignum_to_num(launch_data.total_supply);
-    let mm_amount = total_supply * reward_frac;
-    console.log(reward_frac, total_supply, mm_amount);
+
+
+export function getAMMKey(amm: AMMData, amm_provider : number) {
+    let amm_seed_keys = [];
+    if (amm.base_mint.toString() < amm.quote_mint.toString()) {
+        amm_seed_keys.push(amm.base_mint);
+        amm_seed_keys.push(amm.quote_mint);
+    } else {
+        amm_seed_keys.push(amm.quote_mint);
+        amm_seed_keys.push(amm.base_mint);
+    }
+
+    let amm_data_account = PublicKey.findProgramAddressSync(
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider == 0 ? "CookAMM" : "RaydiumCPMM")],
+        PROGRAM,
+    )[0];
+
+    return amm_data_account;
+}
+
+export function reward_schedule(date: number, amm: AMMData): number {
+
+    if (amm.plugins.length === 0) {
+        return 0.0
+    }
+
+    let mm_amount = amm.plugins[0]["total_tokens"]
     if (date < 10) {
         return 0.05 * mm_amount;
     }
@@ -119,6 +142,7 @@ const ammPluginBeet = dataEnum<AMMPluginEnum>([
 export class AMMData {
     constructor(
         readonly account_type: number,
+        readonly provider: number,
         readonly base_mint: PublicKey,
         readonly quote_mint: PublicKey,
         readonly lp_mint: PublicKey,
@@ -141,6 +165,7 @@ export class AMMData {
     static readonly struct = new FixableBeetStruct<AMMData>(
         [
             ["account_type", u8],
+            ["provider", u8],
             ["base_mint", publicKey],
             ["quote_mint", publicKey],
             ["lp_mint", publicKey],
@@ -162,6 +187,7 @@ export class AMMData {
         (args) =>
             new AMMData(
                 args.account_type!,
+                args.provider!,
                 args.base_mint!,
                 args.quote_mint!,
                 args.lp_mint!,

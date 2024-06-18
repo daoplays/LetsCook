@@ -128,7 +128,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     const { sm, md, lg } = useResponsive();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch_data.last_interaction)) / 24 / 60 / 60);
-    let mm_rewards = reward_schedule(current_date, amm_launch.launch_data);
+    let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
     console.log(amm_launch);
     let total_supply =

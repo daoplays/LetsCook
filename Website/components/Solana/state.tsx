@@ -229,11 +229,6 @@ export interface MintData {
     token_program: PublicKey;
 }
 
-export interface MintInfo {
-    mint: Mint;
-    program: PublicKey;
-}
-
 export interface MetaData {
     key: PublicKey;
     signer: boolean;
@@ -586,6 +581,35 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+export function getLaunchType(launch_type: number): string {
+    switch (launch_type) {
+        case 0:
+            return "Raffle";
+        case 1:
+            return "FCFS";
+        case 2:
+            return "IDO";
+        default:
+            return "FCFS";
+    }
+}
+
+export function getLaunchTypeIndex(launch_type: string): number {
+    switch (launch_type) {
+        case "Raffle":
+            return 0;
+        case "FCFS":
+            return 1;
+        case "IDO":
+            return 2;
+        default:
+            return 1;
+    }
+}
+
+
+
 type LaunchPluginEnum = {
     Whitelist: { key: PublicKey, amount: bignum };
 };
@@ -601,12 +625,15 @@ const launchPluginBeet = dataEnum<LaunchPluginEnum>([
 type LaunchMetaEnum = {
     Raffle: {};
     FCFS: {};
+    IDO: {fraction_distributed : number[], tokens_distributed : bignum};
 };
 type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
     ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
+    ["IDO", new BeetArgsStruct<LaunchMetaEnum["IDO"]>([["fraction_distributed", uniformFixedSizeArray(u8, 8)], ["tokens_distributed", u64]], 'LaunchMetaEnum["IDO"]')],
+
 ]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
@@ -889,6 +916,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         __kind: "Raffle",
         Raffle: {},
         FCFS: {},
+        IDO: {fraction_distributed: [0,0,0,0,0,0,0,0], tokens_distributed : 0}
     };
     const data = new LaunchData(
         1,

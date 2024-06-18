@@ -13,7 +13,7 @@ import {
     Progress,
     Divider,
 } from "@chakra-ui/react";
-import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data, MintData } from "../../components/Solana/state";
+import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data, MintData, getLaunchTypeIndex } from "../../components/Solana/state";
 import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -43,6 +43,7 @@ import Head from "next/head";
 import useAppRoot from "../../context/useAppRoot";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import Link from "next/link";
+import formatPrice from "../../utils/formatPrice";
 
 const TokenMintPage = () => {
     const wallet = useWallet();
@@ -61,6 +62,8 @@ const TokenMintPage = () => {
     const [join_data, setJoinData] = useState<JoinData | null>(null);
     const [cookState, setCookState] = useState<CookState | null>(null);
     const [whitelist, setWhitelist] = useState<MintData | null>(null);
+    const [launch_type, setLaunchType] = useState<number>(0);
+    const [tokens_per_ticket, setTokensPerTicket] = useState<number>(0);
 
     let current_time = new Date().getTime();
 
@@ -298,7 +301,22 @@ const TokenMintPage = () => {
 
     useEffect(() => {
         if (launchData) {
+            let launch_type = launchData.launch_meta["__kind"]
+            let launch_index = getLaunchTypeIndex(launch_type)
+            setLaunchType(launch_index)
+            
             setTicketPrice(bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL);
+
+            if (launch_index !== 2 || launchData.tickets_sold < launchData.num_mints) {
+                let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
+                setTokensPerTicket(one_mint)
+            }
+            else {
+                let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.tickets_sold;
+                setTokensPerTicket(one_mint)
+
+            }
+            
         }
     }, [launchData]);
 
@@ -322,8 +340,7 @@ const TokenMintPage = () => {
 
     if (!launchData) return <PageNotFound />;
 
-    let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
-    let one_mint_frac = (100 * one_mint) / bignum_to_num(launchData.total_supply);
+    let one_mint_frac = (100 * tokens_per_ticket) / bignum_to_num(launchData.total_supply);
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cookState);
     const MINTED_OUT = [
@@ -376,7 +393,7 @@ const TokenMintPage = () => {
                                     >
                                         Tickets Sold: {launchData.tickets_sold}
                                     </Text>
-
+                                    {launch_type !== 2 &&
                                     <Text
                                         m="0"
                                         color="white"
@@ -386,7 +403,7 @@ const TokenMintPage = () => {
                                     >
                                         Total Winning Tickets: {launchData.num_mints.toLocaleString()}
                                     </Text>
-
+                                    }
                                     <Text
                                         m="0"
                                         color="white"
@@ -394,7 +411,7 @@ const TokenMintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Tokens Per Winning Ticket: {one_mint.toLocaleString()}
+                                        Tokens Per Winning Ticket: {formatPrice(tokens_per_ticket, Math.min(3,launchData.decimals))}
                                         <br />({one_mint_frac.toFixed(4)}% of total supply)
                                     </Text>
 
@@ -486,6 +503,7 @@ const TokenMintPage = () => {
                                                 )}
 
                                                 {MINTED_OUT &&
+                                                launch_type !== 2 && 
                                                     join_data !== null &&
                                                     join_data.num_tickets > join_data.num_claimed_tickets && (
                                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">

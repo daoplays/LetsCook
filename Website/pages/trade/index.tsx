@@ -156,7 +156,7 @@ const MarketMaker = () => {
                     </HStack>
                 )}
 
-                {selected === "Rewards" && <MyRewardsTable launch_data={null} />}
+                {selected === "Rewards" && <MyRewardsTable amm={null} amm_provider={0} />}
 
                 {!wallet.connected && selected === "Rewards" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
