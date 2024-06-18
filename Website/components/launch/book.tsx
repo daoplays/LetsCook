@@ -182,6 +182,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             newLaunchData.current.amm_provider = 0;
         }
         if (AMMProvider === "raydium") {
+            if (newLaunchData.current.transfer_hook_program !== null) {
+                toast.error("Raydium doesn't support transfer hook");
+                return false;
+            }
+            if (newLaunchData.current.permanent_delegate !== null) {
+                toast.error("Raydium doesn't support permanent delegate");
+                return false;
+            }
             newLaunchData.current.amm_provider = 1;
         }
 
