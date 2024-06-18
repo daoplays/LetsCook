@@ -54,7 +54,7 @@ const BagsPage = () => {
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | My Bags</title>
+                <title>Let&apos;s Cook | My Tickets</title>
             </Head>
             <main>
                 <Flex
@@ -110,7 +110,7 @@ const BagsPage = () => {
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >
-                        Bags
+                        Tickets
                     </Text>
                     {selected === "My Rewards" && !sm && <Button>Claim All</Button>}
                 </Flex>
@@ -122,7 +122,7 @@ const BagsPage = () => {
                 {joinedLaunches.length <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
                         <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
-                            Your bag is empty
+                            You have no unchecked tickets
                         </Text>
                     </HStack>
                 )}

@@ -9,6 +9,8 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     getRecentPrioritizationFees,
+    getLaunchType,
+    getLaunchTypeIndex,
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
@@ -90,7 +92,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
     const [AMMProvider, setAMMProvider] = useState<string>("cook");
-    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
+    const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -174,12 +176,20 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
         newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
-        newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
+        newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
 
         if (AMMProvider === "cook") {
             newLaunchData.current.amm_provider = 0;
         }
         if (AMMProvider === "raydium") {
+            if (newLaunchData.current.transfer_hook_program !== null) {
+                toast.error("Raydium doesn't support transfer hook");
+                return false;
+            }
+            if (newLaunchData.current.permanent_delegate !== null) {
+                toast.error("Raydium doesn't support permanent delegate");
+                return false;
+            }
             newLaunchData.current.amm_provider = 1;
         }
 
@@ -235,6 +245,18 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                         >
                                             <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                                 Raffle
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="IDO">
+                                        <Tooltip
+                                            label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                IDO
                                             </Text>
                                         </Tooltip>
                                     </Radio>

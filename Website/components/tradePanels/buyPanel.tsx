@@ -21,12 +21,12 @@ import { PanelProps } from "./panelProps";
 import Image from "next/image";
 import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
-import { LaunchFlags } from "../Solana/constants";
 import formatPrice from "../../utils/formatPrice";
 import { useState } from "react";
 
 const BuyPanel = ({
     amm,
+    amm_provider,
     base_mint,
     user_quote_balance,
     sol_amount,
@@ -34,11 +34,10 @@ const BuyPanel = ({
     connected,
     setSOLAmount,
     handleConnectWallet,
-    launch,
     amm_base_balance,
     amm_quote_balance,
 }: PanelProps) => {
-    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder();
+    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
     const [sliderValue, setSliderValue] = useState<number>(1);
     const [showTooltip, setShowTooltip] = useState<boolean>(false);
@@ -222,9 +221,9 @@ const BuyPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? PlaceMarketOrder(launch, token_amount, sol_amount, 0)
-                          : SwapRaydium(base_output * Math.pow(10, launch.decimals), 2 * sol_amount * Math.pow(10, 9), 0);
+                        : amm_provider === 0
+                          ? PlaceMarketOrder(token_amount, sol_amount, 0)
+                          : SwapRaydium(base_output * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

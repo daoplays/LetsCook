@@ -10,7 +10,7 @@ import {
     request_raw_account_data,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { serialise_ClaimReward_instruction } from "../../components/Solana/jupiter_state";
+import { AMMData, serialise_ClaimReward_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta, ComputeBudgetProgram } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -30,7 +30,7 @@ import {
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 
-const useGetMMRewards = () => {
+const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
 
@@ -78,15 +78,15 @@ const useGetMMRewards = () => {
         });
     }, []);
 
-    const GetMMRewards = async (date: number, launch: LaunchData) => {
+    const GetMMRewards = async (date: number) => {
         setIsLoading(true);
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
-        let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
-        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        const token_mint = amm.base_mint;
+        let mint_account = mintData.get(token_mint.toString());
+        const wsol_mint = amm.quote_mint;
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
@@ -99,12 +99,6 @@ const useGetMMRewards = () => {
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-        let pda_token_account_key = await getAssociatedTokenAddress(
-            token_mint, // mint
-            program_sol_account, // owner
-            true, // allow owner off curve
-            mint_account.token_program,
-        );
 
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
@@ -116,14 +110,12 @@ const useGetMMRewards = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider === 0 ? "CookAMM" : "RaydiumCPMM")],
             PROGRAM,
         )[0];
 
 
         let date_bytes = uInt32ToLEBytes(date);
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let launch_date_account = PublicKey.findProgramAddressSync(
             [amm_data_account.toBytes(), date_bytes, Buffer.from("LaunchDate")],
@@ -173,7 +165,7 @@ const useGetMMRewards = () => {
             }
         }
 
-        const instruction_data = serialise_ClaimReward_instruction(date, launch.flags[LaunchFlags.AMMProvider]);
+        const instruction_data = serialise_ClaimReward_instruction(date, amm_provider);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

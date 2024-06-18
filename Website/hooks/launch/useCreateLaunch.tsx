@@ -381,9 +381,17 @@ const usuCreateLaunch = () => {
             console.log("add PD");
             account_vector.push({ pubkey: newLaunchData.current.permanent_delegate, isSigner: false, isWritable: false });
         }
+        else {
+            account_vector.push({ pubkey: PROGRAM, isSigner: false, isWritable: false });
+
+        }
         if (newLaunchData.current.transfer_hook_program !== null) {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
+        }
+        else {
+            account_vector.push({ pubkey: PROGRAM, isSigner: false, isWritable: false });
+
         }
 
         const list_instruction = new TransactionInstruction({

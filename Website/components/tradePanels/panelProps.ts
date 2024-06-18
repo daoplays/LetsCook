@@ -1,11 +1,11 @@
 import { AMMData } from "../Solana/jupiter_state";
-import { LaunchData, MintData, MintInfo } from "../Solana/state";
-import { Mint } from "@solana/spl-token";
+import { MintData } from "../Solana/state";
 
 export interface PanelProps {
     base_mint?: MintData;
     quote_mint?: MintData;
     amm?: AMMData;
+    amm_provider?: number;
     user_base_balance?: number;
     user_quote_balance?: number;
     user_lp_balance?: number;
@@ -19,7 +19,6 @@ export interface PanelProps {
     handleConnectWallet?: any;
     placingOrder?: boolean;
     PlaceMarketOrder?: any;
-    launch?: LaunchData;
     amm_base_balance?: number;
     amm_quote_balance?: number;
     amm_lp_balance?: number;

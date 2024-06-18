@@ -10,18 +10,18 @@ import formatPrice from "../../utils/formatPrice";
 
 const AddLiquidityPanel = ({
     amm,
+    amm_provider,
     base_mint,
     token_amount,
     connected,
     setTokenAmount,
     handleConnectWallet,
-    launch,
     amm_base_balance,
     amm_quote_balance,
     amm_lp_balance,
 }: PanelProps) => {
     const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(amm);
-    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
+    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity(amm);
 
     let isLoading = addLiquidityRaydiumLoading || updateCookLiquidityLoading;
 
@@ -113,11 +113,11 @@ const AddLiquidityPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? UpdateCookLiquidity(launch, token_amount * Math.pow(10, launch.decimals), 0)
+                        : amm_provider=== 0
+                          ? UpdateCookLiquidity(token_amount * Math.pow(10, base_mint.mint.decimals), 0)
                           : AddLiquidityRaydium(
                                 lp_generated * Math.pow(10, 9),
-                                token_amount * Math.pow(10, launch.decimals),
+                                token_amount * Math.pow(10, base_mint.mint.decimals),
                                 max_sol_amount,
                             );
                 }}

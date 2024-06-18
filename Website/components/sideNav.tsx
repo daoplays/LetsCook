@@ -58,7 +58,7 @@ const tabs = {
         },
         {
             icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
-            tab: "My Bags",
+            tab: "My Tickets",
             url: "/bags",
         },
         {
@@ -115,28 +115,28 @@ const SideNav = () => {
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
                         Create
                     </Text>
                     {tabs.create.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
                         Trade
                     </Text>
                     {tabs.trade.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
                         Info
                     </Text>
                     {tabs.info.map(({ tab, icon, url }, i) => (
@@ -171,7 +171,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                     (tab === "New Token" ||
                         tab === "New Hybrid" ||
                         tab === "Creator Dashboard" ||
-                        tab === "My Bags" ||
+                        tab === "My Tickets" ||
                         tab === "Leaderboard") &&
                     !wallet.connected
                 ) {
@@ -185,7 +185,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                 }
             }}
         >
-            {tab === "My Bags" && isActive ? <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} /> : icon}
+            {tab === "My Tickets" && isActive ? <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} /> : icon}
             {sidePanelCollapsed && (
                 <Text m={0} fontFamily="ReemKufiRegular" fontWeight="regular" fontSize={"large"} align="center">
                     {tab}

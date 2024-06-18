@@ -18,26 +18,22 @@ body {
     background-color: red;
 }
 
-::-webkit-scrollbar {
+*::-webkit-scrollbar {
     width: 7px;
-    height: 10px;
+    height: 5px;
 }
 
-/* Track */
-::-webkit-scrollbar-track {
-    background: var(--lightestgrey);
+*::-webkit-scrollbar-track {
+    background: #25262b;
 }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-    background-color: #babac0;
-    border-radius: 16px;
-    border: 4px solid #fff;
+*::-webkit-scrollbar-thumb {
+    background: #a4b0c9;
+    border-radius: 5px;
 }
 
-/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #8893aa;
 }
 
 a {
@@ -53,17 +49,9 @@ img {
     max-width: 100%;
     height: auto;
 }
+
 input[type="file"] {
     display: none;
-}
-::placeholder {
-    color: white !important ;
-}
-input[type="file"] {
-    display: none;
-}
-::placeholder {
-    color: white !important ;
 }
 
 .Toastify__toast-body {
