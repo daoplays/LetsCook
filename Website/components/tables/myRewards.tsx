@@ -97,7 +97,7 @@ function getMappedRewards(
         }
     }
 }
-const MyRewardsTable = ({ amm, amm_provider }: { amm: AMMData | null, amm_provider: number }) => {
+const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     const { sm } = useResponsive();
     const {  mintData, mmLaunchData, mmUserData, ammData } = useAppRoot();
 
@@ -117,10 +117,10 @@ const MyRewardsTable = ({ amm, amm_provider }: { amm: AMMData | null, amm_provid
     let mapped_rewards: MappedReward[] = [];
 
     if (amm !== null) {
-        getMappedRewards(mmUserData, mmLaunchData, amm, amm_provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
+        getMappedRewards(mmUserData, mmLaunchData, amm, amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
     } else {
         for (let i = 0; i < ammData.length; i++) {
-            getMappedRewards(mmUserData, mmLaunchData, ammData[i], amm_provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
+            getMappedRewards(mmUserData, mmLaunchData, ammData[i], amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
         }
     }
 

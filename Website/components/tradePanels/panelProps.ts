@@ -5,7 +5,6 @@ export interface PanelProps {
     base_mint?: MintData;
     quote_mint?: MintData;
     amm?: AMMData;
-    amm_provider?: number;
     user_base_balance?: number;
     user_quote_balance?: number;
     user_lp_balance?: number;

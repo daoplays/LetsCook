@@ -19,7 +19,7 @@ import {
     TokenAccount,
     RequestTokenHolders,
 } from "../../components/Solana/state";
-import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
+import { Config, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
@@ -65,10 +65,7 @@ import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import { Liquidity } from "@raydium-io/raydium-sdk";
-import { RaydiumCPMM, getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
-import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
-import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
-import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
+import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
@@ -118,7 +115,6 @@ function findLaunch(list: LaunchData[], page_name: string | string[]) {
     if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
 
     let launchList = list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
         return item.page_name == page_name;
     });
 
@@ -128,23 +124,21 @@ function findLaunch(list: LaunchData[], page_name: string | string[]) {
 function findAMM(list: AMMData[], base_mint: PublicKey) {
     if (list === null || list === undefined || base_mint === undefined || base_mint === null) return null;
 
-    let launchList = list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
+    let ammList = list.filter(function (item) {
         return item.base_mint.equals(base_mint);
     });
 
-    return launchList[0];
+    return ammList[0];
 }
 
-function filterLaunchRewards(list: MMLaunchData[], amm: AMMData, amm_provider: number) {
+function filterLaunchRewards(list: MMLaunchData[], amm: AMMData) {
     if (list === null || list === undefined) return [];
     if (amm === null || amm === undefined) return [];
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     
     return list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.mint_key.equals(getAMMKey(amm, amm_provider)) && item.date == current_date;
+        return item.mint_key.equals(getAMMKey(amm, amm.provider)) && item.date == current_date;
     });
 }
 
@@ -335,7 +329,6 @@ const TradePage = () => {
         setLPAmount(bignum_to_num(poolState.lp_supply));
     }, []);
 
-    // launch account subscription handler
     useEffect(() => {
         if (base_ws_id.current === null && base_address !== null) {
             //console.log("subscribe 1");
@@ -389,7 +382,7 @@ const TradePage = () => {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         console.log(hashArray.slice(0, 8));
         //("check market data");
-        if (launch === null || amm === null) return;
+        if (amm === null) return;
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
@@ -407,7 +400,7 @@ const TradePage = () => {
             [
                 amm_seed_keys[0].toBytes(),
                 amm_seed_keys[1].toBytes(),
-                Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+                Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM"),
             ],
             PROGRAM,
         )[0];
@@ -433,7 +426,7 @@ const TradePage = () => {
                     lp_mint, // mint
                     wallet.publicKey, // owner
                     true, // allow owner off curve
-                    launch.flags[LaunchFlags.AMMProvider] === 0 ? base_mint.token_program : TOKEN_PROGRAM_ID,
+                    amm.provider === 0 ? base_mint.token_program : TOKEN_PROGRAM_ID,
                 );
 
                 setUserBaseAddress(user_base_token_account_key);
@@ -463,7 +456,7 @@ const TradePage = () => {
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
-            if (launch.flags[LaunchFlags.AMMProvider] > 0) {
+            if (amm.provider > 0) {
                 if (Config.PROD) {
                     getBirdEyeData(setMarketData, "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN");
                 }
@@ -534,7 +527,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, amm, base_mint, wallet, connection]);
+    }, [amm, base_mint, wallet, connection]);
 
     useEffect(() => {
         CheckMarketData();
@@ -560,7 +553,7 @@ const TradePage = () => {
         );
     }
 
-    let latest_rewards = filterLaunchRewards(mmLaunchData, amm, launch.flags[LaunchFlags.AMMProvider]);
+    let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
 
     const Details = () => {
         return (
@@ -663,7 +656,6 @@ const TradePage = () => {
                             {leftPanel === "Trade" && (
                                 <BuyAndSell
                                     amm={amm}
-                                    amm_provider={launch.flags[LaunchFlags.AMMProvider]}
                                     base_mint={base_mint}
                                     base_balance={amm_base_amount}
                                     quote_balance={amm_quote_amount}
@@ -764,7 +756,7 @@ const TradePage = () => {
                                 </HStack>
                             </HStack>
 
-                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable amm={amm} amm_provider={launch.flags[LaunchFlags.AMMProvider]} />}
+                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable amm={amm} />}
 
                             {!wallet.connected && (
                                 <HStack w="100%" align="center" justify="center" mt={25}>
@@ -836,7 +828,6 @@ const TradePage = () => {
 
 const BuyAndSell = ({
     amm,
-    amm_provider,
     base_mint,
     base_balance,
     quote_balance,
@@ -845,7 +836,6 @@ const BuyAndSell = ({
     user_lp_balance,
 }: {
     amm: AMMData;
-    amm_provider: number;
     base_mint: MintData;
     base_balance: number;
     quote_balance: number;
@@ -960,7 +950,6 @@ const BuyAndSell = ({
             {selected === "Buy" && (
                 <BuyPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -978,7 +967,6 @@ const BuyAndSell = ({
             {selected === "Sell" && (
                 <SellPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -996,7 +984,6 @@ const BuyAndSell = ({
             {selected === "LP+" && (
                 <AddLiquidityPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -1015,7 +1002,6 @@ const BuyAndSell = ({
             {selected === "LP-" && (
                 <RemoveLiquidityPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}

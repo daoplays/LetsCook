@@ -26,7 +26,6 @@ import { useState } from "react";
 
 const BuyPanel = ({
     amm,
-    amm_provider,
     base_mint,
     user_quote_balance,
     sol_amount,
@@ -221,7 +220,7 @@ const BuyPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : amm_provider === 0
+                        : amm.provider === 0
                           ? PlaceMarketOrder(token_amount, sol_amount, 0)
                           : SwapRaydium(base_output * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0);
                 }}

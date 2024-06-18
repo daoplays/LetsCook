@@ -10,7 +10,6 @@ import formatPrice from "../../utils/formatPrice";
 
 const AddLiquidityPanel = ({
     amm,
-    amm_provider,
     base_mint,
     token_amount,
     connected,
@@ -113,7 +112,7 @@ const AddLiquidityPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : amm_provider=== 0
+                        : amm.provider=== 0
                           ? UpdateCookLiquidity(token_amount * Math.pow(10, base_mint.mint.decimals), 0)
                           : AddLiquidityRaydium(
                                 lp_generated * Math.pow(10, 9),

@@ -7,7 +7,6 @@ import formatPrice from "../../utils/formatPrice";
 
 const RemoveLiquidityPanel = ({
     amm,
-    amm_provider,
     token_amount,
     base_mint,
     connected,
@@ -146,7 +145,7 @@ const RemoveLiquidityPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : amm_provider === 0
+                        : amm.provider === 0
                           ? UpdateCookLiquidity(lp_raw, 1)
                           : RemoveLiquidityRaydium(lp_raw);
                 }}
