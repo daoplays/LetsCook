@@ -13,7 +13,16 @@ import {
     Progress,
     Divider,
 } from "@chakra-ui/react";
-import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data, MintData, getLaunchTypeIndex, ListingData } from "../../components/Solana/state";
+import {
+    LaunchData,
+    bignum_to_num,
+    myU64,
+    JoinData,
+    request_raw_account_data,
+    MintData,
+    getLaunchTypeIndex,
+    ListingData,
+} from "../../components/Solana/state";
 import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -185,7 +194,7 @@ const TokenMintPage = () => {
 
         if (join_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
             console.log("subscribe 2");
-           
+
             let user_join_account = PublicKey.findProgramAddressSync(
                 [wallet.publicKey.toBytes(), listing.mint.toBytes(), Buffer.from("Joiner")],
                 PROGRAM,
@@ -216,7 +225,7 @@ const TokenMintPage = () => {
         setIsLoading(true);
 
         let new_launch_data: [LaunchData | null, number] = [launchData, 0];
-        let listing : ListingData = null;
+        let listing: ListingData = null;
         if (launchData === null) {
             try {
                 let page_name = pageName ? pageName : "";
@@ -232,13 +241,12 @@ const TokenMintPage = () => {
                 //console.log(new_launch_data);
 
                 setLaunchData(new_launch_data[0]);
-                setListing(listing)
+                setListing(listing);
             } catch (error) {
                 console.error("Error fetching launch data:", error);
             }
         }
 
-        
         if (wallet === null || wallet.publicKey === null) {
             setIsLoading(false);
             return;
@@ -279,10 +287,9 @@ const TokenMintPage = () => {
         if (mintData !== null && launchData !== null) {
             for (let i = 0; i < launchData.plugins.length; i++) {
                 if (launchData.plugins[i]["__kind"] === "Whitelist") {
-                    let whitelist_mint : PublicKey = launchData.plugins[i]["key"];
-                    console.log("have whitelist ", whitelist_mint.toString())
-                    setWhitelist(mintData.get(whitelist_mint.toString()))
-                    
+                    let whitelist_mint: PublicKey = launchData.plugins[i]["key"];
+                    console.log("have whitelist ", whitelist_mint.toString());
+                    setWhitelist(mintData.get(whitelist_mint.toString()));
                 }
             }
         }
@@ -298,22 +305,19 @@ const TokenMintPage = () => {
 
     useEffect(() => {
         if (launchData) {
-            let launch_type = launchData.launch_meta["__kind"]
-            let launch_index = getLaunchTypeIndex(launch_type)
-            setLaunchType(launch_index)
-            
+            let launch_type = launchData.launch_meta["__kind"];
+            let launch_index = getLaunchTypeIndex(launch_type);
+            setLaunchType(launch_index);
+
             setTicketPrice(bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL);
 
             if (launch_index !== 2 || launchData.tickets_sold < launchData.num_mints) {
                 let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
-                setTokensPerTicket(one_mint)
-            }
-            else {
+                setTokensPerTicket(one_mint);
+            } else {
                 let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.tickets_sold;
-                setTokensPerTicket(one_mint)
-
+                setTokensPerTicket(one_mint);
             }
-            
         }
     }, [launchData]);
 
@@ -390,7 +394,17 @@ const TokenMintPage = () => {
                                     >
                                         Tickets Sold: {launchData.tickets_sold}
                                     </Text>
-                                    {launch_type !== 2 &&
+                                    {launch_type !== 2 && (
+                                        <Text
+                                            m="0"
+                                            color="white"
+                                            fontSize="x-large"
+                                            fontFamily="ReemKufiRegular"
+                                            align={md ? "center" : "start"}
+                                        >
+                                            Total Winning Tickets: {launchData.num_mints.toLocaleString()}
+                                        </Text>
+                                    )}
                                     <Text
                                         m="0"
                                         color="white"
@@ -398,17 +412,7 @@ const TokenMintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Total Winning Tickets: {launchData.num_mints.toLocaleString()}
-                                    </Text>
-                                    }
-                                    <Text
-                                        m="0"
-                                        color="white"
-                                        fontSize="x-large"
-                                        fontFamily="ReemKufiRegular"
-                                        align={md ? "center" : "start"}
-                                    >
-                                        Tokens Per Winning Ticket: {formatPrice(tokens_per_ticket, Math.min(3,listing.decimals))}
+                                        Tokens Per Winning Ticket: {formatPrice(tokens_per_ticket, Math.min(3, listing.decimals))}
                                         <br />({one_mint_frac.toFixed(4)}% of total supply)
                                     </Text>
 
@@ -500,7 +504,7 @@ const TokenMintPage = () => {
                                                 )}
 
                                                 {MINTED_OUT &&
-                                                launch_type !== 2 && 
+                                                    launch_type !== 2 &&
                                                     join_data !== null &&
                                                     join_data.num_tickets > join_data.num_claimed_tickets && (
                                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -555,7 +559,7 @@ const TokenMintPage = () => {
                                                     style={{ marginLeft: -3 }}
                                                 />
                                             </HStack>
-                                            {whitelist !== null &&
+                                            {whitelist !== null && (
                                                 <HStack alignItems="center">
                                                     <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
                                                         Whitelist Required
@@ -565,16 +569,16 @@ const TokenMintPage = () => {
                                                         target="_blank"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
-                                                    <Image
-                                                        src={whitelist.icon}
-                                                        width={20}
-                                                        height={20}
-                                                        alt="SOL Icon"
-                                                        style={{ marginLeft: -3 }}
-                                                    />
+                                                        <Image
+                                                            src={whitelist.icon}
+                                                            width={20}
+                                                            height={20}
+                                                            alt="SOL Icon"
+                                                            style={{ marginLeft: -3 }}
+                                                        />
                                                     </Link>
                                                 </HStack>
-                                            }
+                                            )}
                                         </VStack>
                                     ) : (
                                         <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">

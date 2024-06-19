@@ -753,7 +753,11 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link href={getSolscanLink(launch.keys[CollectionKeys.CollectionMint], "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                        <Link
+                                            href={getSolscanLink(launch.keys[CollectionKeys.CollectionMint], "Token")}
+                                            target="_blank"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <Image
                                                 src="/images/solscan.png"
                                                 width={lg ? 22 : 22}

@@ -25,8 +25,7 @@ function filterOrders(list: OpenOrder[], listing: ListingData) {
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
         return (
-            item.account.inputMint.toString() === listing.mint.toString() ||
-            item.account.outputMint.toString() === listing.mint.toString()
+            item.account.inputMint.toString() === listing.mint.toString() || item.account.outputMint.toString() === listing.mint.toString()
         );
     });
 }
@@ -37,10 +36,7 @@ function filterTrades(list: TradeHistoryItem[], listing: ListingData) {
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return (
-            item.order.inputMint.toString() === listing.mint.toString() ||
-            item.order.outputMint.toString() === listing.mint.toString()
-        );
+        return item.order.inputMint.toString() === listing.mint.toString() || item.order.outputMint.toString() === listing.mint.toString();
     });
 }
 
@@ -50,7 +46,7 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
     const { sm } = useResponsive();
     const { userOrders, userTrades, checkUserOrders, listingData } = useAppRoot();
     const check_orders = useRef<boolean>(true);
-    let listing = listingData.get(launch_data.listing.toString())
+    let listing = listingData.get(launch_data.listing.toString());
 
     useEffect(() => {
         if (!check_orders.current) return;
@@ -105,7 +101,8 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
                 </thead>
 
                 <tbody>
-                    {state === "Open" && filtered_orders.map((order, i) => <OrderCard key={i} order={order} launch={launch_data} listing={listing} />)}
+                    {state === "Open" &&
+                        filtered_orders.map((order, i) => <OrderCard key={i} order={order} launch={launch_data} listing={listing} />)}
                     {state === "Filled" && filtered_trades.map((order, i) => <TradeCard key={i} order={order} listing={listing} />)}
                 </tbody>
             </table>
@@ -113,7 +110,7 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
     );
 };
 
-const OrderCard = ({ order, launch, listing }: { order: OpenOrder; launch : LaunchData; listing: ListingData }) => {
+const OrderCard = ({ order, launch, listing }: { order: OpenOrder; launch: LaunchData; listing: ListingData }) => {
     const { sm, md, lg } = useResponsive();
     const { CancelLimitOrder } = useCancelLimitOrder(launch, listing);
     let is_buy = order.account.outputMint.toString() === listing.mint.toString();

@@ -29,7 +29,6 @@ exports.handler = async function (event, context) {
         const listing_data = await request_raw_account_data("", new_launch_data.listing);
         const [listing] = ListingData.struct.deserialize(listing_data);
 
-
         let current_time = new Date().getTime();
         if (current_time / 1000 - bignum_to_num(new_launch_data.last_interaction) > 5 * 60) {
             var result: Result = { statusCode: 404, body: "Launch occured too long ago to tweet" };
@@ -46,10 +45,7 @@ exports.handler = async function (event, context) {
         }
 
         let liquidity = (new_launch_data.num_mints * bignum_to_num(new_launch_data.ticket_price)) / LAMPORTS_PER_SOL;
-        let raydium_link =
-            "https://raydium.io/swap/?inputCurrency=" +
-            listing.mint.toString() +
-            "&outputCurrency=sol&fixed=in";
+        let raydium_link = "https://raydium.io/swap/?inputCurrency=" + listing.mint.toString() + "&outputCurrency=sol&fixed=in";
 
         let tweet_string =
             "🔥 COOK OUT: $" +

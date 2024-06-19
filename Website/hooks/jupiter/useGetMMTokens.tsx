@@ -40,7 +40,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const useGetMMTokens = () => {
     const wallet = useWallet();
-    const {listingData} = useAppRoot();
+    const { listingData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -63,7 +63,7 @@ const useGetMMTokens = () => {
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        let listing = listingData.get(launch.listing.toString())
+        let listing = listingData.get(launch.listing.toString());
 
         const token_mint = listing.mint;
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -94,7 +94,11 @@ const useGetMMTokens = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+            ],
             PROGRAM,
         )[0];
 

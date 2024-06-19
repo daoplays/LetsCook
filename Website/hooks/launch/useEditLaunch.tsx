@@ -68,8 +68,8 @@ const useEditLaunch = () => {
         )[0];
 
         const launch_data = await request_launch_data("", launch_data_account);
-        let listing_data = await request_raw_account_data("", launch_data.listing)
-        const [listing] = ListingData.struct.deserialize(listing_data)
+        let listing_data = await request_raw_account_data("", launch_data.listing);
+        const [listing] = ListingData.struct.deserialize(listing_data);
         console.log("launch data", launch_data);
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -85,7 +85,11 @@ const useEditLaunch = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(launch_data.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM")],
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from(launch_data.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+            ],
             PROGRAM,
         )[0];
 

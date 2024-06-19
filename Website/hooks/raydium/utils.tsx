@@ -1,9 +1,4 @@
-import {
-    Token,
-    DEVNET_PROGRAM_ID,
-    MAINNET_PROGRAM_ID,
-
-} from "@raydium-io/raydium-sdk";
+import { Token, DEVNET_PROGRAM_ID, MAINNET_PROGRAM_ID } from "@raydium-io/raydium-sdk";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
@@ -24,11 +19,9 @@ export async function generatePubKey({
     return { publicKey, seed };
 }
 
-
 export function getRaydiumPrograms(Config) {
     return Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 }
-
 
 export class RaydiumCPMM {
     constructor(

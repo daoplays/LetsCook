@@ -33,7 +33,7 @@ interface AppRootTypes {
     collectionList: CollectionData[];
     selectedNetwork: string;
     setSelectedNetwork: Dispatch<SetStateAction<string>>;
-    listingData: Map<string, ListingData>
+    listingData: Map<string, ListingData>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -65,7 +65,7 @@ export const AppRootContextProvider = ({
     collectionList,
     selectedNetwork,
     setSelectedNetwork,
-    listingData
+    listingData,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -95,7 +95,7 @@ export const AppRootContextProvider = ({
                 collectionList,
                 setSelectedNetwork,
                 selectedNetwork,
-                listingData
+                listingData,
             }}
         >
             {children}

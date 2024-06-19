@@ -31,9 +31,7 @@ export interface OpenOrder {
     account: Order;
 }
 
-
-
-export function getAMMKey(amm: AMMData, amm_provider : number) {
+export function getAMMKey(amm: AMMData, amm_provider: number) {
     let amm_seed_keys = [];
     if (amm.base_mint.toString() < amm.quote_mint.toString()) {
         amm_seed_keys.push(amm.base_mint);
@@ -52,12 +50,11 @@ export function getAMMKey(amm: AMMData, amm_provider : number) {
 }
 
 export function reward_schedule(date: number, amm: AMMData): number {
-
     if (amm.plugins.length === 0) {
-        return 0.0
+        return 0.0;
     }
 
-    let mm_amount = amm.plugins[0]["total_tokens"]
+    let mm_amount = amm.plugins[0]["total_tokens"];
     if (date < 10) {
         return 0.05 * mm_amount;
     }
@@ -327,7 +324,7 @@ class ClaimReward_Instruction {
     constructor(
         readonly instruction: number,
         readonly date: number,
-        readonly amm_provider: number
+        readonly amm_provider: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(

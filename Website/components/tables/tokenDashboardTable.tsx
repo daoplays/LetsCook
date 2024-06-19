@@ -1,5 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
-import { LaunchData, ListingData, UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
+import {
+    LaunchData,
+    ListingData,
+    UserData,
+    bignum_to_num,
+    create_LaunchDataInput,
+    get_current_blockhash,
+    send_transaction,
+} from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -115,7 +123,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
 
             const collectToast = toast.loading("Collecting Fee Accounts...");
 
-            let listing = listingData.get(launch.listing.toString())
+            let listing = listingData.get(launch.listing.toString());
 
             let feeAccounts: TransferAccount[] = await GetFeeAccounts(listing);
 
@@ -259,11 +267,9 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const { sm, md, lg } = useResponsive();
     const { newLaunchData, listingData } = useAppRoot();
 
-
-    let listing = listingData.get(launch.listing.toString())
+    let listing = listingData.get(launch.listing.toString());
     const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
     const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(listing, launch);
-
 
     const [isEditing, setIsEditing] = useState(false);
 

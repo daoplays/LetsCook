@@ -99,7 +99,6 @@ const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
             amm_seed_keys.push(token_mint);
@@ -114,7 +113,6 @@ const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
             PROGRAM,
         )[0];
 
-
         let date_bytes = uInt32ToLEBytes(date);
 
         let launch_date_account = PublicKey.findProgramAddressSync(
@@ -128,7 +126,6 @@ const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
         )[0];
 
         let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
-
 
         let transfer_hook = getTransferHook(mint_account.mint);
 

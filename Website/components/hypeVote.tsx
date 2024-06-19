@@ -19,7 +19,7 @@ export function HypeVote({
     positive_votes,
     negative_votes,
     isTradePage,
-    listing
+    listing,
 }: {
     launch_type: number;
     launch_id: BN;
@@ -27,7 +27,7 @@ export function HypeVote({
     positive_votes: number;
     negative_votes: number;
     isTradePage?: boolean;
-    listing: ListingData | null
+    listing: ListingData | null;
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -67,6 +67,7 @@ export function HypeVote({
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
+            console.log("in vote");
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             if (hype_vote_ws_id.current !== null) {
@@ -74,15 +75,13 @@ export function HypeVote({
                 return;
             }
 
-            let launch_data_account : PublicKey;
+            let launch_data_account: PublicKey;
 
-            if(launch_type === 0) {
+            if (launch_type === 0) {
                 launch_data_account = PublicKey.findProgramAddressSync([listing.mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-            }
-            else {
+            } else {
                 launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
             }
-                   
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -151,7 +150,6 @@ export function HypeVote({
             vote_color = "#FF6E6E";
         }
     }
-
 
     if (has_voted) {
         return (

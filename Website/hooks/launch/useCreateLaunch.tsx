@@ -335,10 +335,7 @@ const usuCreateLaunch = () => {
             newLaunchData.current.token_program,
         );
 
-        let listing = PublicKey.findProgramAddressSync(
-            [token_mint_pubkey.toBuffer(), Buffer.from("Listing")],
-            PROGRAM,
-        )[0];
+        let listing = PublicKey.findProgramAddressSync([token_mint_pubkey.toBuffer(), Buffer.from("Listing")], PROGRAM)[0];
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
@@ -351,7 +348,7 @@ const usuCreateLaunch = () => {
         }
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
-        let whitelist = newLaunchData.current.whitelist_key !== "" ? new PublicKey(newLaunchData.current.whitelist_key) :  SYSTEM_KEY;
+        let whitelist = newLaunchData.current.whitelist_key !== "" ? new PublicKey(newLaunchData.current.whitelist_key) : SYSTEM_KEY;
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
@@ -370,8 +367,7 @@ const usuCreateLaunch = () => {
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
             { pubkey: whitelist, isSigner: false, isWritable: true },
-
-       ];
+        ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false });
@@ -381,18 +377,14 @@ const usuCreateLaunch = () => {
         if (newLaunchData.current.permanent_delegate !== null) {
             console.log("add PD");
             account_vector.push({ pubkey: newLaunchData.current.permanent_delegate, isSigner: false, isWritable: false });
-        }
-        else {
+        } else {
             account_vector.push({ pubkey: PROGRAM, isSigner: false, isWritable: false });
-
         }
         if (newLaunchData.current.transfer_hook_program !== null) {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
-        }
-        else {
+        } else {
             account_vector.push({ pubkey: PROGRAM, isSigner: false, isWritable: false });
-
         }
 
         const list_instruction = new TransactionInstruction({

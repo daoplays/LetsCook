@@ -56,10 +56,11 @@ const BuyPanel = ({
     let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
     let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
     let quote_input_amount = quote_raw - amm_quote_fee;
-    let base_output = (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, base_mint.mint.decimals);
+    let base_output =
+        (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, base_mint.mint.decimals);
     let base_output_string = formatPrice(base_output, base_mint.mint.decimals);
 
-    console.log(amm_base_balance, amm_quote_balance)
+    console.log(amm_base_balance, amm_quote_balance);
     let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
     let base_no_slip = sol_amount / price;
     let slippage = base_no_slip / base_output - 1;
@@ -155,7 +156,7 @@ const BuyPanel = ({
                     </InputRightElement>
                 </InputGroup>
             </VStack>
-{/*
+            {/*
             <VStack align="start" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     Leverage:

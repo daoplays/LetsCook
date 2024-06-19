@@ -65,7 +65,7 @@ const usePlaceLimitOrder = () => {
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        let listing = listingData.get(launch.listing.toString())
+        let listing = listingData.get(launch.listing.toString());
         const token_mint = listing.mint;
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         const jupiter_program_key = new PublicKey("jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu");

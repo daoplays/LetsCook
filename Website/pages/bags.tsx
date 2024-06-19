@@ -25,11 +25,10 @@ const BagsPage = () => {
 
     useEffect(() => {
         if (joinData && launchList) {
-           
             let joinedLaunches: JoinedLaunch[] = [];
             for (let i = 0; i < joinData.length; i++) {
                 const joinedLaunch = launchList.filter((launch) => {
-                    let listing = listingData.get(launch.listing.toString())
+                    let listing = listingData.get(launch.listing.toString());
                     return joinData[i].mint.equals(listing.mint);
                 });
                 if (joinedLaunch.length === 0 || joinedLaunch[0] === undefined) continue;

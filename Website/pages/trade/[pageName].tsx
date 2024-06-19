@@ -12,14 +12,8 @@ import {
 } from "../../components/Solana/state";
 import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, getAMMKey } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import {
-    bignum_to_num,
-    MarketStateLayoutV2,
-    request_token_amount,
-    TokenAccount,
-    RequestTokenHolders,
-} from "../../components/Solana/state";
-import { Config,  PROGRAM } from "../../components/Solana/constants";
+import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
+import { Config, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
@@ -111,14 +105,12 @@ async function getBirdEyeData(setMarketData: any, market_address: string) {
     //return data;
 }
 
-
-
 function filterLaunchRewards(list: MMLaunchData[], amm: AMMData) {
     if (list === null || list === undefined) return [];
     if (amm === null || amm === undefined) return [];
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    
+
     return list.filter(function (item) {
         return item.mint_key.equals(getAMMKey(amm, amm.provider)) && item.date == current_date;
     });
@@ -130,7 +122,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const {  ammData,  mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
+    const { ammData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -166,7 +158,7 @@ const TradePage = () => {
 
     const [total_supply, setTotalSupply] = useState<number>(0);
 
-    const[listing, setListing] = useState<ListingData | null>(null);
+    const [listing, setListing] = useState<ListingData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<MintData | null>(null);
 
@@ -204,18 +196,16 @@ const TradePage = () => {
     useEffect(() => {
         if (ammData === null || listingData === null || mintData === null) return;
 
-        
         let amm = ammData.get(pageName.toString());
         setAMM(amm);
 
         let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-        let listing = listingData.get(listing_key.toString())
-        setListing(listing)
+        let listing = listingData.get(listing_key.toString());
+        setListing(listing);
 
-    
         let base_mint = mintData.get(amm.base_mint.toString());
         setBaseMint(base_mint);
-    }, [ ammData, mintData, pageName, listingData]);
+    }, [ammData, mintData, pageName, listingData]);
 
     useEffect(() => {
         if (amm_base_amount === null || amm_quote_amount === null) {
@@ -381,11 +371,7 @@ const TradePage = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [
-                amm_seed_keys[0].toBytes(),
-                amm_seed_keys[1].toBytes(),
-                Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM"),
-            ],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
             PROGRAM,
         )[0];
 
@@ -571,7 +557,11 @@ const TradePage = () => {
                         </Tooltip>
 
                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                            <Link href={getSolscanLink(base_mint.mint.address, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                            <Link
+                                href={getSolscanLink(base_mint.mint.address, "Token")}
+                                target="_blank"
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
                             </Link>
                         </Tooltip>
@@ -1015,7 +1005,6 @@ const InfoContent = ({
     volume,
     total_supply,
     mm_data,
-    
 }: {
     listing: ListingData;
     amm: AMMData;
@@ -1027,7 +1016,6 @@ const InfoContent = ({
     total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
-    
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm);
     if (mm_data !== null) {

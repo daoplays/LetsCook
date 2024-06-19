@@ -1,14 +1,7 @@
 import { HStack, Link, Text, Tooltip } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import { Extensions } from "./constants";
-import {
-    Mint,
-    getPermanentDelegate,
-    getTransferFeeConfig,
-    getTransferHook,
-
-    
-} from "@solana/spl-token";
+import { Mint, getPermanentDelegate, getTransferFeeConfig, getTransferHook } from "@solana/spl-token";
 export function getExtensions(mint: Mint) {
     let transfer_hook = getTransferHook(mint);
     let transfer_fee_config = getTransferFeeConfig(mint);

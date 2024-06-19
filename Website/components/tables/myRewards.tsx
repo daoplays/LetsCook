@@ -24,12 +24,9 @@ interface MappedReward {
     base_mint: MintData;
 }
 
-
 function filterLaunchRewards(list: MMLaunchData[], amm: AMMData, amm_provider: number) {
     if (list === null || list === undefined) return [];
     if (amm === null) return [];
-
-   
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
@@ -52,12 +49,9 @@ function getMappedRewards(
     launch_rewards: MMLaunchData[],
     amm: AMMData,
     amm_provider: number,
-    base_mint: MintData, 
+    base_mint: MintData,
     mapped_rewards: MappedReward[],
 ) {
-
-    
-
     let filtered_user_rewards = filterUserRewards(user_rewards, amm, amm_provider);
     let filtered_launch_rewards = filterLaunchRewards(launch_rewards, amm, amm_provider);
 
@@ -99,7 +93,7 @@ function getMappedRewards(
 }
 const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     const { sm } = useResponsive();
-    const {  mintData, mmLaunchData, mmUserData, ammData } = useAppRoot();
+    const { mintData, mmLaunchData, mmUserData, ammData } = useAppRoot();
 
     const tableHeaders: Header[] = [
         { text: "REWARD DAY", field: "reward_day" },
@@ -121,7 +115,7 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     } else {
         ammData.forEach((amm, i) => {
             getMappedRewards(mmUserData, mmLaunchData, ammData[i], amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
-        })
+        });
     }
 
     return (

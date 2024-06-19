@@ -23,14 +23,13 @@ interface FeaturedBannerProps {
 const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => {
     const { sm, lg } = useResponsive();
     const router = useRouter();
-    const {listingData} = useAppRoot()
+    const { listingData } = useAppRoot();
 
     if (!featuredLaunch) return;
 
     let listing = listingData.get(featuredLaunch.listing.toString());
 
-    if (!listing)
-        return;
+    if (!listing) return;
 
     return (
         <Box
@@ -99,9 +98,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 <HStack spacing={3} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
                                         CA:{" "}
-                                        {featuredLaunch && featuredLaunch.keys && listing.mint
-                                            ? trimAddress(listing.mint.toString())
-                                            : ""}
+                                        {featuredLaunch && featuredLaunch.keys && listing.mint ? trimAddress(listing.mint.toString()) : ""}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -110,9 +107,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && listing.mint
-                                                        ? listing.mint.toString()
-                                                        : "",
+                                                    featuredLaunch && featuredLaunch.keys && listing.mint ? listing.mint.toString() : "",
                                                 );
                                             }}
                                         >
@@ -138,9 +133,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && listing.mint
-                                                    ? listing.mint.toString()
-                                                    : ""
+                                                featuredLaunch && featuredLaunch.keys && listing.mint ? listing.mint.toString() : ""
                                             }`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}

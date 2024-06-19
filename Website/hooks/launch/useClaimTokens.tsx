@@ -99,8 +99,8 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-        let listing = listingData.get(launchData.listing.toString())
-       
+        let listing = listingData.get(launchData.listing.toString());
+
         let user_join_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,

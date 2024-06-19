@@ -54,8 +54,8 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
     };
 
     launchList.sort((a, b) => {
-        let a_listing = listingData.get(a.listing.toString())
-        let b_listing = listingData.get(b.listing.toString())
+        let a_listing = listingData.get(a.listing.toString());
+        let b_listing = listingData.get(b.listing.toString());
 
         if (sortedField !== "hype" && sortedField !== "minimum_liquidity") {
             if (a[sortedField] < b[sortedField]) {
@@ -151,11 +151,11 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
     );
 };
 
-const LaunchCard = ({ launch }: { launch: LaunchData; }) => {
+const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     const { listingData } = useAppRoot();
 
-    let listing = listingData.get(launch.listing.toString())
+    let listing = listingData.get(launch.listing.toString());
     const router = useRouter();
     let name = listing.symbol;
 

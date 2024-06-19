@@ -64,7 +64,7 @@ const useInitAMM = (launchData: LaunchData) => {
         console.log(launchData);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-        let listing = listingData.get(launchData.listing.toString())
+        let listing = listingData.get(launchData.listing.toString());
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");

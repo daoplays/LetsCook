@@ -581,7 +581,6 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 export function getLaunchType(launch_type: number): string {
     switch (launch_type) {
         case 0:
@@ -608,32 +607,44 @@ export function getLaunchTypeIndex(launch_type: string): number {
     }
 }
 
-
-
 type LaunchPluginEnum = {
-    Whitelist: { key: PublicKey, amount: bignum };
+    Whitelist: { key: PublicKey; amount: bignum };
 };
 type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
 
 const launchPluginBeet = dataEnum<LaunchPluginEnum>([
     [
         "Whitelist",
-        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>([["key", publicKey], ["amount", u64]], 'LaunchPluginEnum["Whitelist"]'),
+        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>(
+            [
+                ["key", publicKey],
+                ["amount", u64],
+            ],
+            'LaunchPluginEnum["Whitelist"]',
+        ),
     ],
 ]) as FixableBeet<LaunchPlugin>;
 
 type LaunchMetaEnum = {
     Raffle: {};
     FCFS: {};
-    IDO: {fraction_distributed : number[], tokens_distributed : bignum};
+    IDO: { fraction_distributed: number[]; tokens_distributed: bignum };
 };
 type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
     ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
-    ["IDO", new BeetArgsStruct<LaunchMetaEnum["IDO"]>([["fraction_distributed", uniformFixedSizeArray(u8, 8)], ["tokens_distributed", u64]], 'LaunchMetaEnum["IDO"]')],
-
+    [
+        "IDO",
+        new BeetArgsStruct<LaunchMetaEnum["IDO"]>(
+            [
+                ["fraction_distributed", uniformFixedSizeArray(u8, 8)],
+                ["tokens_distributed", u64],
+            ],
+            'LaunchMetaEnum["IDO"]',
+        ),
+    ],
 ]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
@@ -727,8 +738,8 @@ export interface LaunchDataUserInput {
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
     launch_type: number;
-    whitelist_key : string;
-    whitelist_amount : number
+    whitelist_key: string;
+    whitelist_amount: number;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -766,8 +777,8 @@ export const defaultUserInput: LaunchDataUserInput = {
     permanent_delegate: null,
     transfer_hook_program: null,
     launch_type: 1,
-    whitelist_key : "",
-    whitelist_amount : 0
+    whitelist_key: "",
+    whitelist_amount: 0,
 };
 
 export class myU64 {
@@ -775,7 +786,6 @@ export class myU64 {
 
     static readonly struct = new BeetStruct<myU64>([["value", u64]], (args) => new myU64(args.value!), "myU64");
 }
-
 
 export class ListingData {
     constructor(
@@ -790,9 +800,8 @@ export class ListingData {
         readonly banner: string,
         readonly description: string,
         readonly positive_votes: number,
-        readonly negative_votes: number, 
+        readonly negative_votes: number,
         readonly socials: string[],
-
     ) {}
 
     static readonly struct = new FixableBeetStruct<ListingData>(
@@ -810,7 +819,6 @@ export class ListingData {
             ["positive_votes", u32],
             ["negative_votes", u32],
             ["socials", array(utf8String)],
-
         ],
         (args) =>
             new ListingData(
@@ -827,7 +835,6 @@ export class ListingData {
                 args.positive_votes!,
                 args.negative_votes!,
                 args.socials!,
-
             ),
         "ListingData",
     );
@@ -853,7 +860,6 @@ export class LaunchData {
         readonly tickets_sold: number,
         readonly tickets_claimed: number,
         readonly mints_won: number,
-       
 
         readonly total_mm_buy_amount: bignum,
         readonly total_mm_sell_amount: bignum,
@@ -873,7 +879,6 @@ export class LaunchData {
             ["last_interaction", i64],
             ["num_interactions", u16],
 
-          
             ["page_name", utf8String],
             ["listing", publicKey],
 
@@ -887,7 +892,7 @@ export class LaunchData {
             ["tickets_sold", u32],
             ["tickets_claimed", u32],
             ["mints_won", u32],
-           
+
             ["total_mm_buy_amount", u64],
             ["total_mm_sell_amount", u64],
             ["last_mm_reward_date", u32],
@@ -905,7 +910,6 @@ export class LaunchData {
                 args.last_interaction!,
                 args.num_interactions!,
 
-               
                 args.page_name!,
                 args.listing!,
 
@@ -919,7 +923,7 @@ export class LaunchData {
                 args.tickets_sold!,
                 args.tickets_claimed!,
                 args.mints_won!,
-               
+
                 args.total_mm_buy_amount!,
                 args.total_mm_sell_amount!,
                 args.last_mm_reward_date!,
@@ -945,18 +949,24 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         __kind: "Raffle",
         Raffle: {},
         FCFS: {},
-        IDO: {fraction_distributed: [0,0,0,0,0,0,0,0], tokens_distributed : 0}
+        IDO: { fraction_distributed: [0, 0, 0, 0, 0, 0, 0, 0], tokens_distributed: 0 },
     };
 
-    const listing = new ListingData(11, new BN(0), null, new_launch_data.name,
+    const listing = new ListingData(
+        11,
+        new BN(0),
+        null,
+        new_launch_data.name,
         new_launch_data.symbol,
         new_launch_data.decimals,
         icon_url,
         "meta_data",
-        banner_url,new_launch_data.description, 0,
+        banner_url,
+        new_launch_data.description,
         0,
-        [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url]);
-
+        0,
+        [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url],
+    );
 
     const data = new LaunchData(
         1,
@@ -965,7 +975,6 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         new BN(0),
         0,
 
-        
         new_launch_data.pagename,
         null,
 
@@ -979,13 +988,11 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         0,
         0,
         0,
-       
 
         new BN(0),
         new BN(0),
         0,
 
-        
         new_launch_data.distribution,
         [],
         [],
@@ -1035,8 +1042,8 @@ export function create_LaunchDataInput(launch_data: LaunchData, listing: Listing
         permanent_delegate: null,
         transfer_hook_program: null,
         launch_type: 1,
-        whitelist_key : "",
-        whitelist_amount : 0
+        whitelist_key: "",
+        whitelist_amount: 0,
     };
 
     return data;
@@ -1197,7 +1204,7 @@ class CreateLaunch_Instruction {
         readonly extensions: number,
         readonly amm_provider: number,
         readonly launch_type: number,
-        readonly whitelist_tokens: bignum
+        readonly whitelist_tokens: bignum,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1221,7 +1228,6 @@ class CreateLaunch_Instruction {
             ["amm_provider", u8],
             ["launch_type", u8],
             ["whitelist_tokens", u64],
-
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1244,7 +1250,6 @@ class CreateLaunch_Instruction {
                 args.amm_provider!,
                 args.launch_type!,
                 args.whitelist_tokens!,
-
             ),
         "CreateLaunch_Instruction",
     );
@@ -1279,7 +1284,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         extensions,
         new_launch_data.amm_provider,
         new_launch_data.launch_type,
-        new_launch_data.whitelist_amount
+        new_launch_data.whitelist_amount,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -1382,7 +1387,7 @@ class HypeVote_Instruction {
     );
 }
 
-export function serialise_HypeVote_instruction(launch_type: number,  vote: number): Buffer {
+export function serialise_HypeVote_instruction(launch_type: number, vote: number): Buffer {
     const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, launch_type, vote);
     const [buf] = HypeVote_Instruction.struct.serialize(data);
 

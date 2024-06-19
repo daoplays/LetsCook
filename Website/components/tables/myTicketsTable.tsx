@@ -48,12 +48,10 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
         if (a.launch_data === undefined || b.launch_data === undefined) {
             return 0;
         }
-        let a_listing = listingData.get(a.launch_data.listing.toString())
-        let b_listing = listingData.get(b.launch_data.listing.toString())
+        let a_listing = listingData.get(a.launch_data.listing.toString());
+        let b_listing = listingData.get(b.launch_data.listing.toString());
         if (sortedField === "symbol") {
-            return reverseSort
-                ? b_listing.symbol.localeCompare(a_listing.symbol)
-                : a_listing.symbol.localeCompare(b_listing.symbol);
+            return reverseSort ? b_listing.symbol.localeCompare(a_listing.symbol) : a_listing.symbol.localeCompare(b_listing.symbol);
         } else if (sortedField === "date") {
             return reverseSort
                 ? b.launch_data.launch_date - a.launch_data.launch_date
@@ -117,9 +115,9 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
 const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { listingData} = useAppRoot();
+    const { listingData } = useAppRoot();
 
-    let listing = listingData.get(launch.launch_data.listing.toString())
+    let listing = listingData.get(launch.launch_data.listing.toString());
 
     const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, true);
     const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, true);

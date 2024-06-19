@@ -32,7 +32,7 @@ interface OpenOrder {
     account: Order;
 }
 
-const useCancelLimitOrder = (launch_data: LaunchData, listing : ListingData) => {
+const useCancelLimitOrder = (launch_data: LaunchData, listing: ListingData) => {
     const wallet = useWallet();
     const { checkUserOrders } = useAppRoot();
 
@@ -53,7 +53,7 @@ const useCancelLimitOrder = (launch_data: LaunchData, listing : ListingData) => 
         signature_ws_id.current = null;
     }, []);
 
-    const CancelLimitOrder = async ( order: OpenOrder) => {
+    const CancelLimitOrder = async (order: OpenOrder) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const placeLimitToast = toast.loading("Cancelling Limit Order..");

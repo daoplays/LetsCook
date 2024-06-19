@@ -29,7 +29,15 @@ import {
     ModalOverlay,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes, getLaunchType, getLaunchTypeIndex } from "../../components/Solana/state";
+import {
+    LaunchData,
+    LaunchDataUserInput,
+    bignum_to_num,
+    Distribution,
+    uInt32ToLEBytes,
+    getLaunchType,
+    getLaunchTypeIndex,
+} from "../../components/Solana/state";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import WoodenButton from "../Buttons/woodenButton";

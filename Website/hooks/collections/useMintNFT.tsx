@@ -99,7 +99,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
-
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -116,7 +115,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         }
 
         let r_data = await request_raw_account_data("", assignment_data.random_address);
-        console.log(r_data)
+        console.log(r_data);
 
         setIsLoading(true);
 

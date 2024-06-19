@@ -50,8 +50,8 @@ const GetTradeMintData = async (trade_keys, setMintMap) => {
     let mint_map = new Map<PublicKey, MintData>();
     for (let i = 0; i < result.length; i++) {
         let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
-        let mint_data = await getMintData(connection, mint, result[i].owner)
-        
+        let mint_data = await getMintData(connection, mint, result[i].owner);
+
         //console.log("mint; ", mint.address.toString());
         mint_map.set(trade_keys[i].toString(), mint_data);
     }
@@ -133,7 +133,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [amm_data, setAMMData] = useState<Map<string, AMMData> | null>(null);
     const [listing_data, setListingData] = useState<Map<string, ListingData> | null>(null);
-
 
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
@@ -294,7 +293,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let join_data: JoinData[] = [];
         let mm_launch_data: MMLaunchData[] = [];
         let mm_user_data: MMUserData[] = [];
-        let amm_data:  Map<string, AMMData> = new Map<string, AMMData>();
+        let amm_data: Map<string, AMMData> = new Map<string, AMMData>();
         let collections: CollectionData[] = [];
         let listings: Map<string, ListingData> = new Map<string, ListingData>();
 
@@ -335,9 +334,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 6) {
                 try {
                     const [amm] = AMMData.struct.deserialize(data);
-                    let amm_key = getAMMKey(amm, amm.provider)
+                    let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
-                    console.log(amm)
+                    console.log(amm);
                 } catch (error) {
                     console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
@@ -387,8 +386,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 mm_user_data.push(mm_user);
                 continue;
             }
-
-            
         }
 
         if (closeAccounts.length > 0) {
@@ -412,7 +409,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMUserData(mm_user_data);
         setAMMData(amm_data);
         setCollectionData(collections);
-        setListingData(listings)
+        setListingData(listings);
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
@@ -433,8 +430,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
             if (home_page_map.has(date)) {
                 let current_entry: LaunchData = home_page_map.get(date);
-                let current_listing : ListingData = listings.get(current_entry.listing.toString())
-                let close_listing : ListingData = listings.get(close_filtered[i].listing.toString())
+                let current_listing: ListingData = listings.get(current_entry.listing.toString());
+                let close_listing: ListingData = listings.get(close_filtered[i].listing.toString());
 
                 let current_hype = current_listing.positive_votes - current_listing.negative_votes;
                 let new_hype = close_listing.positive_votes - close_listing.negative_votes;
@@ -467,8 +464,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
         for (let i = 0; i < launch_data.length; i++) {
-            let listing : ListingData = listings.get(launch_data[i].listing.toString())
+            let listing: ListingData = listings.get(launch_data[i].listing.toString());
             trade_mints.push(listing.mint);
+            console.log("adding ", listing.mint.toString());
             // check if we have a whitelist token
             for (let p = 0; p < launch_data[i].plugins.length; p++) {
                 if (launch_data[i].plugins[p]["__kind"] === "Whitelist") {
@@ -476,7 +474,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 }
             }
         }
-        
+
         for (let i = 0; i < trade_filtered.length; i++) {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }

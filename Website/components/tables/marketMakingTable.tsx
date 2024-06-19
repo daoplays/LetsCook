@@ -56,14 +56,19 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     let amm_launches: AMMLaunch[] = [];
     if (mintData !== null) {
         ammData.forEach((amm, i) => {
-            
-
-            let amm_launch: AMMLaunch = {
-                amm_data: amm,
-                mint: mintData !== null ? mintData.get(amm.base_mint.toString()).mint : null,
-            };
-            amm_launches.push(amm_launch);
-        })
+            console.log(amm.base_mint.toString());
+            let mint_data = mintData.get(amm.base_mint.toString());
+            let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            let listing = listingData.get(listing_key.toString());
+            if (listing && mint_data) {
+                console.log("mint data", mint_data);
+                let amm_launch: AMMLaunch = {
+                    amm_data: amm,
+                    mint: mintData !== null ? mintData.get(amm.base_mint.toString()).mint : null,
+                };
+                amm_launches.push(amm_launch);
+            }
+        });
     }
 
     const tableHeaders: Header[] = [
@@ -123,16 +128,14 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     const { sm, md, lg } = useResponsive();
     const { listingData } = useAppRoot();
 
-    let listing_key = PublicKey.findProgramAddressSync([amm_launch.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0]
-    let listing = listingData.get(listing_key.toString())
+    let listing_key = PublicKey.findProgramAddressSync([amm_launch.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+    let listing = listingData.get(listing_key.toString());
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
     console.log(amm_launch);
     let total_supply =
-        amm_launch.mint !== null && amm_launch.mint !== undefined
-            ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals)
-            : 0;
+        amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals) : 0;
     let market_cap = total_supply * last_price * SOLPrice;
     let amm_key = getAMMKey(amm_launch.amm_data, amm_launch.amm_data.provider);
 
@@ -194,13 +197,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {mm_rewards.toLocaleString()}
                     </Text>
-                    <Image
-                        src={listing.icon}
-                        width={30}
-                        height={30}
-                        alt="SOL Icon"
-                        style={{ marginLeft: -3, borderRadius: "5px" }}
-                    />
+                    <Image src={listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
                 </HStack>
             </td>
 
