@@ -20,34 +20,27 @@ const BagsPage = () => {
         setSelected(tab);
     };
 
-    const { joinData, launchList } = useAppRoot();
+    const { joinData, launchList, listingData } = useAppRoot();
     const [joinedLaunches, setJoinedLaunches] = useState<JoinedLaunch[] | null>(null);
 
     useEffect(() => {
         if (joinData && launchList) {
-            const userJoinedLaunches = launchList.filter((launch) => {
-                const joinedGameIds = joinData.map((join) => bignum_to_num(join.game_id).toString());
-                return joinedGameIds.includes(launch.game_id.toString());
-            });
-
-            console.log(joinData);
-            console.log(launchList);
+           
             let joinedLaunches: JoinedLaunch[] = [];
             for (let i = 0; i < joinData.length; i++) {
-                console.log(joinData[i].game_id);
                 const joinedLaunch = launchList.filter((launch) => {
-                    return joinData[i].game_id.eq(launch.game_id);
+                    let listing = listingData.get(launch.listing.toString())
+                    return joinData[i].mint.equals(listing.mint);
                 });
                 if (joinedLaunch.length === 0 || joinedLaunch[0] === undefined) continue;
 
-                console.log(joinedLaunch[0].game_id.toString(), joinData[i].game_id.toString());
                 let joined_launch: JoinedLaunch = { join_data: joinData[i], launch_data: joinedLaunch[0] };
                 joinedLaunches.push(joined_launch);
             }
 
             setJoinedLaunches(joinedLaunches);
         }
-    }, [joinData, launchList]);
+    }, [joinData, launchList, listingData]);
 
     if (!joinedLaunches) return <Loader />;
 

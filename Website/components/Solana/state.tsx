@@ -779,9 +779,12 @@ export class myU64 {
 
 export class ListingData {
     constructor(
-
+        readonly account_type: number,
+        readonly id: bignum,
+        readonly mint: PublicKey,
         readonly name: string,
         readonly symbol: string,
+        readonly decimals: number,
         readonly icon: string,
         readonly meta_url: string,
         readonly banner: string,
@@ -794,9 +797,12 @@ export class ListingData {
 
     static readonly struct = new FixableBeetStruct<ListingData>(
         [
-
+            ["account_type", u8],
+            ["id", utf8String],
+            ["mint", publicKey],
             ["name", utf8String],
             ["symbol", utf8String],
+            ["decimals", u8],
             ["icon", utf8String],
             ["meta_url", utf8String],
             ["banner", utf8String],
@@ -808,9 +814,12 @@ export class ListingData {
         ],
         (args) =>
             new ListingData(
-
+                args.account_type!,
+                args.id!,
+                args.mint!,
                 args.name!,
                 args.symbol!,
+                args.decimals!,
                 args.icon!,
                 args.meta_url!,
                 args.banner!,
@@ -829,16 +838,12 @@ export class LaunchData {
         readonly account_type: number,
         readonly launch_meta: LaunchMetaEnum,
         readonly plugins: LaunchPluginEnum[],
-        readonly listing: ListingData,
-        readonly game_id: bignum,
         readonly last_interaction: bignum,
         readonly num_interactions: number,
         readonly page_name: string,
-
-       
+        readonly listing: PublicKey,
 
         readonly total_supply: bignum,
-        readonly decimals: number,
         readonly num_mints: bignum,
         readonly ticket_price: bignum,
         readonly minimum_liquidity: bignum,
@@ -865,16 +870,14 @@ export class LaunchData {
             ["account_type", u8],
             ["launch_meta", launchInfoBeet],
             ["plugins", array(launchPluginBeet)],
-            ["listing", ListingData.struct],
-            ["game_id", u64],
             ["last_interaction", i64],
             ["num_interactions", u16],
 
           
             ["page_name", utf8String],
+            ["listing", publicKey],
 
             ["total_supply", u64],
-            ["decimals", u8],
             ["num_mints", u32],
             ["ticket_price", u64],
             ["minimum_liquidity", u64],
@@ -899,16 +902,14 @@ export class LaunchData {
                 args.account_type!,
                 args.launch_meta!,
                 args.plugins!,
-                args.listing!,
-                args.game_id!,
                 args.last_interaction!,
                 args.num_interactions!,
 
                
                 args.page_name!,
+                args.listing!,
 
                 args.total_supply!,
-                args.decimals!,
                 args.num_mints!,
                 args.ticket_price!,
                 args.minimum_liquidity!,
@@ -947,8 +948,9 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         IDO: {fraction_distributed: [0,0,0,0,0,0,0,0], tokens_distributed : 0}
     };
 
-    const listing = new ListingData(new_launch_data.name,
+    const listing = new ListingData(11, new BN(0), new_launch_data.token_keypair.publicKey, new_launch_data.name,
         new_launch_data.symbol,
+        new_launch_data.decimals,
         icon_url,
         "meta_data",
         banner_url,new_launch_data.description, 0,
@@ -960,17 +962,14 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         1,
         meta,
         [],
-        listing,
-        new BN(0),
         new BN(0),
         0,
 
         
         new_launch_data.pagename,
-        
+        null,
 
         new BN(new_launch_data.total_supply),
-        new_launch_data.decimals,
         new_launch_data.num_mints,
         new BN(new_launch_data.ticket_price * LAMPORTS_PER_SOL),
         new BN(new_launch_data.minimum_liquidity),
@@ -996,34 +995,34 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     return data;
 }
 
-export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boolean): LaunchDataUserInput {
+export function create_LaunchDataInput(launch_data: LaunchData, listing: ListingData, edit_mode: boolean): LaunchDataUserInput {
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
 
     const data: LaunchDataUserInput = {
         edit_mode: edit_mode,
-        name: launch_data.listing.name,
-        symbol: launch_data.listing.symbol,
+        name: listing.name,
+        symbol: listing.symbol,
         icon_file: null,
         uri_file: null,
         banner_file: null,
-        icon_url: launch_data.listing.icon,
-        banner_url: launch_data.listing.banner,
-        displayImg: launch_data.listing.icon,
+        icon_url: listing.icon,
+        banner_url: listing.banner,
+        displayImg: listing.icon,
         total_supply: bignum_to_num(launch_data.total_supply),
-        decimals: launch_data.decimals,
+        decimals: listing.decimals,
         num_mints: launch_data.num_mints,
         minimum_liquidity: (bignum_to_num(launch_data.ticket_price) * launch_data.num_mints) / LAMPORTS_PER_SOL,
         ticket_price: bignum_to_num(launch_data.ticket_price) / LAMPORTS_PER_SOL,
         distribution: launch_data.distribution,
-        uri: launch_data.listing.meta_url,
+        uri: listing.meta_url,
         pagename: launch_data.page_name,
-        description: launch_data.listing.description,
-        web_url: launch_data.listing.socials[Socials.Website].toString(),
-        tele_url: launch_data.listing.socials[Socials.Telegram].toString(),
-        twt_url: launch_data.listing.socials[Socials.Twitter].toString(),
-        disc_url: launch_data.listing.socials[Socials.Discord].toString(),
+        description: listing.description,
+        web_url: listing.socials[Socials.Website].toString(),
+        tele_url: listing.socials[Socials.Telegram].toString(),
+        twt_url: listing.socials[Socials.Twitter].toString(),
+        disc_url: listing.socials[Socials.Discord].toString(),
         opendate: new Date(bignum_to_num(launch_data.launch_date)),
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
@@ -1047,7 +1046,7 @@ export class JoinData {
     constructor(
         readonly account_type: number,
         readonly joiner_key: PublicKey,
-        readonly game_id: bignum,
+        readonly mint: PublicKey,
         readonly num_tickets: number,
         readonly num_claimed_tickets: number,
         readonly num_winning_tickets: number,
@@ -1060,7 +1059,7 @@ export class JoinData {
         [
             ["account_type", u8],
             ["joiner_key", publicKey],
-            ["game_id", u64],
+            ["mint", publicKey],
             ["num_tickets", u16],
             ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
@@ -1072,7 +1071,7 @@ export class JoinData {
             new JoinData(
                 args.account_type!,
                 args.joiner_key!,
-                args.game_id!,
+                args.mint!,
                 args.num_tickets!,
                 args.num_claimed_tickets!,
                 args.num_winning_tickets!,
@@ -1369,7 +1368,6 @@ class HypeVote_Instruction {
     constructor(
         readonly instruction: number,
         readonly launch_type: number,
-        readonly game_id: bignum,
         readonly vote: number,
     ) {}
 
@@ -1377,16 +1375,15 @@ class HypeVote_Instruction {
         [
             ["instruction", u8],
             ["launch_type", u8],
-            ["game_id", u64],
             ["vote", u8],
         ],
-        (args) => new HypeVote_Instruction(args.instruction!, args.launch_type!, args.game_id!, args.vote!),
+        (args) => new HypeVote_Instruction(args.instruction!, args.launch_type!, args.vote!),
         "HypeVote_Instruction",
     );
 }
 
-export function serialise_HypeVote_instruction(launch_type: number, game_id: bignum, vote: number): Buffer {
-    const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, launch_type, game_id, vote);
+export function serialise_HypeVote_instruction(launch_type: number,  vote: number): Buffer {
+    const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, launch_type, vote);
     const [buf] = HypeVote_Instruction.struct.serialize(data);
 
     return buf;

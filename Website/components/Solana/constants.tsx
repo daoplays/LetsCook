@@ -90,8 +90,7 @@ export const enum CollectionKeys {
 export const enum LaunchKeys {
     Seller = 0,
     TeamWallet = 1,
-    MintAddress = 2,
-    WSOLAddress = 3,
+    WSOLAddress = 2,
 }
 
 export enum LaunchFlags {

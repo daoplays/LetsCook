@@ -22,7 +22,7 @@ interface Header {
 
 const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     const { sm } = useResponsive();
-    const { checkProgramData } = useAppRoot();
+    const { checkProgramData, listingData } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string | null>("date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
@@ -48,10 +48,12 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
         if (a.launch_data === undefined || b.launch_data === undefined) {
             return 0;
         }
+        let a_listing = listingData.get(a.launch_data.listing.toString())
+        let b_listing = listingData.get(b.launch_data.listing.toString())
         if (sortedField === "symbol") {
             return reverseSort
-                ? b.launch_data.listing.symbol.localeCompare(a.launch_data.listing.symbol)
-                : a.launch_data.listing.symbol.localeCompare(b.launch_data.listing.symbol);
+                ? b_listing.symbol.localeCompare(a_listing.symbol)
+                : a_listing.symbol.localeCompare(b_listing.symbol);
         } else if (sortedField === "date") {
             return reverseSort
                 ? b.launch_data.launch_date - a.launch_data.launch_date
@@ -115,10 +117,13 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
 const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+    const { listingData} = useAppRoot();
+
+    let listing = listingData.get(launch.launch_data.listing.toString())
 
     const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, true);
     const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, true);
-    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(launch.launch_data, true);
+    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(listing, launch.launch_data, true);
 
     let current_time = new Date().getTime();
 
@@ -182,14 +187,14 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.launch_data.listing.icon}
+                            src={listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.launch_data.listing.symbol}
+                        {listing.symbol}
                     </Text>
                 </HStack>
             </td>

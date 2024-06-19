@@ -2,9 +2,11 @@ import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from 
 
 import {
     LaunchDataUserInput,
+    ListingData,
     getRecentPrioritizationFees,
     get_current_blockhash,
     request_launch_data,
+    request_raw_account_data,
     send_transaction,
     serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
@@ -19,8 +21,6 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { generatePubKey, getRaydiumPrograms, getMarketSeedBase, getLaunchOBMAccount } from "../raydium/utils";
-import { Liquidity } from "@raydium-io/raydium-sdk";
 import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
 
 const useEditLaunch = () => {
@@ -68,11 +68,12 @@ const useEditLaunch = () => {
         )[0];
 
         const launch_data = await request_launch_data("", launch_data_account);
-
+        let listing_data = await request_raw_account_data("", launch_data.listing)
+        const [listing] = ListingData.struct.deserialize(listing_data)
         console.log("launch data", launch_data);
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        var token_mint_pubkey = launch_data.keys[LaunchKeys.MintAddress];
+        var token_mint_pubkey = listing.mint;
 
         let amm_seed_keys = [];
         if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {

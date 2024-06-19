@@ -2,7 +2,7 @@
 
 import { PropsWithChildren, createContext, useContext, MutableRefObject, SetStateAction, Dispatch } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
-import { LaunchData, UserData, LaunchDataUserInput, JoinData, MintData } from "../components/Solana/state";
+import { LaunchData, UserData, LaunchDataUserInput, JoinData, MintData, ListingData } from "../components/Solana/state";
 import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { PublicKey } from "@solana/web3.js";
@@ -33,6 +33,7 @@ interface AppRootTypes {
     collectionList: CollectionData[];
     selectedNetwork: string;
     setSelectedNetwork: Dispatch<SetStateAction<string>>;
+    listingData: Map<string, ListingData>
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -64,6 +65,7 @@ export const AppRootContextProvider = ({
     collectionList,
     selectedNetwork,
     setSelectedNetwork,
+    listingData
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -93,6 +95,7 @@ export const AppRootContextProvider = ({
                 collectionList,
                 setSelectedNetwork,
                 selectedNetwork,
+                listingData
             }}
         >
             {children}

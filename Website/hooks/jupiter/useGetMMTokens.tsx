@@ -36,10 +36,11 @@ import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROG
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
+import useAppRoot from "../../context/useAppRoot";
 
 const useGetMMTokens = () => {
     const wallet = useWallet();
-
+    const {listingData} = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -62,7 +63,9 @@ const useGetMMTokens = () => {
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
+        let listing = listingData.get(launch.listing.toString())
+
+        const token_mint = listing.mint;
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];

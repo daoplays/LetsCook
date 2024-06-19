@@ -18,7 +18,6 @@ export function HypeVote({
     page_name,
     positive_votes,
     negative_votes,
-    seller_key,
     isTradePage,
 }: {
     launch_type: number;
@@ -26,7 +25,6 @@ export function HypeVote({
     page_name: string;
     positive_votes: number;
     negative_votes: number;
-    seller_key: PublicKey;
     isTradePage?: boolean;
 }) {
     const wallet = useWallet();
@@ -81,7 +79,7 @@ export function HypeVote({
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-            const instruction_data = serialise_HypeVote_instruction(launch_type, launch_id, vote);
+            const instruction_data = serialise_HypeVote_instruction(launch_type, vote);
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -118,7 +116,7 @@ export function HypeVote({
                 return;
             }
         },
-        [wallet, connection, launch_type, launch_id, page_name, check_signature_update],
+        [wallet, connection, launch_type, page_name, check_signature_update],
     );
 
     let has_voted: boolean = false;
@@ -147,22 +145,6 @@ export function HypeVote({
         }
     }
 
-    if (wallet.publicKey !== null && wallet.publicKey.toString() === seller_key.toString()) {
-        return (
-            <>
-                {total_votes > 0 && (
-                    <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
-                        {vote_ratio}
-                    </Text>
-                )}
-                {total_votes === 0 && (
-                    <Text m="0" fontSize={lg ? "large" : "x-large"} color="white">
-                        --
-                    </Text>
-                )}
-            </>
-        );
-    }
 
     if (has_voted) {
         return (

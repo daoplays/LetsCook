@@ -1,5 +1,5 @@
 const { TwitterApi } = require("twitter-api-v2");
-import { request_raw_account_data, LaunchData, bignum_to_num } from "../../components/Solana/state";
+import { request_raw_account_data, LaunchData, bignum_to_num, ListingData } from "../../components/Solana/state";
 import { PROGRAM, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
@@ -24,8 +24,11 @@ exports.handler = async function (event, context) {
 
     try {
         const launch_account_data = await request_raw_account_data("", launch_data_account);
-
         const [new_launch_data] = LaunchData.struct.deserialize(launch_account_data);
+
+        const listing_data = await request_raw_account_data("", new_launch_data.listing);
+        const [listing] = ListingData.struct.deserialize(listing_data);
+
 
         let current_time = new Date().getTime();
         if (current_time / 1000 - bignum_to_num(new_launch_data.last_interaction) > 5 * 60) {
@@ -45,12 +48,12 @@ exports.handler = async function (event, context) {
         let liquidity = (new_launch_data.num_mints * bignum_to_num(new_launch_data.ticket_price)) / LAMPORTS_PER_SOL;
         let raydium_link =
             "https://raydium.io/swap/?inputCurrency=" +
-            new_launch_data.keys[LaunchKeys.MintAddress].toString() +
+            listing.mint.toString() +
             "&outputCurrency=sol&fixed=in";
 
         let tweet_string =
             "🔥 COOK OUT: $" +
-            new_launch_data.listing.symbol +
+            listing.symbol +
             " LP is now Live with " +
             liquidity.toFixed(2) +
             " SOL of liquidity on @RaydiumProtocol " +

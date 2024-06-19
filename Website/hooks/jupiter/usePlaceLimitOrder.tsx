@@ -39,7 +39,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const usePlaceLimitOrder = () => {
     const wallet = useWallet();
-    const { checkUserOrders } = useAppRoot();
+    const { checkUserOrders, listingData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -65,7 +65,8 @@ const usePlaceLimitOrder = () => {
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
+        let listing = listingData.get(launch.listing.toString())
+        const token_mint = listing.mint;
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         const jupiter_program_key = new PublicKey("jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu");
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
@@ -74,7 +75,7 @@ const usePlaceLimitOrder = () => {
         // Base key are used to generate a unique order id
         const base = Keypair.generate();
 
-        token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
+        token_amount = new BN(token_amount * Math.pow(10, listing.decimals));
         sol_amount = new BN(sol_amount * Math.pow(10, 9));
         const { tx, orderPubKey } = await limitOrder.createOrder({
             owner: user_pda_account,

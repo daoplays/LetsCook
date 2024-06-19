@@ -8,6 +8,7 @@ import {
     request_token_supply,
     uInt32ToLEBytes,
     MintData,
+    ListingData,
 } from "../../components/Solana/state";
 import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, getAMMKey } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
@@ -148,7 +149,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData } = useAppRoot();
+    const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -186,6 +187,7 @@ const TradePage = () => {
     const [num_holders, setNumHolders] = useState<number>(0);
 
     const [launch, setLaunch] = useState<LaunchData | null>(null);
+    const[listing, setListing] = useState<ListingData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<MintData | null>(null);
 
@@ -226,12 +228,15 @@ const TradePage = () => {
         let launch = findLaunch(launchList, pageName);
         setLaunch(launch);
 
-        let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
+        let listing = listingData.get(launch.listing.toString())
+        setListing(listing)
+
+        let amm = findAMM(ammData, listing.mint);
         setAMM(amm);
 
         let base_mint = mintData.get(amm.base_mint.toString());
         setBaseMint(base_mint);
-    }, [launchList, ammData, mintData, pageName]);
+    }, [launchList, ammData, mintData, pageName, listingData]);
 
     useEffect(() => {
         if (amm_base_amount === null || amm_quote_amount === null) {
@@ -642,6 +647,7 @@ const TradePage = () => {
                             {leftPanel === "Info" && (
                                 <InfoContent
                                     launch={launch}
+                                    listing={listing}
                                     amm={amm}
                                     base_mint={base_mint}
                                     volume={last_day_volume}
@@ -1023,6 +1029,7 @@ const BuyAndSell = ({
 
 const InfoContent = ({
     launch,
+    listing,
     amm,
     base_mint,
     price,
@@ -1034,6 +1041,7 @@ const InfoContent = ({
     
 }: {
     launch: LaunchData;
+    listing: ListingData;
     amm: AMMData;
     base_mint: MintData;
     price: number;
@@ -1138,11 +1146,10 @@ const InfoContent = ({
                 </Text>
                 <HypeVote
                     launch_type={0}
-                    launch_id={launch.game_id}
+                    launch_id={listing.id}
                     page_name={launch.page_name}
-                    positive_votes={launch.listing.positive_votes}
-                    negative_votes={launch.listing.negative_votes}
-                    seller_key={launch.keys[LaunchKeys.Seller]}
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
                     isTradePage={true}
                 />
             </HStack>
@@ -1151,7 +1158,7 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     SOCIALS:
                 </Text>
-                <Links socials={launch.listing.socials} isTradePage={true} />
+                <Links socials={listing.socials} isTradePage={true} />
             </HStack>
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>

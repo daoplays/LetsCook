@@ -2,7 +2,7 @@ import { Box, Button, Center, HStack, TableContainer, Text } from "@chakra-ui/re
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
+import { JoinedLaunch, LaunchData, ListingData, bignum_to_num } from "../Solana/state";
 import { OpenOrder } from "../Solana/jupiter_state";
 
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -18,28 +18,28 @@ interface Header {
     field: string | null;
 }
 
-function filterOrders(list: OpenOrder[], launch_data: LaunchData) {
+function filterOrders(list: OpenOrder[], listing: ListingData) {
     if (list === null || list === undefined) return [];
-    if (launch_data === null) return [];
+    if (listing === null) return [];
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
         return (
-            item.account.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString() ||
-            item.account.outputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString()
+            item.account.inputMint.toString() === listing.mint.toString() ||
+            item.account.outputMint.toString() === listing.mint.toString()
         );
     });
 }
 
-function filterTrades(list: TradeHistoryItem[], launch_data: LaunchData) {
+function filterTrades(list: TradeHistoryItem[], listing: ListingData) {
     if (list === null || list === undefined) return [];
-    if (launch_data === null) return [];
+    if (listing === null) return [];
 
     return list.filter(function (item) {
         //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
         return (
-            item.order.inputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString() ||
-            item.order.outputMint.toString() === launch_data.keys[LaunchKeys.MintAddress].toString()
+            item.order.inputMint.toString() === listing.mint.toString() ||
+            item.order.outputMint.toString() === listing.mint.toString()
         );
     });
 }
@@ -48,8 +48,9 @@ function filterTrades(list: TradeHistoryItem[], launch_data: LaunchData) {
 const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; state?: string }) => {
     const wallet = useWallet();
     const { sm } = useResponsive();
-    const { userOrders, userTrades, checkUserOrders } = useAppRoot();
+    const { userOrders, userTrades, checkUserOrders, listingData } = useAppRoot();
     const check_orders = useRef<boolean>(true);
+    let listing = listingData.get(launch_data.listing.toString())
 
     useEffect(() => {
         if (!check_orders.current) return;
@@ -69,8 +70,8 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
         { text: "ACTION", field: "action" },
     ];
 
-    let filtered_orders = filterOrders(userOrders, launch_data);
-    let filtered_trades = filterTrades(userTrades, launch_data);
+    let filtered_orders = filterOrders(userOrders, listing);
+    let filtered_trades = filterTrades(userTrades, listing);
 
     //console.log(filtered_orders);
     //console.log(filtered_trades);
@@ -104,24 +105,24 @@ const OrdersTable = ({ launch_data, state }: { launch_data: LaunchData | null; s
                 </thead>
 
                 <tbody>
-                    {state === "Open" && filtered_orders.map((order, i) => <OrderCard key={i} order={order} launch={launch_data} />)}
-                    {state === "Filled" && filtered_trades.map((order, i) => <TradeCard key={i} order={order} launch={launch_data} />)}
+                    {state === "Open" && filtered_orders.map((order, i) => <OrderCard key={i} order={order} launch={launch_data} listing={listing} />)}
+                    {state === "Filled" && filtered_trades.map((order, i) => <TradeCard key={i} order={order} listing={listing} />)}
                 </tbody>
             </table>
         </TableContainer>
     );
 };
 
-const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) => {
+const OrderCard = ({ order, launch, listing }: { order: OpenOrder; launch : LaunchData; listing: ListingData }) => {
     const { sm, md, lg } = useResponsive();
-    const { CancelLimitOrder } = useCancelLimitOrder();
-    let is_buy = order.account.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
+    const { CancelLimitOrder } = useCancelLimitOrder(launch, listing);
+    let is_buy = order.account.outputMint.toString() === listing.mint.toString();
 
     let cost = is_buy ? bignum_to_num(order.account.makingAmount) : bignum_to_num(order.account.takingAmount);
     let token_amount = is_buy ? bignum_to_num(order.account.takingAmount) : bignum_to_num(order.account.makingAmount);
 
     cost /= Math.pow(10, 9);
-    token_amount /= Math.pow(10, launch.decimals);
+    token_amount /= Math.pow(10, listing.decimals);
 
     let sol_amount = (cost / token_amount).toPrecision(2);
 
@@ -141,7 +142,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
         >
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {launch.listing.symbol}
+                    {listing.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
@@ -172,7 +173,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
                     <Text fontSize={"large"} m={0}>
                         {token_amount}
                     </Text>
-                    <Image src={launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 
@@ -191,7 +192,7 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
             <td style={{ minWidth: md ? "120px" : "" }}>
                 <Button
                     onClick={() => {
-                        CancelLimitOrder(launch, order);
+                        CancelLimitOrder(order);
                     }}
                 >
                     Cancel
@@ -201,9 +202,9 @@ const OrderCard = ({ order, launch }: { order: OpenOrder; launch: LaunchData }) 
     );
 };
 
-const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchData }) => {
+const TradeCard = ({ order, listing }: { order: TradeHistoryItem; listing: ListingData }) => {
     const { sm, md, lg } = useResponsive();
-    let is_buy = order.order.outputMint.toString() === launch.keys[LaunchKeys.MintAddress].toString();
+    let is_buy = order.order.outputMint.toString() === listing.mint.toString();
 
     let cost: number = is_buy ? bignum_to_num(order.inAmount) : bignum_to_num(order.outAmount);
     let token_amount: number = is_buy ? bignum_to_num(order.outAmount) : bignum_to_num(order.inAmount);
@@ -211,7 +212,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
     console.log(cost, token_amount);
 
     cost /= Math.pow(10, 9);
-    token_amount /= Math.pow(10, launch.decimals);
+    token_amount /= Math.pow(10, listing.decimals);
 
     let price = (cost / token_amount).toPrecision(2);
 
@@ -231,7 +232,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
         >
             <td style={{ minWidth: "180px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {launch.listing.symbol}
+                    {listing.symbol}
                 </Text>
             </td>
             <td style={{ minWidth: "180px" }}>
@@ -262,7 +263,7 @@ const TradeCard = ({ order, launch }: { order: TradeHistoryItem; launch: LaunchD
                     <Text fontSize={"large"} m={0}>
                         {token_amount}
                     </Text>
-                    <Image src={launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 

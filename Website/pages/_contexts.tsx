@@ -20,6 +20,7 @@ import {
     Token22MintAccount,
     uInt32ToLEBytes,
     MintData,
+    ListingData,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
@@ -131,6 +132,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [mm_user_data, setMMUserData] = useState<MMUserData[]>([]);
 
     const [amm_data, setAMMData] = useState<AMMData[]>([]);
+    const [listing_data, setListingData] = useState<Map<string, ListingData> | null>(null);
+
 
     const [userOrders, setUserOrders] = useState<OpenOrder[]>([]);
     const [userTrades, setUserTrades] = useState<TradeHistoryItem[]>([]);
@@ -293,6 +296,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let mm_user_data: MMUserData[] = [];
         let amm_data: AMMData[] = [];
         let collections: CollectionData[] = [];
+        let listings: Map<string, ListingData> = new Map<string, ListingData>();
 
         console.log("program_data", program_data.length);
         let closeAccounts = [];
@@ -348,6 +352,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 continue;
             }
 
+            if (data[0] === 11) {
+                const [listing] = ListingData.struct.deserialize(data);
+                listings.set(program_data[i].pubkey.toString(), listing);
+                continue;
+            }
+
             // other data depends on a wallet
             if (!have_wallet) continue;
 
@@ -376,6 +386,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 mm_user_data.push(mm_user);
                 continue;
             }
+
+            
         }
 
         if (closeAccounts.length > 0) {
@@ -399,6 +411,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setMMUserData(mm_user_data);
         setAMMData(amm_data);
         setCollectionData(collections);
+        setListingData(listings)
 
         if (have_wallet) {
             for (let i = 0; i < user_data.length; i++) {
@@ -419,8 +432,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
             if (home_page_map.has(date)) {
                 let current_entry: LaunchData = home_page_map.get(date);
-                let current_hype = current_entry.listing.positive_votes - current_entry.listing.negative_votes;
-                let new_hype = close_filtered[i].listing.positive_votes - close_filtered[i].listing.negative_votes;
+                let current_listing : ListingData = listings.get(current_entry.listing.toString())
+                let close_listing : ListingData = listings.get(close_filtered[i].listing.toString())
+
+                let current_hype = current_listing.positive_votes - current_listing.negative_votes;
+                let new_hype = close_listing.positive_votes - close_listing.negative_votes;
                 if (new_hype > current_hype) {
                     home_page_map.set(date, close_filtered[i]);
                 }
@@ -450,8 +466,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let trade_filtered = tradeFilterTable({ list: launch_data });
         let trade_page_map = new Map<string, LaunchData>();
         for (let i = 0; i < launch_data.length; i++) {
-            //console.log("add ", trade_filtered[i].keys[LaunchKeys.MintAddress].toString());
-            trade_mints.push(launch_data[i].keys[LaunchKeys.MintAddress]);
+            let listing : ListingData = listings.get(launch_data[i].listing.toString())
+            trade_mints.push(listing.mint);
             // check if we have a whitelist token
             for (let p = 0; p < launch_data[i].plugins.length; p++) {
                 if (launch_data[i].plugins[p]["__kind"] === "Whitelist") {
@@ -459,6 +475,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 }
             }
         }
+        
         for (let i = 0; i < trade_filtered.length; i++) {
             trade_page_map.set(trade_filtered[i].page_name, trade_filtered[i]);
         }
@@ -521,6 +538,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             collectionList={collection_data}
             setSelectedNetwork={setSelectedNetwork}
             selectedNetwork={selectedNetwork}
+            listingData={listing_data}
         >
             {children}
         </AppRootContextProvider>

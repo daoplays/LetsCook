@@ -13,7 +13,7 @@ import {
     Progress,
     Divider,
 } from "@chakra-ui/react";
-import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data, MintData, getLaunchTypeIndex } from "../../components/Solana/state";
+import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data, MintData, getLaunchTypeIndex, ListingData } from "../../components/Solana/state";
 import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -48,7 +48,7 @@ import formatPrice from "../../utils/formatPrice";
 const TokenMintPage = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { mintData } = useAppRoot();
+    const { mintData, listingData } = useAppRoot();
 
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
@@ -59,6 +59,7 @@ const TokenMintPage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
+    const [listing, setListing] = useState<ListingData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
     const [cookState, setCookState] = useState<CookState | null>(null);
     const [whitelist, setWhitelist] = useState<MintData | null>(null);
@@ -83,7 +84,7 @@ const TokenMintPage = () => {
     const { BuyTickets, openWarning, isWarningOpened, closeWarning } = useBuyTickets({ launchData, value });
     const { CheckTickets, isLoading: isCheckingTickets } = useCheckTickets(launchData);
     const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launchData);
-    const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(launchData);
+    const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(listing, launchData);
 
     const { InitAMM } = useInitAMM(launchData);
 
@@ -184,17 +185,15 @@ const TokenMintPage = () => {
 
         if (join_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
             console.log("subscribe 2");
-            const game_id = new myU64(launchData.game_id);
-            const [game_id_buf] = myU64.struct.serialize(game_id);
-
+           
             let user_join_account = PublicKey.findProgramAddressSync(
-                [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+                [wallet.publicKey.toBytes(), listing.mint.toBytes(), Buffer.from("Joiner")],
                 PROGRAM,
             )[0];
 
             join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
         }
-    }, [wallet, launchData, check_join_update, check_launch_update]);
+    }, [wallet, launchData, listing, check_join_update, check_launch_update]);
 
     let win_prob = 0;
 
@@ -217,7 +216,7 @@ const TokenMintPage = () => {
         setIsLoading(true);
 
         let new_launch_data: [LaunchData | null, number] = [launchData, 0];
-
+        let listing : ListingData = null;
         if (launchData === null) {
             try {
                 let page_name = pageName ? pageName : "";
@@ -229,10 +228,11 @@ const TokenMintPage = () => {
                 const launch_account_data = await request_raw_account_data("", launch_data_account);
 
                 new_launch_data = LaunchData.struct.deserialize(launch_account_data);
-
+                listing = listingData.get(new_launch_data[0].listing.toString());
                 //console.log(new_launch_data);
 
                 setLaunchData(new_launch_data[0]);
+                setListing(listing)
             } catch (error) {
                 console.error("Error fetching launch data:", error);
             }
@@ -244,11 +244,8 @@ const TokenMintPage = () => {
             return;
         }
 
-        const game_id = new myU64(new_launch_data[0]?.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), listing.mint.toBytes(), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 
@@ -276,7 +273,7 @@ const TokenMintPage = () => {
         }
         checkLaunchData.current = false;
         setIsLoading(false);
-    }, [wallet, pageName, launchData, join_data]);
+    }, [wallet, pageName, launchData, join_data, listingData]);
 
     useEffect(() => {
         if (mintData !== null && launchData !== null) {
@@ -411,7 +408,7 @@ const TokenMintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Tokens Per Winning Ticket: {formatPrice(tokens_per_ticket, Math.min(3,launchData.decimals))}
+                                        Tokens Per Winning Ticket: {formatPrice(tokens_per_ticket, Math.min(3,listing.decimals))}
                                         <br />({one_mint_frac.toFixed(4)}% of total supply)
                                     </Text>
 

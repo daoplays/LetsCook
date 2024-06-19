@@ -7,6 +7,7 @@ import {
     serialise_basic_instruction,
     request_current_balance,
     getRecentPrioritizationFees,
+    ListingData,
 } from "../../components/Solana/state";
 import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
@@ -31,7 +32,7 @@ interface OpenOrder {
     account: Order;
 }
 
-const useCancelLimitOrder = () => {
+const useCancelLimitOrder = (launch_data: LaunchData, listing : ListingData) => {
     const wallet = useWallet();
     const { checkUserOrders } = useAppRoot();
 
@@ -52,14 +53,14 @@ const useCancelLimitOrder = () => {
         signature_ws_id.current = null;
     }, []);
 
-    const CancelLimitOrder = async (launch_data: LaunchData, order: OpenOrder) => {
+    const CancelLimitOrder = async ( order: OpenOrder) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const placeLimitToast = toast.loading("Cancelling Limit Order..");
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const token_mint = launch_data.keys[LaunchKeys.MintAddress];
+        const token_mint = listing.mint;
         const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         const jupiter_program_key = new PublicKey("jupoNjAxXgZ4rjzxzPMP4oxduvQsQtZzyknqvzYNrNu");
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
