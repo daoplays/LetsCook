@@ -798,7 +798,7 @@ export class ListingData {
     static readonly struct = new FixableBeetStruct<ListingData>(
         [
             ["account_type", u8],
-            ["id", utf8String],
+            ["id", u64],
             ["mint", publicKey],
             ["name", utf8String],
             ["symbol", utf8String],
@@ -948,7 +948,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         IDO: {fraction_distributed: [0,0,0,0,0,0,0,0], tokens_distributed : 0}
     };
 
-    const listing = new ListingData(11, new BN(0), new_launch_data.token_keypair.publicKey, new_launch_data.name,
+    const listing = new ListingData(11, new BN(0), null, new_launch_data.name,
         new_launch_data.symbol,
         new_launch_data.decimals,
         icon_url,

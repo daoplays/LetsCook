@@ -126,6 +126,7 @@ const useEditLaunch = () => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data.listing, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },

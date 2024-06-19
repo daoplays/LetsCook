@@ -335,9 +335,9 @@ const usuCreateLaunch = () => {
             newLaunchData.current.token_program,
         );
 
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
-            METAPLEX_META,
+        let listing = PublicKey.findProgramAddressSync(
+            [token_mint_pubkey.toBuffer(), Buffer.from("Listing")],
+            PROGRAM,
         )[0];
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
@@ -356,6 +356,7 @@ const usuCreateLaunch = () => {
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: listing, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },

@@ -178,6 +178,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             { pubkey: listing.mint, isSigner: false, isWritable: true },
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: launchData.listing, isSigner: false, isWritable: false },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
             { pubkey: mint_account.token_program, isSigner: false, isWritable: true },

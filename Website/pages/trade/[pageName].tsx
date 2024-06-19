@@ -14,13 +14,12 @@ import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, get
 import { Order } from "@jup-ag/limit-order-sdk";
 import {
     bignum_to_num,
-    LaunchData,
     MarketStateLayoutV2,
     request_token_amount,
     TokenAccount,
     RequestTokenHolders,
 } from "../../components/Solana/state";
-import { Config, LaunchKeys, PROGRAM } from "../../components/Solana/constants";
+import { Config,  PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
@@ -112,25 +111,7 @@ async function getBirdEyeData(setMarketData: any, market_address: string) {
     //return data;
 }
 
-function findLaunch(list: LaunchData[], page_name: string | string[]) {
-    if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
 
-    let launchList = list.filter(function (item) {
-        return item.page_name == page_name;
-    });
-
-    return launchList[0];
-}
-
-function findAMM(list: AMMData[], base_mint: PublicKey) {
-    if (list === null || list === undefined || base_mint === undefined || base_mint === null) return null;
-
-    let ammList = list.filter(function (item) {
-        return item.base_mint.equals(base_mint);
-    });
-
-    return ammList[0];
-}
 
 function filterLaunchRewards(list: MMLaunchData[], amm: AMMData) {
     if (list === null || list === undefined) return [];
@@ -149,7 +130,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
+    const {  ammData,  mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -184,9 +165,7 @@ const TradePage = () => {
     const [user_lp_amount, setUserLPAmount] = useState<number>(0);
 
     const [total_supply, setTotalSupply] = useState<number>(0);
-    const [num_holders, setNumHolders] = useState<number>(0);
 
-    const [launch, setLaunch] = useState<LaunchData | null>(null);
     const[listing, setListing] = useState<ListingData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<MintData | null>(null);
@@ -223,20 +202,20 @@ const TradePage = () => {
     }, [connection]);
 
     useEffect(() => {
-        if (ammData === null || launchList === null || mintData === null) return;
+        if (ammData === null || listingData === null || mintData === null) return;
 
-        let launch = findLaunch(launchList, pageName);
-        setLaunch(launch);
-
-        let listing = listingData.get(launch.listing.toString())
-        setListing(listing)
-
-        let amm = findAMM(ammData, listing.mint);
+        
+        let amm = ammData.get(pageName.toString());
         setAMM(amm);
 
+        let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+        let listing = listingData.get(listing_key.toString())
+        setListing(listing)
+
+    
         let base_mint = mintData.get(amm.base_mint.toString());
         setBaseMint(base_mint);
-    }, [launchList, ammData, mintData, pageName, listingData]);
+    }, [ ammData, mintData, pageName, listingData]);
 
     useEffect(() => {
         if (amm_base_amount === null || amm_quote_amount === null) {
@@ -550,7 +529,7 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (launch === null || amm === null || base_mint === null || mmLaunchData === null) {
+    if (listing === null || amm === null || base_mint === null || mmLaunchData === null) {
         return (
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
@@ -646,7 +625,6 @@ const TradePage = () => {
 
                             {leftPanel === "Info" && (
                                 <InfoContent
-                                    launch={launch}
                                     listing={listing}
                                     amm={amm}
                                     base_mint={base_mint}
@@ -1028,7 +1006,6 @@ const BuyAndSell = ({
 };
 
 const InfoContent = ({
-    launch,
     listing,
     amm,
     base_mint,
@@ -1040,7 +1017,6 @@ const InfoContent = ({
     mm_data,
     
 }: {
-    launch: LaunchData;
     listing: ListingData;
     amm: AMMData;
     base_mint: MintData;
@@ -1147,10 +1123,11 @@ const InfoContent = ({
                 <HypeVote
                     launch_type={0}
                     launch_id={listing.id}
-                    page_name={launch.page_name}
+                    page_name={""}
                     positive_votes={listing.positive_votes}
                     negative_votes={listing.negative_votes}
                     isTradePage={true}
+                    listing={listing}
                 />
             </HStack>
 

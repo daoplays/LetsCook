@@ -4,15 +4,16 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
-import { LaunchKeys, LaunchFlags, Extensions } from "../Solana/constants";
-import { AMMData, MMLaunchData, MMUserData, reward_schedule } from "../Solana/jupiter_state";
+import { LaunchKeys, LaunchFlags, Extensions, PROGRAM } from "../Solana/constants";
+import { AMMData, MMLaunchData, MMUserData, getAMMKey, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
 import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";
 import { Mint } from "@solana/spl-token";
-import ShowExtensions from "../Solana/extensions";
+import ShowExtensions, { getExtensions } from "../Solana/extensions";
+import { PublicKey } from "@solana/web3.js";
 interface Header {
     text: string;
     field: string | null;
@@ -29,7 +30,6 @@ function filterTable(list: LaunchData[]) {
 
 interface AMMLaunch {
     amm_data: AMMData;
-    launch_data: LaunchData;
     mint: Mint;
 }
 
@@ -55,21 +55,15 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
 
     let amm_launches: AMMLaunch[] = [];
     if (mintData !== null) {
-        for (let i = 0; i < ammData.length; i++) {
-            const ammLaunch = trade_list.filter((launch) => {
-                let listing = listingData.get(launch.listing.toString())
-                return ammData[i].base_mint.equals(listing.mint);
-            });
-            if (ammLaunch.length === 0 || ammLaunch[0] === undefined) continue;
+        ammData.forEach((amm, i) => {
+            
 
-            console.log(ammLaunch[0].page_name, ammData[i].base_mint.toString(), mintData.get(ammData[i].base_mint.toString()));
             let amm_launch: AMMLaunch = {
-                amm_data: ammData[i],
-                launch_data: ammLaunch[0],
-                mint: mintData !== null ? mintData.get(ammData[i].base_mint.toString()).mint : null,
+                amm_data: amm,
+                mint: mintData !== null ? mintData.get(amm.base_mint.toString()).mint : null,
             };
             amm_launches.push(amm_launch);
-        }
+        })
     }
 
     const tableHeaders: Header[] = [
@@ -129,8 +123,9 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     const { sm, md, lg } = useResponsive();
     const { listingData } = useAppRoot();
 
-    let listing = listingData.get(amm_launch.launch_data.listing.toString())
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch_data.last_interaction)) / 24 / 60 / 60);
+    let listing_key = PublicKey.findProgramAddressSync([amm_launch.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0]
+    let listing = listingData.get(listing_key.toString())
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
     console.log(amm_launch);
@@ -139,6 +134,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals)
             : 0;
     let market_cap = total_supply * last_price * SOLPrice;
+    let amm_key = getAMMKey(amm_launch.amm_data, amm_launch.amm_data.provider);
 
     return (
         <tr
@@ -153,7 +149,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)}
+            onClick={() => router.push(`/trade/` + amm_key.toString())}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
@@ -209,10 +205,10 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             </td>
 
             <td style={{ minWidth: "140px" }}>
-                <ShowExtensions extension_flag={amm_launch.launch_data.flags[LaunchFlags.Extensions]} />
+                <ShowExtensions extension_flag={getExtensions(amm_launch.mint)} />
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)} style={{ textDecoration: "none" }}>
+                <Button onClick={() => router.push(`/trade/` + amm_key.toString())} style={{ textDecoration: "none" }}>
                     View
                 </Button>
             </td>

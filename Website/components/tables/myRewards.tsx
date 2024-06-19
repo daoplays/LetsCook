@@ -119,9 +119,9 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     if (amm !== null) {
         getMappedRewards(mmUserData, mmLaunchData, amm, amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
     } else {
-        for (let i = 0; i < ammData.length; i++) {
+        ammData.forEach((amm, i) => {
             getMappedRewards(mmUserData, mmLaunchData, ammData[i], amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
-        }
+        })
     }
 
     return (

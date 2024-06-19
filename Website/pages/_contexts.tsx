@@ -23,7 +23,7 @@ import {
     ListingData,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
-import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
+import { AMMData, getAMMKey, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
@@ -131,7 +131,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [mm_launch_data, setMMLaunchData] = useState<MMLaunchData[]>([]);
     const [mm_user_data, setMMUserData] = useState<MMUserData[]>([]);
 
-    const [amm_data, setAMMData] = useState<AMMData[]>([]);
+    const [amm_data, setAMMData] = useState<Map<string, AMMData> | null>(null);
     const [listing_data, setListingData] = useState<Map<string, ListingData> | null>(null);
 
 
@@ -294,7 +294,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let join_data: JoinData[] = [];
         let mm_launch_data: MMLaunchData[] = [];
         let mm_user_data: MMUserData[] = [];
-        let amm_data: AMMData[] = [];
+        let amm_data:  Map<string, AMMData> = new Map<string, AMMData>();
         let collections: CollectionData[] = [];
         let listings: Map<string, ListingData> = new Map<string, ListingData>();
 
@@ -335,7 +335,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 6) {
                 try {
                     const [amm] = AMMData.struct.deserialize(data);
-                    amm_data.push(amm);
+                    let amm_key = getAMMKey(amm, amm.provider)
+                    amm_data.set(amm_key.toString(), amm);
                     console.log(amm)
                 } catch (error) {
                     console.log(error);

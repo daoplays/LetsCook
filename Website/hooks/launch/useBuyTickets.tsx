@@ -170,6 +170,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: whitelist_mint, isSigner: false, isWritable: true },
             { pubkey: whitelist_account, isSigner: false, isWritable: true },
             { pubkey: whitelist_token_program, isSigner: false, isWritable: true },
+            { pubkey: launchData.listing, isSigner: false, isWritable: false },
 
         ];
 

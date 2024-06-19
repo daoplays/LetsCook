@@ -25,7 +25,7 @@ interface AppRootTypes {
     checkUserOrders: () => Promise<void>;
     userOrders: OpenOrder[];
     userTrades: TradeHistoryItem[];
-    ammData: AMMData[];
+    ammData: Map<string, AMMData>;
     userSOLBalance: number;
     SOLPrice: number;
     mintData: Map<String, MintData>;

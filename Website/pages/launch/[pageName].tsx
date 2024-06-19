@@ -245,7 +245,7 @@ const TokenMintPage = () => {
         }
 
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), listing.mint.toBytes(), Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), Buffer.from(new_launch_data[0].page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 

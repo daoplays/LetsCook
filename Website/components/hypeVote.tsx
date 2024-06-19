@@ -3,7 +3,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
 import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys } from "./Solana/constants";
-import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
+import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, ListingData } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
@@ -19,6 +19,7 @@ export function HypeVote({
     positive_votes,
     negative_votes,
     isTradePage,
+    listing
 }: {
     launch_type: number;
     launch_id: BN;
@@ -26,11 +27,12 @@ export function HypeVote({
     positive_votes: number;
     negative_votes: number;
     isTradePage?: boolean;
+    listing: ListingData | null
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
-    const { checkProgramData, currentUserData } = useAppRoot();
+    const { checkProgramData, currentUserData, listingData } = useAppRoot();
     const { lg } = useResponsive();
     const hype_vote_ws_id = useRef<number | null>(null);
 
@@ -72,10 +74,15 @@ export function HypeVote({
                 return;
             }
 
-            let launch_data_account =
-                launch_type === 0
-                    ? PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Launch")], PROGRAM)[0]
-                    : PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
+            let launch_data_account : PublicKey;
+
+            if(launch_type === 0) {
+                launch_data_account = PublicKey.findProgramAddressSync([listing.mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            }
+            else {
+                launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
+            }
+                   
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -116,7 +123,7 @@ export function HypeVote({
                 return;
             }
         },
-        [wallet, connection, launch_type, page_name, check_signature_update],
+        [wallet, listing, connection, launch_type, page_name, check_signature_update],
     );
 
     let has_voted: boolean = false;

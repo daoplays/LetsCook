@@ -176,6 +176,7 @@ const useInitAMM = (launchData: LaunchData) => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launchData.listing, isSigner: false, isWritable: false },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: team_token_account, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: false, isWritable: true },
