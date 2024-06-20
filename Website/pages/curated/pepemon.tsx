@@ -101,7 +101,7 @@ const Pepemon = () => {
     useEffect(() => {
         if (collectionList === null) return;
 
-        let launch = findCollection(collectionList, "pepemon_gen1");
+        let launch = collectionList.get("pepemon_gen1");
 
         if (launch === null) return;
 

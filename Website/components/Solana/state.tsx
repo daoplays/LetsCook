@@ -1053,7 +1053,7 @@ export class JoinData {
     constructor(
         readonly account_type: number,
         readonly joiner_key: PublicKey,
-        readonly mint: PublicKey,
+        readonly page_name: string,
         readonly num_tickets: number,
         readonly num_claimed_tickets: number,
         readonly num_winning_tickets: number,
@@ -1062,11 +1062,11 @@ export class JoinData {
         readonly last_slot: bignum,
     ) {}
 
-    static readonly struct = new BeetStruct<JoinData>(
+    static readonly struct = new FixableBeetStruct<JoinData>(
         [
             ["account_type", u8],
             ["joiner_key", publicKey],
-            ["mint", publicKey],
+            ["page_name", utf8String],
             ["num_tickets", u16],
             ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
@@ -1078,7 +1078,7 @@ export class JoinData {
             new JoinData(
                 args.account_type!,
                 args.joiner_key!,
-                args.mint!,
+                args.page_name!,
                 args.num_tickets!,
                 args.num_claimed_tickets!,
                 args.num_winning_tickets!,

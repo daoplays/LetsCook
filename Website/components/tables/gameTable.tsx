@@ -29,7 +29,7 @@ interface Header {
     field: string | null;
 }
 
-const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
+const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, LaunchData>, filters: LaunchTableFilters }) => {
     //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
@@ -40,7 +40,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         { text: "ENDS", field: "end_date" },
     ];
 
-    const { currentUserData, checkProgramData, listingData } = useAppRoot();
+    const { checkProgramData, listingData } = useAppRoot();
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
@@ -53,7 +53,24 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         }
     };
 
-    launchList.sort((a, b) => {
+    function filterTable() {
+        let filtered = []
+        launch_list.forEach((item) => {
+            if (
+                (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
+                (filters.end_date === null || (filters.end_date !== null && item.launch_date < filters.end_date))
+            ) {
+                filtered.push(item);
+            }
+        });
+
+        return filtered;
+    }
+
+    let filtered = filterTable();
+    
+
+    filtered.sort((a, b) => {
         let a_listing = listingData.get(a.listing.toString());
         let b_listing = listingData.get(b.listing.toString());
 
@@ -92,14 +109,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         return 0;
     });
 
-    function filterTable() {
-        return launchList.filter(function (item) {
-            return (
-                (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
-                (filters.end_date === null || (filters.end_date !== null && item.launch_date < filters.end_date))
-            );
-        });
-    }
+    
 
     return (
         <TableContainer>
@@ -140,7 +150,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
                 </thead>
 
                 <tbody>
-                    {filterTable()
+                    {filtered
                         .sort()
                         .map((item: LaunchData, index) => (
                             <LaunchCard key={index} launch={item} />

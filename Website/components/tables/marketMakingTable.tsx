@@ -33,7 +33,7 @@ interface AMMLaunch {
     mint: Mint;
 }
 
-const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
+const MarketMakingTable = () => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
@@ -41,8 +41,6 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
 
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
-
-    let trade_list = filterTable(launchList);
 
     const handleHeaderClick = (e) => {
         if (e == sortedField) {
@@ -57,6 +55,9 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
     if (mintData !== null) {
         ammData.forEach((amm, i) => {
             console.log(amm.base_mint.toString());
+            if (bignum_to_num(amm.start_time) === 0) {
+                return;
+            }
             let mint_data = mintData.get(amm.base_mint.toString());
             let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             let listing = listingData.get(listing_key.toString());

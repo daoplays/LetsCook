@@ -25,17 +25,7 @@ import {
     Box,
     Tooltip,
     Link,
-    Input,
-    InputGroup,
-    InputRightElement,
-    Button,
-    Select,
-    Card,
-    CardBody,
-    Divider,
-    Center,
 } from "@chakra-ui/react";
-import OrdersTable from "../../components/tables/ordersTable";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -45,11 +35,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaChartLine, FaInfo, FaPowerOff } from "react-icons/fa";
-import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
-import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
-import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 
-import { formatCurrency } from "@coingecko/cryptoformat";
 import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
@@ -57,8 +43,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
-import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
-import { Liquidity } from "@raydium-io/raydium-sdk";
+
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
@@ -105,15 +90,13 @@ async function getBirdEyeData(setMarketData: any, market_address: string) {
     //return data;
 }
 
-function filterLaunchRewards(list: MMLaunchData[], amm: AMMData) {
-    if (list === null || list === undefined) return [];
-    if (amm === null || amm === undefined) return [];
+function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
+    if (list === null || list === undefined) return null;
+    if (amm === null || amm === undefined) return null;
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-
-    return list.filter(function (item) {
-        return item.mint_key.equals(getAMMKey(amm, amm.provider)) && item.date == current_date;
-    });
+    let key = getAMMKey(amm, amm.provider)
+    return list.get(key.toString() + "_" + current_date)
 }
 
 const TradePage = () => {
@@ -619,7 +602,7 @@ const TradePage = () => {
                                     amm={amm}
                                     base_mint={base_mint}
                                     volume={last_day_volume}
-                                    mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
+                                    mm_data={latest_rewards}
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}

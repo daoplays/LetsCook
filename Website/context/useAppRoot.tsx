@@ -10,27 +10,23 @@ import { Mint } from "@solana/spl-token";
 interface AppRootTypes {
     sidePanelCollapsed: boolean;
     setSidePanelCollapsed: Dispatch<SetStateAction<boolean>>;
-    launchList: LaunchData[];
-    homePageList: LaunchData[];
-    tradePageList: Map<string, LaunchData>;
-    userList: UserData[];
+    launchList: Map<string, LaunchData>;
+    homePageList: Map<string, LaunchData>;
+    userList: Map<string, UserData>;
     currentUserData: UserData;
     isLaunchDataLoading: boolean;
     isHomePageDataLoading: boolean;
     checkProgramData: () => Promise<void>;
     newLaunchData: MutableRefObject<LaunchDataUserInput>;
-    joinData: JoinData[];
-    mmLaunchData: MMLaunchData[];
-    mmUserData: MMUserData[];
-    checkUserOrders: () => Promise<void>;
-    userOrders: OpenOrder[];
-    userTrades: TradeHistoryItem[];
+    joinData: Map<string, JoinData>;
+    mmLaunchData: Map<string, MMLaunchData>;
+    mmUserData: Map<string, MMUserData>;
     ammData: Map<string, AMMData>;
     userSOLBalance: number;
     SOLPrice: number;
     mintData: Map<String, MintData>;
     newCollectionData: MutableRefObject<CollectionDataUserInput>;
-    collectionList: CollectionData[];
+    collectionList: Map<string, CollectionData>;
     selectedNetwork: string;
     setSelectedNetwork: Dispatch<SetStateAction<string>>;
     listingData: Map<string, ListingData>;
@@ -44,7 +40,6 @@ export const AppRootContextProvider = ({
     children,
     launchList,
     homePageList,
-    tradePageList,
     userList,
     currentUserData,
     isLaunchDataLoading,
@@ -54,9 +49,6 @@ export const AppRootContextProvider = ({
     joinData,
     mmLaunchData,
     mmUserData,
-    checkUserOrders,
-    userOrders,
-    userTrades,
     ammData,
     userSOLBalance,
     SOLPrice,
@@ -74,7 +66,6 @@ export const AppRootContextProvider = ({
                 setSidePanelCollapsed,
                 launchList,
                 homePageList,
-                tradePageList,
                 userList,
                 currentUserData,
                 isLaunchDataLoading,
@@ -84,9 +75,6 @@ export const AppRootContextProvider = ({
                 joinData,
                 mmLaunchData,
                 mmUserData,
-                checkUserOrders,
-                userOrders,
-                userTrades,
                 ammData,
                 userSOLBalance,
                 SOLPrice,

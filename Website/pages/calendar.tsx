@@ -97,9 +97,9 @@ const CalenderPage = () => {
                         </PopoverContent>
                     </Popover>
                 </Flex>
-                <GameTable launchList={launchList} filters={filters} />
+                <GameTable  launch_list={launchList} filters={filters} />
 
-                {launchList.length <= 0 && (
+                {launchList.size <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
                         <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
                             No launches yet

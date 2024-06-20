@@ -153,7 +153,7 @@ const CollectionSwapPage = () => {
     useEffect(() => {
         if (collectionList === null || mintData === null) return;
 
-        let launch = findCollection(collectionList, pageName);
+        let launch = collectionList.get(pageName.toString());
 
         if (launch === null) return;
 

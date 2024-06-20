@@ -249,6 +249,7 @@ export const useCreateCP = (listing: ListingData, launch: LaunchData) => {
         let keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch.listing, isSigner: false, isWritable: false },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
             { pubkey: team_base_account, isSigner: false, isWritable: true },

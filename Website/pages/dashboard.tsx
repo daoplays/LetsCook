@@ -9,7 +9,7 @@ import useAppRoot from "../context/useAppRoot";
 import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";
 import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
-import { LaunchKeys } from "../components/Solana/constants";
+import { CollectionKeys, LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
 import { CollectionData } from "../components/collection/collectionState";
@@ -30,12 +30,21 @@ const DashboardPage = () => {
             return;
         }
 
-        const filteredLaunches = launchList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
+        const filteredLaunches : LaunchData[] = []
+        launchList.forEach((launch) => {
+            if (launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString()) {
+                filteredLaunches.push(launch);
+            }
+        });
         setCreatorLaunches(filteredLaunches);
 
-        const filteredCollections = collectionList.filter(
-            (launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString(),
-        );
+        const filteredCollections : CollectionData[] = []
+        
+        collectionList.forEach((launch) => {
+            if (launch.keys[CollectionKeys.Seller].toString() === wallet.publicKey.toString()) {
+                filteredCollections.push(launch);
+            }
+        });
         setCreatorCollections(filteredCollections);
     }, [wallet, launchList, collectionList]);
 

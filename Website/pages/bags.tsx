@@ -26,16 +26,13 @@ const BagsPage = () => {
     useEffect(() => {
         if (joinData && launchList) {
             let joinedLaunches: JoinedLaunch[] = [];
-            for (let i = 0; i < joinData.length; i++) {
-                const joinedLaunch = launchList.filter((launch) => {
-                    let listing = listingData.get(launch.listing.toString());
-                    return joinData[i].mint.equals(listing.mint);
-                });
-                if (joinedLaunch.length === 0 || joinedLaunch[0] === undefined) continue;
+            joinData.forEach((join) => {
+                const joinedLaunch = launchList.get(join.page_name)
+                if (joinedLaunch === null ||  joinedLaunch === undefined) return;
 
-                let joined_launch: JoinedLaunch = { join_data: joinData[i], launch_data: joinedLaunch[0] };
+                let joined_launch: JoinedLaunch = { join_data: join, launch_data: joinedLaunch };
                 joinedLaunches.push(joined_launch);
-            }
+            })
 
             setJoinedLaunches(joinedLaunches);
         }
