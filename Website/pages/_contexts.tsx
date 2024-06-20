@@ -96,7 +96,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     
     const [mintData, setMintData] = useState<Map<String, MintData> | null>(null);
 
-    const [user_data, setUserData] = useState<Map<string, UserData> | null>(null);
+    const [user_data, setUserData] = useState<Map<string, UserData> | null>(new Map());
     const [join_data, setJoinData] = useState<Map<string, JoinData> | null>(null);
     const [mm_launch_data, setMMLaunchData] = useState<Map<string, MMLaunchData> | null>(null);
     const [mm_user_data, setMMUserData] = useState<Map<string, MMUserData> | null>(null);
@@ -106,6 +106,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
     const [solPrice, setSolPrice] = useState<number>(0);
+    const [new_program_data, setNewProgramData] = useState<number[]>([]);
+    const update_program_data = useRef<boolean>(false);
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
@@ -129,29 +131,32 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         return filtered
     }
 
-    const check_program_update = useCallback(
+    useEffect(() => {
+        if (!update_program_data.current) return;
 
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
+        update_program_data.current = false;
 
-            let event_data = result.accountInfo.data;
-
-            //console.log("have event data", event_data, user_account_ws_id.current);
-            if (event_data[0] === 2) {
-                const [user] = UserData.struct.deserialize(event_data);
-                console.log("user update", user);
-                console.log(user_data, join_data)
-
-                //user_data.set(user.user_key.toString(), user);
-
-                if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
-                    setCurrentUserData(user);
-                }
-                return
+        if (new_program_data[0] === 2) {
+            const [user] = UserData.struct.deserialize(Buffer.from(new_program_data));
+            
+            user_data.set(user.user_key.toString(), user);
+            setUserData(new Map(user_data))
+            if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
+                setCurrentUserData(user);
             }
+            
+        }
+    }, [new_program_data, wallet, user_data]);
+
+    const check_program_update = useCallback(
+        
+        async (result: any) => {
+           
+            let event_data = result.accountInfo.data;
+            update_program_data.current = true;
+            setNewProgramData(event_data);
         },
-        [wallet, user_data, join_data],
+        [],
     );
 
 
@@ -170,7 +175,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         try {
             let balance = result["lamports"] / 1e9;
-            console.log("have user balance event data", balance);
+            //console.log("have user balance event data", balance);
             setUserSOLBalance(balance);
         } catch (error) {}
     }, []);
@@ -253,7 +258,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         let collections: Map<string, CollectionData> = new Map<string, CollectionData>();
         let listings: Map<string, ListingData> = new Map<string, ListingData>();
 
-        console.log("program_data", program_data.length);
+        //console.log("program_data", program_data.length);
         let closeAccounts = [];
         for (let i = 0; i < program_data.length; i++) {
             let data = program_data[i].data;
@@ -268,7 +273,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
                     launch_data.set(launch.page_name, launch);
                 } catch (error) {
-                    console.log("bad launch data", data);
+                    //console.log("bad launch data", data);
                 }
                 continue;
             }
@@ -292,7 +297,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     const [amm] = AMMData.struct.deserialize(data);
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
-                    console.log(amm);
+                    //console.log(amm);
                 } catch (error) {
                     console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
