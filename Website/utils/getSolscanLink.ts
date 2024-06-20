@@ -3,7 +3,7 @@ import { CollectionKeys, LaunchKeys, Config } from "../components/Solana/constan
 import { LaunchData } from "../components/Solana/state";
 import { CollectionData } from "../components/collection/collectionState";
 
-export const getSolscanLink = (key : PublicKey, type: string) => {
+export const getSolscanLink = (key: PublicKey, type: string) => {
     let network =
         Config.NETWORK === "devnet"
             ? `?cluster=devnet`

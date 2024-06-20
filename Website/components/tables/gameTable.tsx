@@ -29,7 +29,7 @@ interface Header {
     field: string | null;
 }
 
-const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters: LaunchTableFilters }) => {
+const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, LaunchData>, filters: LaunchTableFilters }) => {
     //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
@@ -40,7 +40,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         { text: "ENDS", field: "end_date" },
     ];
 
-    const { currentUserData, checkProgramData } = useAppRoot();
+    const { checkProgramData, listingData } = useAppRoot();
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
@@ -53,7 +53,27 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         }
     };
 
-    launchList.sort((a, b) => {
+    function filterTable() {
+        let filtered = []
+        launch_list.forEach((item) => {
+            if (
+                (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
+                (filters.end_date === null || (filters.end_date !== null && item.launch_date < filters.end_date))
+            ) {
+                filtered.push(item);
+            }
+        });
+
+        return filtered;
+    }
+
+    let filtered = filterTable();
+    
+
+    filtered.sort((a, b) => {
+        let a_listing = listingData.get(a.listing.toString());
+        let b_listing = listingData.get(b.listing.toString());
+
         if (sortedField !== "hype" && sortedField !== "minimum_liquidity") {
             if (a[sortedField] < b[sortedField]) {
                 return reverseSort ? 1 : -1;
@@ -75,8 +95,8 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         }
 
         if (sortedField === "hype") {
-            let hype_a = a.positive_votes - a.negative_votes;
-            let hype_b = b.positive_votes - b.negative_votes;
+            let hype_a = a_listing.positive_votes - a_listing.negative_votes;
+            let hype_b = b_listing.positive_votes - b_listing.negative_votes;
             if (hype_a < hype_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -89,14 +109,7 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
         return 0;
     });
 
-    function filterTable() {
-        return launchList.filter(function (item) {
-            return (
-                (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
-                (filters.end_date === null || (filters.end_date !== null && item.launch_date < filters.end_date))
-            );
-        });
-    }
+    
 
     return (
         <TableContainer>
@@ -137,10 +150,10 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
                 </thead>
 
                 <tbody>
-                    {filterTable()
+                    {filtered
                         .sort()
                         .map((item: LaunchData, index) => (
-                            <LaunchCard key={index} launch={item} user_data={currentUserData} />
+                            <LaunchCard key={index} launch={item} />
                         ))}
                 </tbody>
             </table>
@@ -148,15 +161,18 @@ const GameTable = ({ launchList, filters }: { launchList: LaunchData[]; filters:
     );
 };
 
-const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: UserData | null }) => {
+const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
+    const { listingData } = useAppRoot();
+
+    let listing = listingData.get(launch.listing.toString());
     const router = useRouter();
-    let name = launch.symbol;
+    let name = listing.symbol;
 
     let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
-    const socialsExist = launch.socials.some((social) => social !== "");
+    const socialsExist = listing.socials.some((social) => social !== "");
 
     return (
         <tr
@@ -178,20 +194,20 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.symbol}
+                        {listing.symbol}
                     </Text>
                 </HStack>
             </td>
             <td style={{ minWidth: "180px" }}>
                 {socialsExist ? (
-                    <Links socials={launch.socials} />
+                    <Links socials={listing.socials} />
                 ) : (
                     <Text fontSize={"large"} m={0}>
                         No Socials
@@ -201,12 +217,12 @@ const LaunchCard = ({ launch, user_data }: { launch: LaunchData; user_data: User
             <td style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={0}
-                    launch_id={launch.game_id}
+                    launch_id={listing.id}
                     page_name={launch.page_name}
-                    positive_votes={launch.positive_votes}
-                    negative_votes={launch.negative_votes}
-                    seller_key={launch.keys[LaunchKeys.Seller]}
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
                     isTradePage={false}
+                    listing={listing}
                 />
             </td>
             <td style={{ minWidth: "170px" }}>

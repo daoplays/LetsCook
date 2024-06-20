@@ -8,18 +8,12 @@ import {
     request_token_supply,
     uInt32ToLEBytes,
     MintData,
+    ListingData,
 } from "../../components/Solana/state";
 import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, getAMMKey } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import {
-    bignum_to_num,
-    LaunchData,
-    MarketStateLayoutV2,
-    request_token_amount,
-    TokenAccount,
-    RequestTokenHolders,
-} from "../../components/Solana/state";
-import { Config, LaunchKeys, PROGRAM, LaunchFlags } from "../../components/Solana/constants";
+import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
+import { Config, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
@@ -31,17 +25,7 @@ import {
     Box,
     Tooltip,
     Link,
-    Input,
-    InputGroup,
-    InputRightElement,
-    Button,
-    Select,
-    Card,
-    CardBody,
-    Divider,
-    Center,
 } from "@chakra-ui/react";
-import OrdersTable from "../../components/tables/ordersTable";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -51,11 +35,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaChartLine, FaInfo, FaPowerOff } from "react-icons/fa";
-import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
-import useCancelLimitOrder from "../../hooks/jupiter/useCancelLimitOrder";
-import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 
-import { formatCurrency } from "@coingecko/cryptoformat";
 import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
 import { HypeVote } from "../../components/hypeVote";
@@ -63,12 +43,8 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
-import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
-import { Liquidity } from "@raydium-io/raydium-sdk";
-import { RaydiumCPMM, getLaunchOBMAccount, getRaydiumPrograms } from "../../hooks/raydium/utils";
-import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
-import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
-import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
+
+import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
@@ -114,38 +90,13 @@ async function getBirdEyeData(setMarketData: any, market_address: string) {
     //return data;
 }
 
-function findLaunch(list: LaunchData[], page_name: string | string[]) {
-    if (list === null || list === undefined || page_name === undefined || page_name === null) return null;
-
-    let launchList = list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.page_name == page_name;
-    });
-
-    return launchList[0];
-}
-
-function findAMM(list: AMMData[], base_mint: PublicKey) {
-    if (list === null || list === undefined || base_mint === undefined || base_mint === null) return null;
-
-    let launchList = list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.base_mint.equals(base_mint);
-    });
-
-    return launchList[0];
-}
-
-function filterLaunchRewards(list: MMLaunchData[], amm: AMMData, amm_provider: number) {
-    if (list === null || list === undefined) return [];
-    if (amm === null || amm === undefined) return [];
+function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
+    if (list === null || list === undefined) return null;
+    if (amm === null || amm === undefined) return null;
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    
-    return list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.mint_key.equals(getAMMKey(amm, amm_provider)) && item.date == current_date;
-    });
+    let key = getAMMKey(amm, amm.provider)
+    return list.get(key.toString() + "_" + current_date)
 }
 
 const TradePage = () => {
@@ -154,7 +105,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { launchList, ammData, currentUserData, mmLaunchData, SOLPrice, mintData } = useAppRoot();
+    const { ammData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -189,9 +140,8 @@ const TradePage = () => {
     const [user_lp_amount, setUserLPAmount] = useState<number>(0);
 
     const [total_supply, setTotalSupply] = useState<number>(0);
-    const [num_holders, setNumHolders] = useState<number>(0);
 
-    const [launch, setLaunch] = useState<LaunchData | null>(null);
+    const [listing, setListing] = useState<ListingData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<MintData | null>(null);
 
@@ -227,17 +177,18 @@ const TradePage = () => {
     }, [connection]);
 
     useEffect(() => {
-        if (ammData === null || launchList === null || mintData === null) return;
+        if (ammData === null || listingData === null || mintData === null) return;
 
-        let launch = findLaunch(launchList, pageName);
-        setLaunch(launch);
-
-        let amm = findAMM(ammData, launch.keys[LaunchKeys.MintAddress]);
+        let amm = ammData.get(pageName.toString());
         setAMM(amm);
+
+        let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+        let listing = listingData.get(listing_key.toString());
+        setListing(listing);
 
         let base_mint = mintData.get(amm.base_mint.toString());
         setBaseMint(base_mint);
-    }, [launchList, ammData, mintData, pageName]);
+    }, [ammData, mintData, pageName, listingData]);
 
     useEffect(() => {
         if (amm_base_amount === null || amm_quote_amount === null) {
@@ -335,7 +286,6 @@ const TradePage = () => {
         setLPAmount(bignum_to_num(poolState.lp_supply));
     }, []);
 
-    // launch account subscription handler
     useEffect(() => {
         if (base_ws_id.current === null && base_address !== null) {
             //console.log("subscribe 1");
@@ -389,7 +339,7 @@ const TradePage = () => {
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         console.log(hashArray.slice(0, 8));
         //("check market data");
-        if (launch === null || amm === null) return;
+        if (amm === null) return;
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
@@ -404,11 +354,7 @@ const TradePage = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [
-                amm_seed_keys[0].toBytes(),
-                amm_seed_keys[1].toBytes(),
-                Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
-            ],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
             PROGRAM,
         )[0];
 
@@ -433,7 +379,7 @@ const TradePage = () => {
                     lp_mint, // mint
                     wallet.publicKey, // owner
                     true, // allow owner off curve
-                    launch.flags[LaunchFlags.AMMProvider] === 0 ? base_mint.token_program : TOKEN_PROGRAM_ID,
+                    amm.provider === 0 ? base_mint.token_program : TOKEN_PROGRAM_ID,
                 );
 
                 setUserBaseAddress(user_base_token_account_key);
@@ -463,7 +409,7 @@ const TradePage = () => {
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
-            if (launch.flags[LaunchFlags.AMMProvider] > 0) {
+            if (amm.provider > 0) {
                 if (Config.PROD) {
                     getBirdEyeData(setMarketData, "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN");
                 }
@@ -534,7 +480,7 @@ const TradePage = () => {
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [launch, amm, base_mint, wallet, connection]);
+    }, [amm, base_mint, wallet, connection]);
 
     useEffect(() => {
         CheckMarketData();
@@ -552,7 +498,7 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (launch === null || amm === null || base_mint === null || mmLaunchData === null) {
+    if (listing === null || amm === null || base_mint === null || mmLaunchData === null) {
         return (
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
@@ -560,7 +506,7 @@ const TradePage = () => {
         );
     }
 
-    let latest_rewards = filterLaunchRewards(mmLaunchData, amm, launch.flags[LaunchFlags.AMMProvider]);
+    let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
 
     const Details = () => {
         return (
@@ -594,7 +540,11 @@ const TradePage = () => {
                         </Tooltip>
 
                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                            <Link href={getSolscanLink(base_mint.mint.address, "Token")} target="_blank" onClick={(e) => e.stopPropagation()}>
+                            <Link
+                                href={getSolscanLink(base_mint.mint.address, "Token")}
+                                target="_blank"
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
                             </Link>
                         </Tooltip>
@@ -648,11 +598,11 @@ const TradePage = () => {
 
                             {leftPanel === "Info" && (
                                 <InfoContent
-                                    launch={launch}
+                                    listing={listing}
                                     amm={amm}
                                     base_mint={base_mint}
                                     volume={last_day_volume}
-                                    mm_data={latest_rewards.length > 0 ? latest_rewards[0] : null}
+                                    mm_data={latest_rewards}
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}
@@ -663,7 +613,6 @@ const TradePage = () => {
                             {leftPanel === "Trade" && (
                                 <BuyAndSell
                                     amm={amm}
-                                    amm_provider={launch.flags[LaunchFlags.AMMProvider]}
                                     base_mint={base_mint}
                                     base_balance={amm_base_amount}
                                     quote_balance={amm_quote_amount}
@@ -764,7 +713,7 @@ const TradePage = () => {
                                 </HStack>
                             </HStack>
 
-                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable amm={amm} amm_provider={launch.flags[LaunchFlags.AMMProvider]} />}
+                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable amm={amm} />}
 
                             {!wallet.connected && (
                                 <HStack w="100%" align="center" justify="center" mt={25}>
@@ -836,7 +785,6 @@ const TradePage = () => {
 
 const BuyAndSell = ({
     amm,
-    amm_provider,
     base_mint,
     base_balance,
     quote_balance,
@@ -845,7 +793,6 @@ const BuyAndSell = ({
     user_lp_balance,
 }: {
     amm: AMMData;
-    amm_provider: number;
     base_mint: MintData;
     base_balance: number;
     quote_balance: number;
@@ -960,7 +907,6 @@ const BuyAndSell = ({
             {selected === "Buy" && (
                 <BuyPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -978,7 +924,6 @@ const BuyAndSell = ({
             {selected === "Sell" && (
                 <SellPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -996,7 +941,6 @@ const BuyAndSell = ({
             {selected === "LP+" && (
                 <AddLiquidityPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -1015,7 +959,6 @@ const BuyAndSell = ({
             {selected === "LP-" && (
                 <RemoveLiquidityPanel
                     amm={amm}
-                    amm_provider={amm_provider}
                     base_mint={base_mint}
                     user_base_balance={user_base_balance}
                     user_quote_balance={userSOLBalance}
@@ -1036,7 +979,7 @@ const BuyAndSell = ({
 };
 
 const InfoContent = ({
-    launch,
+    listing,
     amm,
     base_mint,
     price,
@@ -1045,9 +988,8 @@ const InfoContent = ({
     volume,
     total_supply,
     mm_data,
-    
 }: {
-    launch: LaunchData;
+    listing: ListingData;
     amm: AMMData;
     base_mint: MintData;
     price: number;
@@ -1057,7 +999,6 @@ const InfoContent = ({
     total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
-    
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm);
     if (mm_data !== null) {
@@ -1152,12 +1093,12 @@ const InfoContent = ({
                 </Text>
                 <HypeVote
                     launch_type={0}
-                    launch_id={launch.game_id}
-                    page_name={launch.page_name}
-                    positive_votes={launch.positive_votes}
-                    negative_votes={launch.negative_votes}
-                    seller_key={launch.keys[LaunchKeys.Seller]}
+                    launch_id={listing.id}
+                    page_name={""}
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
                     isTradePage={true}
+                    listing={listing}
                 />
             </HStack>
 
@@ -1165,7 +1106,7 @@ const InfoContent = ({
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     SOCIALS:
                 </Text>
-                <Links socials={launch.socials} isTradePage={true} />
+                <Links socials={listing.socials} isTradePage={true} />
             </HStack>
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>

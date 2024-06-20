@@ -12,7 +12,6 @@ import {
     unpackMint,
     getExtensionData,
     ExtensionType,
-    
 } from "@solana/spl-token";
 import { unpack, TokenMetadata } from "@solana/spl-token-metadata";
 import { useRouter } from "next/router";
@@ -40,7 +39,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
 
     if (metadata_pointer !== null) {
         const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
-        let metadata : TokenMetadata = unpack(data);
+        let metadata: TokenMetadata = unpack(data);
         uri = metadata.uri;
         name = metadata.name;
         symbol = metadata.symbol;
@@ -72,7 +71,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.TransferFee * Number(transfer_fee_config !== null)) |
         (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(transfer_hook !== null));
-    
+
     let icon: string;
     try {
         let uri_json = await fetch(uri).then((res) => res.json());
@@ -91,8 +90,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         token_program: token_program,
     };
 
-    return mint_data
-
+    return mint_data;
 }
 
 export async function setMintData(token_mint: string): Promise<MintData | null> {
@@ -137,7 +135,7 @@ export async function setMintData(token_mint: string): Promise<MintData | null> 
         }
     }
 
-   let mint_data = await getMintData(connection, mint, token_program);
+    let mint_data = await getMintData(connection, mint, token_program);
 
     return mint_data;
 }

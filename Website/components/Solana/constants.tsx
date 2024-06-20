@@ -18,7 +18,7 @@ const DevNetConfig: NetworkConfig = {
     NETWORK: "devnet",
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE: "https://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
+    RPC_NODE: "https://nickie-qn2k6r-fast-devnet.helius-rpc.com",
     WSS_NODE: "wss://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
@@ -61,7 +61,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = MainNetConfig;
+export let Config = DevNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,
@@ -90,8 +90,7 @@ export const enum CollectionKeys {
 export const enum LaunchKeys {
     Seller = 0,
     TeamWallet = 1,
-    MintAddress = 2,
-    WSOLAddress = 3,
+    WSOLAddress = 2,
 }
 
 export enum LaunchFlags {

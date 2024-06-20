@@ -8,7 +8,6 @@ import formatPrice from "../../utils/formatPrice";
 
 const SellPanel = ({
     amm,
-    amm_provider,
     base_mint,
     user_base_balance,
     sol_amount,
@@ -137,7 +136,7 @@ const SellPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : amm_provider=== 0
+                        : amm.provider === 0
                           ? PlaceMarketOrder(token_amount, sol_amount, 1)
                           : SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
                 }}

@@ -3,7 +3,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
 import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys } from "./Solana/constants";
-import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
+import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, ListingData } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
@@ -18,21 +18,21 @@ export function HypeVote({
     page_name,
     positive_votes,
     negative_votes,
-    seller_key,
     isTradePage,
+    listing,
 }: {
     launch_type: number;
     launch_id: BN;
     page_name: string;
     positive_votes: number;
     negative_votes: number;
-    seller_key: PublicKey;
     isTradePage?: boolean;
+    listing: ListingData | null;
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
-    const { checkProgramData, currentUserData } = useAppRoot();
+    const { checkProgramData, currentUserData, listingData } = useAppRoot();
     const { lg } = useResponsive();
     const hype_vote_ws_id = useRef<number | null>(null);
 
@@ -67,6 +67,7 @@ export function HypeVote({
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
+            console.log("in vote");
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             if (hype_vote_ws_id.current !== null) {
@@ -74,14 +75,17 @@ export function HypeVote({
                 return;
             }
 
-            let launch_data_account =
-                launch_type === 0
-                    ? PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Launch")], PROGRAM)[0]
-                    : PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
+            let launch_data_account: PublicKey;
+
+            if (launch_type === 0) {
+                launch_data_account = PublicKey.findProgramAddressSync([listing.mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            } else {
+                launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
+            }
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-            const instruction_data = serialise_HypeVote_instruction(launch_type, launch_id, vote);
+            const instruction_data = serialise_HypeVote_instruction(launch_type, vote);
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -118,7 +122,7 @@ export function HypeVote({
                 return;
             }
         },
-        [wallet, connection, launch_type, launch_id, page_name, check_signature_update],
+        [wallet, listing, connection, launch_type, page_name, check_signature_update],
     );
 
     let has_voted: boolean = false;
@@ -145,23 +149,6 @@ export function HypeVote({
         } else {
             vote_color = "#FF6E6E";
         }
-    }
-
-    if (wallet.publicKey !== null && wallet.publicKey.toString() === seller_key.toString()) {
-        return (
-            <>
-                {total_votes > 0 && (
-                    <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
-                        {vote_ratio}
-                    </Text>
-                )}
-                {total_votes === 0 && (
-                    <Text m="0" fontSize={lg ? "large" : "x-large"} color="white">
-                        --
-                    </Text>
-                )}
-            </>
-        );
     }
 
     if (has_voted) {

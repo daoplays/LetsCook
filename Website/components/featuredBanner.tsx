@@ -13,6 +13,7 @@ import { LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
+import useAppRoot from "../context/useAppRoot";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -22,13 +23,18 @@ interface FeaturedBannerProps {
 const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => {
     const { sm, lg } = useResponsive();
     const router = useRouter();
+    const { listingData } = useAppRoot();
 
     if (!featuredLaunch) return;
+
+    let listing = listingData.get(featuredLaunch.listing.toString());
+
+    if (!listing) return;
 
     return (
         <Box
             h={lg ? 300 : 320}
-            bg={"url(" + featuredLaunch.banner + ")"}
+            bg={"url(" + listing.banner + ")"}
             bgSize="cover"
             boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
             style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96" }}
@@ -58,7 +64,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                     <HStack spacing={lg ? 0 : 8} w="fit-content" mt={!isHomePage ? 0 : -2}>
                         {featuredLaunch !== null && (
                             <Image
-                                src={featuredLaunch.icon}
+                                src={listing.icon}
                                 width={lg ? 130 : 200}
                                 height={lg ? 130 : 200}
                                 alt="$LOGO"
@@ -76,10 +82,10 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? featuredLaunch.symbol : ""}
+                                    {featuredLaunch !== null ? listing.symbol : ""}
                                 </Text>
 
-                                {!lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
+                                {!lg && featuredLaunch !== null && <Links socials={listing.socials} />}
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
@@ -92,9 +98,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 <HStack spacing={3} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
                                         CA:{" "}
-                                        {featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                            ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
-                                            : ""}
+                                        {featuredLaunch && featuredLaunch.keys && listing.mint ? trimAddress(listing.mint.toString()) : ""}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -103,9 +107,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                        ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
-                                                        : "",
+                                                    featuredLaunch && featuredLaunch.keys && listing.mint ? listing.mint.toString() : "",
                                                 );
                                             }}
                                         >
@@ -115,7 +117,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(featuredLaunch.keys[LaunchKeys.MintAddress], "Token")}
+                                            href={getSolscanLink(listing.mint, "Token")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -131,9 +133,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                    ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
-                                                    : ""
+                                                featuredLaunch && featuredLaunch.keys && listing.mint ? listing.mint.toString() : ""
                                             }`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
@@ -161,12 +161,12 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 lineHeight={1.15}
                                 align={lg ? "center" : "start"}
                             >
-                                {featuredLaunch !== null ? featuredLaunch.description.substring(0, 200) : ""}
+                                {featuredLaunch !== null ? listing.description.substring(0, 200) : ""}
                             </Text>
                         </VStack>
                     </HStack>
 
-                    {lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
+                    {lg && featuredLaunch !== null && <Links socials={listing.socials} />}
 
                     {!isHomePage && (
                         // <Link href={`/launch/${featuredLaunch?.page_name}`} >

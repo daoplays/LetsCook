@@ -18,6 +18,7 @@ import {
     Distribution,
     LaunchData,
     LaunchInstruction,
+    ListingData,
     bignum_to_num,
     getRecentPrioritizationFees,
     get_current_blockhash,
@@ -128,7 +129,7 @@ export function getAMMQuoteAccount(base_mint: PublicKey, quote_mint: PublicKey) 
     )[0];
 }
 
-export const useCreateCP = (launch: LaunchData) => {
+export const useCreateCP = (listing: ListingData, launch: LaunchData) => {
     const wallet = useWallet();
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     const [isLoading, setIsLoading] = useState(false);
@@ -167,11 +168,10 @@ export const useCreateCP = (launch: LaunchData) => {
         });
     }, []);
 
-
     const CreateCP = async () => {
         let sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-        let base_mint = launch.keys[LaunchKeys.MintAddress];
+        let base_mint = listing.mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
@@ -211,7 +211,7 @@ export const useCreateCP = (launch: LaunchData) => {
         console.log("amm", amm_0.toString(), amm_1.toString());
 
         let quote_amount = bignum_to_num(launch.ticket_price) * launch.num_mints;
-        let total_token_amount = bignum_to_num(launch.total_supply) * Math.pow(10, launch.decimals);
+        let total_token_amount = bignum_to_num(launch.total_supply) * Math.pow(10, listing.decimals);
         let base_amount = Math.floor(total_token_amount * (launch.distribution[Distribution.LP] / 100.0));
 
         let amount_0 = token0.equals(base_mint) ? base_amount : quote_amount;
@@ -222,7 +222,7 @@ export const useCreateCP = (launch: LaunchData) => {
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let team_base_account = await getAssociatedTokenAddress(
-            launch.keys[LaunchKeys.MintAddress], // mint
+            listing.mint, // mint
             launch.keys[LaunchKeys.TeamWallet], // owner
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
@@ -244,12 +244,12 @@ export const useCreateCP = (launch: LaunchData) => {
 
         let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
 
-
         let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
         //let keys  = transaction["instructions"][0]["keys"]
         let keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch.listing, isSigner: false, isWritable: false },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
             { pubkey: team_base_account, isSigner: false, isWritable: true },

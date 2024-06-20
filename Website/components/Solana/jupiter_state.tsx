@@ -31,9 +31,11 @@ export interface OpenOrder {
     account: Order;
 }
 
+export function getAMMKey(amm: AMMData, amm_provider: number) {
 
-
-export function getAMMKey(amm: AMMData, amm_provider : number) {
+    if (amm === null) {
+        return null;
+    }
     let amm_seed_keys = [];
     if (amm.base_mint.toString() < amm.quote_mint.toString()) {
         amm_seed_keys.push(amm.base_mint);
@@ -52,12 +54,11 @@ export function getAMMKey(amm: AMMData, amm_provider : number) {
 }
 
 export function reward_schedule(date: number, amm: AMMData): number {
-
     if (amm.plugins.length === 0) {
-        return 0.0
+        return 0.0;
     }
 
-    let mm_amount = amm.plugins[0]["total_tokens"]
+    let mm_amount = amm.plugins[0]["total_tokens"];
     if (date < 10) {
         return 0.05 * mm_amount;
     }
@@ -214,7 +215,7 @@ export class MMUserData {
     constructor(
         readonly account_type: number,
         readonly user_key: PublicKey,
-        readonly mint_key: PublicKey,
+        readonly amm: PublicKey,
         readonly date: number,
         readonly buy_amount: bignum,
         readonly sell_amount: bignum,
@@ -224,12 +225,12 @@ export class MMUserData {
         [
             ["account_type", u8],
             ["user_key", publicKey],
-            ["mint_key", publicKey],
+            ["amm", publicKey],
             ["date", u32],
             ["buy_amount", u64],
             ["sell_amount", u64],
         ],
-        (args) => new MMUserData(args.account_type!, args.user_key!, args.mint_key!, args.date!, args.buy_amount!, args.sell_amount!),
+        (args) => new MMUserData(args.account_type!, args.user_key!, args.amm!, args.date!, args.buy_amount!, args.sell_amount!),
         "MMUserData",
     );
 }
@@ -237,7 +238,7 @@ export class MMUserData {
 export class MMLaunchData {
     constructor(
         readonly account_type: number,
-        readonly mint_key: PublicKey,
+        readonly amm: PublicKey,
         readonly date: number,
         readonly token_rewards: bignum,
         readonly buy_amount: bignum,
@@ -248,7 +249,7 @@ export class MMLaunchData {
     static readonly struct = new FixableBeetStruct<MMLaunchData>(
         [
             ["account_type", u8],
-            ["mint_key", publicKey],
+            ["amm", publicKey],
             ["date", u32],
             ["token_rewards", u64],
             ["buy_amount", u64],
@@ -258,7 +259,7 @@ export class MMLaunchData {
         (args) =>
             new MMLaunchData(
                 args.account_type!,
-                args.mint_key!,
+                args.amm!,
                 args.date!,
                 args.token_rewards!,
                 args.buy_amount!,
@@ -327,7 +328,7 @@ class ClaimReward_Instruction {
     constructor(
         readonly instruction: number,
         readonly date: number,
-        readonly amm_provider: number
+        readonly amm_provider: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(

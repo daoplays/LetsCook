@@ -125,7 +125,6 @@ const useSwapRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-
         let authority = getAuthorityAccount();
         let pool_state = getPoolStateAccount(base_mint, quote_mint);
         let amm_config = getAMMConfigAccount();
@@ -165,7 +164,7 @@ const useSwapRaydium = (amm: AMMData) => {
             PROGRAM,
         )[0];
 
-        console.log(bignum_to_num(amm.start_time))
+        console.log(bignum_to_num(amm.start_time));
         let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
         let date_bytes = uInt32ToLEBytes(current_date);
 
@@ -174,8 +173,11 @@ const useSwapRaydium = (amm: AMMData) => {
             PROGRAM,
         )[0];
 
-        let user_date_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), wallet.publicKey.toBytes(), date_bytes], PROGRAM)[0];
-        console.log(current_date, launch_date_account.toString(), user_date_account.toString())
+        let user_date_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            PROGRAM,
+        )[0];
+        console.log(current_date, launch_date_account.toString(), user_date_account.toString());
 
         let user_input = order_type === 0 ? user_quote_account : user_base_account;
         let user_output = order_type === 0 ? user_base_account : user_quote_account;

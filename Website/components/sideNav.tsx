@@ -25,7 +25,7 @@ const tabs = {
             tab: "New Hybrid",
             url: "/collection",
         },
-       /* {
+        /* {
             icon: (size: number) => <RiGalleryFill size={size} />,
             tab: "New AMM",
             url: "/trade/create",

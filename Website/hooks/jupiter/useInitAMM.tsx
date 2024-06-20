@@ -38,7 +38,7 @@ import useAppRoot from "../../context/useAppRoot";
 
 const useInitAMM = (launchData: LaunchData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
+    const { mintData, listingData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -64,12 +64,12 @@ const useInitAMM = (launchData: LaunchData) => {
         console.log(launchData);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
+        let listing = listingData.get(launchData.listing.toString());
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        var token_mint_pubkey = launchData.keys[LaunchKeys.MintAddress];
-        let mint_account = mintData.get(launchData.keys[LaunchKeys.MintAddress].toString());
+        var token_mint_pubkey = listing.mint;
+        let mint_account = mintData.get(listing.mint.toString());
 
         var team_wallet = launchData.keys[LaunchKeys.TeamWallet];
 
@@ -176,6 +176,7 @@ const useInitAMM = (launchData: LaunchData) => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launchData.listing, isSigner: false, isWritable: false },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: team_token_account, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: false, isWritable: true },

@@ -24,40 +24,39 @@ interface MappedReward {
     base_mint: MintData;
 }
 
-
-function filterLaunchRewards(list: MMLaunchData[], amm: AMMData, amm_provider: number) {
+function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, amm_provider: number) {
     if (list === null || list === undefined) return [];
     if (amm === null) return [];
-
-   
-
-    return list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.mint_key.equals(getAMMKey(amm, amm_provider));
+    let filtered : MMLaunchData[] = [];
+    list.forEach((item) => {
+        if (item.amm.equals(getAMMKey(amm, amm_provider))) {
+            filtered.push(item);
+        }
     });
+    return filtered;
 }
 
-function filterUserRewards(list: MMUserData[], amm: AMMData, amm_provider: number) {
+function filterUserRewards(list: Map<string, MMUserData>, amm: AMMData, amm_provider: number) {
     if (list === null || list === undefined) return [];
     if (amm === null) return [];
-
-    return list.filter(function (item) {
-        //console.log(new Date(bignum_to_num(item.launch_date)), new Date(bignum_to_num(item.end_date)))
-        return item.mint_key.equals(getAMMKey(amm, amm_provider));
+    let filtered : MMUserData[] = [];
+    list.forEach((item) => {
+        if (item.amm.equals(getAMMKey(amm, amm_provider))) {
+            filtered.push(item);
+        }
     });
+    return filtered;
 }
+  
 
 function getMappedRewards(
-    user_rewards: MMUserData[],
-    launch_rewards: MMLaunchData[],
+    user_rewards: Map<string, MMUserData>,
+    launch_rewards: Map<string, MMLaunchData>,
     amm: AMMData,
     amm_provider: number,
-    base_mint: MintData, 
+    base_mint: MintData,
     mapped_rewards: MappedReward[],
 ) {
-
-    
-
     let filtered_user_rewards = filterUserRewards(user_rewards, amm, amm_provider);
     let filtered_launch_rewards = filterLaunchRewards(launch_rewards, amm, amm_provider);
 
@@ -97,9 +96,9 @@ function getMappedRewards(
         }
     }
 }
-const MyRewardsTable = ({ amm, amm_provider }: { amm: AMMData | null, amm_provider: number }) => {
+const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     const { sm } = useResponsive();
-    const {  mintData, mmLaunchData, mmUserData, ammData } = useAppRoot();
+    const { mintData, mmLaunchData, mmUserData, ammData } = useAppRoot();
 
     const tableHeaders: Header[] = [
         { text: "REWARD DAY", field: "reward_day" },
@@ -117,11 +116,14 @@ const MyRewardsTable = ({ amm, amm_provider }: { amm: AMMData | null, amm_provid
     let mapped_rewards: MappedReward[] = [];
 
     if (amm !== null) {
-        getMappedRewards(mmUserData, mmLaunchData, amm, amm_provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
+        getMappedRewards(mmUserData, mmLaunchData, amm, amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
     } else {
-        for (let i = 0; i < ammData.length; i++) {
-            getMappedRewards(mmUserData, mmLaunchData, ammData[i], amm_provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
-        }
+        ammData.forEach((amm, i) => {
+            if (amm.start_time === 0) {
+                return;
+            }
+            getMappedRewards(mmUserData, mmLaunchData, amm, amm.provider, mintData.get(amm.base_mint.toString()), mapped_rewards);
+        });
     }
 
     return (

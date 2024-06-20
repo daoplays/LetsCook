@@ -114,6 +114,9 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
+        let r_data = await request_raw_account_data("", assignment_data.random_address);
+        console.log(r_data);
+
         setIsLoading(true);
 
         let asset_keypair = new Keypair();

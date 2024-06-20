@@ -4,15 +4,16 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
-import { LaunchKeys, LaunchFlags, Extensions } from "../Solana/constants";
-import { AMMData, MMLaunchData, MMUserData, reward_schedule } from "../Solana/jupiter_state";
+import { LaunchKeys, LaunchFlags, Extensions, PROGRAM } from "../Solana/constants";
+import { AMMData, MMLaunchData, MMUserData, getAMMKey, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
 import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";
 import { Mint } from "@solana/spl-token";
-import ShowExtensions from "../Solana/extensions";
+import ShowExtensions, { getExtensions } from "../Solana/extensions";
+import { PublicKey } from "@solana/web3.js";
 interface Header {
     text: string;
     field: string | null;
@@ -29,20 +30,17 @@ function filterTable(list: LaunchData[]) {
 
 interface AMMLaunch {
     amm_data: AMMData;
-    launch_data: LaunchData;
     mint: Mint;
 }
 
-const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
+const MarketMakingTable = () => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
-    const { ammData, SOLPrice, mintData } = useAppRoot();
+    const { ammData, SOLPrice, mintData, listingData } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
-
-    let trade_list = filterTable(launchList);
 
     const handleHeaderClick = (e) => {
         if (e == sortedField) {
@@ -55,20 +53,23 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
 
     let amm_launches: AMMLaunch[] = [];
     if (mintData !== null) {
-        for (let i = 0; i < ammData.length; i++) {
-            const ammLaunch = trade_list.filter((launch) => {
-                return ammData[i].base_mint.equals(launch.keys[LaunchKeys.MintAddress]);
-            });
-            if (ammLaunch.length === 0 || ammLaunch[0] === undefined) continue;
-
-            console.log(ammLaunch[0].page_name, ammData[i].base_mint.toString(), mintData.get(ammData[i].base_mint.toString()));
-            let amm_launch: AMMLaunch = {
-                amm_data: ammData[i],
-                launch_data: ammLaunch[0],
-                mint: mintData !== null ? mintData.get(ammData[i].base_mint.toString()).mint : null,
-            };
-            amm_launches.push(amm_launch);
-        }
+        ammData.forEach((amm, i) => {
+            console.log(amm.base_mint.toString());
+            if (bignum_to_num(amm.start_time) === 0) {
+                return;
+            }
+            let mint_data = mintData.get(amm.base_mint.toString());
+            let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            let listing = listingData.get(listing_key.toString());
+            if (listing && mint_data) {
+                console.log("mint data", mint_data);
+                let amm_launch: AMMLaunch = {
+                    amm_data: amm,
+                    mint: mintData !== null ? mintData.get(amm.base_mint.toString()).mint : null,
+                };
+                amm_launches.push(amm_launch);
+            }
+        });
     }
 
     const tableHeaders: Header[] = [
@@ -126,16 +127,18 @@ const MarketMakingTable = ({ launchList }: { launchList: LaunchData[] }) => {
 const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
+    const { listingData } = useAppRoot();
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.launch_data.last_interaction)) / 24 / 60 / 60);
+    let listing_key = PublicKey.findProgramAddressSync([amm_launch.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+    let listing = listingData.get(listing_key.toString());
+    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
     console.log(amm_launch);
     let total_supply =
-        amm_launch.mint !== null && amm_launch.mint !== undefined
-            ? Number(amm_launch.mint.supply) / Math.pow(10, amm_launch.launch_data.decimals)
-            : 0;
+        amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals) : 0;
     let market_cap = total_supply * last_price * SOLPrice;
+    let amm_key = getAMMKey(amm_launch.amm_data, amm_launch.amm_data.provider);
 
     return (
         <tr
@@ -150,21 +153,21 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)}
+            onClick={() => router.push(`/trade/` + amm_key.toString())}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={amm_launch.launch_data.icon}
+                            src={listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {amm_launch.launch_data.symbol}
+                        {listing.symbol}
                     </Text>
                 </HStack>
             </td>
@@ -172,7 +175,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.launch_data.decimals, 3))}
+                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(listing.decimals, 3))}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -195,21 +198,15 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {mm_rewards.toLocaleString()}
                     </Text>
-                    <Image
-                        src={amm_launch.launch_data.icon}
-                        width={30}
-                        height={30}
-                        alt="SOL Icon"
-                        style={{ marginLeft: -3, borderRadius: "5px" }}
-                    />
+                    <Image src={listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
                 </HStack>
             </td>
 
             <td style={{ minWidth: "140px" }}>
-                <ShowExtensions extension_flag={amm_launch.launch_data.flags[LaunchFlags.Extensions]} />
+                <ShowExtensions extension_flag={getExtensions(amm_launch.mint)} />
             </td>
             <td style={{ minWidth: "100px" }}>
-                <Button onClick={() => router.push(`/trade/` + amm_launch.launch_data.page_name)} style={{ textDecoration: "none" }}>
+                <Button onClick={() => router.push(`/trade/` + amm_key.toString())} style={{ textDecoration: "none" }}>
                     View
                 </Button>
             </td>

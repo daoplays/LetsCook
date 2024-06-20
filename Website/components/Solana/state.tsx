@@ -581,7 +581,6 @@ export function serialise_basic_instruction(instruction: number): Buffer {
 ////////////////////// LetsCook Instructions and MetaData /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 export function getLaunchType(launch_type: number): string {
     switch (launch_type) {
         case 0:
@@ -608,32 +607,44 @@ export function getLaunchTypeIndex(launch_type: string): number {
     }
 }
 
-
-
 type LaunchPluginEnum = {
-    Whitelist: { key: PublicKey, amount: bignum };
+    Whitelist: { key: PublicKey; amount: bignum };
 };
 type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
 
 const launchPluginBeet = dataEnum<LaunchPluginEnum>([
     [
         "Whitelist",
-        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>([["key", publicKey], ["amount", u64]], 'LaunchPluginEnum["Whitelist"]'),
+        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>(
+            [
+                ["key", publicKey],
+                ["amount", u64],
+            ],
+            'LaunchPluginEnum["Whitelist"]',
+        ),
     ],
 ]) as FixableBeet<LaunchPlugin>;
 
 type LaunchMetaEnum = {
     Raffle: {};
     FCFS: {};
-    IDO: {fraction_distributed : number[], tokens_distributed : bignum};
+    IDO: { fraction_distributed: number[]; tokens_distributed: bignum };
 };
 type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
 
 const launchInfoBeet = dataEnum<LaunchMetaEnum>([
     ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
     ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
-    ["IDO", new BeetArgsStruct<LaunchMetaEnum["IDO"]>([["fraction_distributed", uniformFixedSizeArray(u8, 8)], ["tokens_distributed", u64]], 'LaunchMetaEnum["IDO"]')],
-
+    [
+        "IDO",
+        new BeetArgsStruct<LaunchMetaEnum["IDO"]>(
+            [
+                ["fraction_distributed", uniformFixedSizeArray(u8, 8)],
+                ["tokens_distributed", u64],
+            ],
+            'LaunchMetaEnum["IDO"]',
+        ),
+    ],
 ]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
@@ -727,8 +738,8 @@ export interface LaunchDataUserInput {
     permanent_delegate: PublicKey | null;
     transfer_hook_program: PublicKey | null;
     launch_type: number;
-    whitelist_key : string;
-    whitelist_amount : number
+    whitelist_key: string;
+    whitelist_amount: number;
 }
 
 export const defaultUserInput: LaunchDataUserInput = {
@@ -766,8 +777,8 @@ export const defaultUserInput: LaunchDataUserInput = {
     permanent_delegate: null,
     transfer_hook_program: null,
     launch_type: 1,
-    whitelist_key : "",
-    whitelist_amount : 0
+    whitelist_key: "",
+    whitelist_amount: 0,
 };
 
 export class myU64 {
@@ -776,25 +787,70 @@ export class myU64 {
     static readonly struct = new BeetStruct<myU64>([["value", u64]], (args) => new myU64(args.value!), "myU64");
 }
 
+export class ListingData {
+    constructor(
+        readonly account_type: number,
+        readonly id: bignum,
+        readonly mint: PublicKey,
+        readonly name: string,
+        readonly symbol: string,
+        readonly decimals: number,
+        readonly icon: string,
+        readonly meta_url: string,
+        readonly banner: string,
+        readonly description: string,
+        readonly positive_votes: number,
+        readonly negative_votes: number,
+        readonly socials: string[],
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<ListingData>(
+        [
+            ["account_type", u8],
+            ["id", u64],
+            ["mint", publicKey],
+            ["name", utf8String],
+            ["symbol", utf8String],
+            ["decimals", u8],
+            ["icon", utf8String],
+            ["meta_url", utf8String],
+            ["banner", utf8String],
+            ["description", utf8String],
+            ["positive_votes", u32],
+            ["negative_votes", u32],
+            ["socials", array(utf8String)],
+        ],
+        (args) =>
+            new ListingData(
+                args.account_type!,
+                args.id!,
+                args.mint!,
+                args.name!,
+                args.symbol!,
+                args.decimals!,
+                args.icon!,
+                args.meta_url!,
+                args.banner!,
+                args.description!,
+                args.positive_votes!,
+                args.negative_votes!,
+                args.socials!,
+            ),
+        "ListingData",
+    );
+}
+
 export class LaunchData {
     constructor(
         readonly account_type: number,
         readonly launch_meta: LaunchMetaEnum,
         readonly plugins: LaunchPluginEnum[],
-        readonly game_id: bignum,
         readonly last_interaction: bignum,
         readonly num_interactions: number,
-
-        readonly name: string,
-        readonly symbol: string,
-        readonly icon: string,
-        readonly meta_url: string,
-        readonly banner: string,
         readonly page_name: string,
-        readonly description: string,
+        readonly listing: PublicKey,
 
         readonly total_supply: bignum,
-        readonly decimals: number,
         readonly num_mints: bignum,
         readonly ticket_price: bignum,
         readonly minimum_liquidity: bignum,
@@ -804,14 +860,11 @@ export class LaunchData {
         readonly tickets_sold: number,
         readonly tickets_claimed: number,
         readonly mints_won: number,
-        readonly positive_votes: number,
-        readonly negative_votes: number,
 
         readonly total_mm_buy_amount: bignum,
         readonly total_mm_sell_amount: bignum,
         readonly last_mm_reward_date: number,
 
-        readonly socials: string[],
         readonly distribution: number[],
         readonly flags: number[],
         readonly strings: string[],
@@ -823,20 +876,13 @@ export class LaunchData {
             ["account_type", u8],
             ["launch_meta", launchInfoBeet],
             ["plugins", array(launchPluginBeet)],
-            ["game_id", u64],
             ["last_interaction", i64],
             ["num_interactions", u16],
 
-            ["name", utf8String],
-            ["symbol", utf8String],
-            ["icon", utf8String],
-            ["meta_url", utf8String],
-            ["banner", utf8String],
             ["page_name", utf8String],
-            ["description", utf8String],
+            ["listing", publicKey],
 
             ["total_supply", u64],
-            ["decimals", u8],
             ["num_mints", u32],
             ["ticket_price", u64],
             ["minimum_liquidity", u64],
@@ -846,14 +892,11 @@ export class LaunchData {
             ["tickets_sold", u32],
             ["tickets_claimed", u32],
             ["mints_won", u32],
-            ["positive_votes", u32],
-            ["negative_votes", u32],
 
             ["total_mm_buy_amount", u64],
             ["total_mm_sell_amount", u64],
             ["last_mm_reward_date", u32],
 
-            ["socials", array(utf8String)],
             ["distribution", array(u8)],
             ["flags", array(u8)],
             ["strings", array(utf8String)],
@@ -864,20 +907,13 @@ export class LaunchData {
                 args.account_type!,
                 args.launch_meta!,
                 args.plugins!,
-                args.game_id!,
                 args.last_interaction!,
                 args.num_interactions!,
 
-                args.name!,
-                args.symbol!,
-                args.icon!,
-                args.meta_url!,
-                args.banner!,
                 args.page_name!,
-                args.description!,
+                args.listing!,
 
                 args.total_supply!,
-                args.decimals!,
                 args.num_mints!,
                 args.ticket_price!,
                 args.minimum_liquidity!,
@@ -887,14 +923,11 @@ export class LaunchData {
                 args.tickets_sold!,
                 args.tickets_claimed!,
                 args.mints_won!,
-                args.positive_votes!,
-                args.negative_votes!,
 
                 args.total_mm_buy_amount!,
                 args.total_mm_sell_amount!,
                 args.last_mm_reward_date!,
 
-                args.socials!,
                 args.distribution!,
                 args.flags!,
                 args.strings!,
@@ -916,26 +949,36 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         __kind: "Raffle",
         Raffle: {},
         FCFS: {},
-        IDO: {fraction_distributed: [0,0,0,0,0,0,0,0], tokens_distributed : 0}
+        IDO: { fraction_distributed: [0, 0, 0, 0, 0, 0, 0, 0], tokens_distributed: 0 },
     };
+
+    const listing = new ListingData(
+        11,
+        new BN(0),
+        null,
+        new_launch_data.name,
+        new_launch_data.symbol,
+        new_launch_data.decimals,
+        icon_url,
+        "meta_data",
+        banner_url,
+        new_launch_data.description,
+        0,
+        0,
+        [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url],
+    );
+
     const data = new LaunchData(
         1,
         meta,
         [],
         new BN(0),
-        new BN(0),
         0,
 
-        new_launch_data.name,
-        new_launch_data.symbol,
-        icon_url,
-        "meta_data",
-        banner_url,
         new_launch_data.pagename,
-        new_launch_data.description,
+        null,
 
         new BN(new_launch_data.total_supply),
-        new_launch_data.decimals,
         new_launch_data.num_mints,
         new BN(new_launch_data.ticket_price * LAMPORTS_PER_SOL),
         new BN(new_launch_data.minimum_liquidity),
@@ -945,14 +988,11 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         0,
         0,
         0,
-        0,
-        0,
 
         new BN(0),
         new BN(0),
         0,
 
-        [new_launch_data.web_url, new_launch_data.twt_url, new_launch_data.tele_url, new_launch_data.disc_url],
         new_launch_data.distribution,
         [],
         [],
@@ -962,34 +1002,34 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
     return data;
 }
 
-export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boolean): LaunchDataUserInput {
+export function create_LaunchDataInput(launch_data: LaunchData, listing: ListingData, edit_mode: boolean): LaunchDataUserInput {
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
 
     const data: LaunchDataUserInput = {
         edit_mode: edit_mode,
-        name: launch_data.name,
-        symbol: launch_data.symbol,
+        name: listing.name,
+        symbol: listing.symbol,
         icon_file: null,
         uri_file: null,
         banner_file: null,
-        icon_url: launch_data.icon,
-        banner_url: launch_data.banner,
-        displayImg: launch_data.icon,
+        icon_url: listing.icon,
+        banner_url: listing.banner,
+        displayImg: listing.icon,
         total_supply: bignum_to_num(launch_data.total_supply),
-        decimals: launch_data.decimals,
+        decimals: listing.decimals,
         num_mints: launch_data.num_mints,
         minimum_liquidity: (bignum_to_num(launch_data.ticket_price) * launch_data.num_mints) / LAMPORTS_PER_SOL,
         ticket_price: bignum_to_num(launch_data.ticket_price) / LAMPORTS_PER_SOL,
         distribution: launch_data.distribution,
-        uri: launch_data.meta_url,
+        uri: listing.meta_url,
         pagename: launch_data.page_name,
-        description: launch_data.description,
-        web_url: launch_data.socials[Socials.Website].toString(),
-        tele_url: launch_data.socials[Socials.Telegram].toString(),
-        twt_url: launch_data.socials[Socials.Twitter].toString(),
-        disc_url: launch_data.socials[Socials.Discord].toString(),
+        description: listing.description,
+        web_url: listing.socials[Socials.Website].toString(),
+        tele_url: listing.socials[Socials.Telegram].toString(),
+        twt_url: listing.socials[Socials.Twitter].toString(),
+        disc_url: listing.socials[Socials.Discord].toString(),
         opendate: new Date(bignum_to_num(launch_data.launch_date)),
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
@@ -1002,8 +1042,8 @@ export function create_LaunchDataInput(launch_data: LaunchData, edit_mode: boole
         permanent_delegate: null,
         transfer_hook_program: null,
         launch_type: 1,
-        whitelist_key : "",
-        whitelist_amount : 0
+        whitelist_key: "",
+        whitelist_amount: 0,
     };
 
     return data;
@@ -1013,7 +1053,7 @@ export class JoinData {
     constructor(
         readonly account_type: number,
         readonly joiner_key: PublicKey,
-        readonly game_id: bignum,
+        readonly page_name: string,
         readonly num_tickets: number,
         readonly num_claimed_tickets: number,
         readonly num_winning_tickets: number,
@@ -1022,11 +1062,11 @@ export class JoinData {
         readonly last_slot: bignum,
     ) {}
 
-    static readonly struct = new BeetStruct<JoinData>(
+    static readonly struct = new FixableBeetStruct<JoinData>(
         [
             ["account_type", u8],
             ["joiner_key", publicKey],
-            ["game_id", u64],
+            ["page_name", utf8String],
             ["num_tickets", u16],
             ["num_claimed_tickets", u16],
             ["num_winning_tickets", u16],
@@ -1038,7 +1078,7 @@ export class JoinData {
             new JoinData(
                 args.account_type!,
                 args.joiner_key!,
-                args.game_id!,
+                args.page_name!,
                 args.num_tickets!,
                 args.num_claimed_tickets!,
                 args.num_winning_tickets!,
@@ -1164,7 +1204,7 @@ class CreateLaunch_Instruction {
         readonly extensions: number,
         readonly amm_provider: number,
         readonly launch_type: number,
-        readonly whitelist_tokens: bignum
+        readonly whitelist_tokens: bignum,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1188,7 +1228,6 @@ class CreateLaunch_Instruction {
             ["amm_provider", u8],
             ["launch_type", u8],
             ["whitelist_tokens", u64],
-
         ],
         (args) =>
             new CreateLaunch_Instruction(
@@ -1211,7 +1250,6 @@ class CreateLaunch_Instruction {
                 args.amm_provider!,
                 args.launch_type!,
                 args.whitelist_tokens!,
-
             ),
         "CreateLaunch_Instruction",
     );
@@ -1246,7 +1284,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         extensions,
         new_launch_data.amm_provider,
         new_launch_data.launch_type,
-        new_launch_data.whitelist_amount
+        new_launch_data.whitelist_amount,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 
@@ -1335,7 +1373,6 @@ class HypeVote_Instruction {
     constructor(
         readonly instruction: number,
         readonly launch_type: number,
-        readonly game_id: bignum,
         readonly vote: number,
     ) {}
 
@@ -1343,16 +1380,15 @@ class HypeVote_Instruction {
         [
             ["instruction", u8],
             ["launch_type", u8],
-            ["game_id", u64],
             ["vote", u8],
         ],
-        (args) => new HypeVote_Instruction(args.instruction!, args.launch_type!, args.game_id!, args.vote!),
+        (args) => new HypeVote_Instruction(args.instruction!, args.launch_type!, args.vote!),
         "HypeVote_Instruction",
     );
 }
 
-export function serialise_HypeVote_instruction(launch_type: number, game_id: bignum, vote: number): Buffer {
-    const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, launch_type, game_id, vote);
+export function serialise_HypeVote_instruction(launch_type: number, vote: number): Buffer {
+    const data = new HypeVote_Instruction(LaunchInstruction.hype_vote, launch_type, vote);
     const [buf] = HypeVote_Instruction.struct.serialize(data);
 
     return buf;

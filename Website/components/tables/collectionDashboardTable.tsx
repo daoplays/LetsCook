@@ -165,8 +165,8 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     page_name={launch.page_name}
                     positive_votes={launch.positive_votes}
                     negative_votes={launch.negative_votes}
-                    seller_key={launch.keys[CollectionKeys.Seller]}
                     isTradePage={false}
+                    listing={null}
                 />
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>

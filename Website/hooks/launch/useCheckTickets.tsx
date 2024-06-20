@@ -92,14 +92,8 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.keys[LaunchKeys.MintAddress].toString());
-        console.log("sol", launchData.keys[LaunchKeys.WSOLAddress].toString());
-
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 
