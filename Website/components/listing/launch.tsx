@@ -34,6 +34,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WebIrys } from "@irys/sdk";
 import bs58 from "bs58";
 import useCreateListing from "../../hooks/listings/useCreateListing";
+import useCreateUnverifiedListing from "../../hooks/listings/useCreateUnverifiedListing";
 
 // Define the Tag type
 type Tag = {
@@ -82,6 +83,7 @@ const CreateListing = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [admin, setAdmin] = useState<boolean>(false);
 
+    const { CreateUnverifiedListing} = useCreateUnverifiedListing();
     const { CreateListing} = useCreateListing();
 
 
@@ -158,10 +160,23 @@ const CreateListing = () => {
     async function sendRequestData(e): Promise<void> {
         e.preventDefault();
 
-        if (description.length > 250) {
-            toast.error("Description should be less than 250 characters long");
-            return;
+        let new_listing : NewListing = {
+            network: Config.NETWORK,
+            user: "2BLkynLAWGwW58SLDAnhwsoiAuVtzqyfHKA3W3MJFwEF",
+            token: base_token.mint.address.toString(),
+            name: base_token.name,
+            symbol: base_token.symbol,
+            icon: base_token.icon,
+            uri: base_token.uri,
+            banner: "",
+            description: description,
+            website: web,
+            telegram: telegram,
+            twitter: twitter,
+            discord: discord,
         }
+
+        await CreateListing(new_listing)
 
     }
 
@@ -298,14 +313,12 @@ const CreateListing = () => {
                 discord: discord,
             }
 
-            await CreateListing(new_listing)
+            await CreateUnverifiedListing(new_listing)
 
             let new_post : DiscordPost = {
                 network: Config.NETWORK,
                 user: wallet.publicKey.toString(),
-               
                 token: base_token.mint.address.toString(),
-                
             }
 
             await post_discord(new_listing);

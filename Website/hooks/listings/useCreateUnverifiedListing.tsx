@@ -10,7 +10,6 @@ import {
     request_raw_account_data,
     send_transaction,
     serialise_EditLaunch_instruction,
-    serialise_basic_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
 import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags, DATA_ACCOUNT_SEED, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
@@ -30,7 +29,75 @@ import { NewListing } from "../../components/listing/launch";
 
 
 
-const useCreateListing = () => {
+class CreateListing_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly name: string,
+        readonly symbol: string,
+        readonly icon: string,
+        readonly uri: string,
+        readonly banner: string,
+        readonly description: string,
+        readonly website: string,
+        readonly twitter: string,
+        readonly telegram: string,
+        readonly discord: string,
+    ) {}
+
+    static readonly struct = new FixableBeetStruct<CreateListing_Instruction>(
+        [
+            ["instruction", u8],
+            ["name", utf8String],
+            ["symbol", utf8String],
+            ["icon", utf8String],
+            ["uri", utf8String],
+            ["banner", utf8String],
+            ["description", utf8String],
+            ["website", utf8String],
+            ["twitter", utf8String],
+            ["telegram", utf8String],
+            ["discord", utf8String],
+        ],
+        (args) =>
+            new CreateListing_Instruction(
+                args.instruction!,
+                args.name!,
+                args.symbol!,
+                args.icon!,
+                args.uri!,
+                args.banner!,
+                args.description!,
+                args.website!,
+                args.twitter!,
+                args.telegram!,
+                args.discord!,
+            ),
+        "CreateListing_Instruction",
+    );
+}
+
+export function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
+    const data = new CreateListing_Instruction(
+        LaunchInstruction.create_unverified_listing,
+        new_listing.name,
+        new_listing.symbol,
+        new_listing.icon,
+        new_listing.uri,
+        new_listing.banner,
+        new_listing.description,
+        new_listing.website,
+        new_listing.twitter,
+        new_listing.telegram,
+        new_listing.discord,
+
+    );
+    const [buf] = CreateListing_Instruction.struct.serialize(data);
+
+    return buf;
+}
+
+
+const useCreateUnverifiedListing = () => {
     const wallet = useWallet();
     const router = useRouter();
     const { newLaunchData } = useAppRoot();
@@ -48,7 +115,7 @@ const useCreateListing = () => {
         }
     }, []);
 
-    const CreateListing = async (new_listing : NewListing) => {
+    const CreateUnverifiedListing = async (new_listing : NewListing) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
@@ -61,18 +128,14 @@ const useCreateListing = () => {
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
         let token_mint = new PublicKey(new_listing.token)
-        let creator = new PublicKey(new_listing.user)
 
-        let unverified = PublicKey.findProgramAddressSync([token_mint.toBytes(), creator.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
-        let verified = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+        let listing = PublicKey.findProgramAddressSync([token_mint.toBytes(), wallet.publicKey.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
 
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.create_listing);
+        const instruction_data = serialise_CreateListing_instruction(new_listing);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: creator, isSigner: false, isWritable: true },
-            { pubkey: unverified, isSigner: false, isWritable: true },
-            { pubkey: verified, isSigner: false, isWritable: true },
+            { pubkey: listing, isSigner: false, isWritable: true },
             { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
@@ -123,7 +186,7 @@ const useCreateListing = () => {
             return;
         }
     };
-    return { CreateListing };
+    return { CreateUnverifiedListing };
 };
 
-export default useCreateListing;
+export default useCreateUnverifiedListing;
