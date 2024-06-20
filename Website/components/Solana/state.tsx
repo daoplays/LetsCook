@@ -700,6 +700,7 @@ export const enum LaunchInstruction {
     raydium_swap = 21,
     update_cook_liquidity = 22,
     remove_cook_liquidity = 23,
+    create_listing = 24
 }
 
 export interface LaunchDataUserInput {

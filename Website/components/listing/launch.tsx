@@ -33,6 +33,7 @@ import { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WebIrys } from "@irys/sdk";
 import bs58 from "bs58";
+import useCreateListing from "../../hooks/listings/useCreateListing";
 
 // Define the Tag type
 type Tag = {
@@ -40,6 +41,28 @@ type Tag = {
     value: string;
 };
 
+
+export interface NewListing {
+    network: string;
+    user: string;
+    token: string;
+    name: string,
+    symbol: string;
+    icon: string;
+    uri: string;
+    banner: string;
+    description: string;
+    website: string;
+    telegram: string;
+    twitter: string;
+    discord: string;
+}
+
+interface DiscordPost {
+    network: string;
+    user: string;
+    token: string;
+}
 
 const CreateListing = () => {
     const {connection} = useConnection();
@@ -58,6 +81,9 @@ const CreateListing = () => {
     const [banner, setBanner] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [admin, setAdmin] = useState<boolean>(false);
+
+    const { CreateListing} = useCreateListing();
+
 
     async function handleSetBaseData() {
         setBaseToken(await setMintData(base_address));
@@ -113,16 +139,7 @@ const CreateListing = () => {
        }
     }, [wallet]);
 
-    interface NewListing {
-        network: string;
-        token: string;
-        banner: string;
-        description: string;
-        website: string;
-        telegram: string;
-        twitter: string;
-        discord: string;
-    }
+   
 
     const post_discord = async (listing: NewListing) => {
         const response = await fetch("/.netlify/functions/post_discord", {
@@ -140,6 +157,12 @@ const CreateListing = () => {
 
     async function sendRequestData(e): Promise<void> {
         e.preventDefault();
+
+        if (description.length > 250) {
+            toast.error("Description should be less than 250 characters long");
+            return;
+        }
+
     }
 
     async function setRequestData(e): Promise<void> {
@@ -261,13 +284,28 @@ const CreateListing = () => {
 
             let new_listing : NewListing = {
                 network: Config.NETWORK,
+                user: wallet.publicKey.toString(),
                 token: base_token.mint.address.toString(),
+                name: base_token.name,
+                symbol: base_token.symbol,
+                icon: base_token.icon,
+                uri: base_token.uri,
                 banner: banner_url,
                 description: description,
                 website: web,
                 telegram: telegram,
                 twitter: twitter,
                 discord: discord,
+            }
+
+            await CreateListing(new_listing)
+
+            let new_post : DiscordPost = {
+                network: Config.NETWORK,
+                user: wallet.publicKey.toString(),
+               
+                token: base_token.mint.address.toString(),
+                
             }
 
             await post_discord(new_listing);
