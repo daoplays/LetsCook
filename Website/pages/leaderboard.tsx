@@ -49,9 +49,11 @@ const LeaderboardPage = () => {
     };
 
     let userVec : UserData[] = [];
+    if (userList !== null) {
         userList.forEach((user) => {
             userVec.push(user);
         });
+    }
 
 
     const LeaderboardTable = () => {

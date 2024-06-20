@@ -110,8 +110,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
 
-    const user_account_ws_id = useRef<number | null>(null);
     const user_balance_ws_id = useRef<number | null>(null);
+    const program_ws_id = useRef<number | null>(null);
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
@@ -129,35 +129,31 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         return filtered
     }
 
-    const check_user_update = useCallback(
+    const check_program_update = useCallback(
+
         async (result: any) => {
-            //console.log(result);
+            console.log(result);
             // if we have a subscription field check against ws_id
 
-            let event_data = result.data;
+            let event_data = result.accountInfo.data;
 
             //console.log("have event data", event_data, user_account_ws_id.current);
-            let account_data = Buffer.from(event_data, "base64");
-            try {
-                const [updated_data] = UserData.struct.deserialize(account_data);
+            if (event_data[0] === 2) {
+                const [user] = UserData.struct.deserialize(event_data);
+                console.log("user update", user);
+                console.log(user_data, join_data)
 
-                //console.log(updated_data);
+                //user_data.set(user.user_key.toString(), user);
 
-                if (current_user_data === null) {
-                    setCurrentUserData(updated_data);
-                    return;
+                if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
+                    setCurrentUserData(user);
                 }
-
-                if (updated_data.total_points > current_user_data.total_points) {
-                    setCurrentUserData(updated_data);
-                }
-            } catch (error) {
-                console.log("error reading user data");
-                setCurrentUserData(null);
+                return
             }
         },
-        [current_user_data],
+        [wallet, user_data, join_data],
     );
+
 
     const checkUserBalance = useCallback(async () => {
         if (wallet === null || wallet.publicKey === null) {
@@ -183,18 +179,15 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     useEffect(() => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        if (user_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
-            //console.log("subscribe to user data");
-            let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-            user_account_ws_id.current = connection.onAccountChange(user_data_account, check_user_update, "confirmed");
-        }
-
         if (user_balance_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
             checkUserBalance();
             user_balance_ws_id.current = connection.onAccountChange(wallet.publicKey, check_user_balance, "confirmed");
         }
-    }, [wallet, check_user_update, check_user_balance, checkUserBalance]);
+
+        if (program_ws_id.current === null) {
+            program_ws_id.current = connection.onProgramAccountChange(PROGRAM, check_program_update, "confirmed");
+        }
+    }, [wallet, check_user_balance, checkUserBalance, check_program_update]);
 
     const CloseAccount = useCallback(
         async ({ accounts }: { accounts: PublicKey[] }) => {
@@ -364,7 +357,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
-        //console.log("launch data", launch_data);
+        console.log("set user data", user_data);
         setLaunchData(launch_data);
         setUserData(user_data);
         setJoinData(join_data);

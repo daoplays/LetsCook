@@ -25,7 +25,6 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
     const router = useRouter();
     const { listingData } = useAppRoot();
 
-    console.log("featured banner", featuredLaunch)
     if (!featuredLaunch) return;
 
     let listing = listingData.get(featuredLaunch.listing.toString());

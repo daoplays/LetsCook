@@ -216,6 +216,9 @@ const TokenMintPage = () => {
     }
 
     const fetchLaunchData = useCallback(async () => {
+
+        if (listingData === null) return;
+
         if (!checkLaunchData.current) return;
         if (pageName === undefined || pageName === null) {
             setIsLoading(false);
@@ -270,8 +273,6 @@ const TokenMintPage = () => {
 
                 const [new_join_data] = JoinData.struct.deserialize(join_account_data);
 
-                console.log(new_join_data);
-
                 setJoinData(new_join_data);
             } catch (error) {
                 console.error("Error fetching join data:", error);
@@ -301,7 +302,7 @@ const TokenMintPage = () => {
 
     useEffect(() => {
         fetchLaunchData();
-    }, [fetchLaunchData, pageName]);
+    }, [fetchLaunchData, pageName, listingData]);
 
     useEffect(() => {
         if (launchData) {
