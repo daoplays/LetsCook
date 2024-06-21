@@ -24,8 +24,8 @@ import { toast } from "react-toastify";
 
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import useResponsive from "../../hooks/useResponsive";
-import { MintData, getRecentPrioritizationFees, get_current_blockhash, request_current_balance, send_transaction } from "../Solana/state";
-import { Config, Extensions, METAPLEX_META, NetworkConfig, PROGRAM } from "../Solana/constants";
+import { ListingData, MintData, getRecentPrioritizationFees, get_current_blockhash, request_current_balance, send_transaction } from "../Solana/state";
+import { Config, Extensions, METAPLEX_META, NetworkConfig, PROGRAM, Socials } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { setMintData } from "../amm/launch";
@@ -82,10 +82,57 @@ const CreateListing = () => {
     const [banner, setBanner] = useState<File | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [admin, setAdmin] = useState<boolean>(false);
+    const [creator, setCreator] = useState<string>("");
 
     const { CreateUnverifiedListing} = useCreateUnverifiedListing();
     const { CreateListing} = useCreateListing();
 
+
+    async function handleSetCreator() {
+        if (base_token === null) {
+            return;
+        }
+        try {
+            let creator_key = new PublicKey(creator);
+            let unverified_key = PublicKey.findProgramAddressSync([base_token.mint.address.toBytes(), creator_key.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
+            let unverified_account = await connection.getAccountInfo(unverified_key)
+            const [unverified_listing] = ListingData.struct.deserialize(unverified_account.data)
+
+            console.log(unverified_listing)
+            if (unverified_listing.name !== base_token.name) {
+                toast.error("Listing and token do not match.");
+                return;
+            }
+            if (unverified_listing.symbol !== base_token.symbol) {
+                toast.error("Listing and token do not match.");
+                return;
+            }
+            if (unverified_listing.meta_url !== base_token.uri) {
+                toast.error("Listing and token do not match.");
+                return;
+            }
+            if (unverified_listing.icon !== base_token.icon) {
+                toast.error("Listing and token do not match.");
+                return;
+            }
+            if (!unverified_listing.mint.equals(base_token.mint.address)) {
+                toast.error("Listing and token do not match.");
+                return;
+            }
+
+            setBannerName(unverified_listing.banner)
+            setDescription(unverified_listing.description)
+            setWeb(unverified_listing.socials[Socials.Website])
+            setTelegram(unverified_listing.socials[Socials.Telegram])
+            setTwitter(unverified_listing.socials[Socials.Twitter])
+            setDiscord(unverified_listing.socials[Socials.Discord])
+
+        }
+        catch(error) {
+            toast.error("Error getting listing");
+            return;
+        }
+    }
 
     async function handleSetBaseData() {
         setBaseToken(await setMintData(base_address));
@@ -162,7 +209,7 @@ const CreateListing = () => {
 
         let new_listing : NewListing = {
             network: Config.NETWORK,
-            user: "2BLkynLAWGwW58SLDAnhwsoiAuVtzqyfHKA3W3MJFwEF",
+            user: creator,
             token: base_token.mint.address.toString(),
             name: base_token.name,
             symbol: base_token.symbol,
@@ -480,22 +527,62 @@ const CreateListing = () => {
                                     </VStack>
                                 </HStack>
                                 {admin ?
-                                <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "175px" }}>
-                                        Banner:
-                                    </div>
-                                    <div className={styles2.textLabelInput}>
-                                        <input
-                                            className={styles2.inputBox}
-                                            placeholder="Enter Banner URL"
-                                            type="text"
-                                            value={telegram}
-                                            onChange={(e) => {
-                                                setBannerName(e.target.value);
+                                <>
+                                <HStack spacing={0} className={styles.eachField}>
+                                <div
+                                    className={`${styles.textLabel} font-face-kg`}
+                                    style={{ minWidth: lg ? "100px" : "132px" }}
+                                >
+                                    Creator:
+                                </div>
+
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        placeholder="Search Token"
+                                        size={lg ? "md" : "lg"}
+                                        required
+                                        className={styles.inputBox}
+                                        type="text"
+                                        value={creator}
+                                        onChange={(e) => {
+                                            setCreator(e.target.value);
+                                        }}
+                                    />
+                                </div>
+
+                                <div style={{ marginLeft: "12px" }}>
+                                    <label className={styles.label}>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                handleSetCreator();
                                             }}
-                                        />
-                                    </div>
-                                </HStack>
+                                            className={styles.browse}
+                                            style={{ cursor: "pointer", padding: "5px 10px" }}
+                                        >
+                                            Search
+                                        </button>
+                                    </label>
+                                </div>
+                            </HStack>
+                            <div className={styles2.launchBodyLowerVertical}>
+                                <div className={`${styles2.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
+                                    BANNER:
+                                </div>
+                                <div>
+                                    {banner_name !== "" &&
+                                <Image
+                                    src={banner_name}
+                                    width={lg ? 130 : 200}
+                                    height={lg ? 130 : 200}
+                                    alt="Banner"
+                                    hidden={lg}
+                                    style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
+                                />                                 
+                                }
+                                </div>
+                            </div>
+                                </>
                                 :
                                 <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "175px" }}>

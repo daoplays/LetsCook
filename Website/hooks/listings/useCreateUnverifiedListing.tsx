@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from "react";
+import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
 
 import {
     LaunchDataUserInput,
@@ -12,7 +12,7 @@ import {
     serialise_EditLaunch_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags, DATA_ACCOUNT_SEED, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags, DATA_ACCOUNT_SEED, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -100,19 +100,46 @@ export function serialise_CreateListing_instruction(new_listing: NewListing): Bu
 const useCreateUnverifiedListing = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newLaunchData } = useAppRoot();
+    const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
-        signature_ws_id.current = null;
-
         // if we have a subscription field check against ws_id
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
         if (result.err !== null) {
-            toast.error("Transaction failed, please try again");
+            toast.error("Transaction failed, please try again", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
             return;
         }
+
+        toast.success("Request Sent!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+
+        
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
     }, []);
 
     const CreateUnverifiedListing = async (new_listing : NewListing) => {
@@ -177,6 +204,7 @@ const useCreateUnverifiedListing = () => {
                 console.log("list signature: ", signature);
             }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, TIMEOUT);
         } catch (error) {
             console.log(error);
             toast.error("Something went wrong launching your token , please try again later.", {
