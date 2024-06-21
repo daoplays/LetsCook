@@ -176,7 +176,7 @@ const CreateListing = () => {
             setAdmin(false);
             return;
         }
-        if (wallet.publicKey.toString() === "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD") {
+        if (wallet.publicKey.toString() === "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD" || wallet.publicKey.toString() === "7oAfRLy81EwMJAXNKbZFaMTayBFoBpkua4ukWiCZBZz5") {
             setAdmin(true);
         } else {
             setAdmin(false);
@@ -197,7 +197,7 @@ const CreateListing = () => {
         return result.body;
     };
 
-    async function sendRequestData(e): Promise<void> {
+    async function sendRequestData(e, accept : boolean): Promise<void> {
         e.preventDefault();
 
         let new_listing: NewListing = {
@@ -216,7 +216,7 @@ const CreateListing = () => {
             discord: discord,
         };
 
-        await CreateListing(new_listing);
+        await CreateListing(new_listing, accept);
     }
 
     async function setRequestData(e): Promise<void> {
@@ -372,9 +372,9 @@ const CreateListing = () => {
         }
     }
 
-    async function confirm(e) {
+    async function confirm(e, accept : boolean) {
         if (admin) {
-            await sendRequestData(e);
+            await sendRequestData(e, accept);
             return;
         }
         await setRequestData(e);
@@ -737,18 +737,41 @@ const CreateListing = () => {
                                 </VStack>
                             </VStack>
                         </HStack>
-
+                        {admin ?                                        
                         <HStack>
+                            
                             <button
                                 type="button"
                                 className={`${styles.nextBtn} font-face-kg `}
                                 onClick={(e) => {
-                                    confirm(e);
+                                    confirm(e, true);
                                 }}
                             >
-                                {admin ? "Submit" : "Request"}
+                                Accept
                             </button>
+                            <button
+                            type="button"
+                            className={`${styles.nextBtn} font-face-kg `}
+                            onClick={(e) => {
+                                confirm(e, false);
+                            }}
+                        >
+                            Reject
+                        </button>
                         </HStack>
+                            :
+                            <button
+                                type="button"
+                                className={`${styles.nextBtn} font-face-kg `}
+                                onClick={(e) => {
+                                    confirm(e, true);
+                                }}
+                            >
+                                Request
+                                
+                            </button>
+                        }
+                        
                     </VStack>
                 </form>
             </VStack>

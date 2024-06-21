@@ -75,7 +75,7 @@ const useCreateListing = () => {
         });
     }, []);
 
-    const CreateListing = async (new_listing : NewListing) => {
+    const CreateListing = async (new_listing : NewListing, accept: boolean) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
@@ -91,7 +91,7 @@ const useCreateListing = () => {
         let creator = new PublicKey(new_listing.user)
 
         let unverified = PublicKey.findProgramAddressSync([token_mint.toBytes(), creator.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
-        let verified = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+        let verified = accept ? PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0] : PROGRAM;
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.create_listing);
 
