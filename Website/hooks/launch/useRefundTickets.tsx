@@ -97,7 +97,7 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), listing.mint.toBytes(), Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 

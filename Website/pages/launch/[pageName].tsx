@@ -57,7 +57,7 @@ import formatPrice from "../../utils/formatPrice";
 const TokenMintPage = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { mintData, listingData } = useAppRoot();
+    const { mintData, launchList, joinData, listingData } = useAppRoot();
 
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
@@ -70,6 +70,7 @@ const TokenMintPage = () => {
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
     const [listing, setListing] = useState<ListingData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
+
     const [cookState, setCookState] = useState<CookState | null>(null);
     const [whitelist, setWhitelist] = useState<MintData | null>(null);
     const [launch_type, setLaunchType] = useState<number>(0);
@@ -95,194 +96,31 @@ const TokenMintPage = () => {
     const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launchData);
     const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(listing, launchData);
 
-    const { InitAMM } = useInitAMM(launchData);
-
     const cook_state = useDetermineCookState({ current_time, launchData, join_data });
-
-    const checkLaunchData = useRef<boolean>(true);
-
-    // updates to token page are checked using a websocket to get real time updates
-    const join_account_ws_id = useRef<number | null>(null);
-    const launch_account_ws_id = useRef<number | null>(null);
-
-    // when page unloads unsub from any active websocket listeners
-    useEffect(() => {
-        return () => {
-            console.log("in use effect return");
-            const unsub = async () => {
-                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-                if (join_account_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(join_account_ws_id.current);
-                    join_account_ws_id.current = null;
-                }
-                if (launch_account_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
-                    launch_account_ws_id.current = null;
-                }
-                await connection.removeAccountChangeListener(launch_account_ws_id.current);
-            };
-            unsub();
-        };
-    }, []);
-
-    const check_launch_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-
-            console.log("have event data", event_data, launch_account_ws_id.current);
-            let account_data = Buffer.from(event_data, "base64");
-
-            const [updated_data] = LaunchData.struct.deserialize(account_data);
-
-            console.log(updated_data);
-
-            if (updated_data.num_interactions > launchData.num_interactions) {
-                setLaunchData(updated_data);
-            }
-        },
-        [launchData],
-    );
-
-    const check_join_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-
-            console.log("have event data", event_data, join_account_ws_id.current);
-            let account_data = Buffer.from(event_data, "base64");
-            try {
-                const [updated_data] = JoinData.struct.deserialize(account_data);
-
-                console.log(updated_data);
-
-                if (join_data === null) {
-                    setJoinData(updated_data);
-                    return;
-                }
-
-                if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
-                    setJoinData(updated_data);
-                }
-            } catch (error) {
-                console.log("error reading join data");
-                setJoinData(null);
-            }
-        },
-        [join_data],
-    );
-
-    // launch account subscription handler
-    useEffect(() => {
-        if (launchData === null) return;
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        if (launch_account_ws_id.current === null) {
-            console.log("subscribe 1");
-            let launch_data_account = PublicKey.findProgramAddressSync(
-                [Buffer.from(launchData.page_name), Buffer.from("Launch")],
-                PROGRAM,
-            )[0];
-
-            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
-        }
-
-        if (join_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
-            console.log("subscribe 2");
-
-            let user_join_account = PublicKey.findProgramAddressSync(
-                [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
-                PROGRAM,
-            )[0];
-
-            join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
-        }
-    }, [wallet, launchData, listing, check_join_update, check_launch_update]);
 
     let win_prob = 0;
 
-    //if (join_data === null) {
-    //    console.log("no joiner info");
-    // }
 
     if (launchData !== null && launchData.tickets_sold > launchData.tickets_claimed) {
         //console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
         win_prob = (launchData.num_mints - launchData.mints_won) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
 
-    const fetchLaunchData = useCallback(async () => {
+    useEffect(() => {
 
-        if (listingData === null) return;
+        if (listingData === null || launchList === null) return;
 
-        if (!checkLaunchData.current) return;
-        if (pageName === undefined || pageName === null) {
-            setIsLoading(false);
-            return;
-        }
+        let launch = launchList.get(pageName.toString());
+        setLaunchData(launch);
+        setListing(listingData.get(launch.listing.toString()))
+    }, [listingData, launchList]);
 
-        setIsLoading(true);
-
-        let new_launch_data: [LaunchData | null, number] = [launchData, 0];
-        let listing: ListingData = null;
-        if (launchData === null) {
-            try {
-                let page_name = pageName ? pageName : "";
-                let launch_data_account = PublicKey.findProgramAddressSync(
-                    [Buffer.from(page_name.toString()), Buffer.from("Launch")],
-                    PROGRAM,
-                )[0];
-
-                const launch_account_data = await request_raw_account_data("", launch_data_account);
-
-                new_launch_data = LaunchData.struct.deserialize(launch_account_data);
-                listing = listingData.get(new_launch_data[0].listing.toString());
-                //console.log(new_launch_data);
-
-                setLaunchData(new_launch_data[0]);
-                setListing(listing);
-            } catch (error) {
-                console.error("Error fetching launch data:", error);
-            }
-        }
-
-        if (wallet === null || wallet.publicKey === null) {
-            setIsLoading(false);
-            return;
-        }
-
-        let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), Buffer.from(new_launch_data[0].page_name), Buffer.from("Joiner")],
-            PROGRAM,
-        )[0];
-
-        if (join_data === null) {
-            //console.log("check join data")
-            try {
-                const join_account_data = await request_raw_account_data("", user_join_account);
-
-                if (join_account_data === null) {
-                    setIsLoading(false);
-                    checkLaunchData.current = false;
-                    return;
-                }
-
-                const [new_join_data] = JoinData.struct.deserialize(join_account_data);
-
-                setJoinData(new_join_data);
-            } catch (error) {
-                console.error("Error fetching join data:", error);
-                setIsLoading(false);
-                checkLaunchData.current = false;
-            }
-        }
-        checkLaunchData.current = false;
-        setIsLoading(false);
-    }, [wallet, pageName, launchData, join_data, listingData]);
+    useEffect(() => {
+        if (joinData === null) return;
+        let join = joinData.get(pageName.toString())
+        if (join !== undefined && join !== null)
+            setJoinData(join);
+    }, [joinData]);
 
     useEffect(() => {
         if (mintData !== null && launchData !== null) {
@@ -296,13 +134,6 @@ const TokenMintPage = () => {
         }
     }, [mintData, launchData]);
 
-    useEffect(() => {
-        checkLaunchData.current = true;
-    }, [wallet]);
-
-    useEffect(() => {
-        fetchLaunchData();
-    }, [fetchLaunchData, pageName, listingData]);
 
     useEffect(() => {
         if (launchData) {
