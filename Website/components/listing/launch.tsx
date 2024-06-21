@@ -42,12 +42,11 @@ type Tag = {
     value: string;
 };
 
-
 export interface NewListing {
     network: string;
     user: string;
     token: string;
-    name: string,
+    name: string;
     symbol: string;
     icon: string;
     uri: string;
@@ -66,7 +65,7 @@ interface DiscordPost {
 }
 
 const CreateListing = () => {
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const wallet = useWallet();
     const { sm, md, lg, xl } = useResponsive();
     const [base_address, setBaseAddress] = useState<string>("");
@@ -84,9 +83,8 @@ const CreateListing = () => {
     const [admin, setAdmin] = useState<boolean>(false);
     const [creator, setCreator] = useState<string>("");
 
-    const { CreateUnverifiedListing} = useCreateUnverifiedListing();
-    const { CreateListing} = useCreateListing();
-
+    const { CreateUnverifiedListing } = useCreateUnverifiedListing();
+    const { CreateListing } = useCreateListing();
 
     async function handleSetCreator() {
         if (base_token === null) {
@@ -159,11 +157,10 @@ const CreateListing = () => {
     const fetchCPMM = async (address: PublicKey) => {
         let pool_state_account = await connection.getAccountInfo(address);
         console.log("pool state:", pool_state_account);
-        if (pool_state_account){
-            setRaydiumPool(true)
+        if (pool_state_account) {
+            setRaydiumPool(true);
         }
-
-    }
+    };
 
     useEffect(() => {
         if (base_token === null) {
@@ -171,24 +168,20 @@ const CreateListing = () => {
         }
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let pool_state = getPoolStateAccount(base_token.mint.address, quote_mint);
-        fetchCPMM(pool_state)
+        fetchCPMM(pool_state);
     }, [connection, base_token]);
-
 
     useEffect(() => {
         if (wallet === null || wallet.publicKey === null) {
-            setAdmin(false)
+            setAdmin(false);
             return;
         }
-       if (wallet.publicKey.toString() === "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD") {
-        setAdmin(true);
-       }
-       else {
-        setAdmin(false)
-       }
+        if (wallet.publicKey.toString() === "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD") {
+            setAdmin(true);
+        } else {
+            setAdmin(false);
+        }
     }, [wallet]);
-
-   
 
     const post_discord = async (listing: NewListing) => {
         const response = await fetch("/.netlify/functions/post_discord", {
@@ -198,7 +191,7 @@ const CreateListing = () => {
                 "Content-Type": "application/json",
             },
         });
-    
+
         const result = await response.json();
         console.log(result);
         return result.body;
@@ -207,7 +200,7 @@ const CreateListing = () => {
     async function sendRequestData(e): Promise<void> {
         e.preventDefault();
 
-        let new_listing : NewListing = {
+        let new_listing: NewListing = {
             network: Config.NETWORK,
             user: creator,
             token: base_token.mint.address.toString(),
@@ -221,10 +214,9 @@ const CreateListing = () => {
             telegram: telegram,
             twitter: twitter,
             discord: discord,
-        }
+        };
 
-        await CreateListing(new_listing)
-
+        await CreateListing(new_listing);
     }
 
     async function setRequestData(e): Promise<void> {
@@ -248,9 +240,8 @@ const CreateListing = () => {
         let listing_account = PublicKey.findProgramAddressSync([base_token.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
 
         let balance = await request_current_balance("", listing_account);
-        
 
-        console.log("check balance",  listing_account.toString(), balance);
+        console.log("check balance", listing_account.toString(), balance);
 
         if (balance > 0) {
             toast.error("Listing already exists");
@@ -319,9 +310,7 @@ const CreateListing = () => {
             return;
         }
 
-        const tags: Tag[] = [
-            { name: "Content-Type", value: banner.type },
-        ];
+        const tags: Tag[] = [{ name: "Content-Type", value: banner.type }];
 
         const uploadToArweave = toast.info("Sign to upload images on Arweave.");
 
@@ -344,7 +333,7 @@ const CreateListing = () => {
 
             let banner_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[banner.name].id;
 
-            let new_listing : NewListing = {
+            let new_listing: NewListing = {
                 network: Config.NETWORK,
                 user: wallet.publicKey.toString(),
                 token: base_token.mint.address.toString(),
@@ -358,18 +347,17 @@ const CreateListing = () => {
                 telegram: telegram,
                 twitter: twitter,
                 discord: discord,
-            }
+            };
 
-            await CreateUnverifiedListing(new_listing)
+            await CreateUnverifiedListing(new_listing);
 
-            let new_post : DiscordPost = {
+            let new_post: DiscordPost = {
                 network: Config.NETWORK,
                 user: wallet.publicKey.toString(),
                 token: base_token.mint.address.toString(),
-            }
+            };
 
             await post_discord(new_listing);
-            
         } catch (error) {
             setIsLoading(false);
 
@@ -382,20 +370,15 @@ const CreateListing = () => {
 
             return;
         }
-
-        
-       
     }
-
 
     async function confirm(e) {
         if (admin) {
-            await sendRequestData(e)
+            await sendRequestData(e);
             return;
         }
-       await setRequestData(e)
+        await setRequestData(e);
     }
-
 
     return (
         <Center
@@ -448,7 +431,7 @@ const CreateListing = () => {
                                         <HStack spacing={0} className={styles.eachField}>
                                             <div
                                                 className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "100px" : "132px" }}
+                                                style={{ minWidth: lg ? "100px" : "120px" }}
                                             >
                                                 Token:
                                             </div>
@@ -475,7 +458,7 @@ const CreateListing = () => {
                                                             handleSetBaseData();
                                                         }}
                                                         className={styles.browse}
-                                                        style={{ cursor: "pointer", padding: "5px 10px" }}
+                                                        style={{ cursor: "pointer", padding: lg ? "6px 10px" : "12px 10px" }}
                                                     >
                                                         Search
                                                     </button>
@@ -487,7 +470,7 @@ const CreateListing = () => {
                                             <HStack spacing={5} className={styles.eachField}>
                                                 <div
                                                     className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "100px" }}
+                                                    style={{ minWidth: lg ? "78px" : "100px" }}
                                                 >
                                                     Name:
                                                 </div>
@@ -505,7 +488,7 @@ const CreateListing = () => {
                                                 </div>
                                                 <div
                                                     className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "110px" }}
+                                                    style={{ minWidth: lg ? "78px" : "110px" }}
                                                 >
                                                     Symbol:
                                                 </div>
@@ -524,64 +507,115 @@ const CreateListing = () => {
                                                 </div>
                                             </HStack>
                                         </Flex>
+
+                                        {admin ? (
+                                            <HStack spacing={0} className={styles.eachField}>
+                                                <div
+                                                    className={`${styles.textLabel} font-face-kg`}
+                                                    style={{ minWidth: lg ? "78px" : "120px" }}
+                                                >
+                                                    Banner:
+                                                </div>
+                                                <div className={styles2.textLabelInput}>
+                                                    <input
+                                                        className={styles2.inputBox}
+                                                        placeholder="Enter Banner URL"
+                                                        type="text"
+                                                        value={telegram}
+                                                        onChange={(e) => {
+                                                            setBannerName(e.target.value);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </HStack>
+                                        ) : (
+                                            <HStack spacing={0} className={styles.eachField}>
+                                                <div
+                                                    className={`${styles.textLabel} font-face-kg`}
+                                                    style={{ minWidth: lg ? "110px" : "120px" }}
+                                                >
+                                                    Banner:
+                                                </div>
+
+                                                <div>
+                                                    <label className={styles.label}>
+                                                        <input id="file" type="file" onChange={handleFileChange} />
+                                                        <span
+                                                            className={styles.browse}
+                                                            style={{
+                                                                cursor: "pointer",
+                                                                padding: "5px 10px",
+                                                            }}
+                                                        >
+                                                            BROWSE
+                                                        </span>
+                                                    </label>
+                                                </div>
+
+                                                <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                    {banner !== null ? banner_name : "No File Selected"}
+                                                </Text>
+                                            </HStack>
+                                        )}
                                     </VStack>
                                 </HStack>
                                 {admin ?
                                 <>
                                 <HStack spacing={0} className={styles.eachField}>
-                                <div
-                                    className={`${styles.textLabel} font-face-kg`}
-                                    style={{ minWidth: lg ? "100px" : "132px" }}
-                                >
-                                    Creator:
-                                </div>
+                                    <div
+                                        className={`${styles.textLabel} font-face-kg`}
+                                        style={{ minWidth: lg ? "100px" : "132px" }}
+                                    >
+                                        Creator:
+                                    </div>
 
-                                <div className={styles.textLabelInput}>
-                                    <Input
-                                        placeholder="Search Token"
-                                        size={lg ? "md" : "lg"}
-                                        required
-                                        className={styles.inputBox}
-                                        type="text"
-                                        value={creator}
-                                        onChange={(e) => {
-                                            setCreator(e.target.value);
-                                        }}
-                                    />
-                                </div>
-
-                                <div style={{ marginLeft: "12px" }}>
-                                    <label className={styles.label}>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                handleSetCreator();
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            placeholder="Search Token"
+                                            size={lg ? "md" : "lg"}
+                                            required
+                                            className={styles.inputBox}
+                                            type="text"
+                                            value={creator}
+                                            onChange={(e) => {
+                                                setCreator(e.target.value);
                                             }}
-                                            className={styles.browse}
-                                            style={{ cursor: "pointer", padding: "5px 10px" }}
-                                        >
-                                            Search
-                                        </button>
-                                    </label>
+                                        />
+                                    </div>
+
+                                    <div style={{ marginLeft: "12px" }}>
+                                        <label className={styles.label}>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    handleSetCreator();
+                                                }}
+                                                className={styles.browse}
+                                                style={{ cursor: "pointer", padding: "5px 10px" }}
+                                            >
+                                                Search
+                                            </button>
+                                        </label>
+                                    </div>
+                                </HStack>
+                                <div className={styles2.launchBodyLowerVertical}>
+                                    <div className={`${styles2.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
+                                        BANNER:
+                                    </div>
+                                    <div>
+                                        {banner_name !== "" &&
+                                        <Image
+                                            src={banner_name}
+                                            width={lg ? 130 : 200}
+                                            height={lg ? 130 : 200}
+                                            alt="Banner"
+                                            hidden={lg}
+                                            style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
+                                        />                                 
+                                        }
+                                    </div>
                                 </div>
-                            </HStack>
-                            <div className={styles2.launchBodyLowerVertical}>
-                                <div className={`${styles2.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
-                                    BANNER:
-                                </div>
-                                <div>
-                                    {banner_name !== "" &&
-                                <Image
-                                    src={banner_name}
-                                    width={lg ? 130 : 200}
-                                    height={lg ? 130 : 200}
-                                    alt="Banner"
-                                    hidden={lg}
-                                    style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
-                                />                                 
-                                }
-                                </div>
-                            </div>
+                                
                                 </>
                                 :
                                 <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
@@ -595,7 +629,7 @@ const CreateListing = () => {
                                             <span
                                                 className={styles.browse}
                                                 style={{
-                                                    cursor:  "pointer",
+                                                    cursor: "pointer",
                                                     padding: "5px 10px",
                                                 }}
                                             >
@@ -609,7 +643,8 @@ const CreateListing = () => {
                                     </Text>
                                 </HStack>
                                 }
-                                <VStack w="100%" spacing={30} mt={42} mb={25}>
+
+                                <VStack w="100%" spacing={30} mb={25}>
                                     <div className={styles2.launchBodyLowerVertical}>
                                         <div className={`${styles2.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
                                             DESCRIPTION:
@@ -703,12 +738,12 @@ const CreateListing = () => {
                             </VStack>
                         </HStack>
 
-                        <HStack mt={md ? 0 : 30}>
+                        <HStack>
                             <button
                                 type="button"
                                 className={`${styles.nextBtn} font-face-kg `}
                                 onClick={(e) => {
-                                    confirm(e)
+                                    confirm(e);
                                 }}
                             >
                                 {admin ? "Submit" : "Request"}

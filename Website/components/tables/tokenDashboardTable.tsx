@@ -34,6 +34,7 @@ import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } f
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import useCreateCP from "../../hooks/raydium/useCreateCP";
+import * as NProgress from "nprogress";
 
 interface Header {
     text: string;
@@ -340,7 +341,10 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.page_name}`)}
+            onClick={() => {
+                NProgress.start();
+                router.push(`/launch/${launch.page_name}`);
+            }}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">

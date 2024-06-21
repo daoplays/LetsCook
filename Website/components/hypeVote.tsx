@@ -166,7 +166,7 @@ export function HypeVote({
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (wallet !== null) {
+                            if (wallet.connected) {
                                 Vote({ vote: 1 });
                             } else {
                                 handleConnectWallet();
@@ -181,7 +181,7 @@ export function HypeVote({
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (wallet !== null) {
+                            if (wallet.connected) {
                                 Vote({ vote: 2 });
                             } else {
                                 handleConnectWallet();
