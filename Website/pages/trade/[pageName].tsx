@@ -994,7 +994,7 @@ const InfoContent = ({
 }) => {
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm);
-    if (mm_data !== null) {
+    if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
 
@@ -1041,7 +1041,7 @@ const InfoContent = ({
                     MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
+                    {mm_data  ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
                 </Text>
             </HStack>
 
