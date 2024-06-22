@@ -39,6 +39,9 @@ const MarketMakingTable = () => {
 
     const { ammData, SOLPrice, mintData, listingData } = useAppRoot();
 
+    console.log("Mint Data: ", mintData);
+    console.log("Mint Data: ", listingData);
+
     const [sortedField, setSortedField] = useState<string>("end_date");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
 
