@@ -20,7 +20,7 @@ const BagsPage = () => {
     if (!collectionList) return <Loader />;
 
     function filterTable() {
-        let filtered : CollectionData[] = [];
+        let filtered: CollectionData[] = [];
         collectionList.forEach((item) => {
             if (item.description !== "") {
                 filtered.push(item);

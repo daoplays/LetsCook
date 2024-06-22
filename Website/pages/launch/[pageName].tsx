@@ -100,27 +100,24 @@ const TokenMintPage = () => {
 
     let win_prob = 0;
 
-
     if (launchData !== null && launchData.tickets_sold > launchData.tickets_claimed) {
         //console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
         win_prob = (launchData.num_mints - launchData.mints_won) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
 
     useEffect(() => {
-
         if (listingData === null || launchList === null) return;
 
         let launch = launchList.get(pageName.toString());
         setLaunchData(launch);
-        setListing(listingData.get(launch.listing.toString()))
-    }, [listingData, launchList]);
+        setListing(listingData.get(launch.listing.toString()));
+    }, [listingData, launchList, pageName]);
 
     useEffect(() => {
         if (joinData === null) return;
-        let join = joinData.get(pageName.toString())
-        if (join !== undefined && join !== null)
-            setJoinData(join);
-    }, [joinData]);
+        let join = joinData.get(pageName.toString());
+        if (join !== undefined && join !== null) setJoinData(join);
+    }, [joinData, pageName]);
 
     useEffect(() => {
         if (mintData !== null && launchData !== null) {
@@ -133,7 +130,6 @@ const TokenMintPage = () => {
             }
         }
     }, [mintData, launchData]);
-
 
     useEffect(() => {
         if (launchData) {

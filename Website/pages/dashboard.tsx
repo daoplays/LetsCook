@@ -30,7 +30,7 @@ const DashboardPage = () => {
             return;
         }
 
-        const filteredLaunches : LaunchData[] = []
+        const filteredLaunches: LaunchData[] = [];
         launchList.forEach((launch) => {
             if (launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString()) {
                 filteredLaunches.push(launch);
@@ -38,8 +38,8 @@ const DashboardPage = () => {
         });
         setCreatorLaunches(filteredLaunches);
 
-        const filteredCollections : CollectionData[] = []
-        
+        const filteredCollections: CollectionData[] = [];
+
         collectionList.forEach((launch) => {
             if (launch.keys[CollectionKeys.Seller].toString() === wallet.publicKey.toString()) {
                 filteredCollections.push(launch);

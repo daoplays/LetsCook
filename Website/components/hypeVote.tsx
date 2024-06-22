@@ -178,6 +178,9 @@ export function HypeVote({
                         alt="Thumbs Up"
                     />
                 </Tooltip>
+                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                    {vote_ratio}
+                </Text>
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {

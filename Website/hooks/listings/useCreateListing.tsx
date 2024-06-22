@@ -13,7 +13,17 @@ import {
     serialise_basic_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags, DATA_ACCOUNT_SEED, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
+import {
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    Config,
+    LaunchKeys,
+    LaunchFlags,
+    DATA_ACCOUNT_SEED,
+    SOL_ACCOUNT_SEED,
+    TIMEOUT,
+} from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -27,8 +37,6 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
 import { FixableBeetStruct, array, u8, utf8String } from "@metaplex-foundation/beet";
 import { NewListing } from "../../components/listing/launch";
-
-
 
 const useCreateListing = () => {
     const wallet = useWallet();
@@ -58,8 +66,6 @@ const useCreateListing = () => {
             isLoading: false,
             autoClose: 3000,
         });
-
-        
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -75,7 +81,7 @@ const useCreateListing = () => {
         });
     }, []);
 
-    const CreateListing = async (new_listing : NewListing, accept: boolean) => {
+    const CreateListing = async (new_listing: NewListing, accept: boolean) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
@@ -84,13 +90,16 @@ const useCreateListing = () => {
         }
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-       
+
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
-        let token_mint = new PublicKey(new_listing.token)
-        let creator = new PublicKey(new_listing.user)
+        let token_mint = new PublicKey(new_listing.token);
+        let creator = new PublicKey(new_listing.user);
 
-        let unverified = PublicKey.findProgramAddressSync([token_mint.toBytes(), creator.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
+        let unverified = PublicKey.findProgramAddressSync(
+            [token_mint.toBytes(), creator.toBytes(), Buffer.from("UnverifiedListing")],
+            PROGRAM,
+        )[0];
         let verified = accept ? PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0] : PROGRAM;
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.create_listing);
@@ -104,7 +113,6 @@ const useCreateListing = () => {
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-
         ];
 
         const list_instruction = new TransactionInstruction({

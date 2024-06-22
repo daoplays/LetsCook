@@ -32,7 +32,6 @@ export interface OpenOrder {
 }
 
 export function getAMMKey(amm: AMMData, amm_provider: number) {
-
     if (amm === null) {
         return null;
     }

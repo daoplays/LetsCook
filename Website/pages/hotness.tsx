@@ -41,27 +41,39 @@ const HotnessPage = () => {
     const { xs, sm, lg } = useResponsive();
 
     const [listings, setListings] = useState<ListingData[]>([]);
+    const [sortedField, setSortedField] = useState<string | null>("hype");
+    const [reverseSort, setReverseSort] = useState<boolean>(true);
 
-
-   useEffect(() => {
+    useEffect(() => {
         if (listingData === null) {
             return;
         }
-        let listingVec : ListingData[] = []
+        let listingVec: ListingData[] = [];
         listingData.forEach((listing) => {
             listingVec.push(listing);
-        })
+        });
 
-        setListings(listingVec)
+        const sortedListings = listingVec.sort((a, b) => {
+            if (sortedField === "hype") {
+                let hype_a = a.positive_votes - a.negative_votes;
+                let hype_b = b.positive_votes - b.negative_votes;
+                if (hype_a < hype_b) {
+                    return reverseSort ? 1 : -1;
+                }
+                if (hype_a > hype_b) {
+                    return reverseSort ? -1 : 1;
+                }
+                return 0;
+            }
 
-    },[listingData])
+            return 0;
+        });
 
+        setListings(sortedListings);
+    }, [listingData, sortedField, reverseSort]);
 
     const HotnessTable = () => {
         const { sm } = useResponsive();
-
-        const [sortedField, setSortedField] = useState<string | null>("sauce");
-        const [reverseSort, setReverseSort] = useState<boolean>(true);
 
         const tableHeaders: Header[] = [
             { text: "RANK", field: "rank" },
@@ -80,45 +92,23 @@ const HotnessPage = () => {
             }
         };
 
-        const sortedListings = listings.sort((a, b) => {
-           
-           
-            if (sortedField === "hype") {
-                let hype_a = a.positive_votes - a.negative_votes;
-                let hype_b = b.positive_votes - b.negative_votes;
-                if (hype_a < hype_b) {
-                    return reverseSort ? 1 : -1;
-                }
-                if (hype_a > hype_b) {
-                    return reverseSort ? -1 : 1;
-                }
-                return 0;
-            }
-    
-            return 0;
-        });
-
-        const hype_sorted = [...listings].sort((a, b) => (b.positive_votes - b.negative_votes) - (a.positive_votes - a.negative_votes));
-
-
-       
-
+        const hype_sorted = [...listings].sort((a, b) => b.positive_votes - b.negative_votes - (a.positive_votes - a.negative_votes));
 
         return (
             <>
                 <TableContainer>
-                <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "50px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
+                    <table
+                        width="100%"
+                        className="custom-centered-table font-face-rk"
+                        style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
+                    >
+                        <thead>
+                            <tr
+                                style={{
+                                    height: "50px",
+                                    borderTop: "1px solid rgba(134, 142, 150, 0.5)",
+                                    borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
+                                }}
                             >
                                 {tableHeaders.map((i) => (
                                     <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
@@ -139,7 +129,7 @@ const HotnessPage = () => {
                         </thead>
 
                         <tbody>
-                            {sortedListings.map((listing, i) => {
+                            {listings.map((listing, i) => {
                                 return <ListingCard key={listing.mint.toString()} listing={listing} hype_ranked={hype_sorted} index={i} />;
                             })}
                         </tbody>
@@ -149,24 +139,24 @@ const HotnessPage = () => {
         );
     };
 
-    const ListingCard = ({listing, hype_ranked, index }: { listing: ListingData; hype_ranked: ListingData[], index: number }) => {
+    const ListingCard = ({ listing, hype_ranked, index }: { listing: ListingData; hype_ranked: ListingData[]; index: number }) => {
         const socialsExist = listing.socials.some((social) => social !== "");
         const rank = hype_ranked.findIndex((u) => u.mint.equals(listing.mint)) + 1;
 
         return (
             <tr
                 style={{
-                background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)",
-                cursor: "pointer",
-                height: "60px",
-                transition: "background-color 0.3s",
-            }}
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-            }}
-            onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-            }}
+                    background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)",
+                    cursor: "pointer",
+                    height: "60px",
+                    transition: "background-color 0.3s",
+                }}
+                onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                }}
+                onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                }}
             >
                 <td>
                     <Text fontSize={"large"} m={0} color={"white"}>
@@ -174,41 +164,41 @@ const HotnessPage = () => {
                     </Text>
                 </td>
                 <td style={{ minWidth: "160px" }}>
-                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
-                    <Box w={45} h={45} borderRadius={10}>
-                        <Image
-                            alt="Launch icon"
-                            src={listing.icon}
-                            width={45}
-                            height={45}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                    <Text fontSize={"large"} m={0}>
-                        {listing.symbol}
-                    </Text>
-                </HStack>
-            </td>
-            <td style={{ minWidth: "180px" }}>
-                {socialsExist ? (
-                    <Links socials={listing.socials} />
-                ) : (
-                    <Text fontSize={"large"} m={0}>
-                        No Socials
-                    </Text>
-                )}
-            </td>
-            <td style={{ minWidth: "150px" }}>
-                <HypeVote
-                    launch_type={0}
-                    launch_id={listing.id}
-                    page_name={""}
-                    positive_votes={listing.positive_votes}
-                    negative_votes={listing.negative_votes}
-                    isTradePage={false}
-                    listing={listing}
-                />
-            </td>
+                    <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
+                        <Box w={45} h={45} borderRadius={10}>
+                            <Image
+                                alt="Launch icon"
+                                src={listing.icon}
+                                width={45}
+                                height={45}
+                                style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                            />
+                        </Box>
+                        <Text fontSize={"large"} m={0}>
+                            {listing.symbol}
+                        </Text>
+                    </HStack>
+                </td>
+                <td style={{ minWidth: "180px" }}>
+                    {socialsExist ? (
+                        <Links socials={listing.socials} />
+                    ) : (
+                        <Text fontSize={"large"} m={0}>
+                            No Socials
+                        </Text>
+                    )}
+                </td>
+                <td style={{ minWidth: "150px" }}>
+                    <HypeVote
+                        launch_type={0}
+                        launch_id={listing.id}
+                        page_name={""}
+                        positive_votes={listing.positive_votes}
+                        negative_votes={listing.negative_votes}
+                        isTradePage={false}
+                        listing={listing}
+                    />
+                </td>
             </tr>
         );
     };
@@ -236,14 +226,10 @@ const HotnessPage = () => {
                     >
                         Hotness
                     </Text>
-
-                   
                 </Flex>
 
                 <HotnessTable />
             </main>
-
-            
         </>
     );
 };

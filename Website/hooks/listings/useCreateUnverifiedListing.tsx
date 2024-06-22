@@ -12,7 +12,17 @@ import {
     serialise_EditLaunch_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags, DATA_ACCOUNT_SEED, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
+import {
+    DEBUG,
+    SYSTEM_KEY,
+    PROGRAM,
+    Config,
+    LaunchKeys,
+    LaunchFlags,
+    DATA_ACCOUNT_SEED,
+    SOL_ACCOUNT_SEED,
+    TIMEOUT,
+} from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -26,8 +36,6 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
 import { FixableBeetStruct, array, u8, utf8String } from "@metaplex-foundation/beet";
 import { NewListing } from "../../components/listing/launch";
-
-
 
 class CreateListing_Instruction {
     constructor(
@@ -89,13 +97,11 @@ export function serialise_CreateListing_instruction(new_listing: NewListing): Bu
         new_listing.twitter,
         new_listing.telegram,
         new_listing.discord,
-
     );
     const [buf] = CreateListing_Instruction.struct.serialize(data);
 
     return buf;
 }
-
 
 const useCreateUnverifiedListing = () => {
     const wallet = useWallet();
@@ -125,8 +131,6 @@ const useCreateUnverifiedListing = () => {
             isLoading: false,
             autoClose: 3000,
         });
-
-        
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -142,7 +146,7 @@ const useCreateUnverifiedListing = () => {
         });
     }, []);
 
-    const CreateUnverifiedListing = async (new_listing : NewListing) => {
+    const CreateUnverifiedListing = async (new_listing: NewListing) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         if (signature_ws_id.current !== null) {
@@ -151,12 +155,15 @@ const useCreateUnverifiedListing = () => {
         }
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-       
+
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
-        let token_mint = new PublicKey(new_listing.token)
+        let token_mint = new PublicKey(new_listing.token);
 
-        let listing = PublicKey.findProgramAddressSync([token_mint.toBytes(), wallet.publicKey.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
+        let listing = PublicKey.findProgramAddressSync(
+            [token_mint.toBytes(), wallet.publicKey.toBytes(), Buffer.from("UnverifiedListing")],
+            PROGRAM,
+        )[0];
 
         const instruction_data = serialise_CreateListing_instruction(new_listing);
 
@@ -167,7 +174,6 @@ const useCreateUnverifiedListing = () => {
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-
         ];
 
         const list_instruction = new TransactionInstruction({

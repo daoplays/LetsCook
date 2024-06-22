@@ -24,7 +24,14 @@ import { toast } from "react-toastify";
 
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import useResponsive from "../../hooks/useResponsive";
-import { ListingData, MintData, getRecentPrioritizationFees, get_current_blockhash, request_current_balance, send_transaction } from "../Solana/state";
+import {
+    ListingData,
+    MintData,
+    getRecentPrioritizationFees,
+    get_current_blockhash,
+    request_current_balance,
+    send_transaction,
+} from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig, PROGRAM, Socials } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
@@ -64,6 +71,14 @@ interface DiscordPost {
     token: string;
 }
 
+const fetchCPMM = async (connection: Connection, address: PublicKey, setRaydiumPool: Dispatch<SetStateAction<boolean>>) => {
+    let pool_state_account = await connection.getAccountInfo(address);
+    console.log("pool state:", pool_state_account);
+    if (pool_state_account) {
+        setRaydiumPool(true);
+    }
+};
+
 const CreateListing = () => {
     const { connection } = useConnection();
     const wallet = useWallet();
@@ -92,11 +107,14 @@ const CreateListing = () => {
         }
         try {
             let creator_key = new PublicKey(creator);
-            let unverified_key = PublicKey.findProgramAddressSync([base_token.mint.address.toBytes(), creator_key.toBytes(), Buffer.from("UnverifiedListing")], PROGRAM)[0];
-            let unverified_account = await connection.getAccountInfo(unverified_key)
-            const [unverified_listing] = ListingData.struct.deserialize(unverified_account.data)
+            let unverified_key = PublicKey.findProgramAddressSync(
+                [base_token.mint.address.toBytes(), creator_key.toBytes(), Buffer.from("UnverifiedListing")],
+                PROGRAM,
+            )[0];
+            let unverified_account = await connection.getAccountInfo(unverified_key);
+            const [unverified_listing] = ListingData.struct.deserialize(unverified_account.data);
 
-            console.log(unverified_listing)
+            console.log(unverified_listing);
             if (unverified_listing.name !== base_token.name) {
                 toast.error("Listing and token do not match.");
                 return;
@@ -118,15 +136,13 @@ const CreateListing = () => {
                 return;
             }
 
-            setBannerName(unverified_listing.banner)
-            setDescription(unverified_listing.description)
-            setWeb(unverified_listing.socials[Socials.Website])
-            setTelegram(unverified_listing.socials[Socials.Telegram])
-            setTwitter(unverified_listing.socials[Socials.Twitter])
-            setDiscord(unverified_listing.socials[Socials.Discord])
-
-        }
-        catch(error) {
+            setBannerName(unverified_listing.banner);
+            setDescription(unverified_listing.description);
+            setWeb(unverified_listing.socials[Socials.Website]);
+            setTelegram(unverified_listing.socials[Socials.Telegram]);
+            setTwitter(unverified_listing.socials[Socials.Twitter]);
+            setDiscord(unverified_listing.socials[Socials.Discord]);
+        } catch (error) {
             toast.error("Error getting listing");
             return;
         }
@@ -154,21 +170,13 @@ const CreateListing = () => {
         }
     };
 
-    const fetchCPMM = async (address: PublicKey) => {
-        let pool_state_account = await connection.getAccountInfo(address);
-        console.log("pool state:", pool_state_account);
-        if (pool_state_account) {
-            setRaydiumPool(true);
-        }
-    };
-
     useEffect(() => {
         if (base_token === null) {
             return;
         }
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let pool_state = getPoolStateAccount(base_token.mint.address, quote_mint);
-        fetchCPMM(pool_state);
+        fetchCPMM(connection, pool_state, setRaydiumPool);
     }, [connection, base_token]);
 
     useEffect(() => {
@@ -176,7 +184,10 @@ const CreateListing = () => {
             setAdmin(false);
             return;
         }
-        if (wallet.publicKey.toString() === "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD" || wallet.publicKey.toString() === "7oAfRLy81EwMJAXNKbZFaMTayBFoBpkua4ukWiCZBZz5") {
+        if (
+            wallet.publicKey.toString() === "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD" ||
+            wallet.publicKey.toString() === "7oAfRLy81EwMJAXNKbZFaMTayBFoBpkua4ukWiCZBZz5"
+        ) {
             setAdmin(true);
         } else {
             setAdmin(false);
@@ -197,7 +208,7 @@ const CreateListing = () => {
         return result.body;
     };
 
-    async function sendRequestData(e, accept : boolean): Promise<void> {
+    async function sendRequestData(e, accept: boolean): Promise<void> {
         e.preventDefault();
 
         let new_listing: NewListing = {
@@ -372,7 +383,7 @@ const CreateListing = () => {
         }
     }
 
-    async function confirm(e, accept : boolean) {
+    async function confirm(e, accept: boolean) {
         if (admin) {
             await sendRequestData(e, accept);
             return;
@@ -559,90 +570,89 @@ const CreateListing = () => {
                                         )}
                                     </VStack>
                                 </HStack>
-                                {admin ?
-                                <>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div
-                                        className={`${styles.textLabel} font-face-kg`}
-                                        style={{ minWidth: lg ? "100px" : "132px" }}
-                                    >
-                                        Creator:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            placeholder="Search Token"
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={creator}
-                                            onChange={(e) => {
-                                                setCreator(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-
-                                    <div style={{ marginLeft: "12px" }}>
-                                        <label className={styles.label}>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    handleSetCreator();
-                                                }}
-                                                className={styles.browse}
-                                                style={{ cursor: "pointer", padding: "5px 10px" }}
+                                {admin ? (
+                                    <>
+                                        <HStack spacing={0} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "100px" : "132px" }}
                                             >
-                                                Search
-                                            </button>
-                                        </label>
-                                    </div>
-                                </HStack>
-                                <div className={styles2.launchBodyLowerVertical}>
-                                    <div className={`${styles2.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
-                                        BANNER:
-                                    </div>
-                                    <div>
-                                        {banner_name !== "" &&
-                                        <Image
-                                            src={banner_name}
-                                            width={lg ? 130 : 200}
-                                            height={lg ? 130 : 200}
-                                            alt="Banner"
-                                            hidden={lg}
-                                            style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
-                                        />                                 
-                                        }
-                                    </div>
-                                </div>
-                                
-                                </>
-                                :
-                                <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "175px" }}>
-                                        Banner:
-                                    </div>
+                                                Creator:
+                                            </div>
 
-                                    <div>
-                                        <label className={styles.label}>
-                                            <input id="file" type="file" onChange={handleFileChange} />
-                                            <span
-                                                className={styles.browse}
-                                                style={{
-                                                    cursor: "pointer",
-                                                    padding: "5px 10px",
-                                                }}
-                                            >
-                                                BROWSE
-                                            </span>
-                                        </label>
-                                    </div>
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    placeholder="Search Token"
+                                                    size={lg ? "md" : "lg"}
+                                                    required
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                    value={creator}
+                                                    onChange={(e) => {
+                                                        setCreator(e.target.value);
+                                                    }}
+                                                />
+                                            </div>
 
-                                    <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                        {banner !== null ? banner_name : "No File Selected"}
-                                    </Text>
-                                </HStack>
-                                }
+                                            <div style={{ marginLeft: "12px" }}>
+                                                <label className={styles.label}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleSetCreator();
+                                                        }}
+                                                        className={styles.browse}
+                                                        style={{ cursor: "pointer", padding: "5px 10px" }}
+                                                    >
+                                                        Search
+                                                    </button>
+                                                </label>
+                                            </div>
+                                        </HStack>
+                                        <div className={styles2.launchBodyLowerVertical}>
+                                            <div className={`${styles2.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
+                                                BANNER:
+                                            </div>
+                                            <div>
+                                                {banner_name !== "" && (
+                                                    <Image
+                                                        src={banner_name}
+                                                        width={lg ? 130 : 200}
+                                                        height={lg ? 130 : 200}
+                                                        alt="Banner"
+                                                        hidden={lg}
+                                                        style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
+                                                    />
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "175px" }}>
+                                            Banner:
+                                        </div>
+
+                                        <div>
+                                            <label className={styles.label}>
+                                                <input id="file" type="file" onChange={handleFileChange} />
+                                                <span
+                                                    className={styles.browse}
+                                                    style={{
+                                                        cursor: "pointer",
+                                                        padding: "5px 10px",
+                                                    }}
+                                                >
+                                                    BROWSE
+                                                </span>
+                                            </label>
+                                        </div>
+
+                                        <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                            {banner !== null ? banner_name : "No File Selected"}
+                                        </Text>
+                                    </HStack>
+                                )}
 
                                 <VStack w="100%" spacing={30} mb={25}>
                                     <div className={styles2.launchBodyLowerVertical}>
@@ -737,29 +747,28 @@ const CreateListing = () => {
                                 </VStack>
                             </VStack>
                         </HStack>
-                        {admin ?                                        
-                        <HStack>
-                            
-                            <button
-                                type="button"
-                                className={`${styles.nextBtn} font-face-kg `}
-                                onClick={(e) => {
-                                    confirm(e, true);
-                                }}
-                            >
-                                Accept
-                            </button>
-                            <button
-                            type="button"
-                            className={`${styles.nextBtn} font-face-kg `}
-                            onClick={(e) => {
-                                confirm(e, false);
-                            }}
-                        >
-                            Reject
-                        </button>
-                        </HStack>
-                            :
+                        {admin ? (
+                            <HStack>
+                                <button
+                                    type="button"
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                    onClick={(e) => {
+                                        confirm(e, true);
+                                    }}
+                                >
+                                    Accept
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`${styles.nextBtn} font-face-kg `}
+                                    onClick={(e) => {
+                                        confirm(e, false);
+                                    }}
+                                >
+                                    Reject
+                                </button>
+                            </HStack>
+                        ) : (
                             <button
                                 type="button"
                                 className={`${styles.nextBtn} font-face-kg `}
@@ -768,10 +777,8 @@ const CreateListing = () => {
                                 }}
                             >
                                 Request
-                                
                             </button>
-                        }
-                        
+                        )}
                     </VStack>
                 </form>
             </VStack>

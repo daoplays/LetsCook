@@ -18,14 +18,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
 
-import {
-    HStack,
-    VStack,
-    Text,
-    Box,
-    Tooltip,
-    Link,
-} from "@chakra-ui/react";
+import { HStack, VStack, Text, Box, Tooltip, Link } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -95,8 +88,8 @@ function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
     if (amm === null || amm === undefined) return null;
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    let key = getAMMKey(amm, amm.provider)
-    return list.get(key.toString() + "_" + current_date)
+    let key = getAMMKey(amm, amm.provider);
+    return list.get(key.toString() + "_" + current_date);
 }
 
 const TradePage = () => {
