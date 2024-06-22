@@ -30,6 +30,7 @@ import UseWalletConnection from "../hooks/useWallet";
 import Image from "next/image";
 import { HypeVote } from "../components/hypeVote";
 import Links from "../components/Buttons/links";
+import { getAMMKey, getAMMKeyFromMints } from "../components/Solana/jupiter_state";
 
 interface Header {
     text: string;
@@ -38,7 +39,7 @@ interface Header {
 
 const HotnessPage = () => {
     const wallet = useWallet();
-    const { listingData } = useAppRoot();
+    const { listingData, ammData } = useAppRoot();
     const { xs, sm, lg } = useResponsive();
 
     const [listings, setListings] = useState<ListingData[]>([]);
@@ -145,6 +146,12 @@ const HotnessPage = () => {
         const socialsExist = listing.socials.some((social) => social !== "");
         const rank = hype_ranked.findIndex((u) => u.mint.equals(listing.mint)) + 1;
 
+        let cook_amm_address = getAMMKeyFromMints(listing.mint, 0)
+        let raydium_amm_address = getAMMKeyFromMints(listing.mint, 1)
+
+        let have_cook_amm = ammData.get(cook_amm_address.toString())
+        let have_raydium_amm = ammData.get(raydium_amm_address.toString())
+
         return (
             <tr
                 style={{
@@ -211,6 +218,26 @@ const HotnessPage = () => {
                         height={lg  ? 30 : 40}
                     />
                 </Link>
+                {have_cook_amm &&
+                <Link href={"https://birdeye.so/token/"+listing.mint.toString()+"?chain=solana"} target="_blank">
+                <Image
+                    src="/favicon.ico"
+                    alt="Cook Icon"
+                    width={lg ? 30 : 40}
+                    height={lg  ? 30 : 40}
+                />
+                </Link>
+                }
+                {have_raydium_amm &&
+                <Link href={"https://birdeye.so/token/"+listing.mint.toString()+"?chain=solana"} target="_blank">
+                <Image
+                    src="/images/raydium.png"
+                    alt="Raydium Icon"
+                    width={lg ? 30 : 40}
+                    height={lg  ? 30 : 40}
+                />
+                </Link>
+                }
                 </HStack>
 
                 </td>

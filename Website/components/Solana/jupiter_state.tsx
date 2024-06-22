@@ -52,6 +52,26 @@ export function getAMMKey(amm: AMMData, amm_provider: number) {
     return amm_data_account;
 }
 
+export function getAMMKeyFromMints(base_mint : PublicKey, amm_provider: number) {
+   
+    let quote_mint =  new PublicKey("So11111111111111111111111111111111111111112");
+    let amm_seed_keys = [];
+    if (base_mint.toString() < quote_mint.toString()) {
+        amm_seed_keys.push(base_mint);
+        amm_seed_keys.push(quote_mint);
+    } else {
+        amm_seed_keys.push(quote_mint);
+        amm_seed_keys.push(base_mint);
+    }
+
+    let amm_data_account = PublicKey.findProgramAddressSync(
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider == 0 ? "CookAMM" : "RaydiumCPMM")],
+        PROGRAM,
+    )[0];
+
+    return amm_data_account;
+}
+
 export function reward_schedule(date: number, amm: AMMData): number {
     if (amm.plugins.length === 0) {
         return 0.0;
