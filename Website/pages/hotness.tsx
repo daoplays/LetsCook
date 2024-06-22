@@ -14,6 +14,7 @@ import {
     ModalOverlay,
     VStack,
     Link,
+    Tooltip,
 } from "@chakra-ui/react";
 import { ListingData, UserData, bignum_to_num } from "../components/Solana/state";
 import useAppRoot from "../context/useAppRoot";
@@ -146,15 +147,14 @@ const HotnessPage = () => {
         const socialsExist = listing.socials.some((social) => social !== "");
         const rank = hype_ranked.findIndex((u) => u.mint.equals(listing.mint)) + 1;
 
-        let cook_amm_address = getAMMKeyFromMints(listing.mint, 0)
-        let raydium_amm_address = getAMMKeyFromMints(listing.mint, 1)
+        let cook_amm_address = getAMMKeyFromMints(listing.mint, 0);
+        let raydium_amm_address = getAMMKeyFromMints(listing.mint, 1);
 
-        let cook_amm = ammData.get(cook_amm_address.toString())
-        let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0
+        let cook_amm = ammData.get(cook_amm_address.toString());
+        let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
 
-        
-        let raydium_amm = ammData.get(raydium_amm_address.toString())
-        let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0
+        let raydium_amm = ammData.get(raydium_amm_address.toString());
+        let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0;
 
         return (
             <tr
@@ -182,8 +182,8 @@ const HotnessPage = () => {
                             <Image
                                 alt="Launch icon"
                                 src={listing.icon}
-                                width={45}
-                                height={45}
+                                width={40}
+                                height={40}
                                 style={{ borderRadius: "8px", backgroundSize: "cover" }}
                             />
                         </Box>
@@ -213,37 +213,29 @@ const HotnessPage = () => {
                     />
                 </td>
                 <td style={{ minWidth: "150px" }}>
-                <HStack justify="center" gap={3} >
-                <Link href={"https://birdeye.so/token/"+listing.mint.toString()+"?chain=solana"} target="_blank">
-                    <Image
-                        src="/images/birdeye.png"
-                        alt="Birdeye Icon"
-                        width={lg ? 30 : 40}
-                        height={lg  ? 30 : 40}
-                    />
-                </Link>
-                {have_cook_amm &&
-                <Link href={"/trade/" + cook_amm_address.toString()} target="_blank">
-                <Image
-                    src="/favicon.ico"
-                    alt="Cook Icon"
-                    width={lg ? 30 : 40}
-                    height={lg  ? 30 : 40}
-                />
-                </Link>
-                }
-                {have_raydium_amm &&
-                <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
-                <Image
-                    src="/images/raydium.png"
-                    alt="Raydium Icon"
-                    width={lg ? 30 : 40}
-                    height={lg  ? 30 : 40}
-                />
-                </Link>
-                }
-                </HStack>
-
+                    <HStack justify="center" gap={3}>
+                        <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={"https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana"} target="_blank">
+                                <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                            </Link>
+                        </Tooltip>
+                        {have_cook_amm && (
+                            <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
+                                <Link href={"/trade/" + cook_amm_address} target="_blank">
+                                    <Image src="/favicon.ico" alt="Cook Icon" width={lg ? 30 : 35} height={lg ? 30 : 35} />
+                                </Link>
+                            </Tooltip>
+                        )}
+                        {have_raydium_amm && (
+                            <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
+                                {have_raydium_amm && (
+                                    <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
+                                        <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                    </Link>
+                                )}
+                            </Tooltip>
+                        )}
+                    </HStack>
                 </td>
             </tr>
         );

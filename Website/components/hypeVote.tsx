@@ -173,8 +173,8 @@ export function HypeVote({
                             }
                         }}
                         src="/images/thumbs-up.svg"
-                        width={isTradePage ? 30 : 40}
-                        height={isTradePage ? 30 : 40}
+                        width={isTradePage ? 30 : 35}
+                        height={isTradePage ? 30 : 35}
                         alt="Thumbs Up"
                     />
                 </Tooltip>
@@ -191,8 +191,8 @@ export function HypeVote({
                             }
                         }}
                         src="/images/thumbs-down.svg"
-                        width={isTradePage ? 30 : 40}
-                        height={isTradePage ? 30 : 40}
+                        width={isTradePage ? 30 : 35}
+                        height={isTradePage ? 30 : 35}
                         alt="Thumbs Down"
                     />
                 </Tooltip>
