@@ -159,6 +159,7 @@ const useCreateUnverifiedListing = () => {
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
         let token_mint = new PublicKey(new_listing.token);
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let listing = PublicKey.findProgramAddressSync(
             [token_mint.toBytes(), wallet.publicKey.toBytes(), Buffer.from("UnverifiedListing")],
@@ -169,6 +170,7 @@ const useCreateUnverifiedListing = () => {
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: listing, isSigner: false, isWritable: true },
             { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
