@@ -149,7 +149,13 @@ const CreateListing = () => {
     }
 
     async function handleSetBaseData() {
-        setBaseToken(await setMintData(base_address));
+        let mint_data = await setMintData(base_address)
+        if (mint_data === null) {   
+            toast.error("Token not found");
+            return;
+        }
+
+        setBaseToken(mint_data);
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
