@@ -15,7 +15,7 @@ import {
     VStack,
     Link,
 } from "@chakra-ui/react";
-import { ListingData, UserData } from "../components/Solana/state";
+import { ListingData, UserData, bignum_to_num } from "../components/Solana/state";
 import useAppRoot from "../context/useAppRoot";
 import Head from "next/head";
 import useResponsive from "../hooks/useResponsive";
@@ -149,8 +149,12 @@ const HotnessPage = () => {
         let cook_amm_address = getAMMKeyFromMints(listing.mint, 0)
         let raydium_amm_address = getAMMKeyFromMints(listing.mint, 1)
 
-        let have_cook_amm = ammData.get(cook_amm_address.toString())
-        let have_raydium_amm = ammData.get(raydium_amm_address.toString())
+        let cook_amm = ammData.get(cook_amm_address.toString())
+        let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0
+
+        
+        let raydium_amm = ammData.get(raydium_amm_address.toString())
+        let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0
 
         return (
             <tr
@@ -219,7 +223,7 @@ const HotnessPage = () => {
                     />
                 </Link>
                 {have_cook_amm &&
-                <Link href={"https://birdeye.so/token/"+listing.mint.toString()+"?chain=solana"} target="_blank">
+                <Link href={"/trade/" + cook_amm_address.toString()} target="_blank">
                 <Image
                     src="/favicon.ico"
                     alt="Cook Icon"
@@ -229,7 +233,7 @@ const HotnessPage = () => {
                 </Link>
                 }
                 {have_raydium_amm &&
-                <Link href={"https://birdeye.so/token/"+listing.mint.toString()+"?chain=solana"} target="_blank">
+                <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
                 <Image
                     src="/images/raydium.png"
                     alt="Raydium Icon"

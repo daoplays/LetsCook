@@ -175,6 +175,9 @@ const TradePage = () => {
         let amm = ammData.get(pageName.toString());
         setAMM(amm);
 
+        if (!amm) {
+            return;
+        }
         let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
         let listing = listingData.get(listing_key.toString());
         setListing(listing);
