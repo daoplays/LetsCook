@@ -9,9 +9,10 @@ import { BsPersonSquare } from "react-icons/bs";
 import { RiGalleryFill, RiGalleryLine } from "react-icons/ri";
 import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
-import { FaHome } from "react-icons/fa";
+import { FaFire, FaHome, FaList } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
+import * as NProgress from "nprogress";
 
 const tabs = {
     create: [
@@ -25,11 +26,16 @@ const tabs = {
             tab: "New Hybrid",
             url: "/collection",
         },
-        /* {
-            icon: (size: number) => <RiGalleryFill size={size} />,
-            tab: "New AMM",
-            url: "/trade/create",
-        },*/
+        {
+            icon: (size: number) => <FaList size={size} />,
+            tab: "New Listing",
+            url: "/listing",
+        },
+        {
+            icon: (size: number) => <GiCook size={size} />,
+            tab: "Creator Dashboard",
+            url: "/dashboard",
+        },
     ],
 
     trade: [
@@ -51,11 +57,6 @@ const tabs = {
     ],
 
     profile: [
-        {
-            icon: (size: number) => <GiCook size={size} />,
-            tab: "Creator Dashboard",
-            url: "/dashboard",
-        },
         {
             icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
             tab: "My Tickets",
@@ -115,6 +116,8 @@ const SideNav = () => {
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
+                    <Tab tab={"Hotness"} icon={<FaFire size={24} />} isActive={pathname === "/hotness"} url={"/hotness"} />
+
                     <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
                         Create
                     </Text>
@@ -180,6 +183,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
                     if (tab === "Documentation") {
                         window.open("https://docs.letscook.wtf/", "_blank");
                     } else {
+                        NProgress.start();
                         router.push(url);
                     }
                 }

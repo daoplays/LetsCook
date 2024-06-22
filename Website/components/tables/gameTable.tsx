@@ -29,7 +29,7 @@ interface Header {
     field: string | null;
 }
 
-const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, LaunchData>, filters: LaunchTableFilters }) => {
+const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchData>; filters: LaunchTableFilters }) => {
     //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
@@ -54,7 +54,7 @@ const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, Launch
     };
 
     function filterTable() {
-        let filtered = []
+        let filtered = [];
         launch_list.forEach((item) => {
             if (
                 (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
@@ -68,7 +68,6 @@ const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, Launch
     }
 
     let filtered = filterTable();
-    
 
     filtered.sort((a, b) => {
         let a_listing = listingData.get(a.listing.toString());
@@ -109,8 +108,6 @@ const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, Launch
         return 0;
     });
 
-    
-
     return (
         <TableContainer>
             <table
@@ -150,11 +147,9 @@ const GameTable = ({ launch_list, filters }: {  launch_list : Map<string, Launch
                 </thead>
 
                 <tbody>
-                    {filtered
-                        .sort()
-                        .map((item: LaunchData, index) => (
-                            <LaunchCard key={index} launch={item} />
-                        ))}
+                    {filtered.sort().map((item: LaunchData, index) => (
+                        <LaunchCard key={index} launch={item} />
+                    ))}
                 </tbody>
             </table>
         </TableContainer>

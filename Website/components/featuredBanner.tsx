@@ -9,11 +9,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { LaunchKeys } from "./Solana/constants";
+import { LaunchFlags, LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
 import useAppRoot from "../context/useAppRoot";
+import ShowExtensions from "./Solana/extensions";
+import { HypeVote } from "./hypeVote";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -37,8 +39,20 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
             bg={"url(" + listing.banner + ")"}
             bgSize="cover"
             boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
-            style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96" }}
+            style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96", position: "relative" }}
         >
+            <HStack position="absolute" top={5} right={5} style={{ cursor: "pointer" }} hidden={isHomePage}>
+                <HypeVote
+                    launch_type={0}
+                    launch_id={listing.id}
+                    page_name={""}
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
+                    isTradePage={false}
+                    listing={listing}
+                />
+            </HStack>
+
             <Box
                 bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)"
                 w="100%"
@@ -47,7 +61,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                 style={{ cursor: isHomePage ? "pointer" : "default" }}
             >
                 <Flex
-                    gap={lg ? 5 : 8}
+                    gap={lg ? 2 : 8}
                     flexDirection={lg || isHomePage ? "column" : "row"}
                     align={lg || !isHomePage ? "center" : "start"}
                     justify={!lg && !isHomePage ? "space-between" : "center"}
@@ -63,14 +77,26 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
 
                     <HStack spacing={lg ? 0 : 8} w="fit-content" mt={!isHomePage ? 0 : -2}>
                         {featuredLaunch !== null && (
-                            <Image
-                                src={listing.icon}
-                                width={lg ? 130 : 200}
-                                height={lg ? 130 : 200}
-                                alt="$LOGO"
-                                hidden={lg}
-                                style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
-                            />
+                            <VStack justifyContent="center" align="center" mt={3}>
+                                <Image
+                                    src={listing.icon}
+                                    width={lg ? 130 : 200}
+                                    height={lg ? 130 : 200}
+                                    alt="$LOGO"
+                                    hidden={lg}
+                                    style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
+                                />
+                                <HStack
+                                    hidden={lg}
+                                    // border="1px solid rgba(255,255,255,0.15)"
+                                    p={2}
+                                    w="100%"
+                                    // borderRadius={8}
+                                    justify="center"
+                                >
+                                    <ShowExtensions extension_flag={featuredLaunch.flags[LaunchFlags.Extensions]} />
+                                </HStack>
+                            </VStack>
                         )}
                         <VStack gap={lg ? 2 : 3} alignItems={lg ? "center" : "left"}>
                             <Flex gap={lg ? 2 : 5} alignItems="center">
@@ -163,6 +189,9 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                             >
                                 {featuredLaunch !== null ? listing.description.substring(0, 200) : ""}
                             </Text>
+                            <HStack hidden={!lg}>
+                                <ShowExtensions extension_flag={featuredLaunch.flags[LaunchFlags.Extensions]} />
+                            </HStack>
                         </VStack>
                     </HStack>
 

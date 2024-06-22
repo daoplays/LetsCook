@@ -166,30 +166,33 @@ export function HypeVote({
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (wallet !== null) {
+                            if (wallet.connected) {
                                 Vote({ vote: 1 });
                             } else {
                                 handleConnectWallet();
                             }
                         }}
                         src="/images/thumbs-up.svg"
-                        width={isTradePage ? 30 : 40}
-                        height={isTradePage ? 30 : 40}
+                        width={isTradePage ? 30 : 35}
+                        height={isTradePage ? 30 : 35}
                         alt="Thumbs Up"
                     />
                 </Tooltip>
+                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                    {vote_ratio}
+                </Text>
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (wallet !== null) {
+                            if (wallet.connected) {
                                 Vote({ vote: 2 });
                             } else {
                                 handleConnectWallet();
                             }
                         }}
                         src="/images/thumbs-down.svg"
-                        width={isTradePage ? 30 : 40}
-                        height={isTradePage ? 30 : 40}
+                        width={isTradePage ? 30 : 35}
+                        height={isTradePage ? 30 : 35}
                         alt="Thumbs Down"
                     />
                 </Tooltip>

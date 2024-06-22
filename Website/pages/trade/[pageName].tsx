@@ -10,7 +10,15 @@ import {
     MintData,
     ListingData,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, getAMMKey } from "../../components/Solana/jupiter_state";
+import {
+    TimeSeriesData,
+    MMLaunchData,
+    reward_schedule,
+    AMMData,
+    RaydiumAMM,
+    getAMMKey,
+    getAMMKeyFromMints,
+} from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
 import { Config, PROGRAM } from "../../components/Solana/constants";
@@ -18,14 +26,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
 
-import {
-    HStack,
-    VStack,
-    Text,
-    Box,
-    Tooltip,
-    Link,
-} from "@chakra-ui/react";
+import { HStack, VStack, Text, Box, Tooltip, Link } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -95,8 +96,8 @@ function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
     if (amm === null || amm === undefined) return null;
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    let key = getAMMKey(amm, amm.provider)
-    return list.get(key.toString() + "_" + current_date)
+    let key = getAMMKey(amm, amm.provider);
+    return list.get(key.toString() + "_" + current_date);
 }
 
 const TradePage = () => {
@@ -106,6 +107,7 @@ const TradePage = () => {
     const { xs, sm, lg } = useResponsive();
 
     const { ammData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
+
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -182,6 +184,9 @@ const TradePage = () => {
         let amm = ammData.get(pageName.toString());
         setAMM(amm);
 
+        if (!amm) {
+            return;
+        }
         let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
         let listing = listingData.get(listing_key.toString());
         setListing(listing);
@@ -571,6 +576,7 @@ const TradePage = () => {
                             py={5}
                             align="start"
                             w={sm ? "100%" : 320}
+                            minH="100vh"
                             style={{
                                 minWidth: "350px",
                                 borderRight: "0.5px solid rgba(134, 142, 150, 0.5)",
@@ -999,14 +1005,31 @@ const InfoContent = ({
     total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
+    const { lg } = useResponsive();
+
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm);
-    if (mm_data !== null) {
+    if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
 
     return (
         <VStack spacing={8} w="100%" mb={3}>
+            <HStack mt={-2} px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    POOL:
+                </Text>
+                <HStack>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {amm.provider === 0 ? "Let's Cook" : "Raydium"}
+                    </Text>
+
+                    {amm.provider === 0 && <Image src="/favicon.ico" alt="Cook Icon" width={30} height={30} />}
+
+                    {amm.provider === 1 && <Image src="/images/raydium.png" alt="Raydium Icon" width={30} height={30} />}
+                </HStack>
+            </HStack>
+
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     PRICE:
@@ -1048,7 +1071,7 @@ const InfoContent = ({
                     MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data !== null ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
+                    {mm_data ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
                 </Text>
             </HStack>
 
@@ -1108,12 +1131,15 @@ const InfoContent = ({
                 </Text>
                 <Links socials={listing.socials} isTradePage={true} />
             </HStack>
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    EXTENSIONS:
-                </Text>
-                <ShowExtensions extension_flag={base_mint.extensions} />
-            </HStack>
+
+            {base_mint.extensions && (
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        EXTENSIONS:
+                    </Text>
+                    <ShowExtensions extension_flag={base_mint.extensions} />
+                </HStack>
+            )}
         </VStack>
     );
 };

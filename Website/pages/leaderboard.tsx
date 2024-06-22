@@ -48,13 +48,12 @@ const LeaderboardPage = () => {
         setName(e.target.value);
     };
 
-    let userVec : UserData[] = [];
+    let userVec: UserData[] = [];
     if (userList !== null) {
         userList.forEach((user) => {
             userVec.push(user);
         });
     }
-
 
     const LeaderboardTable = () => {
         const { sm } = useResponsive();
@@ -78,7 +77,6 @@ const LeaderboardPage = () => {
             }
         };
 
-        
         const sortedUsers = userVec.sort((a, b) => {
             if (sortedField === "user") {
                 let a_name = a.user_name !== "" ? a.user_name : a.user_key.toString();
@@ -91,10 +89,9 @@ const LeaderboardPage = () => {
             return 0;
         });
 
-        console.log("sortedUsers", sortedUsers);    
+        console.log("sortedUsers", sortedUsers);
 
         const rank_sorted = [...userVec].sort((a, b) => b.total_points - a.total_points);
-
 
         const currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
 
@@ -148,7 +145,7 @@ const LeaderboardPage = () => {
         );
     };
 
-    const UserCard = ({rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
+    const UserCard = ({ rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
         const isUser = user.user_key.equals(currentUserData?.user_key);
 
         const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;

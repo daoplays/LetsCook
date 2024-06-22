@@ -27,7 +27,7 @@ interface MappedReward {
 function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, amm_provider: number) {
     if (list === null || list === undefined) return [];
     if (amm === null) return [];
-    let filtered : MMLaunchData[] = [];
+    let filtered: MMLaunchData[] = [];
     list.forEach((item) => {
         if (item.amm.equals(getAMMKey(amm, amm_provider))) {
             filtered.push(item);
@@ -39,7 +39,7 @@ function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, amm_
 function filterUserRewards(list: Map<string, MMUserData>, amm: AMMData, amm_provider: number) {
     if (list === null || list === undefined) return [];
     if (amm === null) return [];
-    let filtered : MMUserData[] = [];
+    let filtered: MMUserData[] = [];
     list.forEach((item) => {
         if (item.amm.equals(getAMMKey(amm, amm_provider))) {
             filtered.push(item);
@@ -47,7 +47,6 @@ function filterUserRewards(list: Map<string, MMUserData>, amm: AMMData, amm_prov
     });
     return filtered;
 }
-  
 
 function getMappedRewards(
     user_rewards: Map<string, MMUserData>,

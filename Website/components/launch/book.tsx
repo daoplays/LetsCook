@@ -220,7 +220,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
                         <HStack spacing={0} className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                Launch Type:
+                                Launch Mode:
                             </div>
                             <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
                                 <Stack direction="row" gap={5}>

@@ -15,10 +15,11 @@ import "bootstrap/dist/css/bootstrap.css";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/fonts.css";
 import "../styles/table.css";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import useResponsive from "../hooks/useResponsive";
 import AppRootPage from "./_layout";
 import "../styles/global.css";
+import * as NProgress from "nprogress";
 
 function MyApp({ Component, pageProps }) {
     const { sm } = useResponsive();
@@ -30,6 +31,12 @@ function MyApp({ Component, pageProps }) {
     const wallets = useMemo(() => [], []);
 
     const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };
+
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        NProgress.done();
+    }, [pathname, searchParams]);
 
     return (
         <NoSSR>
