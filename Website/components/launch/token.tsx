@@ -554,7 +554,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                             <>
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                        Launch Type:
+                                        Launch Mode:
                                     </div>
                                     <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
                                         <Stack direction="row" gap={5}>
@@ -1140,19 +1140,19 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     {
                                                         title: "Market Maker Rewards",
                                                         value: distribution[Distribution.MMRewards],
-                                                        color: "#66FFB6",
+                                                        color: "#66FF75",
                                                     }, // integrate MM Rewards
                                                     {
                                                         title: "Liquidity Provider Rewards",
                                                         value: distribution[Distribution.LPRewards],
-                                                        color: "#61efff",
+                                                        color: "#41F4FF",
                                                     },
                                                     {
                                                         title: "Airdrops / Marketing",
                                                         value: distribution[Distribution.Airdrops],
-                                                        color: "#988FFF",
+                                                        color: "#8A7FFF",
                                                     },
-                                                    { title: "Team", value: distribution[Distribution.Team], color: "#8CB3FF" },
+                                                    { title: "Team", value: distribution[Distribution.Team], color: "#FFF069" },
                                                     { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
                                                     { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                                                 ]}
@@ -1170,7 +1170,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     },
                                                     {
                                                         title: distributionLabels.headers[1].title,
-                                                        // integrate MM Rewards here
                                                         value: distribution[Distribution.MMRewards],
                                                         color: distributionLabels.headers[1].color,
                                                     },
@@ -1178,8 +1177,8 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         title: distributionLabels.headers[2].title,
                                                         value:
                                                             distribution[Distribution.LPRewards] +
-                                                            distribution[Distribution.Team] +
                                                             distribution[Distribution.Airdrops] +
+                                                            distribution[Distribution.Team] +
                                                             distribution[Distribution.Other],
                                                         color: distributionLabels.headers[2].color,
                                                     },

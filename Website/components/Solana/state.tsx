@@ -30,6 +30,7 @@ import bs58 from "bs58";
 
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, Mint } from "@solana/spl-token";
+import { create } from "domain";
 
 export async function get_JWT_token(): Promise<any | null> {
     const token_url = `/.netlify/functions/jwt`;
@@ -657,8 +658,8 @@ export const enum Distribution {
     LP,
     MMRewards,
     LPRewards,
-    Airdrops,
     Team,
+    Airdrops,
     Other,
     LENGTH,
 }
@@ -700,6 +701,8 @@ export const enum LaunchInstruction {
     raydium_swap = 21,
     update_cook_liquidity = 22,
     remove_cook_liquidity = 23,
+    create_unverified_listing = 24,
+    create_listing = 25,
 }
 
 export interface LaunchDataUserInput {

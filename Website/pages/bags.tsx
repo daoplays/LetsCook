@@ -27,12 +27,12 @@ const BagsPage = () => {
         if (joinData && launchList) {
             let joinedLaunches: JoinedLaunch[] = [];
             joinData.forEach((join) => {
-                const joinedLaunch = launchList.get(join.page_name)
-                if (joinedLaunch === null ||  joinedLaunch === undefined) return;
+                const joinedLaunch = launchList.get(join.page_name);
+                if (joinedLaunch === null || joinedLaunch === undefined) return;
 
                 let joined_launch: JoinedLaunch = { join_data: join, launch_data: joinedLaunch };
                 joinedLaunches.push(joined_launch);
-            })
+            });
 
             setJoinedLaunches(joinedLaunches);
         }

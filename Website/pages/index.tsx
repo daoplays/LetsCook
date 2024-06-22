@@ -16,7 +16,7 @@ const Home = () => {
 
     if (homePageList.size <= 0) return <EmptyLaunch />;
 
-    let homePageVec : LaunchData[] = []
+    let homePageVec: LaunchData[] = [];
     homePageList.forEach((launch) => {
         homePageVec.push(launch);
     });
