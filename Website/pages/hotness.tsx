@@ -13,6 +13,7 @@ import {
     ModalContent,
     ModalOverlay,
     VStack,
+    Link,
 } from "@chakra-ui/react";
 import { ListingData, UserData } from "../components/Solana/state";
 import useAppRoot from "../context/useAppRoot";
@@ -80,6 +81,7 @@ const HotnessPage = () => {
             { text: "TOKEN", field: null },
             { text: "SOCIALS", field: null },
             { text: "HYPE", field: "hype" },
+            { text: "TRADE", field: "trade" },
         ];
 
         const handleHeaderClick = (field: string | null) => {
@@ -198,6 +200,19 @@ const HotnessPage = () => {
                         isTradePage={false}
                         listing={listing}
                     />
+                </td>
+                <td style={{ minWidth: "150px" }}>
+                <HStack justify="center" gap={3} >
+                <Link href={"https://birdeye.so/token/"+listing.mint.toString()+"?chain=solana"} target="_blank">
+                    <Image
+                        src="/images/birdeye.png"
+                        alt="Birdeye Icon"
+                        width={lg ? 30 : 40}
+                        height={lg  ? 30 : 40}
+                    />
+                </Link>
+                </HStack>
+
                 </td>
             </tr>
         );
