@@ -10,7 +10,15 @@ import {
     MintData,
     ListingData,
 } from "../../components/Solana/state";
-import { TimeSeriesData, MMLaunchData, reward_schedule, AMMData, RaydiumAMM, getAMMKey } from "../../components/Solana/jupiter_state";
+import {
+    TimeSeriesData,
+    MMLaunchData,
+    reward_schedule,
+    AMMData,
+    RaydiumAMM,
+    getAMMKey,
+    getAMMKeyFromMints,
+} from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
 import { Config, PROGRAM } from "../../components/Solana/constants";
@@ -99,6 +107,7 @@ const TradePage = () => {
     const { xs, sm, lg } = useResponsive();
 
     const { ammData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
+
     const { pageName } = router.query;
 
     const [leftPanel, setLeftPanel] = useState("Info");
@@ -567,6 +576,7 @@ const TradePage = () => {
                             py={5}
                             align="start"
                             w={sm ? "100%" : 320}
+                            minH="100vh"
                             style={{
                                 minWidth: "350px",
                                 borderRight: "0.5px solid rgba(134, 142, 150, 0.5)",
@@ -995,6 +1005,8 @@ const InfoContent = ({
     total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
+    const { lg } = useResponsive();
+
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm);
     if (mm_data !== null && mm_data !== undefined) {
@@ -1003,6 +1015,21 @@ const InfoContent = ({
 
     return (
         <VStack spacing={8} w="100%" mb={3}>
+            <HStack mt={-2} px={5} justify="space-between" w="100%">
+                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                    POOL:
+                </Text>
+                <HStack>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {amm.provider === 0 ? "Let's Cook" : "Raydium"}
+                    </Text>
+
+                    {amm.provider === 0 && <Image src="/favicon.ico" alt="Cook Icon" width={30} height={30} />}
+
+                    {amm.provider === 1 && <Image src="/images/raydium.png" alt="Raydium Icon" width={30} height={30} />}
+                </HStack>
+            </HStack>
+
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                     PRICE:
@@ -1044,7 +1071,7 @@ const InfoContent = ({
                     MM SESSION VOLUME:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data  ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
+                    {mm_data ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
                 </Text>
             </HStack>
 
@@ -1104,12 +1131,15 @@ const InfoContent = ({
                 </Text>
                 <Links socials={listing.socials} isTradePage={true} />
             </HStack>
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    EXTENSIONS:
-                </Text>
-                <ShowExtensions extension_flag={base_mint.extensions} />
-            </HStack>
+
+            {base_mint.extensions && (
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        EXTENSIONS:
+                    </Text>
+                    <ShowExtensions extension_flag={base_mint.extensions} />
+                </HStack>
+            )}
         </VStack>
     );
 };
