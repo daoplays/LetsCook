@@ -34,9 +34,11 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
+import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAccount } from "../raydium/useCreateCP";
 import { FixableBeetStruct, array, u8, utf8String } from "@metaplex-foundation/beet";
 import { NewListing } from "../../components/listing/launch";
+
+
 
 const useCreateListing = () => {
     const wallet = useWallet();
@@ -103,6 +105,35 @@ const useCreateListing = () => {
         )[0];
         let verified = accept ? PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0] : PROGRAM;
 
+        // check for raydium cpmm
+        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        let pool_state = getPoolStateAccount(token_mint, quote_mint);
+        let pool_state_account = await connection.getAccountInfo(pool_state);
+
+        let amm_seed_keys = [];
+        if (token_mint.toString() < quote_mint.toString()) {
+            amm_seed_keys.push(token_mint);
+            amm_seed_keys.push(quote_mint);
+        } else {
+            amm_seed_keys.push(quote_mint);
+            amm_seed_keys.push(token_mint);
+        }
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from("RaydiumCPMM"),
+            ],
+            PROGRAM,
+        )[0];
+
+        let amm_account =  (pool_state_account) ? amm_data_account : PROGRAM;
+        let raydium_base_account = getAMMBaseAccount(token_mint, quote_mint);
+        let raydium_quote_account = getAMMQuoteAccount(token_mint, quote_mint);
+        let raydium_lp_mint_account = getLPMintAccount(token_mint, quote_mint);
+
+
         const instruction_data = serialise_basic_instruction(LaunchInstruction.create_listing);
 
         var account_vector = [
@@ -114,6 +145,12 @@ const useCreateListing = () => {
             { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
+            { pubkey: amm_account, isSigner: false, isWritable: true },
+            { pubkey: quote_mint, isSigner: false, isWritable: true },
+            { pubkey: raydium_quote_account, isSigner: false, isWritable: true },
+            { pubkey: raydium_base_account, isSigner: false, isWritable: true },
+            { pubkey: raydium_lp_mint_account, isSigner: false, isWritable: true },
+
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
         ];
 
