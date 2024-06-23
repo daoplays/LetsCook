@@ -43,11 +43,23 @@ const GetSOLPrice = async (setSOLPrice) => {
     setSOLPrice(result["data"]["SOL"]["price"]);
 };
 
-const GetTradeMintData = async (trade_keys, setMintMap) => {
+const GetTokenPrices = async (mints : PublicKey[]) => {
+    // Default options are marked with *
+    const options = { method: "GET" };
+    let mint_strings = ""
+    for (let i = 0; i < mints.length; i++) {
+        mint_strings += mints[i].toString() + ","
+    }
+    let url = "https://price.jup.ag/v6/price?ids=[" + mint_strings + "]&vsToken=SOL";
+    let result = await fetch(url, options).then((response) => response.json());
+    console.log(result)
+};
+
+const GetTradeMintData = async (trade_keys : PublicKey[], setMintMap) => {
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     let result = await connection.getMultipleAccountsInfo(trade_keys, "confirmed");
 
-    let mint_map = new Map<PublicKey, MintData>();
+    let mint_map = new Map<String, MintData>();
     for (let i = 0; i < result.length; i++) {
         let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
         let mint_data = await getMintData(connection, mint, result[i].owner);

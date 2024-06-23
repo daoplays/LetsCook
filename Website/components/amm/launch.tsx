@@ -28,7 +28,7 @@ import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 
 export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
-    let uri = null;
+    let uri : string | null = null;
     let metadata_pointer = null;
     let name: string;
     let symbol: string;
@@ -38,8 +38,10 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
     }
 
     if (metadata_pointer !== null) {
+        //console.log("havemetadata pointer ",mint.address.toString(),  metadata_pointer.metadataAddress.toString());
         const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
         let metadata: TokenMetadata = unpack(data);
+        //console.log(metadata)
         uri = metadata.uri;
         name = metadata.name;
         symbol = metadata.symbol;
@@ -73,8 +75,11 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.TransferHook * Number(transfer_hook !== null));
 
     let icon: string;
+    //console.log(uri)
+    uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/")
     try {
         let uri_json = await fetch(uri).then((res) => res.json());
+        //console.log(uri_json)
         icon = uri_json["image"];
     } catch (error) {
         console.log(error);
