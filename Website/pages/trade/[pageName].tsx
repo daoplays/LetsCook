@@ -215,7 +215,7 @@ const TradePage = () => {
         let event_data = result.data;
         const [token_account] = TokenAccount.struct.deserialize(event_data);
         let amount = bignum_to_num(token_account.amount);
-        console.log("update base amount", amount);
+        //console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
@@ -404,6 +404,8 @@ const TradePage = () => {
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
+            //console.log("base key", base_amm_account.toString(), quote_amm_account.toString())
+
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
 
@@ -415,15 +417,17 @@ const TradePage = () => {
             setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
             if (amm.provider > 0) {
-                if (Config.PROD) {
-                    getBirdEyeData(setMarketData, "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN");
-                }
+                
 
                 let pool_state = getPoolStateAccount(token_mint, wsol_mint);
+                //console.log("pool state", pool_state.toString())
+                if (Config.PROD) {
+                    getBirdEyeData(setMarketData, pool_state.toString());
+                }
                 let pool_state_account = await connection.getAccountInfo(pool_state);
-                console.log(pool_state_account);
+                //console.log(pool_state_account);
                 const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
-                console.log(poolState);
+                //console.log(poolState);
                 setRaydiumAddress(pool_state);
                 setLPAmount(bignum_to_num(poolState.lp_supply));
                 return;
@@ -440,7 +444,7 @@ const TradePage = () => {
             setPriceAddress(price_data_account);
 
             let price_data_buffer = await request_raw_account_data("", price_data_account);
-            console.log(price_data_buffer);
+            //console.log(price_data_buffer);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
             //console.log(price_data.data);
@@ -819,6 +823,8 @@ const BuyAndSell = ({
         setSelected(tab);
     };
 
+    //console.log(base_balance/Math.pow(10, 6), quote_balance)
+
     let transfer_fee = 0;
     let max_transfer_fee = 0;
     let transfer_fee_config = getTransferFeeConfig(base_mint.mint);
@@ -1012,7 +1018,7 @@ const InfoContent = ({
     if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
-
+    
     return (
         <VStack spacing={8} w="100%" mb={3}>
             <HStack mt={-2} px={5} justify="space-between" w="100%">
@@ -1103,8 +1109,8 @@ const InfoContent = ({
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                     {((quote_amount / Math.pow(10, 9)) * sol_price).toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
+                        minimumFractionDigits: 3,
+                        maximumFractionDigits: 3,
                     })}{" "}
                     USDC
                 </Text>

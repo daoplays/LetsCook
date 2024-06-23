@@ -35,6 +35,7 @@ import {
     getPoolStateAccount,
 } from "./useCreateCP";
 import { AMMData } from "../../components/Solana/jupiter_state";
+import useAppRoot from "../../context/useAppRoot";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -79,6 +80,7 @@ class RaydiumSwap_Instruction {
 
 const useSwapRaydium = (amm: AMMData) => {
     const wallet = useWallet();
+    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -125,6 +127,9 @@ const useSwapRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
+        let base_mint_data = mintData.get(base_mint.toString())
+        let quote_mint_data = mintData.get(quote_mint.toString())
+
         let authority = getAuthorityAccount();
         let pool_state = getPoolStateAccount(base_mint, quote_mint);
         let amm_config = getAMMConfigAccount();
@@ -133,21 +138,21 @@ const useSwapRaydium = (amm: AMMData) => {
         let amm_input = order_type === 0 ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
         let amm_output = order_type === 0 ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
 
-        let tp_input = order_type === 0 ? TOKEN_PROGRAM_ID : TOKEN_2022_PROGRAM_ID;
-        let tp_output = order_type === 0 ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+        let tp_input = order_type === 0 ? quote_mint_data.token_program : base_mint_data.token_program;
+        let tp_output = order_type === 0 ? base_mint_data.token_program : quote_mint_data.token_program;
 
         let user_base_account = await getAssociatedTokenAddress(
             amm.base_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            base_mint_data.token_program,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
             quote_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
+            quote_mint_data.token_program,
         );
 
         let amm_seed_keys = [];

@@ -44,6 +44,7 @@ import {
 } from "./useCreateCP";
 import { MEMO_PROGRAM_ID } from "@raydium-io/raydium-sdk-v2";
 import { AMMData } from "../../components/Solana/jupiter_state";
+import useAppRoot from "../../context/useAppRoot";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -80,6 +81,7 @@ class RaydiumRemoveLiquidity_Instruction {
 
 const useRemoveLiquidityRaydium = (amm: AMMData) => {
     const wallet = useWallet();
+    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -124,6 +126,9 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
+        let base_mint_data = mintData.get(base_mint.toString())
+        let quote_mint_data = mintData.get(quote_mint.toString())
+
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]
             : [base_mint, quote_mint];
@@ -139,14 +144,14 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
             amm.base_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            base_mint_data.token_program,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
             quote_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
+            quote_mint_data.token_program,
         );
 
         let user_0 = token0.equals(base_mint) ? user_base_account : user_quote_account;
