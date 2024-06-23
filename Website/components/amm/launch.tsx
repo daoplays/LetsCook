@@ -37,6 +37,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         metadata_pointer = getMetadataPointerState(mint);
     }
 
+    console.log("get mint data", mint.address.toString())
     if (metadata_pointer !== null) {
         const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
         let metadata: TokenMetadata = unpack(data);
@@ -73,6 +74,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.TransferHook * Number(transfer_hook !== null));
 
     let icon: string;
+    uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/")
     try {
         let uri_json = await fetch(uri).then((res) => res.json());
         icon = uri_json["image"];

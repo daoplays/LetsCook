@@ -133,6 +133,7 @@ const useCreateListing = () => {
         let raydium_quote_account = getAMMQuoteAccount(token_mint, quote_mint);
         let raydium_lp_mint_account = getLPMintAccount(token_mint, quote_mint);
 
+        console.log("pool", pool_state_account);
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.create_listing);
 

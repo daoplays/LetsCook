@@ -133,7 +133,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     useEffect(() => {
         if (update_program_data.current === 0 || new_program_data === null) return;
 
-        console.log("update data", update_program_data.current);
+        //console.log("update data", update_program_data.current);
         let wallet_bytes = PublicKey.default.toBytes();
         let have_wallet = false;
         // console.log("wallet", wallet !== null ? wallet.toString() : "null");
@@ -149,7 +149,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         if (event_data[0] === 0) {
             try {
-                console.log("updating launch data from context");
+                //console.log("updating launch data from context");
                 const [launch] = LaunchData.struct.deserialize(event_data);
 
                 launch_data.set(launch.page_name, launch);
@@ -161,7 +161,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
 
         if (event_data[0] === 2) {
-            console.log("updating user data from context");
+            //console.log("updating user data from context");
 
             const [user] = UserData.struct.deserialize(event_data);
 
@@ -174,7 +174,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
 
         if (event_data[0] === 5) {
-            console.log("updating mm launch data from context");
+            // console.log("updating mm launch data from context");
 
             const [mm] = MMLaunchData.struct.deserialize(event_data);
             //console.log("launch mm", program_data[i].pubkey.toString());
@@ -183,7 +183,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
 
         if (event_data[0] === 6) {
-            console.log("updating amm data from context");
+            //console.log("updating amm data from context");
 
             try {
                 const [amm] = AMMData.struct.deserialize(event_data);
@@ -198,7 +198,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             return;
         }
         if (event_data[0] === 8) {
-            console.log("updating collection data from context");
+            //console.log("updating collection data from context");
 
             const [collection] = CollectionData.struct.deserialize(event_data);
 
@@ -404,7 +404,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     const [amm] = AMMData.struct.deserialize(data);
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
-                    //console.log(amm);
+                    //console.log(amm.provider, amm.base_mint.toString());
                 } catch (error) {
                     console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
@@ -526,6 +526,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     trade_mints.push(launch.plugins[p]["key"]);
                 }
             }
+        });
+
+        listings.forEach((listing, key) => {
+            trade_mints.push(listing.mint);
         });
 
         collections.forEach((collection, key) => {

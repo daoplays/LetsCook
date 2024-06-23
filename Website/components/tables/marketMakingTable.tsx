@@ -54,15 +54,16 @@ const MarketMakingTable = () => {
     let amm_launches: AMMLaunch[] = [];
     if (mintData !== null) {
         ammData.forEach((amm, i) => {
-            console.log(amm.base_mint.toString());
+            //console.log(amm.base_mint.toString());
             if (bignum_to_num(amm.start_time) === 0) {
                 return;
             }
             let mint_data = mintData.get(amm.base_mint.toString());
+            console.log(amm.base_mint.toString(), mint_data)
             let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             let listing = listingData.get(listing_key.toString());
             if (listing && mint_data) {
-                console.log("mint data", mint_data);
+                //console.log("mint data", mint_data);
                 let amm_launch: AMMLaunch = {
                     amm_data: amm,
                     mint: mintData !== null ? mintData.get(amm.base_mint.toString()).mint : null,
