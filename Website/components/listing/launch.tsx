@@ -526,25 +526,7 @@ const CreateListing = () => {
                                         </Flex>
 
                                         {admin ? (
-                                            <HStack spacing={0} className={styles.eachField}>
-                                                <div
-                                                    className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "78px" : "120px" }}
-                                                >
-                                                    Banner:
-                                                </div>
-                                                <div className={styles2.textLabelInput}>
-                                                    <input
-                                                        className={styles2.inputBox}
-                                                        placeholder="Enter Banner URL"
-                                                        type="text"
-                                                        value={telegram}
-                                                        onChange={(e) => {
-                                                            setBannerName(e.target.value);
-                                                        }}
-                                                    />
-                                                </div>
-                                            </HStack>
+                                           <></>
                                         ) : (
                                             <HStack spacing={0} className={styles.eachField}>
                                                 <div

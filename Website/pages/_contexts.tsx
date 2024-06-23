@@ -434,6 +434,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
+               
                 listings.set(program_data[i].pubkey.toString(), listing);
                 continue;
             }
