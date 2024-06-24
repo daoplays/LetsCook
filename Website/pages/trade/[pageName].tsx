@@ -9,6 +9,7 @@ import {
     uInt32ToLEBytes,
     MintData,
     ListingData,
+    myU64,
 } from "../../components/Solana/state";
 import {
     TimeSeriesData,
@@ -24,7 +25,7 @@ import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount,
 import { Config, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackAccount } from "@solana/spl-token";
 
 import { HStack, VStack, Text, Box, Tooltip, Link } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
@@ -44,6 +45,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
+import useWebSocket from 'react-use-websocket';
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
@@ -51,6 +53,7 @@ import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPa
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
 import BuyPanel from "../../components/tradePanels/buyPanel";
+import formatPrice from "../../utils/formatPrice";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -61,13 +64,33 @@ interface MarketData {
     volume: number;
 }
 
-async function getBirdEyeData(setMarketData: any, market_address: string) {
+async function getBirdEyeData(setMarketData: any,  mint: string, setLastVolume : any) {
+
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+
+    let market_url = "https://public-api.birdeye.so/defi/v2/markets?address="+mint;
+    let market_result = await fetch(market_url, options).then((response) => response.json());
+    let ray_market = null;
+    for (let i = 0; i < market_result["data"]["items"].length; i++) {
+        let item = market_result["data"]["items"][i]
+        if (item.base.address !== "So11111111111111111111111111111111111111112" && item.quote.address !== "So11111111111111111111111111111111111111112")
+            continue
+
+        if (item["source"] === "Raydium") {
+            ray_market = market_result["data"]["items"][i];
+            break;
+        }
+    }
+    console.log(ray_market)
+    if (ray_market === null)
+        return;
+
+    let sol_is_quote = ray_market.quote.address === "So11111111111111111111111111111111111111112"
+    let market_address = ray_market.address;
     let today_seconds = Math.floor(new Date().getTime() / 1000);
 
     let start_time = new Date(2024, 0, 1).getTime() / 1000;
-    let end_time = new Date(2024, 5, 1).getTime() / 1000;
 
     let url =
         "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
@@ -80,15 +103,33 @@ async function getBirdEyeData(setMarketData: any, market_address: string) {
 
     //console.log(url);
     let result = await fetch(url, options).then((response) => response.json());
+    let items = result["data"]["items"]
 
+    let now = new Date().getTime() / 1000;
+    let last_volume = 0;
     let data: MarketData[] = [];
-    for (let i = 0; i < result["data"]["items"].length; i++) {
-        let item = result["data"]["items"][i];
-        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c, volume: item.v });
+    for (let i = 0; i < items.length; i++) {
+
+        let item = items[i];
+
+        
+        let open = sol_is_quote? item.o : 1.0/item.o;
+        let high = sol_is_quote?  item.h : 1.0/item.l;
+        let low = sol_is_quote? item.l : 1.0/item.h;
+        let close = sol_is_quote? item.c : 1.0/item.c;
+        let volume = sol_is_quote? item.v : item.v / close
+        data.push({ time: item.unixTime as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
+
+        if (now - item.unixTime < 24 * 60 * 60) {
+            last_volume += volume
+        }
     }
-    //console.log(data);
+    console.log(result, "last volume", last_volume);
     setMarketData(data);
+    setLastVolume(last_volume)
     //return data;
+
+    return ray_market
 }
 
 function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
@@ -146,6 +187,7 @@ const TradePage = () => {
     const [listing, setListing] = useState<ListingData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<MintData | null>(null);
+    const [sol_is_quote, setSOLIsQuote] = useState<boolean>(true);
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
@@ -206,27 +248,69 @@ const TradePage = () => {
 
         last_base_amount.current = amm_base_amount;
         last_quote_amount.current = amm_quote_amount;
-    }, [amm_base_amount, amm_quote_amount, market_data]);
+
+        if (amm.provider === 0 || market_data.length === 0) {
+            return;
+        }
+
+        // update market data using bid/ask
+        let price = sol_is_quote  ? amm_quote_amount / amm_base_amount : amm_base_amount / amm_quote_amount;
+
+        price = price * Math.pow(10, base_mint.mint.decimals) / Math.pow(10,9)
+        
+        let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
+        let last_candle = market_data[market_data.length - 1];
+        let last_minute = last_candle.time / 15 / 60
+        console.log("update price", price, last_minute, now_minute)
+
+        if (now_minute > last_minute) {
+            let new_candle : MarketData = { time: (now_minute * 15 * 60) as UTCTimestamp, open: price, high: price, low: price, close: price, volume: 0 }
+            console.log("new candle", now_minute, last_minute, new_candle)
+
+            market_data.push(new_candle);
+            setMarketData([...market_data])
+        }
+        else {
+            last_candle.close = price;
+            if (price > last_candle.high) {
+                last_candle.high = price
+            }
+            if (price < last_candle.low) {
+                last_candle.low = price
+
+            }
+            console.log("update old candle", last_candle)
+            market_data[market_data.length - 1] = last_candle
+            setMarketData([...market_data])
+        }
+
+        
+
+    }, [amm_base_amount, amm_quote_amount, amm, market_data, sol_is_quote, base_mint]);
 
     const check_base_update = useCallback(async (result: any) => {
         //console.log(result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-        //console.log("update base amount", amount);
+        //console.log(event_data)
+        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64,72))
+        //console.log(amount_u64)
+        let amount = bignum_to_num(amount_u64.value);
+        console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
     const check_quote_update = useCallback(async (result: any) => {
-        //console.log(result);
+        //console.log(result.owner);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-        //console.log("update quote amount", amount);
+        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64,72))
+        //console.log(amount_u64)
+
+        let amount = bignum_to_num(amount_u64.value);
+        console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
     }, []);
@@ -317,6 +401,8 @@ const TradePage = () => {
         if (raydium_ws_id.current === null && raydium_address !== null) {
             raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
         }
+
+        
     }, [
         connection,
         base_address,
@@ -401,6 +487,42 @@ const TradePage = () => {
         }
 
         if (check_market_data.current === true) {
+            
+            let total_supply = await request_token_supply("", token_mint);
+            setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
+
+            if (amm.provider > 0) {
+                
+
+                let pool_state = getPoolStateAccount(token_mint, wsol_mint);
+                //console.log("pool state", pool_state.toString())
+                if (Config.PROD) {
+                    let market_info = await getBirdEyeData(setMarketData, base_mint.mint.address.toString(), setLastDayVolume);
+                    let market = market_info.address;
+                    let pool_data = await request_raw_account_data("", market);
+                    const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
+                    console.log(market_info.volume24h)
+                    console.log(ray_pool)
+                    console.log(ray_pool.baseVault.toString(), ray_pool.quoteVault.toString())
+                    setBaseAddress(ray_pool.baseVault);
+                    setQuoteAddress(ray_pool.quoteVault);
+                    if (ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+                        setSOLIsQuote(true)
+                    }
+                    else {
+                        setSOLIsQuote(false);
+                    }
+                    
+                }
+                let pool_state_account = await connection.getAccountInfo(pool_state);
+                //console.log(pool_state_account);
+                const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
+                //console.log(poolState);
+                setRaydiumAddress(pool_state);
+                setLPAmount(bignum_to_num(poolState.lp_supply));
+                return;
+            }
+
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
@@ -413,25 +535,6 @@ const TradePage = () => {
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
 
-            let total_supply = await request_token_supply("", token_mint);
-            setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
-
-            if (amm.provider > 0) {
-                
-
-                let pool_state = getPoolStateAccount(token_mint, wsol_mint);
-                //console.log("pool state", pool_state.toString())
-                if (Config.PROD) {
-                    getBirdEyeData(setMarketData, pool_state.toString());
-                }
-                let pool_state_account = await connection.getAccountInfo(pool_state);
-                //console.log(pool_state_account);
-                const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
-                //console.log(poolState);
-                setRaydiumAddress(pool_state);
-                setLPAmount(bignum_to_num(poolState.lp_supply));
-                return;
-            }
 
             setLPAmount(amm.lp_amount);
 
@@ -616,7 +719,7 @@ const TradePage = () => {
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}
-                                    quote_amount={amm_quote_amount}
+                                    quote_amount={sol_is_quote ? amm_quote_amount : amm_base_amount}
                                 />
                             )}
 
@@ -1018,6 +1121,7 @@ const InfoContent = ({
     if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
+
     
     return (
         <VStack spacing={8} w="100%" mb={3}>
@@ -1042,7 +1146,7 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(base_mint.mint.decimals, 3))}
+                        {formatPrice(price, 5)}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
                 </HStack>
@@ -1109,8 +1213,8 @@ const InfoContent = ({
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                     {((quote_amount / Math.pow(10, 9)) * sol_price).toLocaleString("en-US", {
-                        minimumFractionDigits: 3,
-                        maximumFractionDigits: 3,
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                     })}{" "}
                     USDC
                 </Text>
