@@ -506,6 +506,15 @@ const TradePage = () => {
                     console.log(ray_pool.baseVault.toString(), ray_pool.quoteVault.toString())
                     setBaseAddress(ray_pool.baseVault);
                     setQuoteAddress(ray_pool.quoteVault);
+
+                    let base_amount = await request_token_amount("", ray_pool.baseVault);
+                    let quote_amount = await request_token_amount("", ray_pool.quoteVault);
+
+                    //console.log("user amounts", user_base_amount, user_lp_amount)
+                    setBaseAmount(base_amount);
+                    setQuoteAmount(quote_amount);
+
+
                     if (ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
                         setSOLIsQuote(true)
                     }
