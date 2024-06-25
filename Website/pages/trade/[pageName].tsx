@@ -1179,11 +1179,11 @@ const ChartComponent = (props) => {
             chartRef.current = chart;
 
             const series = chart.addCandlestickSeries({
-                upColor: "#4EFF3F",
-                downColor: "#ef5350",
+                upColor: "#00C38C",
+                downColor: "#F94D5C",
                 borderVisible: false,
-                wickUpColor: "#4EFF3F",
-                wickDownColor: "#ef5350",
+                wickUpColor: "#00C38C",
+                wickDownColor: "#F94D5C",
                 priceFormat: {
                     type: "custom",
                     formatter: (price) => price.toExponential(2),
