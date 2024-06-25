@@ -242,11 +242,11 @@ const TradePage = () => {
         let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
         let last_candle = market_data[market_data.length - 1];
         let last_minute = last_candle.time / 15 / 60
-        console.log("update price", price, last_minute, now_minute)
+        //console.log("update price", price, last_minute, now_minute)
 
         if (now_minute > last_minute) {
             let new_candle : MarketData = { time: (now_minute * 15 * 60) as UTCTimestamp, open: price, high: price, low: price, close: price, volume: 0 }
-            console.log("new candle", now_minute, last_minute, new_candle)
+            //console.log("new candle", now_minute, last_minute, new_candle)
 
             market_data.push(new_candle);
             setMarketData([...market_data])
@@ -260,7 +260,7 @@ const TradePage = () => {
                 last_candle.low = price
 
             }
-            console.log("update old candle", last_candle)
+            //console.log("update old candle", last_candle)
             market_data[market_data.length - 1] = last_candle
             setMarketData([...market_data])
         }
@@ -278,7 +278,7 @@ const TradePage = () => {
         const [amount_u64] = myU64.struct.deserialize(event_data.slice(64,72))
         //console.log(amount_u64)
         let amount = bignum_to_num(amount_u64.value);
-        console.log("update base amount", amount);
+        //console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
@@ -291,7 +291,7 @@ const TradePage = () => {
         //console.log(amount_u64)
 
         let amount = bignum_to_num(amount_u64.value);
-        console.log("update quote amount", amount);
+        //console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
     }, []);
