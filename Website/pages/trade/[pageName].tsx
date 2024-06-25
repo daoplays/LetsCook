@@ -21,7 +21,7 @@ import {
     getAMMKeyFromMints,
 } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
+import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
 import { Config, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
@@ -64,30 +64,11 @@ interface MarketData {
     volume: number;
 }
 
-async function getBirdEyeData(setMarketData: any,  mint: string, setLastVolume : any) {
+async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any,  market_address: string, setLastVolume : any) {
 
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
 
-    let market_url = "https://public-api.birdeye.so/defi/v2/markets?address="+mint;
-    let market_result = await fetch(market_url, options).then((response) => response.json());
-    let ray_market = null;
-    for (let i = 0; i < market_result["data"]["items"].length; i++) {
-        let item = market_result["data"]["items"][i]
-        if (item.base.address !== "So11111111111111111111111111111111111111112" && item.quote.address !== "So11111111111111111111111111111111111111112")
-            continue
-
-        if (item["source"] === "Raydium") {
-            ray_market = market_result["data"]["items"][i];
-            break;
-        }
-    }
-    console.log(ray_market)
-    if (ray_market === null)
-        return;
-
-    let sol_is_quote = ray_market.quote.address === "So11111111111111111111111111111111111111112"
-    let market_address = ray_market.address;
     let today_seconds = Math.floor(new Date().getTime() / 1000);
 
     let start_time = new Date(2024, 0, 1).getTime() / 1000;
@@ -128,8 +109,6 @@ async function getBirdEyeData(setMarketData: any,  mint: string, setLastVolume :
     setMarketData(data);
     setLastVolume(last_volume)
     //return data;
-
-    return ray_market
 }
 
 function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
@@ -220,6 +199,8 @@ const TradePage = () => {
         };
     }, [connection]);
 
+    
+
     useEffect(() => {
         if (ammData === null || listingData === null || mintData === null) return;
 
@@ -254,7 +235,7 @@ const TradePage = () => {
         }
 
         // update market data using bid/ask
-        let price = sol_is_quote  ? amm_quote_amount / amm_base_amount : amm_base_amount / amm_quote_amount;
+        let price = amm_quote_amount / amm_base_amount
 
         price = price * Math.pow(10, base_mint.mint.decimals) / Math.pow(10,9)
         
@@ -286,7 +267,7 @@ const TradePage = () => {
 
         
 
-    }, [amm_base_amount, amm_quote_amount, amm, market_data, sol_is_quote, base_mint]);
+    }, [amm_base_amount, amm_quote_amount, amm, market_data, base_mint]);
 
     const check_base_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -370,10 +351,16 @@ const TradePage = () => {
 
     const check_raydium_update = useCallback(async (result: any) => {
         let event_data = result.data;
-        const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
+        if (amm.provider === 1) {
+            const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
 
-        setLPAmount(bignum_to_num(poolState.lp_supply));
-    }, []);
+            setLPAmount(bignum_to_num(poolState.lp_supply));
+        }
+        if (amm.provider === 2) {
+            const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
+            setLPAmount(bignum_to_num(ray_pool.lpReserve));
+        }
+    }, [amm]);
 
     useEffect(() => {
         if (base_ws_id.current === null && base_address !== null) {
@@ -487,62 +474,58 @@ const TradePage = () => {
         }
 
         if (check_market_data.current === true) {
+
             
+            setBaseAddress(base_amm_account);
+            setQuoteAddress(quote_amm_account);
+
+            console.log("base key", base_amm_account.toString(), quote_amm_account.toString())
+
+            let base_amount = await request_token_amount("", base_amm_account);
+            let quote_amount = await request_token_amount("", quote_amm_account);
+
+            console.log("amm amounts", base_amount, quote_amount)
+            setBaseAmount(base_amount);
+            setQuoteAmount(quote_amount);
+
             let total_supply = await request_token_supply("", token_mint);
             setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
             if (amm.provider > 0) {
+                let sol_is_quote : boolean = true;
+                let pool_account = amm.pool;
+                setRaydiumAddress(pool_account);
+
+                if (amm.provider === 1) {
+                    let pool_state_account = await connection.getAccountInfo(pool_account);
+                    //console.log(pool_state_account);
+                    const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
+                    //console.log(poolState);
+                    setLPAmount(bignum_to_num(poolState.lp_supply));
+                }
                 
-
-                let pool_state = getPoolStateAccount(token_mint, wsol_mint);
-                //console.log("pool state", pool_state.toString())
-                if (Config.PROD) {
-                    let market_info = await getBirdEyeData(setMarketData, base_mint.mint.address.toString(), setLastDayVolume);
-                    let market = market_info.address;
-                    let pool_data = await request_raw_account_data("", market);
+                if (amm.provider === 2) {
+                    let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
-                    console.log(market_info.volume24h)
-                    console.log(ray_pool)
-                    console.log(ray_pool.baseVault.toString(), ray_pool.quoteVault.toString())
-                    setBaseAddress(ray_pool.baseVault);
-                    setQuoteAddress(ray_pool.quoteVault);
-
-                    let base_amount = await request_token_amount("", ray_pool.baseVault);
-                    let quote_amount = await request_token_amount("", ray_pool.quoteVault);
-
-                    //console.log("user amounts", user_base_amount, user_lp_amount)
-                    setBaseAmount(base_amount);
-                    setQuoteAmount(quote_amount);
-
 
                     if (ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
                         setSOLIsQuote(true)
                     }
                     else {
+                        sol_is_quote = false;
                         setSOLIsQuote(false);
                     }
+
                     
+                    setLPAmount(bignum_to_num(ray_pool.lpReserve));
                 }
-                let pool_state_account = await connection.getAccountInfo(pool_state);
-                //console.log(pool_state_account);
-                const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
-                //console.log(poolState);
-                setRaydiumAddress(pool_state);
-                setLPAmount(bignum_to_num(poolState.lp_supply));
+                //console.log("pool state", pool_state.toString())
+                if (Config.PROD) {
+                    await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
+                }
+                
                 return;
             }
-
-            setBaseAddress(base_amm_account);
-            setQuoteAddress(quote_amm_account);
-
-            //console.log("base key", base_amm_account.toString(), quote_amm_account.toString())
-
-            let base_amount = await request_token_amount("", base_amm_account);
-            let quote_amount = await request_token_amount("", quote_amm_account);
-
-            //console.log("user amounts", user_base_amount, user_lp_amount)
-            setBaseAmount(base_amount);
-            setQuoteAmount(quote_amount);
 
 
             setLPAmount(amm.lp_amount);
@@ -728,7 +711,7 @@ const TradePage = () => {
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}
-                                    quote_amount={sol_is_quote ? amm_quote_amount : amm_base_amount}
+                                    quote_amount={amm_quote_amount}
                                 />
                             )}
 

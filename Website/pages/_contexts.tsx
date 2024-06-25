@@ -204,7 +204,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 setAMMData(new Map(amm_data));
             } catch (error) {
                 console.log(error);
-                //closeAccounts.push(program_data[i].pubkey)
             }
 
             return;
@@ -435,6 +434,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
                
+                //if (listing.mint.toString() === "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN"){
+                    //closeAccounts.push(program_data[i].pubkey)
+                    //continue;
+                //}
                 listings.set(program_data[i].pubkey.toString(), listing);
                 continue;
             }
@@ -592,6 +595,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             setSelectedNetwork={setSelectedNetwork}
             selectedNetwork={selectedNetwork}
             listingData={listing_data}
+            setListingData={setListingData}
+            setMintData={setMintData}
         >
             {children}
         </AppRootContextProvider>

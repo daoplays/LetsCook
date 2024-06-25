@@ -84,7 +84,7 @@ class CreateListing_Instruction {
     );
 }
 
-export function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
+function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
     const data = new CreateListing_Instruction(
         LaunchInstruction.create_unverified_listing,
         new_listing.name,

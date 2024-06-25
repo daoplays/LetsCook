@@ -75,6 +75,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(transfer_hook !== null));
 
+    console.log(name, uri)
     let icon: string;
     uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/")
     try {
