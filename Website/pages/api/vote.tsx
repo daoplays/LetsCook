@@ -1,29 +1,32 @@
 export default function handler(req, res) {
     if (req.method === 'GET') {
-      // Your data here
-      const data = {
+
+    res.setHeader('Content-Type', 'application/json');
+
+    // Your data here
+    const data = {
         "title": "Blink Vote Test",
         "icon": "https://letscook.wtf/images/thumbs-up.svg",
         "description": "Vote on Something at letscook.wtf!",
         "label": "Vote",
         "links": {
-          "actions": [
+            "actions": [
             {
-              "label": "Vote Yes", // button text
-              "href": "/api/proposal/1234/vote?choice=yes"
+                "label": "Vote Yes", // button text
+                "href": "/api/proposal/1234/vote?choice=yes"
             },
             {
-              "label": "Vote No", // button text
-              "href": "/api/proposal/1234/vote?choice=no"
+                "label": "Vote No", // button text
+                "href": "/api/proposal/1234/vote?choice=no"
             },
             {
-              "label": "Abstain from Vote", // button text
-              "href": "/api/proposal/1234/vote?choice=abstain"
+                "label": "Abstain from Vote", // button text
+                "href": "/api/proposal/1234/vote?choice=abstain"
             }
-          ]
+            ]
         }
-      }
-      res.status(200).json(data);
+    }
+    res.status(200).json(data);
     } else {
       // Handle any other HTTP method
       res.setHeader('Allow', ['GET']);
