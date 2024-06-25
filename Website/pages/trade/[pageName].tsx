@@ -51,6 +51,7 @@ import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPa
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
 import BuyPanel from "../../components/tradePanels/buyPanel";
+import Loader from "../../components/loader";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -504,11 +505,7 @@ const TradePage = () => {
     };
 
     if (listing === null || amm === null || base_mint === null || mmLaunchData === null) {
-        return (
-            <Head>
-                <title>Let&apos;s Cook | Trade</title>
-            </Head>
-        );
+        return <Loader />;
     }
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
