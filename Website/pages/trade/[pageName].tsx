@@ -103,7 +103,7 @@ async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_
             last_volume += volume;
         }
     }
-    console.log(result, "last volume", last_volume);
+    //console.log(result, "last volume", last_volume);
     setMarketData(data);
     setLastVolume(last_volume);
     //return data;
@@ -274,8 +274,9 @@ const TradePage = () => {
         let event_data = result.data;
         //console.log(event_data)
         const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
-        //console.log(amount_u64)
-        let amount = bignum_to_num(amount_u64.value);
+        let amount = parseFloat(amount_u64.value.toString());
+        console.log("base update", amount, amount_u64.value.toString())
+
         //console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
@@ -286,9 +287,10 @@ const TradePage = () => {
 
         let event_data = result.data;
         const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
-        //console.log(amount_u64)
 
-        let amount = bignum_to_num(amount_u64.value);
+        let amount = parseFloat(amount_u64.value.toString());
+        console.log("quote update", amount, amount_u64.value.toString())
+
         //console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
@@ -406,15 +408,15 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        let hash_string = "global:request";
-        const msgBuffer = new TextEncoder().encode(hash_string);
+        //let hash_string = "global:request";
+        //const msgBuffer = new TextEncoder().encode(hash_string);
 
         // hash the message
-        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        //const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
 
         // convert ArrayBuffer to Array
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        console.log(hashArray.slice(0, 8));
+        //const hashArray = Array.from(new Uint8Array(hashBuffer));
+        //console.log(hashArray.slice(0, 8));
         //("check market data");
         if (amm === null) return;
 
@@ -450,7 +452,7 @@ const TradePage = () => {
 
                 let user_base_amount = await request_token_amount("", user_base_token_account_key);
                 let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
-                console.log("user lp amount", user_lp_amount, user_lp_token_account_key.toString());
+                //console.log("user lp amount", user_lp_amount, user_lp_token_account_key.toString());
                 setUserBaseAmount(user_base_amount);
                 setUserLPAmount(user_lp_amount);
 

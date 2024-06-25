@@ -148,15 +148,21 @@ const HotnessPage = () => {
         const rank = hype_ranked.findIndex((u) => u.mint.equals(listing.mint)) + 1;
 
         let cook_amm_address = getAMMKeyFromMints(listing.mint, 0);
-        let raydium_amm_address = getAMMKeyFromMints(listing.mint, 1);
+        let raydium_cpmm_address = getAMMKeyFromMints(listing.mint, 1);
+        let raydium_amm_address = getAMMKeyFromMints(listing.mint, 2);
 
         let cook_amm = ammData.get(cook_amm_address.toString());
         let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
 
+        let raydium_cpmm = ammData.get(raydium_cpmm_address.toString());
+        let have_raydium_cpmm = raydium_cpmm && bignum_to_num(raydium_cpmm.start_time) > 0;
+
         let raydium_amm = ammData.get(raydium_amm_address.toString());
         let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0;
 
-        let show_birdeye = !have_raydium_amm && !have_cook_amm;
+        let show_birdeye = !have_raydium_amm && !have_raydium_cpmm && !have_cook_amm;
+
+        console.log("have raydium?", have_raydium_amm, have_raydium_cpmm, raydium_cpmm, raydium_amm)
 
         return (
             <tr
@@ -234,6 +240,15 @@ const HotnessPage = () => {
                             <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
                                 {have_raydium_amm && (
                                     <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
+                                        <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                    </Link>
+                                )}
+                            </Tooltip>
+                        )}
+                        {have_raydium_cpmm && (
+                            <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
+                                {have_raydium_amm && (
+                                    <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
                                         <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                                     </Link>
                                 )}

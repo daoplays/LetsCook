@@ -116,7 +116,6 @@ const SideNav = () => {
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
-                    <Tab tab={"Hotness"} icon={<FaFire size={24} />} isActive={pathname === "/hotness"} url={"/hotness"} />
 
                     <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
                         Create

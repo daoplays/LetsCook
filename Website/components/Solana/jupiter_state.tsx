@@ -43,9 +43,9 @@ export function getAMMKey(amm: AMMData, amm_provider: number) {
         amm_seed_keys.push(amm.quote_mint);
         amm_seed_keys.push(amm.base_mint);
     }
-
+    let provider_string = amm_provider == 0 ? "CookAMM" : amm_provider === 1  ? "RaydiumCPMM" : "Raydium"
     let amm_data_account = PublicKey.findProgramAddressSync(
-        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider == 0 ? "CookAMM" : "RaydiumCPMM")],
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(provider_string)],
         PROGRAM,
     )[0];
 
@@ -63,8 +63,9 @@ export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
         amm_seed_keys.push(base_mint);
     }
 
+    let provider_string = amm_provider == 0 ? "CookAMM" : amm_provider === 1  ? "RaydiumCPMM" : "Raydium"
     let amm_data_account = PublicKey.findProgramAddressSync(
-        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider == 0 ? "CookAMM" : "RaydiumCPMM")],
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(provider_string)],
         PROGRAM,
     )[0];
 

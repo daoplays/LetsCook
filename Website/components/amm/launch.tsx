@@ -38,7 +38,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         metadata_pointer = getMetadataPointerState(mint);
     }
 
-    console.log("get mint data", mint.address.toString());
+    //console.log("get mint data", mint.address.toString());
     if (metadata_pointer !== null) {
         //console.log("havemetadata pointer ",mint.address.toString(),  metadata_pointer.metadataAddress.toString());
         const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
@@ -76,7 +76,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(transfer_hook !== null));
 
-    console.log(name, uri);
+    //console.log(name, uri);
     let icon: string;
     uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
     try {
@@ -98,7 +98,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         token_program: token_program,
     };
 
-    console.log("have mint data", mint_data);
+    //console.log("have mint data", mint_data);
     return mint_data;
 }
 

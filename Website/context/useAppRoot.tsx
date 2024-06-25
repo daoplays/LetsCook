@@ -32,6 +32,7 @@ interface AppRootTypes {
     listingData: Map<string, ListingData>;
     setListingData: Dispatch<SetStateAction<Map<string, ListingData>>>;
     setMintData: Dispatch<SetStateAction<Map<string, MintData>>>;
+    jupPrices: Map<string, number>;
 }
 
 export const AppRootContext = createContext<AppRootTypes | null>(null);
@@ -62,6 +63,7 @@ export const AppRootContextProvider = ({
     listingData,
     setListingData,
     setMintData,
+    jupPrices
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -90,6 +92,7 @@ export const AppRootContextProvider = ({
                 listingData,
                 setListingData,
                 setMintData,
+                jupPrices
             }}
         >
             {children}
