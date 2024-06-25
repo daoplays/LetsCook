@@ -2,6 +2,7 @@ export default function handler(req, res) {
     if (req.method === 'GET') {
 
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Encoding', 'gzip');
 
     // Your data here
     const data = {
