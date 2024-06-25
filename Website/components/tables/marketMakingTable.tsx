@@ -14,6 +14,9 @@ import Launch from "../../pages/launch";
 import { Mint } from "@solana/spl-token";
 import ShowExtensions, { getExtensions } from "../Solana/extensions";
 import { PublicKey } from "@solana/web3.js";
+import { HypeVote } from "../hypeVote";
+
+
 interface Header {
     text: string;
     field: string | null;
@@ -86,6 +89,7 @@ const MarketMakingTable = () => {
         { text: "FDMC", field: "fdmc" },
         { text: "REWARDS (24H)", field: "rewards" },
         { text: "EXTENSIONS", field: null },
+        { text: "HYPE", field: null },
         { text: "TRADE", field: null },
     ];
 
@@ -222,6 +226,17 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "140px" }}>
                 <ShowExtensions extension_flag={getExtensions(amm_launch.mint)} />
             </td>
+            <td style={{ minWidth: "150px" }}>
+                    <HypeVote
+                        launch_type={0}
+                        launch_id={listing.id}
+                        page_name={""}
+                        positive_votes={listing.positive_votes}
+                        negative_votes={listing.negative_votes}
+                        isTradePage={false}
+                        listing={listing}
+                    />
+                </td>
             <td style={{ minWidth: "150px" }}>
                     <HStack justify="center" gap={3}>
                         {show_birdeye && (
