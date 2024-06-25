@@ -703,6 +703,7 @@ export const enum LaunchInstruction {
     remove_cook_liquidity = 23,
     create_unverified_listing = 24,
     create_listing = 25,
+    swap_raydium_classic = 26
 }
 
 export interface LaunchDataUserInput {

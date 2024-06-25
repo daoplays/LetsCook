@@ -23,6 +23,7 @@ import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import formatPrice from "../../utils/formatPrice";
 import { useState } from "react";
+import useSwapRaydiumClassic from "../../hooks/raydium/useSwapRaydiumClassic";
 
 const BuyPanel = ({
     amm,
@@ -38,6 +39,8 @@ const BuyPanel = ({
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
+    const { SwapRaydiumClassic, isLoading: placingRaydiumClassicOrder } = useSwapRaydiumClassic(amm);
+
     const [sliderValue, setSliderValue] = useState<number>(1);
     const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
@@ -223,7 +226,9 @@ const BuyPanel = ({
                         ? handleConnectWallet()
                         : amm.provider === 0
                           ? PlaceMarketOrder(token_amount, sol_amount, 0)
-                          : SwapRaydium(base_output * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0);
+                        : amm.provider === 1
+                          ? SwapRaydium(base_output * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0)
+                        : SwapRaydiumClassic(base_output * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

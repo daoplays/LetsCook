@@ -40,23 +40,27 @@ import { ComputeBudgetProgram } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
-import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
+import { BeetStruct, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { AMMData, MarketStateLayoutV2, RaydiumAMM } from "../../components/Solana/jupiter_state";
+import useWrapSOL from "../useWrapSOL";
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
 
-const DEFAULT_TOKEN = {
-    WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
-};
 
-function serialise_raydium_swap_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
+
+function serialise_raydium_swap_classic_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
+    let base_in_discriminator: number[] = [143, 190, 90, 218, 196, 30, 51, 222];
+    let base_out_discriminator: number[] = [55, 217, 98, 86, 163, 74, 180, 173];
+
+    let discriminator = order_type === 0 ? base_out_discriminator : base_in_discriminator;
     let inAmount = order_type === 0 ? sol_amount : token_amount;
-    let outAmount = order_type === 0 ? token_amount : sol_amount;
+    let outAmount = 0;//order_type === 0 ? token_amount : sol_amount;
 
-    const data = new RaydiumSwap_Instruction(LaunchInstruction.raydium_swap, order_type, inAmount, outAmount);
+    console.log("in and out:", inAmount, outAmount);
+    const data = new RaydiumSwap_Instruction(LaunchInstruction.swap_raydium_classic, order_type, discriminator, inAmount, outAmount);
 
     const [buf] = RaydiumSwap_Instruction.struct.serialize(data);
 
@@ -67,6 +71,7 @@ class RaydiumSwap_Instruction {
     constructor(
         readonly instruction: number,
         readonly side: number,
+        readonly discriminator: number[],
         readonly in_amount: bignum,
         readonly out_amount: bignum,
     ) {}
@@ -75,29 +80,18 @@ class RaydiumSwap_Instruction {
         [
             ["instruction", u8],
             ["side", u8],
+            ["discriminator", uniformFixedSizeArray(u8, 8)],
             ["in_amount", u64],
             ["out_amount", u64],
         ],
-        (args) => new RaydiumSwap_Instruction(args.instruction!, args.side!, args.in_amount!, args.out_amount!),
+        (args) => new RaydiumSwap_Instruction(args.instruction!, args.side!, args.discriminator!, args.in_amount!, args.out_amount!),
         "RaydiumSwap_Instruction",
     );
 }
 
-async function generatePubKey({
-    fromPublicKey,
-    seed,
-    programId = TOKEN_PROGRAM_ID,
-}: {
-    fromPublicKey: PublicKey;
-    seed: string;
-    programId: PublicKey;
-}) {
-    const publicKey = await PublicKey.createWithSeed(fromPublicKey, seed, programId);
-    return { publicKey, seed };
-}
-
 const useSwapRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
+    const { WrapSOL, isLoading: wrap_loading } = useWrapSOL();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -138,9 +132,10 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
 
     const SwapRaydiumClassic = async (token_amount: number, sol_amount: number, order_type: number) => {
         // if we have already done this then just skip this step
-      
+
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
+       
         let base_mint = amm.base_mint
         let quote_mint = amm.quote_mint
         
@@ -174,7 +169,7 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("RaydiumAMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("Raydium")],
             PROGRAM,
         )[0];
 
@@ -234,6 +229,7 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: PROGRAMIDS.AmmV4, isSigner: false, isWritable: false },
 
+            { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
@@ -243,7 +239,7 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
-        let raydium_swap_data = serialise_raydium_swap_instruction(token_amount, sol_amount, order_type);
+        let raydium_swap_data = serialise_raydium_swap_classic_instruction(token_amount, sol_amount, order_type);
 
         const list_instruction = new TransactionInstruction({
             keys: keys,
