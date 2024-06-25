@@ -149,9 +149,9 @@ const RemoveLiquidityPanel = ({
                         ? handleConnectWallet()
                         : amm.provider === 0
                           ? UpdateCookLiquidity(lp_raw, 1)
-                        : amm.provider === 1 
-                          ? RemoveLiquidityRaydium(lp_raw)
-                        : RemoveLiquidityRaydiumClassic(lp_raw);
+                          : amm.provider === 1
+                            ? RemoveLiquidityRaydium(lp_raw)
+                            : RemoveLiquidityRaydiumClassic(lp_raw);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

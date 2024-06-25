@@ -1,6 +1,21 @@
-import {NATIVE_MINT, createAssociatedTokenAccountInstruction, getAssociatedTokenAddress, createSyncNativeInstruction, getAccount} from "@solana/spl-token";
+import {
+    NATIVE_MINT,
+    createAssociatedTokenAccountInstruction,
+    getAssociatedTokenAddress,
+    createSyncNativeInstruction,
+    getAccount,
+} from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import {clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, SystemProgram, Transaction, sendAndConfirmTransaction, ComputeBudgetProgram} from "@solana/web3.js";
+import {
+    clusterApiUrl,
+    Connection,
+    Keypair,
+    LAMPORTS_PER_SOL,
+    SystemProgram,
+    Transaction,
+    sendAndConfirmTransaction,
+    ComputeBudgetProgram,
+} from "@solana/web3.js";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { Config, TIMEOUT } from "../components/Solana/constants";
@@ -47,36 +62,28 @@ const useWrapSOL = () => {
         });
     }, []);
 
-
-
     const WrapSOL = async (sol_amount: number) => {
         // if we have already done this then just skip this step
-      
+
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
+        const associatedTokenAccount = await getAssociatedTokenAddress(NATIVE_MINT, wallet.publicKey);
 
-        const associatedTokenAccount = await getAssociatedTokenAddress(
-            NATIVE_MINT,
-            wallet.publicKey
-        )
-        
         let create_ata_idx = createAssociatedTokenAccountInstruction(
             wallet.publicKey,
             associatedTokenAccount,
             wallet.publicKey,
-            NATIVE_MINT
-        )
+            NATIVE_MINT,
+        );
 
         let transfer_idx = SystemProgram.transfer({
             fromPubkey: wallet.publicKey,
             toPubkey: associatedTokenAccount,
-            lamports: sol_amount
-          });
+            lamports: sol_amount,
+        });
 
-        let sync_idx = createSyncNativeInstruction(
-            associatedTokenAccount
-        )
-  
+        let sync_idx = createSyncNativeInstruction(associatedTokenAccount);
+
         let list_txArgs = await get_current_blockhash("");
 
         let list_transaction = new Transaction(list_txArgs);
@@ -84,7 +91,6 @@ const useWrapSOL = () => {
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-        
         let ata_balance = await connection.getBalance(associatedTokenAccount);
 
         if (ata_balance === 0) {
@@ -108,10 +114,8 @@ const useWrapSOL = () => {
             console.log(error);
             return;
         }
-    
     };
     return { WrapSOL, isLoading };
-
-}
+};
 
 export default useWrapSOL;

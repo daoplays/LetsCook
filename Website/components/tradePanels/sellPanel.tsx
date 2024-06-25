@@ -140,9 +140,9 @@ const SellPanel = ({
                         ? handleConnectWallet()
                         : amm.provider === 0
                           ? PlaceMarketOrder(token_amount, sol_amount, 1)
-                        : amm.provider === 1
-                        ? SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1)
-                        : SwapRaydiumClassic(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
+                          : amm.provider === 1
+                            ? SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1)
+                            : SwapRaydiumClassic(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

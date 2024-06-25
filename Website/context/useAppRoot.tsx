@@ -61,7 +61,7 @@ export const AppRootContextProvider = ({
     setSelectedNetwork,
     listingData,
     setListingData,
-    setMintData
+    setMintData,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -89,7 +89,7 @@ export const AppRootContextProvider = ({
                 selectedNetwork,
                 listingData,
                 setListingData,
-                setMintData
+                setMintData,
             }}
         >
             {children}

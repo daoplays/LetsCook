@@ -43,30 +43,38 @@ const GetSOLPrice = async (setSOLPrice) => {
     setSOLPrice(result["data"]["SOL"]["price"]);
 };
 
-const GetTokenPrices = async (mints : PublicKey[]) => {
+const GetTokenPrices = async (mints: PublicKey[]) => {
     // Default options are marked with *
     const options = { method: "GET" };
-    let mint_strings = ""
+    let mint_strings = "";
     for (let i = 0; i < mints.length; i++) {
-        mint_strings += mints[i].toString() + ","
+        mint_strings += mints[i].toString() + ",";
     }
     let url = "https://price.jup.ag/v6/price?ids=[" + mint_strings + "]&vsToken=SOL";
     let result = await fetch(url, options).then((response) => response.json());
-    console.log(result)
+    console.log(result);
 };
 
-const GetTradeMintData = async (trade_keys : PublicKey[], setMintMap) => {
+const GetTradeMintData = async (trade_keys: PublicKey[], setMintMap) => {
+    console.log("GETTING MINT DATA");
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     let result = await connection.getMultipleAccountsInfo(trade_keys, "confirmed");
-
+    console.log(result);
     let mint_map = new Map<String, MintData>();
     for (let i = 0; i < result.length; i++) {
-        let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
-        let mint_data = await getMintData(connection, mint, result[i].owner);
+        try {
+            let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
+            let mint_data = await getMintData(connection, mint, result[i].owner);
 
-        //console.log("mint; ", mint.address.toString());
-        mint_map.set(trade_keys[i].toString(), mint_data);
+            mint_map.set(trade_keys[i].toString(), mint_data);
+            console.log("mint; ", mint.address.toString());
+        } catch (error) {
+            console.log("bad mint", trade_keys[i].toString());
+            console.log(error);
+        }
     }
+
+    console.log("SET MINT MAP", mint_map);
     setMintMap(mint_map);
 };
 
@@ -415,7 +423,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     const [amm] = AMMData.struct.deserialize(data);
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
-                    //console.log(amm.provider, amm.base_mint.toString());
+                    console.log("AMM", amm.provider, amm.base_mint.toString());
                 } catch (error) {
                     console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
@@ -433,10 +441,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
-               
+
                 //if (listing.mint.toString() === "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN"){
-                    //closeAccounts.push(program_data[i].pubkey)
-                    //continue;
+                //closeAccounts.push(program_data[i].pubkey)
+                //continue;
                 //}
                 listings.set(program_data[i].pubkey.toString(), listing);
                 continue;

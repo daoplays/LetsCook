@@ -54,7 +54,6 @@ type BN = typeof ZERO;
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
-
 function serialise_raydium_remove_liquidity_instruction(amount: number): Buffer {
     const data = new RaydiumRemoveLiquidity_Instruction(4, amount);
 
@@ -78,7 +77,6 @@ class RaydiumRemoveLiquidity_Instruction {
         "RaydiumRemoveLiquidity_Instruction",
     );
 }
-
 
 const useRemoveLiquidityRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
@@ -121,12 +119,7 @@ const useRemoveLiquidityRaydiumClassic = (amm: AMMData) => {
     }, []);
 
     const RemoveLiquidityRaydiumClassic = async (lp_amount: number) => {
-       
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        const quoteToken = amm.quote_mint
-        const baseToken = amm.base_mint
-       
 
         let pool_data = await request_raw_account_data("", amm.pool);
         const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
@@ -146,15 +139,14 @@ const useRemoveLiquidityRaydiumClassic = (amm: AMMData) => {
         let market_data = await request_raw_account_data("", ray_pool.marketId);
         const [market] = MarketStateLayoutV2.struct.deserialize(market_data);
 
-
         let user_base_account = await getAssociatedTokenAddress(
-            baseToken, // mint
+            ray_pool.baseMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
-            quoteToken, // mint
+            ray_pool.quoteMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );

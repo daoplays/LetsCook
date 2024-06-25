@@ -132,9 +132,8 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let base_mint_data = mintData.get(base_mint.toString())
-        let quote_mint_data = mintData.get(quote_mint.toString())
-
+        let base_mint_data = mintData.get(base_mint.toString());
+        let quote_mint_data = mintData.get(quote_mint.toString());
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]

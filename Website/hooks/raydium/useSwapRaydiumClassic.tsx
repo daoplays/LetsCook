@@ -32,7 +32,7 @@ import {
     Percent,
     jsonInfo2PoolKeys,
     LiquidityPoolJsonInfo,
-    MARKET_STATE_LAYOUT_V3
+    MARKET_STATE_LAYOUT_V3,
 } from "@raydium-io/raydium-sdk";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
@@ -49,15 +49,13 @@ const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 const ZERO = new BN(0);
 type BN = typeof ZERO;
 
-
-
 function serialise_raydium_swap_classic_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
     let base_in_discriminator: number[] = [143, 190, 90, 218, 196, 30, 51, 222];
     let base_out_discriminator: number[] = [55, 217, 98, 86, 163, 74, 180, 173];
 
     let discriminator = order_type === 0 ? base_out_discriminator : base_in_discriminator;
     let inAmount = order_type === 0 ? sol_amount : token_amount;
-    let outAmount = 0;//order_type === 0 ? token_amount : sol_amount;
+    let outAmount = 0; //order_type === 0 ? token_amount : sol_amount;
 
     console.log("in and out:", inAmount, outAmount);
     const data = new RaydiumSwap_Instruction(LaunchInstruction.swap_raydium_classic, order_type, discriminator, inAmount, outAmount);
@@ -135,10 +133,9 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-       
-        let base_mint = amm.base_mint
-        let quote_mint = amm.quote_mint
-        
+        let base_mint = amm.base_mint;
+        let quote_mint = amm.quote_mint;
+
         let user_base_account = await getAssociatedTokenAddress(
             base_mint, // mint
             wallet.publicKey, // owner
@@ -151,14 +148,12 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
             true, // allow owner off curve
         );
 
-        
         let inKey = order_type === 0 ? user_quote_account : user_base_account;
         let outKey = order_type === 0 ? user_base_account : user_quote_account;
 
         let inMint = order_type === 0 ? quote_mint : base_mint;
         let outMint = order_type === 0 ? base_mint : quote_mint;
 
-        
         let amm_seed_keys = [];
         if (base_mint.toString() < quote_mint.toString()) {
             amm_seed_keys.push(base_mint);
@@ -205,7 +200,6 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
         let market_data = await request_raw_account_data("", ray_pool.marketId);
         const [market] = MarketStateLayoutV2.struct.deserialize(market_data);
 
-        
         const keys = [
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: amm.pool, isSigner: false, isWritable: true },

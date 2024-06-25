@@ -93,7 +93,7 @@ const useEditLaunch = () => {
             PROGRAM,
         )[0];
 
-        let raydium_pool = getPoolStateAccount(token_mint_pubkey, wrapped_sol_mint)
+        let raydium_pool = getPoolStateAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_base_account = getAMMBaseAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_quote_account = getAMMQuoteAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_lp_mint_account = getLPMintAccount(token_mint_pubkey, wrapped_sol_mint);

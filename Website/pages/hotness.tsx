@@ -156,6 +156,8 @@ const HotnessPage = () => {
         let raydium_amm = ammData.get(raydium_amm_address.toString());
         let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0;
 
+        let show_birdeye = !have_raydium_amm && !have_cook_amm;
+
         return (
             <tr
                 style={{
@@ -214,11 +216,13 @@ const HotnessPage = () => {
                 </td>
                 <td style={{ minWidth: "150px" }}>
                     <HStack justify="center" gap={3}>
-                        <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={"https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana"} target="_blank">
-                                <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
-                            </Link>
-                        </Tooltip>
+                        {show_birdeye && (
+                            <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
+                                <Link href={"https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana"} target="_blank">
+                                    <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                </Link>
+                            </Tooltip>
+                        )}
                         {have_cook_amm && (
                             <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
                                 <Link href={"/trade/" + cook_amm_address} target="_blank">

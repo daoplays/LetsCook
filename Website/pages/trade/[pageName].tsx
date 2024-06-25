@@ -45,7 +45,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
-import useWebSocket from 'react-use-websocket';
+import useWebSocket from "react-use-websocket";
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
@@ -54,6 +54,7 @@ import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
 import BuyPanel from "../../components/tradePanels/buyPanel";
 import formatPrice from "../../utils/formatPrice";
+import Loader from "../../components/loader";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -64,8 +65,7 @@ interface MarketData {
     volume: number;
 }
 
-async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any,  market_address: string, setLastVolume : any) {
-
+async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_address: string, setLastVolume: any) {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
 
@@ -84,30 +84,28 @@ async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any,  market
 
     //console.log(url);
     let result = await fetch(url, options).then((response) => response.json());
-    let items = result["data"]["items"]
+    let items = result["data"]["items"];
 
     let now = new Date().getTime() / 1000;
     let last_volume = 0;
     let data: MarketData[] = [];
     for (let i = 0; i < items.length; i++) {
-
         let item = items[i];
 
-        
-        let open = sol_is_quote? item.o : 1.0/item.o;
-        let high = sol_is_quote?  item.h : 1.0/item.l;
-        let low = sol_is_quote? item.l : 1.0/item.h;
-        let close = sol_is_quote? item.c : 1.0/item.c;
-        let volume = sol_is_quote? item.v : item.v / close
+        let open = sol_is_quote ? item.o : 1.0 / item.o;
+        let high = sol_is_quote ? item.h : 1.0 / item.l;
+        let low = sol_is_quote ? item.l : 1.0 / item.h;
+        let close = sol_is_quote ? item.c : 1.0 / item.c;
+        let volume = sol_is_quote ? item.v : item.v / close;
         data.push({ time: item.unixTime as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
 
         if (now - item.unixTime < 24 * 60 * 60) {
-            last_volume += volume
+            last_volume += volume;
         }
     }
     console.log(result, "last volume", last_volume);
     setMarketData(data);
-    setLastVolume(last_volume)
+    setLastVolume(last_volume);
     //return data;
 }
 
@@ -199,8 +197,6 @@ const TradePage = () => {
         };
     }, [connection]);
 
-    
-
     useEffect(() => {
         if (ammData === null || listingData === null || mintData === null) return;
 
@@ -235,38 +231,40 @@ const TradePage = () => {
         }
 
         // update market data using bid/ask
-        let price = amm_quote_amount / amm_base_amount
+        let price = amm_quote_amount / amm_base_amount;
 
-        price = price * Math.pow(10, base_mint.mint.decimals) / Math.pow(10,9)
-        
+        price = (price * Math.pow(10, base_mint.mint.decimals)) / Math.pow(10, 9);
+
         let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
         let last_candle = market_data[market_data.length - 1];
-        let last_minute = last_candle.time / 15 / 60
+        let last_minute = last_candle.time / 15 / 60;
         //console.log("update price", price, last_minute, now_minute)
 
         if (now_minute > last_minute) {
-            let new_candle : MarketData = { time: (now_minute * 15 * 60) as UTCTimestamp, open: price, high: price, low: price, close: price, volume: 0 }
+            let new_candle: MarketData = {
+                time: (now_minute * 15 * 60) as UTCTimestamp,
+                open: price,
+                high: price,
+                low: price,
+                close: price,
+                volume: 0,
+            };
             //console.log("new candle", now_minute, last_minute, new_candle)
 
             market_data.push(new_candle);
-            setMarketData([...market_data])
-        }
-        else {
+            setMarketData([...market_data]);
+        } else {
             last_candle.close = price;
             if (price > last_candle.high) {
-                last_candle.high = price
+                last_candle.high = price;
             }
             if (price < last_candle.low) {
-                last_candle.low = price
-
+                last_candle.low = price;
             }
             //console.log("update old candle", last_candle)
-            market_data[market_data.length - 1] = last_candle
-            setMarketData([...market_data])
+            market_data[market_data.length - 1] = last_candle;
+            setMarketData([...market_data]);
         }
-
-        
-
     }, [amm_base_amount, amm_quote_amount, amm, market_data, base_mint]);
 
     const check_base_update = useCallback(async (result: any) => {
@@ -275,7 +273,7 @@ const TradePage = () => {
 
         let event_data = result.data;
         //console.log(event_data)
-        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64,72))
+        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
         //console.log(amount_u64)
         let amount = bignum_to_num(amount_u64.value);
         //console.log("update base amount", amount);
@@ -287,7 +285,7 @@ const TradePage = () => {
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
-        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64,72))
+        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
         //console.log(amount_u64)
 
         let amount = bignum_to_num(amount_u64.value);
@@ -349,18 +347,21 @@ const TradePage = () => {
         setUserLPAmount(amount);
     }, []);
 
-    const check_raydium_update = useCallback(async (result: any) => {
-        let event_data = result.data;
-        if (amm.provider === 1) {
-            const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
+    const check_raydium_update = useCallback(
+        async (result: any) => {
+            let event_data = result.data;
+            if (amm.provider === 1) {
+                const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
 
-            setLPAmount(bignum_to_num(poolState.lp_supply));
-        }
-        if (amm.provider === 2) {
-            const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
-            setLPAmount(bignum_to_num(ray_pool.lpReserve));
-        }
-    }, [amm]);
+                setLPAmount(bignum_to_num(poolState.lp_supply));
+            }
+            if (amm.provider === 2) {
+                const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
+                setLPAmount(bignum_to_num(ray_pool.lpReserve));
+            }
+        },
+        [amm],
+    );
 
     useEffect(() => {
         if (base_ws_id.current === null && base_address !== null) {
@@ -388,8 +389,6 @@ const TradePage = () => {
         if (raydium_ws_id.current === null && raydium_address !== null) {
             raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
         }
-
-        
     }, [
         connection,
         base_address,
@@ -474,17 +473,15 @@ const TradePage = () => {
         }
 
         if (check_market_data.current === true) {
-
-            
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
-            console.log("base key", base_amm_account.toString(), quote_amm_account.toString())
+            console.log("base key", base_amm_account.toString(), quote_amm_account.toString());
 
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
 
-            console.log("amm amounts", base_amount, quote_amount)
+            console.log("amm amounts", base_amount, quote_amount);
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
 
@@ -492,7 +489,7 @@ const TradePage = () => {
             setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
             if (amm.provider > 0) {
-                let sol_is_quote : boolean = true;
+                let sol_is_quote: boolean = true;
                 let pool_account = amm.pool;
                 setRaydiumAddress(pool_account);
 
@@ -503,30 +500,27 @@ const TradePage = () => {
                     //console.log(poolState);
                     setLPAmount(bignum_to_num(poolState.lp_supply));
                 }
-                
+
                 if (amm.provider === 2) {
                     let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
 
                     if (ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
-                        setSOLIsQuote(true)
-                    }
-                    else {
+                        setSOLIsQuote(true);
+                    } else {
                         sol_is_quote = false;
                         setSOLIsQuote(false);
                     }
 
-                    
                     setLPAmount(bignum_to_num(ray_pool.lpReserve));
                 }
                 //console.log("pool state", pool_state.toString())
                 if (Config.PROD) {
                     await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
                 }
-                
+
                 return;
             }
-
 
             setLPAmount(amm.lp_amount);
 
@@ -603,11 +597,7 @@ const TradePage = () => {
     };
 
     if (listing === null || amm === null || base_mint === null || mmLaunchData === null) {
-        return (
-            <Head>
-                <title>Let&apos;s Cook | Trade</title>
-            </Head>
-        );
+        return <Loader />;
     }
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
@@ -1114,7 +1104,6 @@ const InfoContent = ({
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
 
-    
     return (
         <VStack spacing={8} w="100%" mb={3}>
             <HStack mt={-2} px={5} justify="space-between" w="100%">
@@ -1250,59 +1239,81 @@ const ChartComponent = (props) => {
     const { data, additionalPixels } = props;
 
     const chartContainerRef = useRef(null);
+    const chartRef = useRef(null);
+    const seriesRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => {
-            chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+            if (chartRef.current) {
+                chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
+            }
         };
 
-        const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
-        const chart = createChart(chartContainerRef.current);
+        if (chartContainerRef.current) {
+            const chart = createChart(chartContainerRef.current, {
+                layout: {
+                    background: { color: "#171B26" },
+                    textColor: "#DDD",
+                },
+                grid: {
+                    vertLines: { color: "#242733" },
+                    horzLines: { color: "#242733" },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+                crosshair: {
+                    mode: CrosshairMode.Normal,
+                },
+                width: chartContainerRef.current.clientWidth,
+                height: chartContainerRef.current.clientHeight,
+            });
 
-        const myPriceFormatter = (p) => p.toExponential(2);
+            chartRef.current = chart;
 
-        chart.applyOptions({
-            layout: {
-                background: { color: "#171B26" },
-                textColor: "#DDD",
-            },
-            grid: {
-                vertLines: { color: "#242733" },
-                horzLines: { color: "#242733" },
-            },
-            timeScale: {
-                timeVisible: true,
-                secondsVisible: false,
-            },
-            crosshair: {
-                mode: CrosshairMode.Normal,
-            },
-        });
+            const series = chart.addCandlestickSeries({
+                upColor: "#00C38C",
+                downColor: "#F94D5C",
+                borderVisible: false,
+                wickUpColor: "#00C38C",
+                wickDownColor: "#F94D5C",
+                priceFormat: {
+                    type: "custom",
+                    formatter: (price) => price.toExponential(2),
+                    minMove: 0.000000001,
+                },
+            });
 
-        chart.timeScale().fitContent();
+            seriesRef.current = series;
+            series.setData(data);
 
-        const newSeries = chart.addCandlestickSeries({
-            upColor: "#4EFF3F",
-            downColor: "#ef5350",
-            borderVisible: false,
-            wickUpColor: "#4EFF3F",
-            wickDownColor: "#ef5350",
-            priceFormat: {
-                type: "custom",
-                formatter: (price) => price.toExponential(2),
-                minMove: 0.000000001,
-            },
-        });
+            chart.timeScale().fitContent();
 
-        newSeries.setData(data);
+            window.addEventListener("resize", handleResize);
 
-        window.addEventListener("resize", handleResize);
+            return () => {
+                window.removeEventListener("resize", handleResize);
+                chart.remove();
+            };
+        }
+    }, []);
 
-        return () => {
-            window.removeEventListener("resize", handleResize);
-            chart.remove();
-        };
-    }, [data, additionalPixels]);
+    useEffect(() => {
+        if (seriesRef.current) {
+            seriesRef.current.setData(data);
+        }
+    }, [data]);
+
+    useEffect(() => {
+        if (chartContainerRef.current && chartRef.current) {
+            const newHeight = `calc(60vh + ${additionalPixels}px)`;
+            chartContainerRef.current.style.height = newHeight;
+            chartRef.current.applyOptions({
+                height: chartContainerRef.current.clientHeight,
+            });
+        }
+    }, [additionalPixels]);
 
     return (
         <HStack
@@ -1310,8 +1321,8 @@ const ChartComponent = (props) => {
             justify="center"
             id="chartContainer"
             w="100%"
+            h={`calc(60vh + ${additionalPixels}px)`}
             style={{
-                height: `calc(60vh + ${additionalPixels}px)`,
                 overflow: "auto",
                 position: "relative",
                 borderBottom: "1px solid rgba(134, 142, 150, 0.5)",

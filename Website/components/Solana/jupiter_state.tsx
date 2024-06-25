@@ -52,9 +52,8 @@ export function getAMMKey(amm: AMMData, amm_provider: number) {
     return amm_data_account;
 }
 
-export function getAMMKeyFromMints(base_mint : PublicKey, amm_provider: number) {
-   
-    let quote_mint =  new PublicKey("So11111111111111111111111111111111111111112");
+export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
+    let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
     let amm_seed_keys = [];
     if (base_mint.toString() < quote_mint.toString()) {
         amm_seed_keys.push(base_mint);
@@ -540,8 +539,6 @@ export class RaydiumAMM {
         "RaydiumAMM",
     );
 }
-
-
 
 export class MarketStateLayoutV2 {
     constructor(

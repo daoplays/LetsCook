@@ -54,9 +54,8 @@ type BN = typeof ZERO;
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
-
-function serialise_raydium_add_liquidity_instruction(base_amount: number, quote_amount: number): Buffer {
-    const data = new RaydiumAddLiquidity_Instruction(3, base_amount, quote_amount, 0);
+function serialise_raydium_add_liquidity_instruction(base_amount: number, quote_amount: number, base_side): Buffer {
+    const data = new RaydiumAddLiquidity_Instruction(3, base_amount, quote_amount, base_side);
 
     const [buf] = RaydiumAddLiquidity_Instruction.struct.serialize(data);
 
@@ -103,7 +102,6 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
 
     const signature_ws_id = useRef<number | null>(null);
 
-
     const check_signature_update = useCallback(async (result: any) => {
         console.log(result);
         signature_ws_id.current = null;
@@ -139,12 +137,8 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
 
     const AddLiquidityRaydiumClassic = async (token_amount: number, sol_amount: number) => {
         // if we have already done this then just skip this step
-        
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        const quoteToken = amm.quote_mint
-        const baseToken = amm.base_mint
-       
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         let pool_data = await request_raw_account_data("", amm.pool);
         const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
@@ -164,15 +158,14 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
         let market_data = await request_raw_account_data("", ray_pool.marketId);
         const [market] = MarketStateLayoutV2.struct.deserialize(market_data);
 
-
         let user_base_account = await getAssociatedTokenAddress(
-            baseToken, // mint
+            ray_pool.baseMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
-            quoteToken, // mint
+            ray_pool.quoteMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
         );
@@ -183,7 +176,14 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
             true, // allow owner off curve
         );
 
-      
+        let base_amount = token_amount;
+        let quote_amount = sol_amount;
+        let base_side = 0;
+        if (!ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+            base_amount = sol_amount;
+            quote_amount = token_amount;
+            base_side = 1;
+        }
 
         const keys = [
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
@@ -204,7 +204,7 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
             { pubkey: market.eventQueue, isSigner: false, isWritable: false },
         ];
 
-        let raydium_add_liquidity_data = serialise_raydium_add_liquidity_instruction(token_amount, sol_amount);
+        let raydium_add_liquidity_data = serialise_raydium_add_liquidity_instruction(base_amount, quote_amount, base_side);
 
         const list_instruction = new TransactionInstruction({
             keys: keys,

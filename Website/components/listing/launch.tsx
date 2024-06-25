@@ -149,8 +149,8 @@ const CreateListing = () => {
     }
 
     async function handleSetBaseData() {
-        let mint_data = await setMintData(base_address)
-        if (mint_data === null) {   
+        let mint_data = await setMintData(base_address);
+        if (mint_data === null) {
             toast.error("Token not found");
             return;
         }
@@ -524,8 +524,6 @@ const CreateListing = () => {
                                                 </div>
                                             </HStack>
                                         </Flex>
-
-                                       
                                     </VStack>
                                 </HStack>
                                 {admin ? (
