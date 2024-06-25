@@ -171,7 +171,7 @@ const useCreateListing = () => {
                 toast.error("No Raydium Market Found");
                 return;
             }
-            
+
             if (ray_market !== null) {
                 console.log(ray_market);
                 pool_account = new PublicKey(ray_market.address);
@@ -196,7 +196,7 @@ const useCreateListing = () => {
                     let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
                     raydium_lp_mint_account = ray_pool.lpMint;
-                    if (ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+                    if (ray_pool.quoteMint.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
                         raydium_base_account = ray_pool.baseVault;
                         raydium_quote_account = ray_pool.quoteVault;
                     } else {

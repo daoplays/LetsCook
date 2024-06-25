@@ -421,6 +421,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 6) {
                 try {
                     const [amm] = AMMData.struct.deserialize(data);
+                    
+
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
                     console.log("AMM", amm.provider, amm.base_mint.toString());
@@ -442,7 +444,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
 
-                //if (listing.mint.toString() === "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN"){
+                //if (listing.mint.toString() !== "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN" && listing.mint.toString() !== "5jiJ7c4TqKgLyWhTwgmEiDu9UboQNMNYH1kZXd6kpump"){
                 //closeAccounts.push(program_data[i].pubkey)
                 //continue;
                 //}

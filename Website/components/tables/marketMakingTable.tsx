@@ -51,16 +51,16 @@ const MarketMakingTable = () => {
         }
     };
 
-    console.log(ammData, mintData);
+    //console.log(ammData, mintData);
     let amm_launches: AMMLaunch[] = [];
     if (mintData !== null) {
         ammData.forEach((amm, i) => {
-            console.log("CHECK AMM IN TABLE", amm.base_mint.toString());
+            //console.log("CHECK AMM IN TABLE", amm.base_mint.toString());
             if (bignum_to_num(amm.start_time) === 0) {
                 return;
             }
             let mint_data = mintData.get(amm.base_mint.toString());
-            console.log(amm.base_mint.toString(), mint_data);
+            //console.log(amm.base_mint.toString(), mint_data);
             let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             let listing = listingData.get(listing_key.toString());
             if (listing && mint_data) {
@@ -136,7 +136,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
     let last_price = Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0);
-    console.log(amm_launch);
+    //console.log(amm_launch);
     let total_supply =
         amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals) : 0;
     let market_cap = total_supply * last_price * SOLPrice;

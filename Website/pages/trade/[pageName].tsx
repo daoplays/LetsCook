@@ -421,20 +421,6 @@ const TradePage = () => {
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
 
-        let amm_seed_keys = [];
-        if (token_mint.toString() < wsol_mint.toString()) {
-            amm_seed_keys.push(token_mint);
-            amm_seed_keys.push(wsol_mint);
-        } else {
-            amm_seed_keys.push(wsol_mint);
-            amm_seed_keys.push(token_mint);
-        }
-
-        let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
-            PROGRAM,
-        )[0];
-
         let base_amm_account = amm.base_key;
         let quote_amm_account = amm.quote_key;
         let lp_mint = amm.lp_mint;
@@ -476,6 +462,7 @@ const TradePage = () => {
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
+            console.log("base mint", base_mint.mint.address.toString(), wsol_mint.toString());
             console.log("base key", base_amm_account.toString(), quote_amm_account.toString());
 
             let base_amount = await request_token_amount("", base_amm_account);
@@ -505,7 +492,7 @@ const TradePage = () => {
                     let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
 
-                    if (ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+                    if (ray_pool.quoteMint.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
                         setSOLIsQuote(true);
                     } else {
                         sol_is_quote = false;
@@ -522,6 +509,21 @@ const TradePage = () => {
                 return;
             }
 
+
+            let amm_seed_keys = [];
+            if (token_mint.toString() < wsol_mint.toString()) {
+                amm_seed_keys.push(token_mint);
+                amm_seed_keys.push(wsol_mint);
+            } else {
+                amm_seed_keys.push(wsol_mint);
+                amm_seed_keys.push(token_mint);
+            }
+
+            let amm_data_account = PublicKey.findProgramAddressSync(
+                [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
+                PROGRAM,
+            )[0];
+            
             setLPAmount(amm.lp_amount);
 
             let index_buffer = uInt32ToLEBytes(0);
