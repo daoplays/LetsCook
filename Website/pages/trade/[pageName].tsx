@@ -1148,59 +1148,81 @@ const ChartComponent = (props) => {
     const { data, additionalPixels } = props;
 
     const chartContainerRef = useRef(null);
+    const chartRef = useRef(null);
+    const seriesRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => {
-            chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+            if (chartRef.current) {
+                chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
+            }
         };
 
-        const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
-        const chart = createChart(chartContainerRef.current);
+        if (chartContainerRef.current) {
+            const chart = createChart(chartContainerRef.current, {
+                layout: {
+                    background: { color: "#171B26" },
+                    textColor: "#DDD",
+                },
+                grid: {
+                    vertLines: { color: "#242733" },
+                    horzLines: { color: "#242733" },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+                crosshair: {
+                    mode: CrosshairMode.Normal,
+                },
+                width: chartContainerRef.current.clientWidth,
+                height: chartContainerRef.current.clientHeight,
+            });
 
-        const myPriceFormatter = (p) => p.toExponential(2);
+            chartRef.current = chart;
 
-        chart.applyOptions({
-            layout: {
-                background: { color: "#171B26" },
-                textColor: "#DDD",
-            },
-            grid: {
-                vertLines: { color: "#242733" },
-                horzLines: { color: "#242733" },
-            },
-            timeScale: {
-                timeVisible: true,
-                secondsVisible: false,
-            },
-            crosshair: {
-                mode: CrosshairMode.Normal,
-            },
-        });
+            const series = chart.addCandlestickSeries({
+                upColor: "#4EFF3F",
+                downColor: "#ef5350",
+                borderVisible: false,
+                wickUpColor: "#4EFF3F",
+                wickDownColor: "#ef5350",
+                priceFormat: {
+                    type: "custom",
+                    formatter: (price) => price.toExponential(2),
+                    minMove: 0.000000001,
+                },
+            });
 
-        chart.timeScale().fitContent();
+            seriesRef.current = series;
+            series.setData(data);
 
-        const newSeries = chart.addCandlestickSeries({
-            upColor: "#4EFF3F",
-            downColor: "#ef5350",
-            borderVisible: false,
-            wickUpColor: "#4EFF3F",
-            wickDownColor: "#ef5350",
-            priceFormat: {
-                type: "custom",
-                formatter: (price) => price.toExponential(2),
-                minMove: 0.000000001,
-            },
-        });
+            chart.timeScale().fitContent();
 
-        newSeries.setData(data);
+            window.addEventListener("resize", handleResize);
 
-        window.addEventListener("resize", handleResize);
+            return () => {
+                window.removeEventListener("resize", handleResize);
+                chart.remove();
+            };
+        }
+    }, []);
 
-        return () => {
-            window.removeEventListener("resize", handleResize);
-            chart.remove();
-        };
-    }, [data, additionalPixels]);
+    useEffect(() => {
+        if (seriesRef.current) {
+            seriesRef.current.setData(data);
+        }
+    }, [data]);
+
+    useEffect(() => {
+        if (chartContainerRef.current && chartRef.current) {
+            const newHeight = `calc(60vh + ${additionalPixels}px)`;
+            chartContainerRef.current.style.height = newHeight;
+            chartRef.current.applyOptions({
+                height: chartContainerRef.current.clientHeight,
+            });
+        }
+    }, [additionalPixels]);
 
     return (
         <HStack
@@ -1208,8 +1230,8 @@ const ChartComponent = (props) => {
             justify="center"
             id="chartContainer"
             w="100%"
+            h={`calc(60vh + ${additionalPixels}px)`}
             style={{
-                height: `calc(60vh + ${additionalPixels}px)`,
                 overflow: "auto",
                 position: "relative",
                 borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
