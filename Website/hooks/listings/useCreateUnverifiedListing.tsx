@@ -161,6 +161,42 @@ const useCreateUnverifiedListing = () => {
         let token_mint = new PublicKey(new_listing.token);
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
+        if (new_listing.token === "So11111111111111111111111111111111111111112") {
+            toast.error("Dont add WSOL");
+            return;
+        }
+
+        if (Config.PROD) {
+            const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+
+            let market_url = "https://public-api.birdeye.so/defi/v2/markets?address=" + token_mint.toString();
+            let market_result = await fetch(market_url, options).then((response) => response.json());
+
+            let found = false;
+            for (let i = 0; i < market_result["data"]["items"].length; i++) {
+                let item = market_result["data"]["items"][i];
+                if (
+                    item.base.address !== "So11111111111111111111111111111111111111112" &&
+                    item.quote.address !== "So11111111111111111111111111111111111111112"
+                )
+                    continue;
+
+                if (item["source"] === "Raydium") {
+                    found = true
+                    break;
+                }
+                if (item["source"] === "Raydium Cp") {
+                    found = true
+                    break;
+                }
+            }
+
+            if (!found) {
+                toast.error("No Raydium Market Found");
+                return;
+            }
+        }
+
         let listing = PublicKey.findProgramAddressSync(
             [token_mint.toBytes(), wallet.publicKey.toBytes(), Buffer.from("UnverifiedListing")],
             PROGRAM,

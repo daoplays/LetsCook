@@ -166,6 +166,12 @@ const useCreateListing = () => {
                     break;
                 }
             }
+
+            if (ray_market === null) {
+                toast.error("No Raydium Market Found");
+                return;
+            }
+            
             if (ray_market !== null) {
                 console.log(ray_market);
                 pool_account = new PublicKey(ray_market.address);
