@@ -34,6 +34,23 @@ import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
 import { getMintData } from "../components/amm/launch";
 
+export const update_listings_blob = async (address: string) => {
+    // #2 Make a post request to our API. Obviously, update the URL to your own deployment.
+    const response = await fetch("/.netlify/functions/update_listings", {
+        method: "POST",
+        body: JSON.stringify({
+            address: address,
+        }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result.body;
+};
+
 const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
     const options = { method: "GET" };
@@ -52,11 +69,11 @@ const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAct
     }
     let url = "https://price.jup.ag/v6/price?ids=" + mint_strings + "&vsToken=SOL";
     let result = await fetch(url, options).then((response) => response.json());
-    let price_map : Map<string, number> = new Map();
-    let result_data : Map<string, any> = result["data"];
+    let price_map: Map<string, number> = new Map();
+    let result_data: Map<string, any> = result["data"];
     for (let i = 0; i < mints.length; i++) {
-        let result = result_data[mints[i]]
-        price_map.set(mints[i], result["price"])
+        let result = result_data[mints[i]];
+        price_map.set(mints[i], result["price"]);
     }
     setPriceMap(price_map);
 };
@@ -65,7 +82,7 @@ const GetTradeMintData = async (trade_keys: String[], setMintMap) => {
     //console.log("GETTING MINT DATA");
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-    let pubkeys : PublicKey[] = []
+    let pubkeys: PublicKey[] = [];
     for (let i = 0; i < trade_keys.length; i++) {
         pubkeys.push(new PublicKey(trade_keys[i]));
     }
@@ -433,7 +450,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 6) {
                 try {
                     const [amm] = AMMData.struct.deserialize(data);
-                    
 
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
@@ -455,7 +471,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
-
                 //if (listing.mint.toString() !== "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN" && listing.mint.toString() !== "5jiJ7c4TqKgLyWhTwgmEiDu9UboQNMNYH1kZXd6kpump"){
                 //closeAccounts.push(program_data[i].pubkey)
                 //continue;
@@ -555,7 +570,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         // set up the map for the trade page
         let trade_mints: String[] = [];
-        let price_mints: string[] = []
+        let price_mints: string[] = [];
         listings.forEach((listing, key) => {
             trade_mints.push(listing.mint.toString());
             price_mints.push(listing.mint.toString());
@@ -565,8 +580,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             // check if we have a whitelist token
             for (let p = 0; p < launch.plugins.length; p++) {
                 if (launch.plugins[p]["__kind"] === "Whitelist") {
-                    if (!trade_mints.includes(launch.plugins[p]["key"].toString()))
-                        trade_mints.push(launch.plugins[p]["key"]);
+                    if (!trade_mints.includes(launch.plugins[p]["key"].toString())) trade_mints.push(launch.plugins[p]["key"]);
                 }
             }
         });
@@ -578,7 +592,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
 
         GetTradeMintData(trade_mints, setMintData);
-        GetTokenPrices(price_mints, setJupPrices)
+        GetTokenPrices(price_mints, setJupPrices);
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {

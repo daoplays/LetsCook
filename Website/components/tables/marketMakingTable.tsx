@@ -16,7 +16,6 @@ import ShowExtensions, { getExtensions } from "../Solana/extensions";
 import { PublicKey } from "@solana/web3.js";
 import { HypeVote } from "../hypeVote";
 
-
 interface Header {
     text: string;
     field: string | null;
@@ -24,18 +23,18 @@ interface Header {
 
 function nFormatter(num, digits) {
     const lookup = [
-      { value: 1, symbol: "" },
-      { value: 1e3, symbol: "k" },
-      { value: 1e6, symbol: "M" },
-      { value: 1e9, symbol: "B" },
-      { value: 1e12, symbol: "T" },
-      { value: 1e15, symbol: "P" },
-      { value: 1e18, symbol: "E" }
+        { value: 1, symbol: "" },
+        { value: 1e3, symbol: "k" },
+        { value: 1e6, symbol: "M" },
+        { value: 1e9, symbol: "B" },
+        { value: 1e12, symbol: "T" },
+        { value: 1e15, symbol: "P" },
+        { value: 1e18, symbol: "E" },
     ];
     const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/;
-    const item = lookup.findLast(item => num >= item.value);
+    const item = lookup.findLast((item) => num >= item.value);
     return item ? (num / item.value).toFixed(digits).replace(regexp, "").concat(item.symbol) : "0";
-  }
+}
 
 interface AMMLaunch {
     amm_data: AMMData;
@@ -118,8 +117,6 @@ const MarketMakingTable = () => {
                                 </HStack>
                             </th>
                         ))}
-
-                       
                     </tr>
                 </thead>
 
@@ -143,8 +140,10 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
 
-
-    let last_price = amm_launch.amm_data.provider === 0 ? Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0) : jupPrices.get(amm_launch.amm_data.base_mint.toString());
+    let last_price =
+        amm_launch.amm_data.provider === 0
+            ? Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0)
+            : jupPrices.get(amm_launch.amm_data.base_mint.toString());
     //console.log(amm_launch);
     let total_supply =
         amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals) : 0;
@@ -227,52 +226,52 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 <ShowExtensions extension_flag={getExtensions(amm_launch.mint)} />
             </td>
             <td style={{ minWidth: "150px" }}>
-                    <HypeVote
-                        launch_type={0}
-                        launch_id={listing.id}
-                        page_name={""}
-                        positive_votes={listing.positive_votes}
-                        negative_votes={listing.negative_votes}
-                        isTradePage={false}
-                        listing={listing}
-                    />
-                </td>
+                <HypeVote
+                    launch_type={0}
+                    launch_id={listing.id}
+                    page_name={""}
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
+                    isTradePage={false}
+                    listing={listing}
+                />
+            </td>
             <td style={{ minWidth: "150px" }}>
-                    <HStack justify="center" gap={3}>
-                        {show_birdeye && (
-                            <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
-                                <Link href={"https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana"} target="_blank">
-                                    <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                <HStack justify="center" gap={3}>
+                    {show_birdeye && (
+                        <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={"https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana"} target="_blank">
+                                <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                            </Link>
+                        </Tooltip>
+                    )}
+                    {have_cook_amm && (
+                        <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
+                            <Link href={"/trade/" + cook_amm_address} target="_blank">
+                                <Image src="/favicon.ico" alt="Cook Icon" width={lg ? 30 : 35} height={lg ? 30 : 35} />
+                            </Link>
+                        </Tooltip>
+                    )}
+                    {have_raydium_amm && (
+                        <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
+                            {have_raydium_amm && (
+                                <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
+                                    <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                                 </Link>
-                            </Tooltip>
-                        )}
-                        {have_cook_amm && (
-                            <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
-                                <Link href={"/trade/" + cook_amm_address} target="_blank">
-                                    <Image src="/favicon.ico" alt="Cook Icon" width={lg ? 30 : 35} height={lg ? 30 : 35} />
+                            )}
+                        </Tooltip>
+                    )}
+                    {have_raydium_cpmm && (
+                        <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
+                            {have_raydium_amm && (
+                                <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
+                                    <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                                 </Link>
-                            </Tooltip>
-                        )}
-                        {have_raydium_amm && (
-                            <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
-                                {have_raydium_amm && (
-                                    <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
-                                        <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
-                                    </Link>
-                                )}
-                            </Tooltip>
-                        )}
-                        {have_raydium_cpmm && (
-                            <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
-                                {have_raydium_amm && (
-                                    <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
-                                        <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
-                                    </Link>
-                                )}
-                            </Tooltip>
-                        )}
-                    </HStack>
-                </td>
+                            )}
+                        </Tooltip>
+                    )}
+                </HStack>
+            </td>
         </tr>
     );
 };

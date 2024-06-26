@@ -182,11 +182,11 @@ const useCreateUnverifiedListing = () => {
                     continue;
 
                 if (item["source"] === "Raydium") {
-                    found = true
+                    found = true;
                     break;
                 }
                 if (item["source"] === "Raydium Cp") {
-                    found = true
+                    found = true;
                     break;
                 }
             }

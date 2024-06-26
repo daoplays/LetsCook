@@ -275,7 +275,7 @@ const TradePage = () => {
         //console.log(event_data)
         const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
         let amount = parseFloat(amount_u64.value.toString());
-        console.log("base update", amount, amount_u64.value.toString())
+        console.log("base update", amount, amount_u64.value.toString());
 
         //console.log("update base amount", amount);
         setBaseAmount(amount);
@@ -289,7 +289,7 @@ const TradePage = () => {
         const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
 
         let amount = parseFloat(amount_u64.value.toString());
-        console.log("quote update", amount, amount_u64.value.toString())
+        console.log("quote update", amount, amount_u64.value.toString());
 
         //console.log("update quote amount", amount);
 
@@ -511,7 +511,6 @@ const TradePage = () => {
                 return;
             }
 
-
             let amm_seed_keys = [];
             if (token_mint.toString() < wsol_mint.toString()) {
                 amm_seed_keys.push(token_mint);
@@ -525,7 +524,7 @@ const TradePage = () => {
                 [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
                 PROGRAM,
             )[0];
-            
+
             setLPAmount(amm.lp_amount);
 
             let index_buffer = uInt32ToLEBytes(0);
@@ -1301,7 +1300,7 @@ const ChartComponent = (props) => {
                 chart.remove();
             };
         }
-    }, []);
+    }, [data]);
 
     useEffect(() => {
         if (seriesRef.current) {

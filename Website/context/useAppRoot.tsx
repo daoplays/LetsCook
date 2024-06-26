@@ -63,7 +63,7 @@ export const AppRootContextProvider = ({
     listingData,
     setListingData,
     setMintData,
-    jupPrices
+    jupPrices,
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -92,7 +92,7 @@ export const AppRootContextProvider = ({
                 listingData,
                 setListingData,
                 setMintData,
-                jupPrices
+                jupPrices,
             }}
         >
             {children}

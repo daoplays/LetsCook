@@ -10,33 +10,33 @@ export interface ActionGetResponse {
     /** UI state for the button being rendered to the user */
     disabled?: boolean;
     links?: {
-      /** list of related Actions a user could perform */
-      actions: LinkedAction[];
+        /** list of related Actions a user could perform */
+        actions: LinkedAction[];
     };
     /** non-fatal error message to be displayed to the user */
     error?: ActionError;
-  }
+}
 
-  export interface ActionError {
+export interface ActionError {
     /** non-fatal error message to be displayed to the user */
     message: string;
-  }
+}
 
-  export interface LinkedAction {
+export interface LinkedAction {
     /** URL endpoint for an action */
     href: string;
     /** button text rendered to the user */
     label: string;
     /** Parameter to accept user input within an action */
     parameters?: [ActionParameter];
-  }
-   
-  /** Parameter to accept user input within an action */
-  export interface ActionParameter {
+}
+
+/** Parameter to accept user input within an action */
+export interface ActionParameter {
     /** parameter name in url */
     name: string;
     /** placeholder text for the user input field */
     label?: string;
     /** declare if this field is required (defaults to `false`) */
     required?: boolean;
-  }
+}
