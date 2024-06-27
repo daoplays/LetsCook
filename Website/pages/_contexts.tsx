@@ -475,6 +475,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 //closeAccounts.push(program_data[i].pubkey)
                 //continue;
                 //}
+                update_listings_blob(listing.mint.toString());
                 listings.set(program_data[i].pubkey.toString(), listing);
                 continue;
             }

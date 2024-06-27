@@ -1,22 +1,9 @@
 import { request_raw_account_data, LaunchData, bignum_to_num, ListingData } from "../../components/Solana/state";
 import { PROGRAM, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { getStore } from "@netlify/blobs";
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push } from "firebase/database";
+import admin from 'firebase-admin';
 
-// TODO: Replace the following with your app's Firebase project configuration
-// See: https://firebase.google.com/docs/web/learn-more#config-object
-const firebaseConfig = {
-    // ...
-    // The value of `databaseURL` depends on the location of the database
-    databaseURL: "https://letscooklistings-default-rtdb.firebaseio.com/",
-};
 
-interface Result {
-    statusCode: number;
-    body: string;
-}
 
 exports.handler = async function (event, context) {
     console.log(event);
@@ -24,16 +11,32 @@ exports.handler = async function (event, context) {
     let event_body = JSON.parse(event.body);
     let mint = event_body["address"];
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
+    if (!admin.apps.length) {
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId: "letscooklistings",
+                clientEmail: "firebase-adminsdk-lzgk0@letscooklistings.iam.gserviceaccount.com",
+                privateKey:process.env.FIREBASE_KEY.replace(/\\n/g, '\n'),
+            }),
+            databaseURL: "https://letscooklistings-default-rtdb.firebaseio.com",
+            });
+    } catch (error) {
+        console.log('Firebase admin initialization error:', error.stack);
+    }
+    }
 
-    // Initialize Realtime Database and get a reference to the service
-    const database = getDatabase(app);
+    
+
+    let mint_key = new PublicKey(mint);
+    let listing_account = PublicKey.findProgramAddressSync([mint_key.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+
+
+    const db = admin.database();
+    const database = db.ref("data/" + listing_account.toString())
 
     try {
-        let mint_key = new PublicKey(mint);
-        let listing_account = PublicKey.findProgramAddressSync([mint_key.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-
+        
         const listing_data = await request_raw_account_data("", listing_account);
         if (listing_data === null) {
             var Jresult = { statusCode: 404, body: JSON.stringify({ message: "listing error" }) };
@@ -41,9 +44,9 @@ exports.handler = async function (event, context) {
         }
         try {
             const [listing] = ListingData.struct.deserialize(listing_data);
-            console.log("in update listings", JSON.stringify(listing));
+            //console.log("in update listings", JSON.stringify(listing));
 
-            await set(ref(database, "data/" + listing_account.toString()), JSON.stringify(listing));
+            await database.set(JSON.stringify(listing));
         } catch (error) {
             console.log("ERROR: ", error);
             var Jresult = { statusCode: 404, body: JSON.stringify({ message: "listing error" }) };
