@@ -34,21 +34,43 @@ import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
 import { getMintData } from "../components/amm/launch";
 
-export const update_listings_blob = async (address: string) => {
-    // #2 Make a post request to our API. Obviously, update the URL to your own deployment.
-    const response = await fetch("/.netlify/functions/update_listings", {
-        method: "POST",
-        body: JSON.stringify({
-            address: address,
-        }),
-        headers: {
-            "Content-Type": "application/json",
-        },
-    });
+export const update_listings_blob = async (type : number, value: string) => {
 
-    const result = await response.json();
-    console.log(result);
-    return result.body;
+    if (!Config.PROD) {
+        return
+    }
+
+    if (type == 0) {
+        const response = await fetch("/.netlify/functions/update_listings", {
+            method: "POST",
+            body: JSON.stringify({
+                address: value,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const result = await response.json();
+        console.log(result);
+        return result.body;
+    }
+    if (type == 1) {
+
+        const response = await fetch("/.netlify/functions/update_collection", {
+            method: "POST",
+            body: JSON.stringify({
+                name: value,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const result = await response.json();
+        console.log(result);
+        return result.body;
+    }
 };
 
 const GetSOLPrice = async (setSOLPrice) => {

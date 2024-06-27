@@ -60,7 +60,7 @@ export function HypeVote({
             });
 
             if (launch_type === 0) {
-                update_listings_blob(listing.mint.toString());
+                update_listings_blob(0, listing.mint.toString());
             }
         },
         [listing, launch_type],
