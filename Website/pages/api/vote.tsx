@@ -3,6 +3,7 @@ import { Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import { getRecentPrioritizationFees, get_current_blockhash, serialise_HypeVote_instruction } from "../../components/Solana/state";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
+import { update_listings_blob } from "../_contexts";
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -157,6 +158,15 @@ export default async function handler(req, res) {
                     "Vote will be stored on chain.  One vote per user.  User account wil be created if it does not exist.  For more info visit letscook.wtf!",
             };
 
+            await fetch("https://letscook.wtf/.netlify/functions/update_listings", {
+                method: "POST",
+                body: JSON.stringify({
+                    address: mint,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
             res.status(200).json(processedData);
         } catch (error) {
             console.error("Error processing request:", error);
