@@ -65,7 +65,7 @@ export default async function handler(req, res) {
                 const snapshot2 = await get(ref(database, "data/" + listing_account2.toString()));
                 listing2 = JSON.parse(snapshot2.val());
 
-                image_link = "http://localhost:3000/api/combine-images?mint1=" + mint + "&mint2=" + mint2;
+                image_link = "https://letscook.wtf/api/combine-images?mint1=" + mint + "&mint2=" + mint2;
 
                 actions = [
                     {
