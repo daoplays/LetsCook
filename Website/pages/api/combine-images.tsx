@@ -35,6 +35,21 @@ function cleanText(text: string): string {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Encoding, Accept-Encoding");
+
+    res.status(200).end();
+    return;
+}
+
+  res.setHeader('Content-Type', 'image/jpeg');
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Encoding, Accept-Encoding");
+
+
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
 
@@ -137,7 +152,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     .jpeg()
     .toBuffer();
 
-    res.setHeader('Content-Type', 'image/jpeg');
+    
     res.send(combinedImage);
   } catch (error) {
     console.log(error)
