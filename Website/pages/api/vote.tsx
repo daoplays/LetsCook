@@ -36,33 +36,59 @@ export default async function handler(req, res) {
         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Encoding, Accept-Encoding");
 
         try {
-            const { mint } = req.query;
+            const { mint, mint2 } = req.query;
 
             let token_mint = new PublicKey(mint);
             let listing_account = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             const snapshot = await get(ref(database, "data/" + listing_account.toString()));
-
             let listing = JSON.parse(snapshot.val());
+            let text1 = listing.name.replaceAll(" ", "%20")
+            console.log(text1.trim())
 
-            let current_hype = listing.positive_votes + listing.negative_votes;
+            let actions = [
+                {
+                    label: "Hyped", // button text
+                    href: "/api/vote?mint=" + mint + "&choice=1",
+                },
+                {
+                    label: "Not Hyped", // button text
+                    href: "/api/vote?mint=" + mint + "&choice=2",
+                },
+            ]
+
+            let title = listing.name + " Hype!";
+            let image_link = listing.icon
+            let listing2 = null
+            if (mint2 !== undefined) {
+                let token_mint2 = new PublicKey(mint2);
+                let listing_account2 = PublicKey.findProgramAddressSync([token_mint2.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+                const snapshot2 = await get(ref(database, "data/" + listing_account2.toString()));
+                listing2 = JSON.parse(snapshot2.val());
+
+                image_link = "https://letscook.wtf/api/combine-images?mint1=" + mint + "&mint2=" + mint2;
+
+                actions = [
+                    {
+                        label: "Vote " + listing.name, // button text
+                        href: "/api/vote?mint=" + mint + "&choice=1",
+                    },
+                    {
+                        label: "Vote " + listing2.name, // button text
+                        href: "/api/vote?mint=" + mint2 + "&choice=1",
+                    },
+                ]
+
+                title = "Hype Battle! " + listing.name + " Vs " + listing2.name;
+            } 
 
             // Your data here
             const data = {
-                title: listing.name + " Hype! " + current_hype,
-                icon: listing.icon,
+                title: title,
+                icon: image_link,
                 description: "Vote on your favourite memes at letscook.wtf!",
                 label: "Hype Vote",
                 links: {
-                    actions: [
-                        {
-                            label: "Hyped", // button text
-                            href: "/api/vote?mint=" + mint + "&choice=1",
-                        },
-                        {
-                            label: "Not Hyped", // button text
-                            href: "/api/vote?mint=" + mint + "&choice=2",
-                        },
-                    ],
+                    actions: actions,
                 },
             };
             res.status(200).json(data);
@@ -83,13 +109,14 @@ export default async function handler(req, res) {
                 return res.status(400).json({ error: "Account parameter is required" });
             }
             console.log("have account", account);
-            const { mint, choice } = req.query;
+            const { mint, choice, mint2 } = req.query;
 
             let vote_val = parseInt(choice);
             if (vote_val < 1 || vote_val > 2) {
                 console.log("invalid vote");
                 return res.status(400).json({ error: "Invalid vote" });
             }
+            
 
             let user = new PublicKey(account);
             let mint_key = new PublicKey(mint);
