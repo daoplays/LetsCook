@@ -35,6 +35,7 @@ function cleanText(text: string): string {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
+  console.log(req)
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,OPTIONS");
