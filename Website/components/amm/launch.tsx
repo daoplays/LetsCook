@@ -29,6 +29,7 @@ import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 
 export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
+    let icon: string;
     let uri: string | null = null;
     let metadata_pointer = null;
     let name: string;
@@ -43,7 +44,6 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         //console.log("havemetadata pointer ",mint.address.toString(),  metadata_pointer.metadataAddress.toString());
         const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
         let metadata: TokenMetadata = unpack(data);
-        //console.log(metadata)
         uri = metadata.uri;
         name = metadata.name;
         symbol = metadata.symbol;
@@ -59,9 +59,9 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         }
 
         let meta_data = Metadata.deserialize(raw_meta_data.data);
-        //console.log(meta_data);
         //console.log(meta_data[0].data.symbol, meta_data[0].data.name);
-        uri = meta_data[0].data.uri;
+
+        uri = meta_data[0].data.uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
         name = meta_data[0].data.name;
         symbol = meta_data[0].data.symbol;
     }
@@ -76,29 +76,40 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(transfer_hook !== null));
 
-    //console.log(name, uri);
-    let icon: string;
-    uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
+    let mint_data: MintData;
+
     try {
-        let uri_json = await fetchWithTimeout(uri, 3000).then((res) => res.json());
-        //console.log(uri_json)
-        icon = uri_json["image"];
+        let uri_json = await fetch(uri).then((res) => res.json());
+        // console.log("URI Json: ", uri_json);
+        icon = uri_json["image"].replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
+        // console.log("Icon: ", icon);
+
+        mint_data = {
+            mint: mint,
+            uri: uri,
+            name: name,
+            symbol: symbol,
+            icon: icon,
+            extensions: extensions,
+            token_program: token_program,
+        };
     } catch (error) {
+        icon = "/images/sol.png";
         console.log("error getting uri, using SOL icon");
         console.log(error);
-        icon = "/images/sol.png";
-    }
-    let mint_data: MintData = {
-        mint: mint,
-        uri: uri,
-        name: name,
-        symbol: symbol,
-        icon: icon,
-        extensions: extensions,
-        token_program: token_program,
-    };
 
-    //console.log("have mint data", mint_data);
+        mint_data = {
+            mint: mint,
+            uri: uri,
+            name: name,
+            symbol: symbol,
+            icon: icon,
+            extensions: extensions,
+            token_program: token_program,
+        };
+    }
+
+    // console.log("Updated Mint Data: ", mint_data);
     return mint_data;
 }
 
@@ -145,6 +156,8 @@ export async function setMintData(token_mint: string): Promise<MintData | null> 
     }
 
     let mint_data = await getMintData(connection, mint, token_program);
+
+    console.log("mint data: ", mint_data);
 
     return mint_data;
 }
