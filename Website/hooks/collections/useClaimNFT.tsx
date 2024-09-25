@@ -361,6 +361,32 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
         console.log(orao_treasury.toString());
 
+
+        // check if we have the whitelist plugin
+        let whitelist_mint = PROGRAM;
+        let whitelist_account = PROGRAM;
+        let whitelist_token_program = PROGRAM;
+
+        console.log("collection has ", launchData.plugins.length, " plugins");
+        for (let i = 0; i < launchData.plugins.length; i++) {
+            if (launchData.plugins[i]["__kind"] === "Whitelist") {
+                console.log("Have whitelist plugin")
+                console.log(launchData.plugins[i]["key"].toString());
+                whitelist_mint = launchData.plugins[i]["key"];
+                let whitelist = mintData.get(whitelist_mint.toString());
+                console.log("whitelist token:", whitelist);
+                whitelist_account = await getAssociatedTokenAddress(
+                    whitelist_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    whitelist.token_program,
+                );
+
+                whitelist_token_program = whitelist.token_program;
+            }
+        }
+
+
         const instruction_data = serialise_claim_nft_instruction(Array.from(key_bytes));
 
         var account_vector = [
@@ -386,6 +412,11 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: orao_treasury, isSigner: false, isWritable: true },
             { pubkey: orao_network, isSigner: false, isWritable: true },
             { pubkey: orao_program, isSigner: false, isWritable: true },
+
+            { pubkey: whitelist_mint, isSigner: false, isWritable: true },
+            { pubkey: whitelist_account, isSigner: false, isWritable: true },
+            { pubkey: whitelist_token_program, isSigner: false, isWritable: false },
+
         ];
 
         if (transfer_hook_program_account !== null) {

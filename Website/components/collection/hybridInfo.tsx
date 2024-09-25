@@ -1,5 +1,15 @@
-import { Dispatch, SetStateAction, useState } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, Box } from "@chakra-ui/react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, Box, Checkbox,    
+    PopoverTrigger,
+    PopoverContent,
+    PopoverArrow,
+    PopoverCloseButton,
+    PopoverHeader,
+    PopoverBody, 
+    Popover,
+    IconButton,
+    useDisclosure
+} from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -21,8 +31,10 @@ import {
     TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
-import { request_raw_account_data } from "../Solana/state";
+import { request_current_balance, request_raw_account_data } from "../Solana/state";
 import ShowExtensions from "../Solana/extensions";
+import DatePicker from "react-datepicker";
+import { FaCalendarAlt } from "react-icons/fa";
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -52,6 +64,31 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const [swap_rate, setSwapRate] = useState<string>(
         newCollectionData.current.swap_rate > 0 ? newCollectionData.current.swap_rate.toString() : "",
     );
+
+    const [whitelist_key, setWhitelistKey] = useState<string>(newCollectionData.current.whitelist_key);
+    const [whitelist_amount, setWhitelistAmount] = useState<number>(newCollectionData.current.whitelist_amount);
+    const [inc_whitelist_phase_end, setIncWhiteListPhaseEnd] = useState<boolean>(false);
+    const [whitelist_phase_end, setWhiteListPhaseEnd] = useState<Date>(newCollectionData.current.whitelist_phase_end);
+    const [whitelist_end_date_and_time, setWhiteListEndDateAndTime] = useState("-- --");
+
+    const { isOpen: isWLEndOpen, onToggle: onToggleWLEnd, onClose: OnCloseWLEnd } = useDisclosure();
+
+    const local_date = useMemo(() => new Date(), []);
+    var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
+    //console.log(zone);
+
+    useEffect(() => {
+        let splitLaunchDate = whitelist_phase_end.getTime() > 0 ? whitelist_phase_end.toString().split(" ") : new Date().toString().split(" ");
+        let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
+        let splitLaunchTime = splitLaunchDate[4].split(":");
+        let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
+        setWhiteListEndDateAndTime(`${launchDateString} ${launchTimeString}`);
+    }, [whitelist_phase_end, local_date, zone]);
+
+
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setIncWhiteListPhaseEnd(e.target.checked);
+      };
 
     async function setMintData(e): Promise<void> {
         e.preventDefault();
@@ -168,7 +205,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         return;
     }
 
-    function setLaunchData(e) {
+    async function setData(e): Promise<boolean> {
+
         e.preventDefault();
 
         if (token_name === "") {
@@ -196,7 +234,35 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             }
         }
 
-        setScreen("step 4");
+        if (whitelist_key !== "") {
+            try {
+                let whitelist = new PublicKey(whitelist_key);
+                let balance = await request_current_balance("", whitelist);
+
+                //console.log("check balance", teamPubKey.toString(), balance);
+
+                if (balance == 0) {
+                    toast.error("Whitelist token does not exist");
+                    return false;
+                }
+            } catch (error) {
+                toast.error("Invalid Whitelist token");
+                return false;
+            }
+
+            newCollectionData.current.whitelist_key = whitelist_key;
+            newCollectionData.current.whitelist_amount = 1;
+            if (inc_whitelist_phase_end) {
+                console.log("whitelist_phase_end", whitelist_phase_end.toDateString());
+                newCollectionData.current.whitelist_phase_end = whitelist_phase_end;
+            }
+        }
+
+        return true;
+    }
+
+    async function setLaunchData(e) {
+        if (await setData(e)) setScreen("step 4");
     }
 
     return (
@@ -403,6 +469,75 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             }}
                                         />
                                     </div>
+                                </HStack>
+
+                                <HStack w={"100%"} spacing={0} className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                        WHITELIST TOKEN:
+                                    </div>
+                                    <div className={styles.textLabelInput}>
+                                        <Input
+                                            size={sm ? "medium" : "lg"}
+                                            required
+                                            placeholder="Optional - Enter Whitelist Token Address"
+                                            className={styles.inputBox}
+                                            type="text"
+                                            value={whitelist_key}
+                                            onChange={(e) => {
+                                                setWhitelistKey(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </HStack>
+                                <HStack spacing={15} w="100%" className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                        WHITELIST END DATE:
+                                    </div>
+                                    <Checkbox 
+                                        isChecked={inc_whitelist_phase_end}
+                                        onChange={handleCheckboxChange}
+                                        >
+                                        Include
+                                    </Checkbox>
+                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                        <HStack spacing={5}>
+                                            <Popover isOpen={isWLEndOpen} onClose={OnCloseWLEnd} placement="bottom" closeOnBlur={false}>
+                                                <PopoverTrigger>
+                                                    <IconButton
+                                                        onClick={onToggleWLEnd}
+                                                        aria-label="FaCalendarAlt"
+                                                        icon={<FaCalendarAlt size={22} />}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverContent width="fit-content">
+                                                    <PopoverArrow />
+                                                    <PopoverCloseButton />
+                                                    <PopoverHeader h={34} />
+                                                    <PopoverBody>
+                                                        <DatePicker
+                                                            disabled={inc_whitelist_phase_end === false}
+                                                            showTimeSelect
+                                                            keepOpen
+                                                            timeFormat="HH:mm"
+                                                            timeIntervals={15}
+                                                            selected={whitelist_phase_end}
+                                                            onChange={(date) => {
+                                                                setWhiteListPhaseEnd(date);
+                                                                //OnCloseEnd();
+                                                            }}
+                                                            onClickOutside={() => OnCloseWLEnd()}
+                                                            inline
+                                                        />
+                                                    </PopoverBody>
+                                                </PopoverContent>
+                                            </Popover>
+
+                                            <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
+                                                {whitelist_end_date_and_time}
+                                            </Text>
+                                        </HStack>
+                                    </div>
+
                                 </HStack>
                             </VStack>
                         </HStack>

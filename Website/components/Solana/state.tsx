@@ -609,7 +609,7 @@ export function getLaunchTypeIndex(launch_type: string): number {
 }
 
 type LaunchPluginEnum = {
-    Whitelist: { key: PublicKey; amount: bignum };
+    Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
 };
 type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
 
@@ -620,6 +620,7 @@ const launchPluginBeet = dataEnum<LaunchPluginEnum>([
             [
                 ["key", publicKey],
                 ["amount", u64],
+                ["phase_end", u64],
             ],
             'LaunchPluginEnum["Whitelist"]',
         ),

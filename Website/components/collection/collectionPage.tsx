@@ -641,6 +641,11 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         console.log("mint", collection_mint_pubkey.toString());
 
+        let whitelist_key = PROGRAM;
+        if (newCollectionData.current.whitelist_key !== "") {
+            whitelist_key = new PublicKey(newCollectionData.current.whitelist_key);
+        }
+
         const instruction_data = serialise_LaunchCollection_instruction(newCollectionData.current);
 
         var account_vector = [
@@ -652,6 +657,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             { pubkey: collection_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: false, isWritable: false },
+            { pubkey: whitelist_key, isSigner: false, isWritable: false },
+
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });

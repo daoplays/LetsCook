@@ -61,11 +61,18 @@ const GetTradeMintData = async (trade_keys : PublicKey[], setMintMap) => {
 
     let mint_map = new Map<String, MintData>();
     for (let i = 0; i < result.length; i++) {
+        console.log("mint; ", trade_keys[i].toString(), result[i], result[i].owner.toString());
+
+        try{
         let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
         let mint_data = await getMintData(connection, mint, result[i].owner);
 
         //console.log("mint; ", mint.address.toString());
         mint_map.set(trade_keys[i].toString(), mint_data);
+        }
+        catch(error) {
+            console.log("error", error);
+        }
     }
     setMintMap(mint_map);
 };
@@ -548,6 +555,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         collections.forEach((collection, key) => {
             //console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
             trade_mints.push(collection.keys[CollectionKeys.MintAddress]);
+            // check if we have a whitelist token
+            for (let p = 0; p < collection.plugins.length; p++) {
+                if (collection.plugins[p]["__kind"] === "Whitelist") {
+                    trade_mints.push(collection.plugins[p]["key"]);
+                }
+            }
         });
 
         GetTradeMintData(trade_mints, setMintData);
