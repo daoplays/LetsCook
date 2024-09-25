@@ -4,6 +4,7 @@ import Image from "next/image";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
 import formatPrice from "../../utils/formatPrice";
+import useRemoveLiquidityRaydiumClassic from "../../hooks/raydium/useRemoveLiquidityRaydiumClassc";
 
 const RemoveLiquidityPanel = ({
     amm,
@@ -18,6 +19,7 @@ const RemoveLiquidityPanel = ({
     amm_lp_balance,
 }: PanelProps) => {
     const { RemoveLiquidityRaydium, isLoading: removeLiquidityRaydiumLoading } = useRemoveLiquidityRaydium(amm);
+    const { RemoveLiquidityRaydiumClassic, isLoading: RemoveLiquidityRaydiumClassicLoading } = useRemoveLiquidityRaydiumClassic(amm);
     const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity(amm);
 
     let isLoading = removeLiquidityRaydiumLoading || updateCookLiquidityLoading;
@@ -147,7 +149,9 @@ const RemoveLiquidityPanel = ({
                         ? handleConnectWallet()
                         : amm.provider === 0
                           ? UpdateCookLiquidity(lp_raw, 1)
-                          : RemoveLiquidityRaydium(lp_raw);
+                          : amm.provider === 1
+                            ? RemoveLiquidityRaydium(lp_raw)
+                            : RemoveLiquidityRaydiumClassic(lp_raw);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

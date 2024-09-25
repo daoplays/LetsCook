@@ -7,7 +7,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 const nextConfig = withBundleAnalyzer({
     reactStrictMode: true,
     swcMinify: true,
-
+    compress: true,
     images: {
         remotePatterns: [
             {

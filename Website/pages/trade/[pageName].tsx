@@ -9,6 +9,7 @@ import {
     uInt32ToLEBytes,
     MintData,
     ListingData,
+    myU64,
 } from "../../components/Solana/state";
 import {
     TimeSeriesData,
@@ -20,11 +21,11 @@ import {
     getAMMKeyFromMints,
 } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, MarketStateLayoutV2, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
+import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
 import { Config, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackMint } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackAccount } from "@solana/spl-token";
 
 import { HStack, VStack, Text, Box, Tooltip, Link } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
@@ -44,6 +45,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
+import useWebSocket from "react-use-websocket";
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
@@ -51,6 +53,8 @@ import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPa
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
 import BuyPanel from "../../components/tradePanels/buyPanel";
+import formatPrice from "../../utils/formatPrice";
+import Loader from "../../components/loader";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -61,13 +65,13 @@ interface MarketData {
     volume: number;
 }
 
-async function getBirdEyeData(setMarketData: any, market_address: string) {
+async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_address: string, setLastVolume: any) {
     // Default options are marked with *
     const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+
     let today_seconds = Math.floor(new Date().getTime() / 1000);
 
     let start_time = new Date(2024, 0, 1).getTime() / 1000;
-    let end_time = new Date(2024, 5, 1).getTime() / 1000;
 
     let url =
         "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
@@ -80,14 +84,28 @@ async function getBirdEyeData(setMarketData: any, market_address: string) {
 
     //console.log(url);
     let result = await fetch(url, options).then((response) => response.json());
+    let items = result["data"]["items"];
 
+    let now = new Date().getTime() / 1000;
+    let last_volume = 0;
     let data: MarketData[] = [];
-    for (let i = 0; i < result["data"]["items"].length; i++) {
-        let item = result["data"]["items"][i];
-        data.push({ time: item.unixTime as UTCTimestamp, open: item.o, high: item.h, low: item.l, close: item.c, volume: item.v });
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+
+        let open = sol_is_quote ? item.o : 1.0 / item.o;
+        let high = sol_is_quote ? item.h : 1.0 / item.l;
+        let low = sol_is_quote ? item.l : 1.0 / item.h;
+        let close = sol_is_quote ? item.c : 1.0 / item.c;
+        let volume = sol_is_quote ? item.v : item.v / close;
+        data.push({ time: item.unixTime as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
+
+        if (now - item.unixTime < 24 * 60 * 60) {
+            last_volume += volume;
+        }
     }
-    //console.log(data);
+    //console.log(result, "last volume", last_volume);
     setMarketData(data);
+    setLastVolume(last_volume);
     //return data;
 }
 
@@ -146,6 +164,7 @@ const TradePage = () => {
     const [listing, setListing] = useState<ListingData | null>(null);
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [base_mint, setBaseMint] = useState<MintData | null>(null);
+    const [sol_is_quote, setSOLIsQuote] = useState<boolean>(true);
 
     const base_ws_id = useRef<number | null>(null);
     const quote_ws_id = useRef<number | null>(null);
@@ -206,26 +225,72 @@ const TradePage = () => {
 
         last_base_amount.current = amm_base_amount;
         last_quote_amount.current = amm_quote_amount;
-    }, [amm_base_amount, amm_quote_amount, market_data]);
+
+        if (amm.provider === 0 || market_data.length === 0) {
+            return;
+        }
+
+        // update market data using bid/ask
+        let price = amm_quote_amount / amm_base_amount;
+
+        price = (price * Math.pow(10, base_mint.mint.decimals)) / Math.pow(10, 9);
+
+        let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
+        let last_candle = market_data[market_data.length - 1];
+        let last_minute = last_candle.time / 15 / 60;
+        //console.log("update price", price, last_minute, now_minute)
+
+        if (now_minute > last_minute) {
+            let new_candle: MarketData = {
+                time: (now_minute * 15 * 60) as UTCTimestamp,
+                open: price,
+                high: price,
+                low: price,
+                close: price,
+                volume: 0,
+            };
+            //console.log("new candle", now_minute, last_minute, new_candle)
+
+            market_data.push(new_candle);
+            setMarketData([...market_data]);
+        } else {
+            last_candle.close = price;
+            if (price > last_candle.high) {
+                last_candle.high = price;
+            }
+            if (price < last_candle.low) {
+                last_candle.low = price;
+            }
+            //console.log("update old candle", last_candle)
+            market_data[market_data.length - 1] = last_candle;
+            setMarketData([...market_data]);
+        }
+    }, [amm_base_amount, amm_quote_amount, amm, market_data, base_mint]);
 
     const check_base_update = useCallback(async (result: any) => {
         //console.log(result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-        console.log("update base amount", amount);
+        //console.log(event_data)
+        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
+        let amount = parseFloat(amount_u64.value.toString());
+        console.log("base update", amount, amount_u64.value.toString());
+
+        //console.log("update base amount", amount);
         setBaseAmount(amount);
     }, []);
 
     const check_quote_update = useCallback(async (result: any) => {
-        //console.log(result);
+        //console.log(result.owner);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
+        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
+
+        let amount = parseFloat(amount_u64.value.toString());
+        console.log("quote update", amount, amount_u64.value.toString());
+
         //console.log("update quote amount", amount);
 
         setQuoteAmount(amount);
@@ -284,12 +349,21 @@ const TradePage = () => {
         setUserLPAmount(amount);
     }, []);
 
-    const check_raydium_update = useCallback(async (result: any) => {
-        let event_data = result.data;
-        const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
+    const check_raydium_update = useCallback(
+        async (result: any) => {
+            let event_data = result.data;
+            if (amm.provider === 1) {
+                const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
 
-        setLPAmount(bignum_to_num(poolState.lp_supply));
-    }, []);
+                setLPAmount(bignum_to_num(poolState.lp_supply));
+            }
+            if (amm.provider === 2) {
+                const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
+                setLPAmount(bignum_to_num(ray_pool.lpReserve));
+            }
+        },
+        [amm],
+    );
 
     useEffect(() => {
         if (base_ws_id.current === null && base_address !== null) {
@@ -334,34 +408,20 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        let hash_string = "global:request";
-        const msgBuffer = new TextEncoder().encode(hash_string);
+        //let hash_string = "global:request";
+        //const msgBuffer = new TextEncoder().encode(hash_string);
 
         // hash the message
-        const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+        //const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
 
         // convert ArrayBuffer to Array
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        console.log(hashArray.slice(0, 8));
+        //const hashArray = Array.from(new Uint8Array(hashBuffer));
+        //console.log(hashArray.slice(0, 8));
         //("check market data");
         if (amm === null) return;
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
-
-        let amm_seed_keys = [];
-        if (token_mint.toString() < wsol_mint.toString()) {
-            amm_seed_keys.push(token_mint);
-            amm_seed_keys.push(wsol_mint);
-        } else {
-            amm_seed_keys.push(wsol_mint);
-            amm_seed_keys.push(token_mint);
-        }
-
-        let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
-            PROGRAM,
-        )[0];
 
         let base_amm_account = amm.base_key;
         let quote_amm_account = amm.quote_key;
@@ -392,7 +452,7 @@ const TradePage = () => {
 
                 let user_base_amount = await request_token_amount("", user_base_token_account_key);
                 let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
-                console.log("user lp amount", user_lp_amount, user_lp_token_account_key.toString());
+                //console.log("user lp amount", user_lp_amount, user_lp_token_account_key.toString());
                 setUserBaseAmount(user_base_amount);
                 setUserLPAmount(user_lp_amount);
 
@@ -404,10 +464,13 @@ const TradePage = () => {
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
+            console.log("base mint", base_mint.mint.address.toString(), wsol_mint.toString());
+            console.log("base key", base_amm_account.toString(), quote_amm_account.toString());
+
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
 
-            //console.log("user amounts", user_base_amount, user_lp_amount)
+            console.log("amm amounts", base_amount, quote_amount);
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
 
@@ -415,19 +478,52 @@ const TradePage = () => {
             setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
 
             if (amm.provider > 0) {
-                if (Config.PROD) {
-                    getBirdEyeData(setMarketData, "GtKKKs3yaPdHbQd2aZS4SfWhy8zQ988BJGnKNndLxYsN");
+                let sol_is_quote: boolean = true;
+                let pool_account = amm.pool;
+                setRaydiumAddress(pool_account);
+
+                if (amm.provider === 1) {
+                    let pool_state_account = await connection.getAccountInfo(pool_account);
+                    //console.log(pool_state_account);
+                    const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
+                    //console.log(poolState);
+                    setLPAmount(bignum_to_num(poolState.lp_supply));
                 }
 
-                let pool_state = getPoolStateAccount(token_mint, wsol_mint);
-                let pool_state_account = await connection.getAccountInfo(pool_state);
-                console.log(pool_state_account);
-                const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
-                console.log(poolState);
-                setRaydiumAddress(pool_state);
-                setLPAmount(bignum_to_num(poolState.lp_supply));
+                if (amm.provider === 2) {
+                    let pool_data = await request_raw_account_data("", pool_account);
+                    const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
+
+                    if (ray_pool.quoteMint.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+                        setSOLIsQuote(true);
+                    } else {
+                        sol_is_quote = false;
+                        setSOLIsQuote(false);
+                    }
+
+                    setLPAmount(bignum_to_num(ray_pool.lpReserve));
+                }
+                //console.log("pool state", pool_state.toString())
+                if (Config.PROD) {
+                    await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
+                }
+
                 return;
             }
+
+            let amm_seed_keys = [];
+            if (token_mint.toString() < wsol_mint.toString()) {
+                amm_seed_keys.push(token_mint);
+                amm_seed_keys.push(wsol_mint);
+            } else {
+                amm_seed_keys.push(wsol_mint);
+                amm_seed_keys.push(token_mint);
+            }
+
+            let amm_data_account = PublicKey.findProgramAddressSync(
+                [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
+                PROGRAM,
+            )[0];
 
             setLPAmount(amm.lp_amount);
 
@@ -440,7 +536,7 @@ const TradePage = () => {
             setPriceAddress(price_data_account);
 
             let price_data_buffer = await request_raw_account_data("", price_data_account);
-            console.log(price_data_buffer);
+            //console.log(price_data_buffer);
             const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
 
             //console.log(price_data.data);
@@ -504,11 +600,7 @@ const TradePage = () => {
     };
 
     if (listing === null || amm === null || base_mint === null || mmLaunchData === null) {
-        return (
-            <Head>
-                <title>Let&apos;s Cook | Trade</title>
-            </Head>
-        );
+        return <Loader />;
     }
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
@@ -819,6 +911,8 @@ const BuyAndSell = ({
         setSelected(tab);
     };
 
+    //console.log(base_balance/Math.pow(10, 6), quote_balance)
+
     let transfer_fee = 0;
     let max_transfer_fee = 0;
     let transfer_fee_config = getTransferFeeConfig(base_mint.mint);
@@ -1036,7 +1130,7 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(base_mint.mint.decimals, 3))}
+                        {formatPrice(price, 5)}
                     </Text>
                     <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" />
                 </HStack>
@@ -1148,59 +1242,81 @@ const ChartComponent = (props) => {
     const { data, additionalPixels } = props;
 
     const chartContainerRef = useRef(null);
+    const chartRef = useRef(null);
+    const seriesRef = useRef(null);
 
     useEffect(() => {
         const handleResize = () => {
-            chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+            if (chartRef.current) {
+                chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
+            }
         };
 
-        const totalHeight = (60 * window.innerHeight) / 100 + additionalPixels; // Calculate total height
-        const chart = createChart(chartContainerRef.current);
+        if (chartContainerRef.current) {
+            const chart = createChart(chartContainerRef.current, {
+                layout: {
+                    background: { color: "#171B26" },
+                    textColor: "#DDD",
+                },
+                grid: {
+                    vertLines: { color: "#242733" },
+                    horzLines: { color: "#242733" },
+                },
+                timeScale: {
+                    timeVisible: true,
+                    secondsVisible: false,
+                },
+                crosshair: {
+                    mode: CrosshairMode.Normal,
+                },
+                width: chartContainerRef.current.clientWidth,
+                height: chartContainerRef.current.clientHeight,
+            });
 
-        const myPriceFormatter = (p) => p.toExponential(2);
+            chartRef.current = chart;
 
-        chart.applyOptions({
-            layout: {
-                background: { color: "#171B26" },
-                textColor: "#DDD",
-            },
-            grid: {
-                vertLines: { color: "#242733" },
-                horzLines: { color: "#242733" },
-            },
-            timeScale: {
-                timeVisible: true,
-                secondsVisible: false,
-            },
-            crosshair: {
-                mode: CrosshairMode.Normal,
-            },
-        });
+            const series = chart.addCandlestickSeries({
+                upColor: "#00C38C",
+                downColor: "#F94D5C",
+                borderVisible: false,
+                wickUpColor: "#00C38C",
+                wickDownColor: "#F94D5C",
+                priceFormat: {
+                    type: "custom",
+                    formatter: (price) => price.toExponential(2),
+                    minMove: 0.000000001,
+                },
+            });
 
-        chart.timeScale().fitContent();
+            seriesRef.current = series;
+            series.setData(data);
 
-        const newSeries = chart.addCandlestickSeries({
-            upColor: "#4EFF3F",
-            downColor: "#ef5350",
-            borderVisible: false,
-            wickUpColor: "#4EFF3F",
-            wickDownColor: "#ef5350",
-            priceFormat: {
-                type: "custom",
-                formatter: (price) => price.toExponential(2),
-                minMove: 0.000000001,
-            },
-        });
+            chart.timeScale().fitContent();
 
-        newSeries.setData(data);
+            window.addEventListener("resize", handleResize);
 
-        window.addEventListener("resize", handleResize);
+            return () => {
+                window.removeEventListener("resize", handleResize);
+                chart.remove();
+            };
+        }
+    }, [data]);
 
-        return () => {
-            window.removeEventListener("resize", handleResize);
-            chart.remove();
-        };
-    }, [data, additionalPixels]);
+    useEffect(() => {
+        if (seriesRef.current) {
+            seriesRef.current.setData(data);
+        }
+    }, [data]);
+
+    useEffect(() => {
+        if (chartContainerRef.current && chartRef.current) {
+            const newHeight = `calc(60vh + ${additionalPixels}px)`;
+            chartContainerRef.current.style.height = newHeight;
+            chartRef.current.applyOptions({
+                height: chartContainerRef.current.clientHeight,
+            });
+        }
+    }, [additionalPixels]);
 
     return (
         <HStack
@@ -1208,8 +1324,8 @@ const ChartComponent = (props) => {
             justify="center"
             id="chartContainer"
             w="100%"
+            h={`calc(60vh + ${additionalPixels}px)`}
             style={{
-                height: `calc(60vh + ${additionalPixels}px)`,
                 overflow: "auto",
                 position: "relative",
                 borderBottom: "1px solid rgba(134, 142, 150, 0.5)",

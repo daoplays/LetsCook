@@ -149,8 +149,8 @@ const CreateListing = () => {
     }
 
     async function handleSetBaseData() {
-        let mint_data = await setMintData(base_address)
-        if (mint_data === null) {   
+        let mint_data = await setMintData(base_address);
+        if (mint_data === null) {
             toast.error("Token not found");
             return;
         }
@@ -524,38 +524,6 @@ const CreateListing = () => {
                                                 </div>
                                             </HStack>
                                         </Flex>
-
-                                        {admin ? (
-                                           <></>
-                                        ) : (
-                                            <HStack spacing={0} className={styles.eachField}>
-                                                <div
-                                                    className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "110px" : "120px" }}
-                                                >
-                                                    Banner:
-                                                </div>
-
-                                                <div>
-                                                    <label className={styles.label}>
-                                                        <input id="file" type="file" onChange={handleFileChange} />
-                                                        <span
-                                                            className={styles.browse}
-                                                            style={{
-                                                                cursor: "pointer",
-                                                                padding: "5px 10px",
-                                                            }}
-                                                        >
-                                                            BROWSE
-                                                        </span>
-                                                    </label>
-                                                </div>
-
-                                                <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                    {banner !== null ? banner_name : "No File Selected"}
-                                                </Text>
-                                            </HStack>
-                                        )}
                                     </VStack>
                                 </HStack>
                                 {admin ? (

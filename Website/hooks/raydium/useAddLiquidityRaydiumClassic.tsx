@@ -8,7 +8,7 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     bignum_to_num,
-    getRecentPrioritizationFees,
+    request_raw_account_data,
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -18,7 +18,20 @@ import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import { Token } from "@raydium-io/raydium-sdk";
+import {
+    Token,
+    DEVNET_PROGRAM_ID,
+    MAINNET_PROGRAM_ID,
+    Liquidity,
+    SYSTEM_PROGRAM_ID,
+    RENT_PROGRAM_ID,
+    LOOKUP_TABLE_CACHE,
+    LiquidityPoolKeys,
+    TokenAmount,
+    Percent,
+    jsonInfo2PoolKeys,
+    LiquidityPoolJsonInfo,
+} from "@raydium-io/raydium-sdk";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
@@ -32,31 +45,17 @@ import {
 } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
-import { BeetStruct, bignum, fixedSizeArray, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
-import { RaydiumCPMM, getRaydiumPrograms } from "./utils";
-import {
-    RAYDIUM_PROGRAM,
-    getAMMBaseAccount,
-    getAMMQuoteAccount,
-    getAuthorityAccount,
-    getLPMintAccount,
-    getPoolStateAccount,
-} from "./useCreateCP";
-import { AMMData } from "../../components/Solana/jupiter_state";
-import useAppRoot from "../../context/useAppRoot";
+import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
+import { getRaydiumPrograms } from "./utils";
+import { AMMData, MarketStateLayoutV2, RaydiumAMM } from "../../components/Solana/jupiter_state";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
 
-const DEFAULT_TOKEN = {
-    WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
-};
+const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
-function serialise_raydium_add_liquidity_instruction(lp_amount: number, base_amount: number, quote_amount: number): Buffer {
-    let discriminator: number[] = [242, 35, 198, 137, 82, 225, 242, 182];
-
-    console.log("max:", base_amount, quote_amount);
-    const data = new RaydiumAddLiquidity_Instruction(discriminator, lp_amount, base_amount, quote_amount);
+function serialise_raydium_add_liquidity_instruction(base_amount: number, quote_amount: number, base_side): Buffer {
+    const data = new RaydiumAddLiquidity_Instruction(3, base_amount, quote_amount, base_side);
 
     const [buf] = RaydiumAddLiquidity_Instruction.struct.serialize(data);
 
@@ -65,27 +64,39 @@ function serialise_raydium_add_liquidity_instruction(lp_amount: number, base_amo
 
 class RaydiumAddLiquidity_Instruction {
     constructor(
-        readonly discriminator: number[],
-        readonly lp_amount: bignum,
-        readonly max_token_0: bignum,
-        readonly max_token_1: bignum,
+        readonly instruction: number,
+        readonly baseAmountIn: bignum,
+        readonly quoteAmountIn: bignum,
+        readonly fixedSide: bignum,
     ) {}
 
     static readonly struct = new BeetStruct<RaydiumAddLiquidity_Instruction>(
         [
-            ["discriminator", uniformFixedSizeArray(u8, 8)],
-            ["lp_amount", u64],
-            ["max_token_0", u64],
-            ["max_token_1", u64],
+            ["instruction", u8],
+            ["baseAmountIn", u64],
+            ["quoteAmountIn", u64],
+            ["fixedSide", u64],
         ],
-        (args) => new RaydiumAddLiquidity_Instruction(args.discriminator!, args.lp_amount!, args.max_token_0!, args.max_token_1!),
+        (args) => new RaydiumAddLiquidity_Instruction(args.instruction!, args.baseAmountIn!, args.quoteAmountIn!, args.fixedSide!),
         "RaydiumAddLiquidity_Instruction",
     );
 }
 
-const useAddLiquidityRaydium = (amm: AMMData) => {
+async function generatePubKey({
+    fromPublicKey,
+    seed,
+    programId = TOKEN_PROGRAM_ID,
+}: {
+    fromPublicKey: PublicKey;
+    seed: string;
+    programId: PublicKey;
+}) {
+    const publicKey = await PublicKey.createWithSeed(fromPublicKey, seed, programId);
+    return { publicKey, seed };
+}
+
+const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -124,77 +135,80 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
         });
     }, []);
 
-    const AddLiquidityRaydium = async (lp_amount: number, token_amount: number, sol_amount: number) => {
+    const AddLiquidityRaydiumClassic = async (token_amount: number, sol_amount: number) => {
         // if we have already done this then just skip this step
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        let base_mint = amm.base_mint;
-        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
+        let pool_data = await request_raw_account_data("", amm.pool);
+        const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
 
-        let base_mint_data = mintData.get(base_mint.toString());
-        let quote_mint_data = mintData.get(quote_mint.toString());
+        const poolInfo = Liquidity.getAssociatedPoolKeys({
+            version: 4,
+            marketVersion: 3,
+            marketId: ray_pool.marketId,
+            baseMint: ray_pool.baseMint,
+            quoteMint: ray_pool.quoteMint,
+            baseDecimals: ray_pool.baseDecimal,
+            quoteDecimals: ray_pool.quoteDecimal,
+            programId: PROGRAMIDS.AmmV4,
+            marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
+        });
 
-        const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
-            ? [quote_mint, base_mint]
-            : [base_mint, quote_mint];
-
-        let authority = getAuthorityAccount();
-        let pool_state = getPoolStateAccount(base_mint, quote_mint);
-
-        let lp_mint = getLPMintAccount(base_mint, quote_mint);
-        let amm_0 = token0.equals(base_mint) ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
-        let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
+        let market_data = await request_raw_account_data("", ray_pool.marketId);
+        const [market] = MarketStateLayoutV2.struct.deserialize(market_data);
 
         let user_base_account = await getAssociatedTokenAddress(
-            amm.base_mint, // mint
+            ray_pool.baseMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            base_mint_data.token_program,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
-            quote_mint, // mint
+            ray_pool.quoteMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            quote_mint_data.token_program,
         );
-
-        let user_0 = token0.equals(base_mint) ? user_base_account : user_quote_account;
-        let user_1 = token0.equals(base_mint) ? user_quote_account : user_base_account;
 
         let user_lp_account = await getAssociatedTokenAddress(
-            lp_mint, // mint
+            ray_pool.lpMint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
         );
 
-        const keys = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
-            { pubkey: authority, isSigner: false, isWritable: false },
-            { pubkey: pool_state, isSigner: false, isWritable: true },
-            { pubkey: user_lp_account, isSigner: false, isWritable: true },
-            { pubkey: user_0, isSigner: false, isWritable: true },
-            { pubkey: user_1, isSigner: false, isWritable: true },
-            { pubkey: amm_0, isSigner: false, isWritable: true },
-            { pubkey: amm_1, isSigner: false, isWritable: true },
+        let base_amount = token_amount;
+        let quote_amount = sol_amount;
+        let base_side = 0;
+        if (!ray_pool.quoteVault.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+            base_amount = sol_amount;
+            quote_amount = token_amount;
+            base_side = 1;
+        }
 
+        const keys = [
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: token0, isSigner: false, isWritable: false },
-            { pubkey: token1, isSigner: false, isWritable: false },
-            { pubkey: lp_mint, isSigner: false, isWritable: true },
+            { pubkey: poolInfo.id, isSigner: false, isWritable: true },
+            { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
+            { pubkey: poolInfo.openOrders, isSigner: false, isWritable: false },
+            { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
+            { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
+            { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
+            { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
+
+            { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
+            { pubkey: user_base_account, isSigner: false, isWritable: true },
+            { pubkey: user_quote_account, isSigner: false, isWritable: true },
+            { pubkey: user_lp_account, isSigner: false, isWritable: true },
+
+            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: market.eventQueue, isSigner: false, isWritable: false },
         ];
 
-        let in_amount_0 = token0.equals(base_mint) ? token_amount : sol_amount;
-        let in_amount_1 = token0.equals(base_mint) ? sol_amount : token_amount;
-
-        let raydium_add_liquidity_data = serialise_raydium_add_liquidity_instruction(lp_amount, in_amount_0 * 2, in_amount_1 * 2);
+        let raydium_add_liquidity_data = serialise_raydium_add_liquidity_instruction(base_amount, quote_amount, base_side);
 
         const list_instruction = new TransactionInstruction({
             keys: keys,
-            programId: RAYDIUM_PROGRAM,
+            programId: getRaydiumPrograms(Config).AmmV4,
             data: raydium_add_liquidity_data,
         });
 
@@ -202,7 +216,7 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
             wallet.publicKey,
             user_lp_account,
             wallet.publicKey,
-            lp_mint,
+            poolInfo.lpMint,
             TOKEN_PROGRAM_ID,
             ASSOCIATED_TOKEN_PROGRAM_ID,
         );
@@ -214,9 +228,6 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
 
         let list_transaction = new Transaction(list_txArgs);
         list_transaction.feePayer = wallet.publicKey;
-
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
         if (ata_balance === 0) {
             list_transaction.add(create_lp_ata);
@@ -241,7 +252,7 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
         }
     };
 
-    return { AddLiquidityRaydium, isLoading };
+    return { AddLiquidityRaydiumClassic, isLoading };
 };
 
-export default useAddLiquidityRaydium;
+export default useAddLiquidityRaydiumClassic;

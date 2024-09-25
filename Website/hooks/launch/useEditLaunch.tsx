@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
+import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAccount } from "../raydium/useCreateCP";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -93,6 +93,7 @@ const useEditLaunch = () => {
             PROGRAM,
         )[0];
 
+        let raydium_pool = getPoolStateAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_base_account = getAMMBaseAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_quote_account = getAMMQuoteAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_lp_mint_account = getLPMintAccount(token_mint_pubkey, wrapped_sol_mint);
@@ -117,6 +118,7 @@ const useEditLaunch = () => {
 
         console.log(wrapped_sol_mint.toString(), amm_data_account.toString(), cook_amm_quote_account.toString());
 
+        let pool_account = newLaunchData.current.amm_provider === 0 ? amm_data_account : raydium_pool;
         let base_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_base_account : raydium_base_account;
         let quote_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_quote_account : raydium_quote_account;
         let amm_lp_mint = newLaunchData.current.amm_provider === 0 ? cook_lp_mint_account : raydium_lp_mint_account;
@@ -137,6 +139,7 @@ const useEditLaunch = () => {
             { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
+            { pubkey: pool_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },

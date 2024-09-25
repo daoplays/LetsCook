@@ -43,18 +43,17 @@ export function getAMMKey(amm: AMMData, amm_provider: number) {
         amm_seed_keys.push(amm.quote_mint);
         amm_seed_keys.push(amm.base_mint);
     }
-
+    let provider_string = amm_provider == 0 ? "CookAMM" : amm_provider === 1 ? "RaydiumCPMM" : "Raydium";
     let amm_data_account = PublicKey.findProgramAddressSync(
-        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider == 0 ? "CookAMM" : "RaydiumCPMM")],
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(provider_string)],
         PROGRAM,
     )[0];
 
     return amm_data_account;
 }
 
-export function getAMMKeyFromMints(base_mint : PublicKey, amm_provider: number) {
-   
-    let quote_mint =  new PublicKey("So11111111111111111111111111111111111111112");
+export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
+    let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
     let amm_seed_keys = [];
     if (base_mint.toString() < quote_mint.toString()) {
         amm_seed_keys.push(base_mint);
@@ -64,8 +63,9 @@ export function getAMMKeyFromMints(base_mint : PublicKey, amm_provider: number) 
         amm_seed_keys.push(base_mint);
     }
 
+    let provider_string = amm_provider == 0 ? "CookAMM" : amm_provider === 1 ? "RaydiumCPMM" : "Raydium";
     let amm_data_account = PublicKey.findProgramAddressSync(
-        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm_provider == 0 ? "CookAMM" : "RaydiumCPMM")],
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(provider_string)],
         PROGRAM,
     )[0];
 
@@ -162,6 +162,7 @@ const ammPluginBeet = dataEnum<AMMPluginEnum>([
 export class AMMData {
     constructor(
         readonly account_type: number,
+        readonly pool: PublicKey,
         readonly provider: number,
         readonly base_mint: PublicKey,
         readonly quote_mint: PublicKey,
@@ -185,6 +186,7 @@ export class AMMData {
     static readonly struct = new FixableBeetStruct<AMMData>(
         [
             ["account_type", u8],
+            ["pool", publicKey],
             ["provider", u8],
             ["base_mint", publicKey],
             ["quote_mint", publicKey],
@@ -207,6 +209,7 @@ export class AMMData {
         (args) =>
             new AMMData(
                 args.account_type!,
+                args.pool!,
                 args.provider!,
                 args.base_mint!,
                 args.quote_mint!,
@@ -535,5 +538,85 @@ export class RaydiumAMM {
                 args.padding!,
             ),
         "RaydiumAMM",
+    );
+}
+
+export class MarketStateLayoutV2 {
+    constructor(
+        readonly header: number[],
+        readonly accountFlags: bignum,
+        readonly ownAddress: PublicKey,
+        readonly vaultSignerNonce: bignum,
+        readonly baseMint: PublicKey,
+        readonly quoteMint: PublicKey,
+        readonly baseVault: PublicKey,
+        readonly baseDepositsTotal: bignum,
+        readonly baseFeesAccrued: bignum,
+        readonly quoteVault: PublicKey,
+        readonly quoteDepositsTotal: bignum,
+        readonly quoteFeesAccrued: bignum,
+        readonly quoteDustThreshold: bignum,
+        readonly requestQueue: PublicKey,
+        readonly eventQueue: PublicKey,
+        readonly bids: PublicKey,
+        readonly asks: PublicKey,
+        readonly baseLotSize: bignum,
+        readonly quoteLotSize: bignum,
+        readonly feeRateBps: bignum,
+        readonly referrerRebatesAccrued: bignum,
+        readonly footer: number[],
+    ) {}
+
+    static readonly struct = new BeetStruct<MarketStateLayoutV2>(
+        [
+            ["header", uniformFixedSizeArray(u8, 5)],
+            ["accountFlags", u64],
+            ["ownAddress", publicKey],
+            ["vaultSignerNonce", u64],
+            ["baseMint", publicKey],
+            ["quoteMint", publicKey],
+            ["baseVault", publicKey],
+            ["baseDepositsTotal", u64],
+            ["baseFeesAccrued", u64],
+            ["quoteVault", publicKey],
+            ["quoteDepositsTotal", u64],
+            ["quoteFeesAccrued", u64],
+            ["quoteDustThreshold", u64],
+            ["requestQueue", publicKey],
+            ["eventQueue", publicKey],
+            ["bids", publicKey],
+            ["asks", publicKey],
+            ["baseLotSize", u64],
+            ["quoteLotSize", u64],
+            ["feeRateBps", u64],
+            ["referrerRebatesAccrued", u64],
+            ["footer", uniformFixedSizeArray(u8, 7)],
+        ],
+        (args) =>
+            new MarketStateLayoutV2(
+                args.header!,
+                args.accountFlags!,
+                args.ownAddress!,
+                args.vaultSignerNonce!,
+                args.baseMint!,
+                args.quoteMint!,
+                args.baseVault!,
+                args.baseDepositsTotal!,
+                args.baseFeesAccrued!,
+                args.quoteVault!,
+                args.quoteDepositsTotal!,
+                args.quoteFeesAccrued!,
+                args.quoteDustThreshold!,
+                args.requestQueue!,
+                args.eventQueue!,
+                args.bids!,
+                args.asks!,
+                args.baseLotSize!,
+                args.quoteLotSize!,
+                args.feeRateBps!,
+                args.referrerRebatesAccrued!,
+                args.footer!,
+            ),
+        "MarketStateLayoutV2",
     );
 }

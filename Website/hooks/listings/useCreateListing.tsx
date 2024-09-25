@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
-
+import { getStore } from "@netlify/blobs";
 import {
     LaunchDataUserInput,
     LaunchInstruction,
@@ -37,8 +37,31 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAccount } from "../raydium/useCreateCP";
 import { FixableBeetStruct, array, u8, utf8String } from "@metaplex-foundation/beet";
 import { NewListing } from "../../components/listing/launch";
+import { RaydiumAMM } from "../../components/Solana/jupiter_state";
+import { update_listings_blob } from "../../pages/_contexts";
 
+class CreateListing_Instruction {
+    constructor(
+        readonly instruction: number,
+        readonly amm_provider: number,
+    ) {}
 
+    static readonly struct = new FixableBeetStruct<CreateListing_Instruction>(
+        [
+            ["instruction", u8],
+            ["amm_provider", u8],
+        ],
+        (args) => new CreateListing_Instruction(args.instruction!, args.amm_provider!),
+        "CreateListing_Instruction",
+    );
+}
+
+function serialise_CreateListing_instruction(provider: number): Buffer {
+    const data = new CreateListing_Instruction(LaunchInstruction.create_listing, provider);
+    const [buf] = CreateListing_Instruction.struct.serialize(data);
+
+    return buf;
+}
 
 const useCreateListing = () => {
     const wallet = useWallet();
@@ -68,6 +91,9 @@ const useCreateListing = () => {
             isLoading: false,
             autoClose: 3000,
         });
+
+        // update the netlify blob
+        //update_listings_blob(listing.mint.toString());
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -96,6 +122,8 @@ const useCreateListing = () => {
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
         let token_mint = new PublicKey(new_listing.token);
+        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
         let creator = new PublicKey(new_listing.user);
         let creator_data_account = PublicKey.findProgramAddressSync([creator.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -105,37 +133,91 @@ const useCreateListing = () => {
         )[0];
         let verified = accept ? PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0] : PROGRAM;
 
-        // check for raydium cpmm
-        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        let pool_state = getPoolStateAccount(token_mint, quote_mint);
-        let pool_state_account = await connection.getAccountInfo(pool_state);
+        // check for raydium poolsl
+        let amm_provider = 0;
+        let ray_market = null;
+        let amm_account: PublicKey = PROGRAM;
+        let pool_account: PublicKey = PROGRAM;
+        let raydium_base_account: PublicKey = PROGRAM;
+        let raydium_quote_account: PublicKey = PROGRAM;
+        let raydium_lp_mint_account: PublicKey = PROGRAM;
 
-        let amm_seed_keys = [];
-        if (token_mint.toString() < quote_mint.toString()) {
-            amm_seed_keys.push(token_mint);
-            amm_seed_keys.push(quote_mint);
-        } else {
-            amm_seed_keys.push(quote_mint);
-            amm_seed_keys.push(token_mint);
+        if (Config.PROD) {
+            const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+
+            let market_url = "https://public-api.birdeye.so/defi/v2/markets?address=" + token_mint.toString();
+            let market_result = await fetch(market_url, options).then((response) => response.json());
+
+            let type: String;
+            for (let i = 0; i < market_result["data"]["items"].length; i++) {
+                let item = market_result["data"]["items"][i];
+                if (
+                    item.base.address !== "So11111111111111111111111111111111111111112" &&
+                    item.quote.address !== "So11111111111111111111111111111111111111112"
+                )
+                    continue;
+
+                if (item["source"] === "Raydium") {
+                    ray_market = market_result["data"]["items"][i];
+                    type = "Raydium";
+                    amm_provider = 2;
+                    break;
+                }
+                if (item["source"] === "Raydium Cp") {
+                    ray_market = market_result["data"]["items"][i];
+                    type = "RaydiumCPMM";
+                    amm_provider = 1;
+                    break;
+                }
+            }
+
+            if (ray_market === null) {
+                toast.error("No Raydium Market Found");
+                return;
+            }
+
+            if (ray_market !== null) {
+                console.log(ray_market);
+                pool_account = new PublicKey(ray_market.address);
+
+                let amm_seed_keys = [];
+                if (token_mint.toString() < quote_mint.toString()) {
+                    amm_seed_keys.push(token_mint);
+                    amm_seed_keys.push(quote_mint);
+                } else {
+                    amm_seed_keys.push(quote_mint);
+                    amm_seed_keys.push(token_mint);
+                }
+
+                let amm_data_account = PublicKey.findProgramAddressSync(
+                    [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(type)],
+                    PROGRAM,
+                )[0];
+
+                amm_account = amm_data_account;
+
+                if (type === "Raydium") {
+                    let pool_data = await request_raw_account_data("", pool_account);
+                    const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
+                    raydium_lp_mint_account = ray_pool.lpMint;
+                    if (ray_pool.quoteMint.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+                        raydium_base_account = ray_pool.baseVault;
+                        raydium_quote_account = ray_pool.quoteVault;
+                    } else {
+                        raydium_base_account = ray_pool.quoteVault;
+                        raydium_quote_account = ray_pool.baseVault;
+                    }
+                }
+
+                if (type === "RaydiumCPMM") {
+                    raydium_base_account = getAMMBaseAccount(token_mint, quote_mint);
+                    raydium_quote_account = getAMMQuoteAccount(token_mint, quote_mint);
+                    raydium_lp_mint_account = getLPMintAccount(token_mint, quote_mint);
+                }
+            }
         }
 
-        let amm_data_account = PublicKey.findProgramAddressSync(
-            [
-                amm_seed_keys[0].toBytes(),
-                amm_seed_keys[1].toBytes(),
-                Buffer.from("RaydiumCPMM"),
-            ],
-            PROGRAM,
-        )[0];
-
-        let amm_account =  (pool_state_account) ? amm_data_account : PROGRAM;
-        let raydium_base_account = getAMMBaseAccount(token_mint, quote_mint);
-        let raydium_quote_account = getAMMQuoteAccount(token_mint, quote_mint);
-        let raydium_lp_mint_account = getLPMintAccount(token_mint, quote_mint);
-
-        console.log("pool", pool_state_account);
-
-        const instruction_data = serialise_basic_instruction(LaunchInstruction.create_listing);
+        const instruction_data = serialise_CreateListing_instruction(amm_provider);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -147,6 +229,7 @@ const useCreateListing = () => {
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: amm_account, isSigner: false, isWritable: true },
+            { pubkey: pool_account, isSigner: false, isWritable: true },
             { pubkey: quote_mint, isSigner: false, isWritable: true },
             { pubkey: raydium_quote_account, isSigner: false, isWritable: true },
             { pubkey: raydium_base_account, isSigner: false, isWritable: true },

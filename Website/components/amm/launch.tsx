@@ -26,9 +26,10 @@ import { MintData } from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
+import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 
 export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
-    let uri : string | null = null;
+    let uri: string | null = null;
     let metadata_pointer = null;
     let name: string;
     let symbol: string;
@@ -37,7 +38,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         metadata_pointer = getMetadataPointerState(mint);
     }
 
-    console.log("get mint data", mint.address.toString())
+    //console.log("get mint data", mint.address.toString());
     if (metadata_pointer !== null) {
         //console.log("havemetadata pointer ",mint.address.toString(),  metadata_pointer.metadataAddress.toString());
         const data = getExtensionData(ExtensionType.TokenMetadata, mint.tlvData);
@@ -75,13 +76,15 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         (Extensions.PermanentDelegate * Number(permanent_delegate !== null)) |
         (Extensions.TransferHook * Number(transfer_hook !== null));
 
+    //console.log(name, uri);
     let icon: string;
-    uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/")
+    uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
     try {
-        let uri_json = await fetch(uri).then((res) => res.json());
+        let uri_json = await fetchWithTimeout(uri, 3000).then((res) => res.json());
         //console.log(uri_json)
         icon = uri_json["image"];
     } catch (error) {
+        console.log("error getting uri, using SOL icon");
         console.log(error);
         icon = "/images/sol.png";
     }
@@ -95,6 +98,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         token_program: token_program,
     };
 
+    //console.log("have mint data", mint_data);
     return mint_data;
 }
 

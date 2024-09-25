@@ -5,6 +5,7 @@ import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
+import useSwapRaydiumClassic from "../../hooks/raydium/useSwapRaydiumClassic";
 
 const SellPanel = ({
     amm,
@@ -20,6 +21,7 @@ const SellPanel = ({
 }: PanelProps) => {
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
+    const { SwapRaydiumClassic, isLoading: placingRaydiumClassicOrder } = useSwapRaydiumClassic(amm);
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
@@ -138,7 +140,9 @@ const SellPanel = ({
                         ? handleConnectWallet()
                         : amm.provider === 0
                           ? PlaceMarketOrder(token_amount, sol_amount, 1)
-                          : SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
+                          : amm.provider === 1
+                            ? SwapRaydium(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1)
+                            : SwapRaydiumClassic(token_amount * Math.pow(10, base_mint.mint.decimals), 0, 1);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

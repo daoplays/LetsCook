@@ -27,12 +27,51 @@ import { AMMData, getAMMKey, MMLaunchData, MMUserData, OpenOrder } from "../comp
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
-import { useCallback, useEffect, useState, useRef, PropsWithChildren } from "react";
+import { useCallback, useEffect, useState, useRef, PropsWithChildren, SetStateAction, Dispatch } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
 import { getMintData } from "../components/amm/launch";
+
+export const update_listings_blob = async (type : number, value: string) => {
+
+    if (!Config.PROD) {
+        return
+    }
+
+    if (type == 0) {
+        const response = await fetch("/.netlify/functions/update_listings", {
+            method: "POST",
+            body: JSON.stringify({
+                address: value,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const result = await response.json();
+        console.log(result);
+        return result.body;
+    }
+    if (type == 1) {
+
+        const response = await fetch("/.netlify/functions/update_collection", {
+            method: "POST",
+            body: JSON.stringify({
+                name: value,
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const result = await response.json();
+        console.log(result);
+        return result.body;
+    }
+};
 
 const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
@@ -43,37 +82,54 @@ const GetSOLPrice = async (setSOLPrice) => {
     setSOLPrice(result["data"]["SOL"]["price"]);
 };
 
-const GetTokenPrices = async (mints : PublicKey[]) => {
+const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
     // Default options are marked with *
     const options = { method: "GET" };
-    let mint_strings = ""
+    let mint_strings = "";
     for (let i = 0; i < mints.length; i++) {
-        mint_strings += mints[i].toString() + ","
+        mint_strings += mints[i] + ",";
     }
-    let url = "https://price.jup.ag/v6/price?ids=[" + mint_strings + "]&vsToken=SOL";
+    let url = "https://price.jup.ag/v6/price?ids=" + mint_strings + "&vsToken=SOL";
     let result = await fetch(url, options).then((response) => response.json());
-    console.log(result)
+    let price_map: Map<string, number> = new Map();
+    let result_data: Map<string, any> = result["data"];
+    for (let i = 0; i < mints.length; i++) {
+        let result = result_data[mints[i]];
+        try{
+        price_map.set(mints[i], result["price"]);
+        }
+        catch(error){
+            console.log("bad mint", mints[i]);
+        }
+    }
+    setPriceMap(price_map);
 };
 
-const GetTradeMintData = async (trade_keys : PublicKey[], setMintMap) => {
+const GetTradeMintData = async (trade_keys: String[], setMintMap) => {
+    //console.log("GETTING MINT DATA");
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-    let result = await connection.getMultipleAccountsInfo(trade_keys, "confirmed");
 
+    let pubkeys: PublicKey[] = [];
+    for (let i = 0; i < trade_keys.length; i++) {
+        pubkeys.push(new PublicKey(trade_keys[i]));
+    }
+    let result = await connection.getMultipleAccountsInfo(pubkeys, "confirmed");
+    //console.log(result);
     let mint_map = new Map<String, MintData>();
     for (let i = 0; i < result.length; i++) {
-        console.log("mint; ", trade_keys[i].toString(), result[i], result[i].owner.toString());
+        try {
+            let mint = unpackMint(pubkeys[i], result[i], result[i].owner);
+            let mint_data = await getMintData(connection, mint, result[i].owner);
 
-        try{
-        let mint = unpackMint(trade_keys[i], result[i], result[i].owner);
-        let mint_data = await getMintData(connection, mint, result[i].owner);
-
-        //console.log("mint; ", mint.address.toString());
-        mint_map.set(trade_keys[i].toString(), mint_data);
-        }
-        catch(error) {
-            console.log("error", error);
+            mint_map.set(pubkeys[i].toString(), mint_data);
+            //console.log("mint; ", mint.address.toString());
+        } catch (error) {
+            console.log("bad mint", pubkeys[i].toString());
+            console.log(error);
         }
     }
+
+    //console.log("SET MINT MAP", mint_map);
     setMintMap(mint_map);
 };
 
@@ -113,6 +169,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [listing_data, setListingData] = useState<Map<string, ListingData> | null>(null);
 
     const [mintData, setMintData] = useState<Map<String, MintData> | null>(null);
+    const [jup_prices, setJupPrices] = useState<Map<string, number> | null>(null);
 
     const [user_data, setUserData] = useState<Map<string, UserData> | null>(new Map());
     const [join_data, setJoinData] = useState<Map<string, JoinData> | null>(null);
@@ -211,7 +268,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 setAMMData(new Map(amm_data));
             } catch (error) {
                 console.log(error);
-                //closeAccounts.push(program_data[i].pubkey)
             }
 
             return;
@@ -421,9 +477,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 6) {
                 try {
                     const [amm] = AMMData.struct.deserialize(data);
+
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
-                    //console.log(amm.provider, amm.base_mint.toString());
+                    //console.log("AMM", amm.provider, amm.base_mint.toString());
                 } catch (error) {
                     console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
@@ -441,7 +498,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
-               
+                //if (listing.mint.toString() !== "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN" && listing.mint.toString() !== "5jiJ7c4TqKgLyWhTwgmEiDu9UboQNMNYH1kZXd6kpump"){
+                //closeAccounts.push(program_data[i].pubkey)
+                //continue;
+                //}
+                //update_listings_blob(listing.mint.toString());
                 listings.set(program_data[i].pubkey.toString(), listing);
                 continue;
             }
@@ -489,7 +550,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
-        console.log("set user data", user_data);
+        //console.log("set user data", user_data);
         setLaunchData(launch_data);
         setUserData(user_data);
         setJoinData(join_data);
@@ -536,25 +597,27 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setHomePageData(home_page_data);
 
         // set up the map for the trade page
-        let trade_mints: PublicKey[] = [];
+        let trade_mints: String[] = [];
+        let price_mints: string[] = [];
+        listings.forEach((listing, key) => {
+            trade_mints.push(listing.mint.toString());
+            price_mints.push(listing.mint.toString());
+        });
+
         launch_data.forEach((launch, key) => {
-            let listing: ListingData = listings.get(launch.listing.toString());
-            trade_mints.push(listing.mint);
             // check if we have a whitelist token
             for (let p = 0; p < launch.plugins.length; p++) {
                 if (launch.plugins[p]["__kind"] === "Whitelist") {
-                    trade_mints.push(launch.plugins[p]["key"]);
+                    if (!trade_mints.includes(launch.plugins[p]["key"].toString())) trade_mints.push(launch.plugins[p]["key"]);
                 }
             }
         });
 
-        listings.forEach((listing, key) => {
-            trade_mints.push(listing.mint);
-        });
-
         collections.forEach((collection, key) => {
             //console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
-            trade_mints.push(collection.keys[CollectionKeys.MintAddress]);
+
+            if (!trade_mints.includes(collection.keys[CollectionKeys.MintAddress].toString()))
+                trade_mints.push(collection.keys[CollectionKeys.MintAddress].toString());
             // check if we have a whitelist token
             for (let p = 0; p < collection.plugins.length; p++) {
                 if (collection.plugins[p]["__kind"] === "Whitelist") {
@@ -564,6 +627,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
 
         GetTradeMintData(trade_mints, setMintData);
+        GetTokenPrices(price_mints, setJupPrices);
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {
@@ -605,6 +669,9 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             setSelectedNetwork={setSelectedNetwork}
             selectedNetwork={selectedNetwork}
             listingData={listing_data}
+            setListingData={setListingData}
+            setMintData={setMintData}
+            jupPrices={jup_prices}
         >
             {children}
         </AppRootContextProvider>
