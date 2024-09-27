@@ -21,7 +21,7 @@ import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, dese
 import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
-import { bignum_to_num, TokenAccount, request_token_amount, request_raw_account_data } from "../../components/Solana/state";
+import { bignum_to_num, TokenAccount, request_token_amount, request_raw_account_data, MintData } from "../../components/Solana/state";
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useWallet, useConnection, WalletContextState } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -121,6 +121,8 @@ const CollectionSwapPage = () => {
     const asset_received = useRef<AssetV1 | null>(null);
     const asset_image = useRef<string | null>(null);
 
+    const [white_list, setWhiteList] = useState<MintData | null>(null);
+
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
@@ -183,6 +185,14 @@ const CollectionSwapPage = () => {
 
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
+
+        // check relevant plugins
+        for (let i = 0; i < launch.plugins.length; i++) {
+            if (launch.plugins[i]["__kind"] === "WhitelistMint") {
+                let whitelist_key = launch.plugins[i]["whitelist"];
+                setWhiteList(mintData[whitelist_key.toString()]);
+            }
+        }
     }, [collectionList, pageName, mintData, wallet]);
 
     // when page unloads unsub from any active websocket listeners
