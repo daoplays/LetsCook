@@ -302,12 +302,21 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             mint_info.token_program,
         );
 
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+        let team_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            launchData.keys[CollectionKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            mint_info.token_program,
+        );
 
-        let collection_metadata_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), launchData.keys[CollectionKeys.CollectionMint].toBuffer()],
-            METAPLEX_META,
-        )[0];
+        let token_destination_account = pda_token_account_key;
+        for (let i = 0; i < launchData.plugins.length; i++) {
+            if (launchData.plugins[i]["__kind"] === "MintOnly") {
+                token_destination_account = team_token_account_key;
+            }
+        }
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let transfer_hook = getTransferHook(mint_account);
 
@@ -400,10 +409,11 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: token_destination_account, isSigner: false, isWritable: true },
 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[CollectionKeys.TeamWallet], isSigner: false, isWritable: true },
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
             { pubkey: mint_info.token_program, isSigner: false, isWritable: true },

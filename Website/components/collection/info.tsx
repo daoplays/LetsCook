@@ -26,7 +26,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
     const [supplyMode, setSupplyMode] = useState<string>(newCollectionData.current.collection_type == 0 ? "fixed" : "unlimited");
-    const [isMintOnly, setIsMintOnly] = useState<boolean>(false);
+    const [isMintOnly, setIsMintOnly] = useState<boolean>(newCollectionData.current.mint_only);
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -169,6 +169,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         if (supplyMode === "unlimited") {
             newCollectionData.current.collection_type = 1;
         }
+
+        newCollectionData.current.mint_only = isMintOnly;
 
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish

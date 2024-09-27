@@ -39,6 +39,7 @@ type CollectionPluginEnum = {
     };
     MintProbability: { mint_prob: number };
     Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
+    MintOnly;
 
 };
 type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>;
@@ -67,6 +68,7 @@ const collectionPluginBeet = dataEnum<CollectionPluginEnum>([
             'CollectionPluginEnum["Whitelist"]',
         ),
     ],
+    ["MintOnly", new BeetArgsStruct<CollectionPluginEnum["MintOnly"]>([], 'CollectionPluginEnum["MintOnly"]')],
 ]) as FixableBeet<CollectionPlugin>;
 
 type CollectionMetaEnum = {
@@ -145,6 +147,9 @@ export interface CollectionDataUserInput {
     whitelist_amount: number;
     whitelist_phase_end: Date;
 
+    // mint only plugin
+    mint_only: boolean;
+
     // upload state
     image_payment: boolean;
     images_uploaded: number;
@@ -196,6 +201,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     whitelist_key: "",
     whitelist_amount: 0,
     whitelist_phase_end: new Date(new Date().setHours(0, 0, 0, 0)),
+    mint_only: false,
     image_payment: false,
     images_uploaded: 0,
     manifest: null,
@@ -347,6 +353,8 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
     let whitelist_key = "";
     let whitelist_amount = 0;
     let whitelist_phase_end = 0;
+
+    let mint_only = false;
     
     for (let i = 0; i < launch_data.plugins.length; i++) {
         if (launch_data.plugins[i]["__kind"] === "MintProbability") {
@@ -358,6 +366,10 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
             whitelist_amount = launch_data.plugins[i]["amount"];
             whitelist_phase_end = launch_data.plugins[i]["phase_end"];
             //console.log("Have mint prob", prob_string);
+        }
+
+        if (launch_data.plugins[i]["__kind"] === "MintOnly") {
+            mint_only = true;
         }
     }
 
@@ -406,6 +418,7 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
         whitelist_key: whitelist_key,
         whitelist_amount: whitelist_amount,
         whitelist_phase_end: new Date(bignum_to_num(whitelist_phase_end)),
+        mint_only: mint_only,
         image_payment: false,
         images_uploaded: 0,
         manifest: null,
@@ -514,6 +527,7 @@ class LaunchCollection_Instruction {
         readonly attributes: Attribute[],
         readonly whitelist_tokens: bignum,
         readonly whitelist_end: bignum,
+        readonly mint_only: number
 
     ) {}
 
@@ -544,6 +558,7 @@ class LaunchCollection_Instruction {
             ["attributes", array(Attribute.struct)],
             ["whitelist_tokens", u64],
             ["whitelist_end", u64],
+            ["mint_only", u8]
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -572,6 +587,7 @@ class LaunchCollection_Instruction {
                 args.attributes!,
                 args.whitelist_tokens!,
                 args.whitelist_end!,
+                args.mint_only!
             ),
         "LaunchCollection_Instruction",
     );
@@ -655,6 +671,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         attributes,
         new BN(new_launch_data.whitelist_amount),
         new BN(new_launch_data.whitelist_phase_end.getTime()),
+        new_launch_data.mint_only ? 1 : 0
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

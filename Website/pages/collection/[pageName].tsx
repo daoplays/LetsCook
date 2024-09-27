@@ -434,12 +434,18 @@ const CollectionSwapPage = () => {
     }
 
     let prob_string = "";
+    let mint_only = false;
+
     for (let i = 0; i < launch.plugins.length; i++) {
         if (launch.plugins[i]["__kind"] === "MintProbability") {
             prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)";
             //console.log("Have mint prob", prob_string);
         }
+        if (launch.plugins[i]["__kind"] === "MintOnly") {
+            mint_only = true;
+        }
     }
+
 
     console.log(token_balance);
     return (
