@@ -38,7 +38,7 @@ const TokenLaunch = () => {
                     </FormLabel>
                     <Switch
                         id="mode"
-                        size="lg"
+                        size="md"
                         isChecked={!simpleLaunch}
                         onChange={() => setSimpleLaunch(!simpleLaunch)}
                         isDisabled={screen !== "token"}

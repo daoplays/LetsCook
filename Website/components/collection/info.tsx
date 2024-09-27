@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack, Tooltip } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack, Tooltip, Switch } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -26,6 +26,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
     const [supplyMode, setSupplyMode] = useState<string>(newCollectionData.current.collection_type == 0 ? "fixed" : "unlimited");
+    const [isMintOnly, setIsMintOnly] = useState<boolean>(false);
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -330,38 +331,51 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         </div>
                                     </HStack>
                                 </Flex>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                        Mode:
-                                    </div>
-                                    <RadioGroup onChange={setSupplyMode} value={supplyMode}>
-                                        <Stack direction="row" gap={5}>
-                                            <Radio value="fixed" color="white">
-                                                <Tooltip
-                                                    label="Each NFT will only be minted once"
-                                                    hasArrow
-                                                    fontSize="large"
-                                                    offset={[0, 10]}
-                                                >
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        Fixed Supply
-                                                    </Text>
-                                                </Tooltip>
-                                            </Radio>
-                                            <Radio value="unlimited">
-                                                <Tooltip
-                                                    label="Each NFT can be minted multiple times."
-                                                    hasArrow
-                                                    fontSize="large"
-                                                    offset={[0, 10]}
-                                                >
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        Unlimited Supply
-                                                    </Text>
-                                                </Tooltip>
-                                            </Radio>
-                                        </Stack>
-                                    </RadioGroup>
+                                <HStack flexDirection={lg ? "column" : "row"} className={styles.eachField}>
+                                    <HStack spacing={0} className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                            Mode:
+                                        </div>
+                                        <RadioGroup onChange={setSupplyMode} value={supplyMode} w={"320px"}>
+                                            <Stack direction="row" gap={5}>
+                                                <Radio value="fixed" color="white">
+                                                    <Tooltip
+                                                        label="Each NFT will only be minted once"
+                                                        hasArrow
+                                                        fontSize="large"
+                                                        offset={[0, 10]}
+                                                    >
+                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                            Fixed Supply
+                                                        </Text>
+                                                    </Tooltip>
+                                                </Radio>
+                                                <Radio value="unlimited">
+                                                    <Tooltip
+                                                        label="Each NFT can be minted multiple times."
+                                                        hasArrow
+                                                        fontSize="large"
+                                                        offset={[0, 10]}
+                                                    >
+                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                            Unlimited Supply
+                                                        </Text>
+                                                    </Tooltip>
+                                                </Radio>
+                                            </Stack>
+                                        </RadioGroup>
+                                    </HStack>
+
+                                    <HStack className={styles.eachField} mt={lg && 4}>
+                                        <div className={`${styles.textLabel} font-face-kg`}>Traditional Mint:</div>
+                                        <Switch
+                                            ml={2}
+                                            py={2}
+                                            size={"md"}
+                                            isChecked={isMintOnly}
+                                            onChange={() => setIsMintOnly(!isMintOnly)}
+                                        />
+                                    </HStack>
                                 </HStack>
                                 {!lg && <Browse />}
                             </VStack>

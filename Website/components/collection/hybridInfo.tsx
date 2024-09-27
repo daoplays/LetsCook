@@ -1,14 +1,26 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, Box, Checkbox,    
+import {
+    Center,
+    VStack,
+    Text,
+    HStack,
+    Input,
+    chakra,
+    Flex,
+    Box,
+    Checkbox,
     PopoverTrigger,
     PopoverContent,
     PopoverArrow,
     PopoverCloseButton,
     PopoverHeader,
-    PopoverBody, 
+    PopoverBody,
     Popover,
     IconButton,
-    useDisclosure
+    useDisclosure,
+    FormControl,
+    FormLabel,
+    Switch,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -78,17 +90,17 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     //console.log(zone);
 
     useEffect(() => {
-        let splitLaunchDate = whitelist_phase_end.getTime() > 0 ? whitelist_phase_end.toString().split(" ") : new Date().toString().split(" ");
+        let splitLaunchDate =
+            whitelist_phase_end.getTime() > 0 ? whitelist_phase_end.toString().split(" ") : new Date().toString().split(" ");
         let launchDateString = splitLaunchDate[0] + " " + splitLaunchDate[1] + " " + splitLaunchDate[2] + " " + splitLaunchDate[3];
         let splitLaunchTime = splitLaunchDate[4].split(":");
         let launchTimeString = splitLaunchTime[0] + ":" + splitLaunchTime[1] + " " + zone;
         setWhiteListEndDateAndTime(`${launchDateString} ${launchTimeString}`);
     }, [whitelist_phase_end, local_date, zone]);
 
-
-    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setIncWhiteListPhaseEnd(e.target.checked);
-      };
+    // const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setIncWhiteListPhaseEnd(e.target.checked);
+    // };
 
     async function setMintData(e): Promise<void> {
         e.preventDefault();
@@ -206,7 +218,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     }
 
     async function setData(e): Promise<boolean> {
-
         e.preventDefault();
 
         if (token_name === "") {
@@ -386,7 +397,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
                                         Swap Rate:
                                     </div>
 
@@ -408,7 +419,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
                                         Swap Fee:
                                     </div>
 
@@ -430,14 +441,14 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
                                         Mint Chance:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             bg="#494949"
-                                            placeholder="Optional - chance of getting nft on swap (default = 100%)"
+                                            placeholder="Chance of getting nft on swap (default = 100%) - Optional"
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}
@@ -451,7 +462,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
                                         Fee Wallet:
                                     </div>
 
@@ -472,14 +483,14 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
-                                        WHITELIST TOKEN:
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
+                                        Whitelist Token:
                                     </div>
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             size={sm ? "medium" : "lg"}
                                             required
-                                            placeholder="Optional - Enter Whitelist Token Address"
+                                            placeholder="Enter Whitelist Token Address - Optional"
                                             className={styles.inputBox}
                                             type="text"
                                             value={whitelist_key}
@@ -493,14 +504,27 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
                                         WHITELIST END DATE:
                                     </div>
-                                    <Checkbox 
-                                        isChecked={inc_whitelist_phase_end}
-                                        onChange={handleCheckboxChange}
-                                        >
-                                        Include
-                                    </Checkbox>
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                        <HStack spacing={5}>
+                                    {/* <HStack ml={2} py={2}>
+                                        <Checkbox
+                                            size="lg"
+                                            isChecked={!inc_whitelist_phase_end}
+                                            onChange={() => setIncWhiteListPhaseEnd(!inc_whitelist_phase_end)}
+                                        />
+                                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
+                                            Include
+                                        </Text>
+                                    </HStack> */}
+
+                                    <Switch
+                                        ml={2}
+                                        py={2}
+                                        size={lg ? "md" : "lg"}
+                                        isChecked={!inc_whitelist_phase_end}
+                                        onChange={() => setIncWhiteListPhaseEnd(!inc_whitelist_phase_end)}
+                                    />
+
+                                    <div className={`${styles.textLabelInputDate} font-face-kg`} hidden={inc_whitelist_phase_end}>
+                                        <HStack spacing={5} ml={2}>
                                             <Popover isOpen={isWLEndOpen} onClose={OnCloseWLEnd} placement="bottom" closeOnBlur={false}>
                                                 <PopoverTrigger>
                                                     <IconButton
@@ -537,7 +561,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             </Text>
                                         </HStack>
                                     </div>
-
                                 </HStack>
                             </VStack>
                         </HStack>

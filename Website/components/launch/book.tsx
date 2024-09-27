@@ -420,7 +420,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     disabled={newLaunchData.current.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
-                                    placeholder="Optional - Enter Whitelist Token Address"
+                                    placeholder="Enter Whitelist Token Address - Optional"
                                     className={styles.inputBox}
                                     type="text"
                                     value={whitelist_key}
