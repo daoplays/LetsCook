@@ -189,10 +189,13 @@ const CollectionSwapPage = () => {
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
         // check relevant plugins
+        console.log("checking plugins")
         for (let i = 0; i < launch.plugins.length; i++) {
-            if (launch.plugins[i]["__kind"] === "WhitelistMint") {
-                let whitelist_key = launch.plugins[i]["whitelist"];
+            if (launch.plugins[i]["__kind"] === "Whitelist") {
+                let whitelist_key = launch.plugins[i]["key"];
                 setWhiteList(mintData[whitelist_key.toString()]);
+                console.log("phase end", (new Date(bignum_to_num(launch.plugins[i]["phase_end"]))).toDateString());
+                console.log()
             }
         }
     }, [collectionList, pageName, mintData, wallet]);
