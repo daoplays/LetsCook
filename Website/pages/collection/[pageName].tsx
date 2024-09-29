@@ -103,6 +103,8 @@ const CollectionSwapPage = () => {
     const [token_balance, setTokenBalance] = useState<number>(0);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
+    const [WLEndDate, setWLEndDate] = useState<Date>();
+
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [nft_amount, setNFTAmount] = useState<number>(0);
     const [isTokenToNFT, setIsTokenToNFT] = useState(false);
@@ -443,19 +445,27 @@ const CollectionSwapPage = () => {
         progress_string = "Unlimited";
     }
 
-    let prob_string = "";
-    let mint_only = false;
-
-    for (let i = 0; i < launch.plugins.length; i++) {
-        if (launch.plugins[i]["__kind"] === "MintProbability") {
-            prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)";
-            //console.log("Have mint prob", prob_string);
-        }
-        if (launch.plugins[i]["__kind"] === "MintOnly") {
-            mint_only = true;
-        }
-    }
-
+    const { prob_string, mint_only, wl_end_date } = launch.plugins.reduce(
+        (acc, plugin) => {
+            switch (plugin["__kind"]) {
+                case "MintProbability":
+                    acc.prob_string = `(${plugin["mint_prob"]}% mint chance)`;
+                    break;
+                case "MintOnly":
+                    acc.mint_only = true;
+                    // Need to set isTokenToNFT to true to make it token to NFT only
+                    // setIsTokenToNFT(true); infinite loop re render (to fix)
+                    break;
+                case "Whitelist":
+                    acc.wl_end_date = new Date(bignum_to_num(plugin["phase_end"]));
+                    break;
+                default:
+                    break;
+            }
+            return acc;
+        },
+        { prob_string: "", mint_only: false, wl_end_date: null },
+    );
 
     console.log(token_balance);
     return (
@@ -525,219 +535,236 @@ const CollectionSwapPage = () => {
                                 <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
                             </VStack>
 
-                            <VStack
-                                my="auto"
-                                h="100%"
-                                borderRadius={12}
-                                p={4}
-                                align="center"
-                                w={350}
-                                style={{ background: "rgba(0, 0, 0, 0.2)" }}
-                                boxShadow="0px 5px 15px 0px rgba(0,0,0,0.3)"
-                                gap={0}
-                            >
-                                <Text align={sm ? "center" : "start"} className="font-face-kg" color={"white"} fontSize="x-large">
-                                    Hybrid Wrap
-                                </Text>
-
-                                <HStack align="center" mb={4}>
-                                    <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
-                                        ~
-                                        {!isTokenToNFT
-                                            ? `1 NFT = ${out_amount.toLocaleString()} ${launch.token_symbol}`
-                                            : `${(
-                                                  bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
-                                              ).toLocaleString()} ${launch.token_symbol} = 1 NFT`}
+                            <VStack pb={mint_only && 12}>
+                                {mint_only && (
+                                    <VStack mt={3}>
+                                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
+                                            Whitelist Token Required: <br />{" "}
+                                            <Link href="#" target="_blank">
+                                                Token CA Here
+                                            </Link>
+                                        </Text>
+                                        <Text align="center" mb={0} color={"white"} fontFamily="ReemKufiRegular" opacity="50%">
+                                            Until: {wl_end_date.toLocaleString()}
+                                        </Text>
+                                    </VStack>
+                                )}
+                                <VStack
+                                    my="auto"
+                                    h="100%"
+                                    borderRadius={12}
+                                    p={4}
+                                    align="center"
+                                    w={350}
+                                    style={{ background: "rgba(0, 0, 0, 0.2)" }}
+                                    boxShadow="0px 5px 15px 0px rgba(0,0,0,0.3)"
+                                    gap={0}
+                                >
+                                    <Text align={sm ? "center" : "start"} className="font-face-kg" color={"white"} fontSize="x-large">
+                                        Hybrid Wrap
                                     </Text>
-                                    <Tooltip label="With 2% Transfer Tax" hasArrow fontSize="medium" offset={[0, 10]}>
-                                        <Image width={20} height={20} src="/images/help.png" alt="Help" />
-                                    </Tooltip>
-                                </HStack>
 
-                                <Flex w="100%" align="center" flexDirection={isTokenToNFT ? "column" : "column-reverse"}>
-                                    <VStack w="100%">
-                                        <HStack w="100%" justifyContent="space-between">
-                                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                                                {isTokenToNFT ? "You're Paying" : "To Receive"}
-                                            </Text>
+                                    <HStack align="center" mb={4}>
+                                        <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
+                                            ~
+                                            {!isTokenToNFT
+                                                ? `1 NFT = ${out_amount.toLocaleString()} ${launch.token_symbol}`
+                                                : `${(
+                                                      bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
+                                                  ).toLocaleString()} ${launch.token_symbol} = 1 NFT`}
+                                        </Text>
+                                        <Tooltip label="With 2% Transfer Tax" hasArrow fontSize="medium" offset={[0, 10]}>
+                                            <Image width={20} height={20} src="/images/help.png" alt="Help" />
+                                        </Tooltip>
+                                    </HStack>
 
-                                            <HStack gap={1} opacity={0.5}>
-                                                <FaWallet size={12} color="white" />
-                                                <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                    {token_balance.toLocaleString()}
+                                    <Flex w="100%" align="center" gap={3} flexDirection={isTokenToNFT ? "column" : "column-reverse"}>
+                                        <VStack w="100%">
+                                            <HStack w="100%" justifyContent="space-between">
+                                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                                    {isTokenToNFT ? "You're Paying" : "To Receive"}
                                                 </Text>
-                                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                    {launch.token_symbol}
-                                                </Text>
+
+                                                <HStack gap={1} opacity={0.5}>
+                                                    <FaWallet size={12} color="white" />
+                                                    <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                                                        {token_balance.toLocaleString()}
+                                                    </Text>
+                                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                                                        {launch.token_symbol}
+                                                    </Text>
+                                                </HStack>
                                             </HStack>
-                                        </HStack>
-                                        <InputGroup size="md">
-                                            <Input
-                                                color="white"
-                                                size="lg"
-                                                borderColor="rgba(134, 142, 150, 0.5)"
-                                                value={
-                                                    isTokenToNFT
-                                                        ? (
-                                                              bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
-                                                          ).toLocaleString()
-                                                        : out_amount.toLocaleString()
-                                                }
-                                                onChange={(e) => {
-                                                    setTokenAmount(
-                                                        !isNaN(parseFloat(e.target.value)) || e.target.value === ""
-                                                            ? parseFloat(e.target.value)
-                                                            : token_amount,
-                                                    );
-                                                }}
-                                                disabled={true}
-                                                type="number"
-                                                min="0"
-                                            />
-                                            <InputRightElement h="100%" w={50}>
-                                                <Image
-                                                    src={launch.token_icon_url}
-                                                    width={30}
-                                                    height={30}
-                                                    alt="SOL Icon"
-                                                    style={{ borderRadius: "100%" }}
+                                            <InputGroup size="md">
+                                                <Input
+                                                    color="white"
+                                                    size="lg"
+                                                    borderColor="rgba(134, 142, 150, 0.5)"
+                                                    value={
+                                                        isTokenToNFT
+                                                            ? (
+                                                                  bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
+                                                              ).toLocaleString()
+                                                            : out_amount.toLocaleString()
+                                                    }
+                                                    onChange={(e) => {
+                                                        setTokenAmount(
+                                                            !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                                ? parseFloat(e.target.value)
+                                                                : token_amount,
+                                                        );
+                                                    }}
+                                                    disabled={true}
+                                                    type="number"
+                                                    min="0"
                                                 />
-                                            </InputRightElement>
-                                        </InputGroup>
-                                    </VStack>
+                                                <InputRightElement h="100%" w={50}>
+                                                    <Image
+                                                        src={launch.token_icon_url}
+                                                        width={30}
+                                                        height={30}
+                                                        alt="SOL Icon"
+                                                        style={{ borderRadius: "100%" }}
+                                                    />
+                                                </InputRightElement>
+                                            </InputGroup>
+                                        </VStack>
 
-                                    <LuArrowUpDown
-                                        size={24}
-                                        color="white"
-                                        style={{ marginTop: "12px", cursor: "pointer" }}
-                                        onClick={() => setIsTokenToNFT(!isTokenToNFT)}
-                                    />
+                                        {!mint_only && (
+                                            <LuArrowUpDown
+                                                size={24}
+                                                color="white"
+                                                style={{ marginTop: "12px", cursor: "pointer" }}
+                                                onClick={() => setIsTokenToNFT(!isTokenToNFT)}
+                                            />
+                                        )}
 
-                                    <VStack w="100%">
-                                        <HStack w="100%" justifyContent="space-between">
-                                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                                                {isTokenToNFT ? "To Receive" : "You're Paying"}
-                                            </Text>
-
-                                            <HStack gap={1} opacity={0.5}>
-                                                <FaWallet size={12} color="white" />
-                                                <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                    {nft_balance}
+                                        <VStack w="100%">
+                                            <HStack w="100%" justifyContent="space-between">
+                                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                                    {isTokenToNFT ? "To Receive" : "You're Paying"}
                                                 </Text>
-                                                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                    {launch.collection_symbol}
-                                                </Text>
+
+                                                <HStack gap={1} opacity={0.5}>
+                                                    <FaWallet size={12} color="white" />
+                                                    <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                                                        {nft_balance}
+                                                    </Text>
+                                                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+                                                        {launch.collection_symbol}
+                                                    </Text>
+                                                </HStack>
                                             </HStack>
-                                        </HStack>
-                                        <InputGroup size="md">
-                                            <Input
-                                                color="white"
-                                                size="lg"
-                                                borderColor="rgba(134, 142, 150, 0.5)"
-                                                value={1}
-                                                onChange={(e) => {
-                                                    setNFTAmount(
-                                                        !isNaN(parseFloat(e.target.value)) || e.target.value === ""
-                                                            ? parseFloat(e.target.value)
-                                                            : nft_amount,
-                                                    );
-                                                }}
-                                                disabled={true}
-                                                type="number"
-                                                min="0"
-                                            />
-                                            <InputRightElement h="100%" w={50}>
-                                                <Image
-                                                    src={launch.collection_icon_url}
-                                                    width={30}
-                                                    height={30}
-                                                    alt="SOL Icon"
-                                                    style={{ borderRadius: "100%" }}
+                                            <InputGroup size="md">
+                                                <Input
+                                                    color="white"
+                                                    size="lg"
+                                                    borderColor="rgba(134, 142, 150, 0.5)"
+                                                    value={1}
+                                                    onChange={(e) => {
+                                                        setNFTAmount(
+                                                            !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                                ? parseFloat(e.target.value)
+                                                                : nft_amount,
+                                                        );
+                                                    }}
+                                                    disabled={true}
+                                                    type="number"
+                                                    min="0"
                                                 />
-                                            </InputRightElement>
-                                        </InputGroup>
-                                    </VStack>
-                                </Flex>
+                                                <InputRightElement h="100%" w={50}>
+                                                    <Image
+                                                        src={launch.collection_icon_url}
+                                                        width={30}
+                                                        height={30}
+                                                        alt="SOL Icon"
+                                                        style={{ borderRadius: "100%" }}
+                                                    />
+                                                </InputRightElement>
+                                            </InputGroup>
+                                        </VStack>
+                                    </Flex>
 
-                                {wallet.connected ? (
-                                    <VStack spacing={3} w="100%">
-                                        {isTokenToNFT ? (
-                                            <HStack w="100%">
-                                                {assigned_nft === null || assigned_nft.status > 0 ? (
-                                                    <Tooltip
-                                                        label="You don't have enough token balance"
-                                                        hasArrow
-                                                        offset={[0, 10]}
-                                                        isDisabled={enoughTokenBalance}
-                                                    >
+                                    {wallet.connected ? (
+                                        <VStack spacing={3} w="100%">
+                                            {isTokenToNFT ? (
+                                                <HStack w="100%">
+                                                    {assigned_nft === null || assigned_nft.status > 0 ? (
+                                                        <Tooltip
+                                                            label="You don't have enough token balance"
+                                                            hasArrow
+                                                            offset={[0, 10]}
+                                                            isDisabled={enoughTokenBalance}
+                                                        >
+                                                            <Button
+                                                                w="100%"
+                                                                mt={3}
+                                                                onClick={() => {
+                                                                    if (!wallet.connected) {
+                                                                        handleConnectWallet();
+                                                                    }
+
+                                                                    if (wallet.connected && enoughTokenBalance) {
+                                                                        ClaimNFT();
+                                                                    }
+                                                                }}
+                                                                isLoading={isLoading}
+                                                                isDisabled={!enoughTokenBalance || isLoading}
+                                                            >
+                                                                Confirm {prob_string}
+                                                            </Button>
+                                                        </Tooltip>
+                                                    ) : (
                                                         <Button
                                                             w="100%"
                                                             mt={3}
                                                             onClick={() => {
-                                                                if (!wallet.connected) {
-                                                                    handleConnectWallet();
+                                                                if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                                    openAssetModal();
+                                                                    MintNFT();
                                                                 }
-
-                                                                if (wallet.connected && enoughTokenBalance) {
-                                                                    ClaimNFT();
+                                                                if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+                                                                    openAssetModal();
+                                                                    MintRandom();
                                                                 }
                                                             }}
                                                             isLoading={isLoading}
-                                                            isDisabled={!enoughTokenBalance || isLoading}
                                                         >
-                                                            Confirm {prob_string}
+                                                            Check
                                                         </Button>
-                                                    </Tooltip>
-                                                ) : (
+                                                    )}
+                                                </HStack>
+                                            ) : (
+                                                <Tooltip
+                                                    label={`You don't have ${launch.collection_name} NFTs`}
+                                                    hasArrow
+                                                    offset={[0, 10]}
+                                                    isDisabled={nft_balance > 0 || isLoading}
+                                                >
                                                     <Button
                                                         w="100%"
                                                         mt={3}
                                                         onClick={() => {
-                                                            if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-                                                                openAssetModal();
-                                                                MintNFT();
-                                                            }
-                                                            if (launch.collection_meta["__kind"] === "RandomUnlimited") {
-                                                                openAssetModal();
-                                                                MintRandom();
+                                                            if (wallet.connected) {
+                                                                WrapNFT(null);
+                                                            } else {
+                                                                handleConnectWallet();
                                                             }
                                                         }}
-                                                        isLoading={isLoading}
+                                                        isLoading={isWrapLoading}
+                                                        isDisabled={nft_balance <= 0 || isLoading}
                                                     >
-                                                        Check
+                                                        Confirm
                                                     </Button>
-                                                )}
-                                            </HStack>
-                                        ) : (
-                                            <Tooltip
-                                                label={`You don't have ${launch.collection_name} NFTs`}
-                                                hasArrow
-                                                offset={[0, 10]}
-                                                isDisabled={nft_balance > 0 || isLoading}
-                                            >
-                                                <Button
-                                                    w="100%"
-                                                    mt={3}
-                                                    onClick={() => {
-                                                        if (wallet.connected) {
-                                                            WrapNFT(null);
-                                                        } else {
-                                                            handleConnectWallet();
-                                                        }
-                                                    }}
-                                                    isLoading={isWrapLoading}
-                                                    isDisabled={nft_balance <= 0 || isLoading}
-                                                >
-                                                    Confirm
-                                                </Button>
-                                            </Tooltip>
-                                        )}
-                                    </VStack>
-                                ) : (
-                                    <Button w="100%" mt={3} onClick={() => handleConnectWallet()}>
-                                        Connect your wallet
-                                    </Button>
-                                )}
+                                                </Tooltip>
+                                            )}
+                                        </VStack>
+                                    ) : (
+                                        <Button w="100%" mt={3} onClick={() => handleConnectWallet()}>
+                                            Connect your wallet
+                                        </Button>
+                                    )}
+                                </VStack>
                             </VStack>
 
                             <VStack minW={220}>
