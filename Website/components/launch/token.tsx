@@ -560,7 +560,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                         <Stack direction="row" gap={5}>
                                             <Radio value="FCFS" color="white">
                                                 <Tooltip
-                                                    label="Launch ends as soon as it is funded, first come first serve."
+                                                    label="Launch ends as soon as it is funded, first come first serve. "
                                                     hasArrow
                                                     fontSize="large"
                                                     offset={[0, 10]}
@@ -570,9 +570,9 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     </Text>
                                                 </Tooltip>
                                             </Radio>
-                                            <Radio value="Raffle">
+                                            <Radio value="Raffle" isDisabled>
                                                 <Tooltip
-                                                    label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                                    label="Coming Soon! Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
                                                     hasArrow
                                                     fontSize="large"
                                                     offset={[0, 10]}

@@ -13,6 +13,18 @@ export interface NetworkConfig {
     COOK_FEES: PublicKey;
 }
 
+const EclipseDevNetConfig: NetworkConfig = {
+    PROD: false,
+    NETWORK: "eclipse",
+    FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
+    RPC_NODE: "https://staging-rpc.dev2.eclipsenetwork.xyz",
+    WSS_NODE: "wss://staging-rpc.dev2.eclipsenetwork.xyz",
+    IRYS_URL: "https://devnet.irys.xyz",
+    IRYS_WALLET: "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD",
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
+}
+
 const DevNetConfig: NetworkConfig = {
     PROD: false,
     NETWORK: "devnet",
@@ -61,7 +73,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = DevNetConfig;
+export let Config = EclipseDevNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,

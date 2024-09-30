@@ -362,11 +362,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             Let&apos;s Cook
                                         </Text>
                                     </Radio>
+                                    {/*
                                     <Radio value="raydium">
                                         <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                             Raydium
                                         </Text>
                                     </Radio>
+                                    */}
                                 </Stack>
                             </RadioGroup>
                         </HStack>
