@@ -189,13 +189,14 @@ const CollectionSwapPage = () => {
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
         // check relevant plugins
-        console.log("checking plugins")
+        console.log("checking plugins");
         for (let i = 0; i < launch.plugins.length; i++) {
             if (launch.plugins[i]["__kind"] === "Whitelist") {
                 let whitelist_key = launch.plugins[i]["key"];
-                setWhiteList(mintData[whitelist_key.toString()]);
-                console.log("phase end", (new Date(bignum_to_num(launch.plugins[i]["phase_end"]))).toDateString());
-                console.log()
+                console.log("whitelist key", whitelist_key.toString(), mintData.get(whitelist_key.toString()));
+                setWhiteList(mintData.get(whitelist_key.toString()));
+                console.log("phase end", new Date(bignum_to_num(launch.plugins[i]["phase_end"])).toDateString());
+                console.log();
             }
         }
     }, [collectionList, pageName, mintData, wallet]);
@@ -460,6 +461,7 @@ const CollectionSwapPage = () => {
                     // setIsTokenToNFT(true); infinite loop re render (to fix)
                     break;
                 case "Whitelist":
+                    console.log("setting whitelist phase end to ", bignum_to_num(plugin["phase_end"]));
                     acc.wl_end_date = new Date(bignum_to_num(plugin["phase_end"]));
                     break;
                 default:
@@ -538,14 +540,30 @@ const CollectionSwapPage = () => {
                                 <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
                             </VStack>
 
-                            <VStack pb={mint_only && 12}>
-                                {mint_only && (
+                            <VStack pb={wl_end_date && 12}>
+                                {white_list && wl_end_date && (
                                     <VStack mt={3}>
                                         <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
                                             Whitelist Token Required: <br />{" "}
-                                            <Link href="#" target="_blank">
-                                                Token CA Here
-                                            </Link>
+                                            <HStack>
+                                                <Link href="#" target="_blank">
+                                                    CA: {trimAddress(white_list.mint.address.toString()) }
+                                                </Link>
+                                                <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                                                    <Link
+                                                        href={getSolscanLink(white_list.mint.address, "Token")}
+                                                        target="_blank"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Image
+                                                            src="/images/solscan.png"
+                                                            width={lg ? 22 : 22}
+                                                            height={lg ? 22 : 22}
+                                                            alt="Solscan icon"
+                                                        />
+                                                    </Link>
+                                                </Tooltip>
+                                            </HStack>
                                         </Text>
                                         <Text align="center" mb={0} color={"white"} fontFamily="ReemKufiRegular" opacity="50%">
                                             Until: {wl_end_date.toLocaleString()}
@@ -800,7 +818,7 @@ const CollectionSwapPage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(launch.keys[CollectionKeys.CollectionMint], "Token")}
+                                            href={getSolscanLink(launch.keys[CollectionKeys.MintAddress], "Token")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
