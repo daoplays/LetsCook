@@ -82,7 +82,7 @@ const AddLiquidityPanel = ({
                 <InputGroup size="md">
                     <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={quote_string} disabled />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        <Image src={"/images/eth.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>

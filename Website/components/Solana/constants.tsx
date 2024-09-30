@@ -21,7 +21,7 @@ const EclipseDevNetConfig: NetworkConfig = {
     RPC_NODE: "https://staging-rpc.dev2.eclipsenetwork.xyz",
     WSS_NODE: "wss://staging-rpc.dev2.eclipsenetwork.xyz",
     IRYS_URL: "https://devnet.irys.xyz",
-    IRYS_WALLET: "FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD",
+    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
 }
 
@@ -53,6 +53,8 @@ export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8b
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
 export const CORE = new PublicKey("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");
+export const WRAPPED_SOL = new PublicKey("So11111111111111111111111111111111111111112");
+
 // account seeds
 export const SOL_ACCOUNT_SEED = 59957379;
 export const DATA_ACCOUNT_SEED = 7571427;

@@ -49,6 +49,9 @@ import Image from "next/image";
 import useEditCollection from "../../hooks/collections/useEditCollection";
 import { TaggedFile } from "@irys/sdk/build/cjs/web/upload";
 
+import { WebUploader } from "@irys/web-upload";
+import { WebEclipseEth, WebSolana } from "@irys/web-upload-solana";
+
 interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -76,6 +79,31 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const signature_ws_id = useRef<number | null>(null);
 
     const { EditCollection } = useEditCollection();
+
+    const getEclipseIrysUploader = async () => {
+        if (Config.PROD) {
+            const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
+            return irys;
+        }
+        const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
+        return irys;
+    };
+
+    const getSolanaIrysUploader = async () => {
+        if (Config.PROD) {
+            const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
+            return irys;
+        }
+        const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
+        return irys;
+    };
+
+    const getIrysUploader = async () => {
+       if (Config.NETWORK === "eclipse") {
+           return getEclipseIrysUploader();
+       }
+         return getSolanaIrysUploader();
+    };
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -221,6 +249,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
+        const irys = await getIrysUploader();
+
         console.log(newCollectionData.current.icon_url);
         console.log(newCollectionData.current.banner_url);
         // if this is in edit mode then just call that function
@@ -244,16 +274,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
         setIsLoading(true);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        const irys_wallet = { name: "phantom", provider: wallet };
-        const irys = new WebIrys({
-            url: Config.IRYS_URL,
-            token: "solana",
-            wallet: irys_wallet,
-            config: {
-                providerUrl: Config.RPC_NODE,
-            },
-        });
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
@@ -279,7 +299,9 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 for (let i = 0; i < taggedFiles.length; i++) {
                     size += taggedFiles[i].size;
                 }
-                price = await irys.getPrice(Math.ceil(1.1 * size));
+                let atomic_price = await irys.getPrice(Math.ceil(1.1 * size));
+                price = irys.utils.fromAtomic(atomic_price);
+                console.log("Uploading ", size, " bytes for ", price);
             } catch (e) {
                 toast.update(uploadImageToArweave, {
                     render: e,
@@ -337,7 +359,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             let manifestId;
 
             let num_blocks = Math.ceil(size / 1024 / 1024 / 1024);
-
+            console.log("num_blocks", num_blocks);
             if (num_blocks > 1) {
                 let blocks: File[][] = [];
                 let block_tags: Tag[][] = [];
@@ -411,7 +433,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const manifestFile = new File([manifestBlob], "metadata.json");
 
                 let manifestPrice = await irys.getPrice(Math.ceil(1.1 * manifestFile.size));
-
                 try {
                     let txArgs = await get_current_blockhash("");
 
@@ -449,7 +470,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
                     return;
                 }
-
+                
                 const manifestRes = await irys.upload(JSON.stringify(newCollectionData.current.manifest), {
                     tags: [
                         { name: "Type", value: "manifest" },

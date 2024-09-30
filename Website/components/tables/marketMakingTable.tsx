@@ -200,7 +200,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(listing.decimals, 3))}
                     </Text>
-                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src="/images/eth.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 

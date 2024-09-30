@@ -52,7 +52,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                         //console.log(i.title, i.value);
                         return (
                             <VStack gap={6} align="start" key={i.title}>
-                                {i.title === "Raffle (SOL)" && (
+                                {i.title === "Raffle (ETH)" && (
                                     <HStack gap={4} ml={sm ? -12 : -14}>
                                         <Box bg="white" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>

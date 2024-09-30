@@ -210,7 +210,7 @@ const TokenMintPage = () => {
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                             Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                        <Image src="/images/eth.png" width={30} height={30} alt="ETH Icon" style={{ marginLeft: -3 }} />
                                     </HStack>
 
                                     <Text
@@ -280,7 +280,7 @@ const TokenMintPage = () => {
                                                       ? "Cook Failed"
                                                       : "none"}
                                         </Text>
-                                        {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
+                                        {ACTIVE && <Image src="/images/eth.png" width={40} height={40} alt="ETH Icon" />}
                                     </HStack>
 
                                     <Box
@@ -380,10 +380,10 @@ const TokenMintPage = () => {
                                                     Platform fee: 0.003
                                                 </Text>
                                                 <Image
-                                                    src="/images/sol.png"
+                                                    src="/images/eth.png"
                                                     width={20}
                                                     height={20}
-                                                    alt="SOL Icon"
+                                                    alt="ETH Icon"
                                                     style={{ marginLeft: -3 }}
                                                 />
                                             </HStack>
@@ -401,7 +401,7 @@ const TokenMintPage = () => {
                                                             src={whitelist.icon}
                                                             width={20}
                                                             height={20}
-                                                            alt="SOL Icon"
+                                                            alt="ETH Icon"
                                                             style={{ marginLeft: -3 }}
                                                         />
                                                     </Link>
@@ -428,7 +428,7 @@ const TokenMintPage = () => {
                                                 LAMPORTS_PER_SOL}{" "}
                                             of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                        <Image src="/images/eth.png" width={30} height={30} alt="ETH Icon" style={{ marginLeft: -3 }} />
                                     </HStack>
                                 </Flex>
 

@@ -135,7 +135,7 @@ const BuyPanel = ({
                         min="0"
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        <Image src={"/images/eth.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
@@ -208,7 +208,7 @@ const BuyPanel = ({
                         disabled
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/sol.png"} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        <Image src={"/images/eth.png"} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>

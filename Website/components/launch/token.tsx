@@ -815,7 +815,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         setTotalPrice(e.target.value);
                                                     }}
                                                 />
-                                                <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                                <Image className={styles.sol} src="/images/eth.png" height={30} width={30} alt="SOL" />
                                             </div>
                                         </HStack>
                                     </HStack>
@@ -839,7 +839,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                 style={{ cursor: "not-allowed" }}
                                                 readOnly
                                             />
-                                            <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                            <Image className={styles.sol} src="/images/eth.png" height={30} width={30} alt="SOL" />
                                         </div>
                                     </HStack>
                                 </VStack>

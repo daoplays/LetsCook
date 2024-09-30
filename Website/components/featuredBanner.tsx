@@ -246,7 +246,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                         of {(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
                                     </Text>
                                     <Image
-                                        src="/images/sol.png"
+                                        src="/images/eth.png"
                                         width={20}
                                         height={20}
                                         alt="SOL Icon"

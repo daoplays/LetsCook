@@ -53,7 +53,7 @@ export function HypeVote({
                 return;
             }
 
-            toast.success("Tickets Bought!", {
+            toast.success("Voted!", {
                 type: "success",
                 isLoading: false,
                 autoClose: 3000,

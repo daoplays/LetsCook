@@ -23,12 +23,25 @@ import { toast } from "react-toastify";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import useResponsive from "../../hooks/useResponsive";
 import { MintData } from "../Solana/state";
-import { Config, Extensions, METAPLEX_META, NetworkConfig } from "../Solana/constants";
+import { Config, Extensions, METAPLEX_META, NetworkConfig, WRAPPED_SOL } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 
 export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
+
+    if (mint.address.equals(WRAPPED_SOL)) {
+        let mint_data: MintData = {
+            mint: mint,
+            uri: "",
+            name: "Wrapped SOL",
+            symbol: "WSOL",
+            icon: "/images/eth.png",
+            extensions: 0,
+            token_program: token_program,
+        };
+        return mint_data;
+    }
     let uri: string | null = null;
     let metadata_pointer = null;
     let name: string;
@@ -86,7 +99,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
     } catch (error) {
         console.log("error getting uri, using SOL icon");
         console.log(error);
-        icon = "/images/sol.png";
+        icon = "/images/eth.png";
     }
     let mint_data: MintData = {
         mint: mint,

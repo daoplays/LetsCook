@@ -69,7 +69,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                     Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
                                                 </Text>
                                                 <Image
-                                                    src="/images/sol.png"
+                                                    src="/images/eth.png"
                                                     width={30}
                                                     height={30}
                                                     alt="SOL Icon"
@@ -126,7 +126,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                 >
                                                     Total: 0
                                                 </Text>
-                                                {true && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
+                                                {true && <Image src="/images/eth.png" width={40} height={40} alt="SOL Icon" />}
                                             </HStack>
 
                                             <HStack maxW="320px">
@@ -154,7 +154,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                         Platform fee: 0.01
                                                     </Text>
                                                     <Image
-                                                        src="/images/sol.png"
+                                                        src="/images/eth.png"
                                                         width={30}
                                                         height={30}
                                                         alt="SOL Icon"
@@ -196,7 +196,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                     /{(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                                 </Text>
                                                 <Image
-                                                    src="/images/sol.png"
+                                                    src="/images/eth.png"
                                                     width={30}
                                                     height={30}
                                                     alt="SOL Icon"

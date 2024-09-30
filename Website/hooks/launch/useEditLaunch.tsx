@@ -139,7 +139,7 @@ const useEditLaunch = () => {
             { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
-            { pubkey: pool_account, isSigner: false, isWritable: true },
+            //{ pubkey: pool_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },

@@ -7,7 +7,7 @@ export const distributionLabels = {
         { title: "Creator Control", color: "#666666" },
     ],
     fields: [
-        { title: "Raffle (SOL)", color: "#FF6651" },
+        { title: "Raffle (ETH)", color: "#FF6651" },
         { title: "$TOKEN", color: "#FF9548" },
         { title: "Market Maker Rewards", color: "#66FF75" },
         { title: "Liquidity Provider Rewards", color: "#41F4FF" },

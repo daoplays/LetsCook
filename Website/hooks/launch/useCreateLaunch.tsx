@@ -37,7 +37,9 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import useEditLaunch from "./useEditLaunch";
-import { WebIrys } from "@irys/sdk";
+
+import { WebUploader } from "@irys/web-upload";
+import { WebEclipseEth, WebSolana } from "@irys/web-upload-solana";
 
 // Define the Tag type
 type Tag = {
@@ -53,6 +55,31 @@ const usuCreateLaunch = () => {
 
     const signature_ws_id = useRef<number | null>(null);
     const { EditLaunch } = useEditLaunch();
+
+    const getEclipseIrysUploader = async () => {
+        if (Config.PROD) {
+            const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
+            return irys;
+        }
+        const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
+        return irys;
+    };
+
+    const getSolanaIrysUploader = async () => {
+        if (Config.PROD) {
+            const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
+            return irys;
+        }
+        const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
+        return irys;
+    };
+
+    const getIrysUploader = async () => {
+       if (Config.NETWORK === "eclipse") {
+           return getEclipseIrysUploader();
+       }
+         return getSolanaIrysUploader();
+    };
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -116,28 +143,20 @@ const usuCreateLaunch = () => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        const irys_wallet = { name: "phantom", provider: wallet };
-        const irys = new WebIrys({
-            url: Config.IRYS_URL,
-            token: "solana",
-            wallet: irys_wallet,
-            config: {
-                providerUrl: Config.RPC_NODE,
-            },
-        });
+        const irys = await getIrysUploader();
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.info("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
-            let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
-
-            console.log("price", Number(price));
+            let size = newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size;
+            let atomic_price = await irys.getPrice(Math.ceil(1.1 * size));
+            let price = irys.utils.fromAtomic(atomic_price);
+            console.log("Uploading ", size, " bytes for ", Number(price), Number(atomic_price));
 
             try {
-                //await irys.fund(price);
-
+            
                 let txArgs = await get_current_blockhash("");
 
                 var tx = new Transaction(txArgs).add(
@@ -145,7 +164,7 @@ const usuCreateLaunch = () => {
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(Config.IRYS_WALLET),
-                        lamports: Number(price),
+                        lamports: Number(atomic_price),
                     }),
                 );
                 tx.feePayer = wallet.publicKey;
@@ -169,7 +188,7 @@ const usuCreateLaunch = () => {
                 });
             } catch (error) {
                 setIsLoading(false);
-
+                console.log(error)
                 toast.update(uploadImageToArweave, {
                     render: "Oops! Something went wrong during funding. Please try again later. ",
                     type: "error",
@@ -178,7 +197,7 @@ const usuCreateLaunch = () => {
                 });
                 return;
             }
-
+        
             const tags: Tag[] = [
                 { name: "Content-Type", value: newLaunchData.current.icon_file.type },
                 { name: "Content-Type", value: newLaunchData.current.banner_file.type },
@@ -235,10 +254,14 @@ const usuCreateLaunch = () => {
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
 
-            const json_price = await irys.getPrice(json_file.size);
+            let json_size = newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size;
+            let json_atomic_price = await irys.getPrice(Math.ceil(1.1 * json_size));
+            let json_price = irys.utils.fromAtomic(json_atomic_price);
+            console.log("Uploading ", json_size, " bytes for ", json_price, json_atomic_price);
+
+
 
             const fundMetadata = toast.info("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
-
             try {
                 let txArgs = await get_current_blockhash("");
 
@@ -247,7 +270,7 @@ const usuCreateLaunch = () => {
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(Config.IRYS_WALLET),
-                        lamports: Number(json_price),
+                        lamports: Number(json_atomic_price),
                     }),
                 );
                 tx.feePayer = wallet.publicKey;
@@ -281,7 +304,7 @@ const usuCreateLaunch = () => {
                 });
                 return;
             }
-
+            
             const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
 
             const uploadMetadata = toast.info("Sign to upload token metadata on Arweave");
