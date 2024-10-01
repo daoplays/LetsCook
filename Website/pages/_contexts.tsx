@@ -78,11 +78,22 @@ const GetSOLPrice = async (setSOLPrice) => {
     const options = { method: "GET" };
 
     let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
-
     setSOLPrice(result["data"]["SOL"]["price"]);
 };
 
 const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
+
+    let price_map: Map<string, number> = new Map();
+
+    // don't bother doing this on devnet
+    if (!Config.PROD) {
+        for (let i = 0; i < mints.length; i++) {
+            price_map.set(mints[i], 0);
+        }
+        setPriceMap(price_map);
+
+        return;
+    }
     // Default options are marked with *
     const options = { method: "GET" };
     let mint_strings = "";
@@ -91,7 +102,6 @@ const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAct
     }
     let url = "https://price.jup.ag/v6/price?ids=" + mint_strings + "&vsToken=SOL";
     let result = await fetch(url, options).then((response) => response.json());
-    let price_map: Map<string, number> = new Map();
     let result_data: Map<string, any> = result["data"];
     for (let i = 0; i < mints.length; i++) {
         let result = result_data[mints[i]];

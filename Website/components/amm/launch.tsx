@@ -98,6 +98,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         icon = uri_json["image"];
     } catch (error) {
         console.log("error getting uri, using SOL icon");
+        console.log("name", name, uri, mint.address.toString());
         console.log(error);
         icon = "/images/eth.png";
     }
