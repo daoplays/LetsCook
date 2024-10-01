@@ -6,6 +6,7 @@ import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
 import useSwapRaydiumClassic from "../../hooks/raydium/useSwapRaydiumClassic";
+import { Config } from "../Solana/constants";
 
 const SellPanel = ({
     amm,
@@ -122,7 +123,7 @@ const SellPanel = ({
                         disabled
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/eth.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>

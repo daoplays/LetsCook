@@ -1132,7 +1132,7 @@ const InfoContent = ({
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                         {formatPrice(price, 5)}
                     </Text>
-                    <Image src="/images/eth.png" width={30} height={30} alt="SOL Icon" />
+                    <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" />
                 </HStack>
             </HStack>
 

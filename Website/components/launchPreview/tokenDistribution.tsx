@@ -4,6 +4,7 @@ import useResponsive from "../../hooks/useResponsive";
 import { Distribution, LaunchData, bignum_to_num } from "../Solana/state";
 import styles from "../../styles/Launch.module.css";
 import { distributionLabels } from "../../constant/root";
+import { Config } from "../Solana/constants";
 interface TokenDistributionProps {
     launchData?: LaunchData;
 }
@@ -52,7 +53,7 @@ const TokenDistribution = ({ launchData }: TokenDistributionProps) => {
                         //console.log(i.title, i.value);
                         return (
                             <VStack gap={6} align="start" key={i.title}>
-                                {i.title === "Raffle (ETH)" && (
+                                {i.title === "Raffle ("+Config.token+")" && (
                                     <HStack gap={4} ml={sm ? -12 : -14}>
                                         <Box bg="white" h={35} w={35} />{" "}
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={md ? "large" : "x-large"}>

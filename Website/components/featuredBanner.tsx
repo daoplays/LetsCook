@@ -9,7 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { LaunchFlags, LaunchKeys } from "./Solana/constants";
+import { Config, LaunchFlags, LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
@@ -246,7 +246,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                         of {(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
                                     </Text>
                                     <Image
-                                        src="/images/eth.png"
+                                        src={Config.token_image}
                                         width={20}
                                         height={20}
                                         alt="SOL Icon"

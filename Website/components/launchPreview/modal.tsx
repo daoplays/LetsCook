@@ -22,6 +22,7 @@ import FeaturedBanner from "../../components/featuredBanner";
 import useResponsive from "../../hooks/useResponsive";
 import TokenDistribution from "./tokenDistribution";
 import Timespan from "./timespan";
+import { Config } from "../Solana/constants";
 
 interface LaunchPreviewProps {
     isOpen: boolean;
@@ -69,7 +70,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                     Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
                                                 </Text>
                                                 <Image
-                                                    src="/images/eth.png"
+                                                    src={Config.token_image}
                                                     width={30}
                                                     height={30}
                                                     alt="SOL Icon"
@@ -126,7 +127,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                 >
                                                     Total: 0
                                                 </Text>
-                                                {true && <Image src="/images/eth.png" width={40} height={40} alt="SOL Icon" />}
+                                                {true && <Image src={Config.token_image} width={40} height={40} alt="SOL Icon" />}
                                             </HStack>
 
                                             <HStack maxW="320px">
@@ -154,7 +155,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                         Platform fee: 0.01
                                                     </Text>
                                                     <Image
-                                                        src="/images/eth.png"
+                                                        src={Config.token_image}
                                                         width={30}
                                                         height={30}
                                                         alt="SOL Icon"
@@ -196,7 +197,7 @@ const LaunchPreviewModal = ({ isOpen, onClose, launchData }: LaunchPreviewProps)
                                                     /{(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                                 </Text>
                                                 <Image
-                                                    src="/images/eth.png"
+                                                    src={Config.token_image}
                                                     width={30}
                                                     height={30}
                                                     alt="SOL Icon"

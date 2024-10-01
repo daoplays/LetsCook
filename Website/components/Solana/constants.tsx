@@ -11,6 +11,9 @@ export interface NetworkConfig {
     IRYS_URL: string;
     IRYS_WALLET: string;
     COOK_FEES: PublicKey;
+    // its useful to define a few strings and images here given we have eth on eclipse and sol on solana
+    token: string;
+    token_image: string;
 }
 
 const EclipseDevNetConfig: NetworkConfig = {
@@ -22,7 +25,9 @@ const EclipseDevNetConfig: NetworkConfig = {
     WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
-    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD")
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    token: "ETH",
+    token_image: "/images/eth.png",
 }
 
 const DevNetConfig: NetworkConfig = {
@@ -35,6 +40,8 @@ const DevNetConfig: NetworkConfig = {
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    token: "SOL",
+    token_image: "/images/sol.png",
 };
 
 const MainNetConfig: NetworkConfig = {
@@ -47,6 +54,8 @@ const MainNetConfig: NetworkConfig = {
     IRYS_URL: "https://node2.irys.xyz",
     IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
+    token: "SOL",
+    token_image: "/images/sol.png",
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");

@@ -34,9 +34,9 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         let mint_data: MintData = {
             mint: mint,
             uri: "",
-            name: "Wrapped SOL",
-            symbol: "WSOL",
-            icon: "/images/eth.png",
+            name: "Wrapped " + Config.token,
+            symbol: "W"+Config.token,
+            icon: Config.token_image,
             extensions: 0,
             token_program: token_program,
         };
@@ -100,7 +100,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
         console.log("error getting uri, using SOL icon");
         console.log("name", name, uri, mint.address.toString());
         console.log(error);
-        icon = "/images/eth.png";
+        icon = Config.token_image;
     }
     let mint_data: MintData = {
         mint: mint,
