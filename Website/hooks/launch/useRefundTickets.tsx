@@ -115,8 +115,8 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

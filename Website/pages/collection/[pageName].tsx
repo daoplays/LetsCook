@@ -427,6 +427,41 @@ const CollectionSwapPage = () => {
         }
     }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
+    const [probString, setProbString] = useState<string>("");
+    const [mintOnly, setMintOnly] = useState<boolean>(false);
+    const [wlEndDate, setWlEndDate] = useState<Date | null>(null);
+
+    useEffect(() => {
+        if (launch) {
+            const { prob_string_val, is_mint_only, wl_end_date_val } = launch.plugins.reduce(
+                (acc, plugin) => {
+                    switch (plugin["__kind"]) {
+                        case "MintProbability":
+                            acc.prob_string_val = `(${plugin["mint_prob"]}% mint chance)`;
+                            break;
+                        case "MintOnly":
+                            acc.is_mint_only = true;
+                            // Need to set isTokenToNFT to true to make it token to NFT only
+                            setIsTokenToNFT(true);
+                            break;
+                        case "Whitelist":
+                            // console.log("setting whitelist phase end to ", bignum_to_num(plugin["phase_end"]));
+                            acc.wl_end_date_val = new Date(bignum_to_num(plugin["phase_end"]));
+                            break;
+                        default:
+                            break;
+                    }
+                    return acc;
+                },
+                { prob_string_val: "", is_mint_only: false, wl_end_date_val: null },
+            );
+
+            setProbString(prob_string_val);
+            setMintOnly(is_mint_only);
+            setWlEndDate(wl_end_date_val);
+        }
+    }, [launch]);
+
     if (!pageName) return;
 
     if (launch === null) return <Loader />;
@@ -441,19 +476,6 @@ const CollectionSwapPage = () => {
     }
     if (launch.collection_meta["__kind"] === "RandomUnlimited") {
         progress_string = "Unlimited";
-    }
-
-    let prob_string = "";
-    let mint_only = false;
-
-    for (let i = 0; i < launch.plugins.length; i++) {
-        if (launch.plugins[i]["__kind"] === "MintProbability") {
-            prob_string = "(" + launch.plugins[i]["mint_prob"].toString() + "% mint chance)";
-            //console.log("Have mint prob", prob_string);
-        }
-        if (launch.plugins[i]["__kind"] === "MintOnly") {
-            mint_only = true;
-        }
     }
 
 
@@ -685,7 +707,7 @@ const CollectionSwapPage = () => {
                                                             isLoading={isLoading}
                                                             isDisabled={!enoughTokenBalance || isLoading}
                                                         >
-                                                            Confirm {prob_string}
+                                                            Confirm {probString}
                                                         </Button>
                                                     </Tooltip>
                                                 ) : (

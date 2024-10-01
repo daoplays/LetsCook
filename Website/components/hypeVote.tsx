@@ -100,7 +100,7 @@ export function HypeVote({
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
                 { pubkey: user_data_account, isSigner: false, isWritable: true },
                 { pubkey: launch_data_account, isSigner: false, isWritable: true },
-                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             ];
 
             const list_instruction = new TransactionInstruction({

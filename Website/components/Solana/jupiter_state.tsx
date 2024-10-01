@@ -162,7 +162,7 @@ const ammPluginBeet = dataEnum<AMMPluginEnum>([
 export class AMMData {
     constructor(
         readonly account_type: number,
-        //readonly pool: PublicKey,
+        readonly pool: PublicKey,
         readonly provider: number,
         readonly base_mint: PublicKey,
         readonly quote_mint: PublicKey,
@@ -186,7 +186,7 @@ export class AMMData {
     static readonly struct = new FixableBeetStruct<AMMData>(
         [
             ["account_type", u8],
-            //["pool", publicKey],
+            ["pool", publicKey],
             ["provider", u8],
             ["base_mint", publicKey],
             ["quote_mint", publicKey],
@@ -209,7 +209,7 @@ export class AMMData {
         (args) =>
             new AMMData(
                 args.account_type!,
-                //args.pool!,
+                args.pool!,
                 args.provider!,
                 args.base_mint!,
                 args.quote_mint!,

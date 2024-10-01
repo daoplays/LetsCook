@@ -180,10 +180,10 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: launchData.listing, isSigner: false, isWritable: false },
 
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: mint_account.token_program, isSigner: false, isWritable: true },
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
+            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         if (transfer_hook_program_account !== null) {

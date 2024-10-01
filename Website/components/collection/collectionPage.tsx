@@ -293,14 +293,14 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return f;
             });
 
-            let price;
+            let atomic_price;
             let size = 0;
             try {
                 for (let i = 0; i < taggedFiles.length; i++) {
                     size += taggedFiles[i].size;
                 }
-                let atomic_price = await irys.getPrice(Math.ceil(1.1 * size));
-                price = irys.utils.fromAtomic(atomic_price);
+                atomic_price = await irys.getPrice(Math.ceil(1.1 * size));
+                let price = irys.utils.fromAtomic(atomic_price);
                 console.log("Uploading ", size, " bytes for ", price);
             } catch (e) {
                 toast.update(uploadImageToArweave, {
@@ -324,7 +324,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
                             toPubkey: new PublicKey(Config.IRYS_WALLET),
-                            lamports: Number(price),
+                            lamports: Number(atomic_price),
                         }),
                     );
                     tx.feePayer = wallet.publicKey;
@@ -474,7 +474,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const manifestRes = await irys.upload(JSON.stringify(newCollectionData.current.manifest), {
                     tags: [
                         { name: "Type", value: "manifest" },
-                        { name: "Content-Type", value: "application/x.arweave-manifest+json" },
+                        { name: "Content-Type", value: "application/x.irys-manifest+json" },
                     ],
                 });
                 console.log("manifestRes", manifestRes);

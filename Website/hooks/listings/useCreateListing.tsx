@@ -235,7 +235,7 @@ const useCreateListing = () => {
             { pubkey: raydium_base_account, isSigner: false, isWritable: true },
             { pubkey: raydium_lp_mint_account, isSigner: false, isWritable: true },
 
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         const list_instruction = new TransactionInstruction({

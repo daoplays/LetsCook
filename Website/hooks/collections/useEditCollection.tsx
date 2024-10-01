@@ -130,8 +130,8 @@ const useEditCollection = () => {
             { pubkey: team_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
 
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: mint_info.owner, isSigner: false, isWritable: false },
         ];
 
