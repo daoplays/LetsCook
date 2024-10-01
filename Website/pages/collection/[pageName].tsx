@@ -484,8 +484,6 @@ const CollectionSwapPage = () => {
         progress_string = "Unlimited";
     }
 
-    const isWhitelist = white_list && wlEndDate;
-
     return (
         <>
             <Head>
@@ -553,8 +551,8 @@ const CollectionSwapPage = () => {
                                 <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
                             </VStack>
 
-                            <VStack pb={isWhitelist && 6}>
-                                {isWhitelist && (
+                            <VStack pb={white_list && 6}>
+                                {white_list && (
                                     <VStack my={3}>
                                         <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
                                             Whitelist Token Required: <br />{" "}
@@ -575,9 +573,13 @@ const CollectionSwapPage = () => {
                                                     </Link>
                                                 </Tooltip>
                                             </HStack>
-                                            <Text align="center" mb={0} opacity="50%">
-                                                Until: {wlEndDate.toLocaleString()}
-                                            </Text>
+                                            {wlEndDate &&
+                                                Math.floor(wlEndDate.getTime() / 1000) > 0 &&
+                                                new Date().getTime() < wlEndDate.getTime() && (
+                                                    <Text align="center" mb={0} opacity="50%">
+                                                        Until: {wlEndDate.toLocaleString()}
+                                                    </Text>
+                                                )}
                                         </Text>
                                     </VStack>
                                 )}
