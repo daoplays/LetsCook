@@ -48,9 +48,7 @@ import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
 import useEditCollection from "../../hooks/collections/useEditCollection";
 import { TaggedFile } from "@irys/sdk/build/cjs/web/upload";
-
-import { WebUploader } from "@irys/web-upload";
-import { WebEclipseEth, WebSolana } from "@irys/web-upload-solana";
+import useIrysUploader from "../../hooks/useIrysUploader";
 
 interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -80,30 +78,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
     const { EditCollection } = useEditCollection();
 
-    const getEclipseIrysUploader = async () => {
-        if (Config.PROD) {
-            const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
-            return irys;
-        }
-        const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
-        return irys;
-    };
-
-    const getSolanaIrysUploader = async () => {
-        if (Config.PROD) {
-            const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
-            return irys;
-        }
-        const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
-        return irys;
-    };
-
-    const getIrysUploader = async () => {
-        if (Config.NETWORK === "eclipse") {
-            return getEclipseIrysUploader();
-        }
-        return getSolanaIrysUploader();
-    };
+    const { getIrysUploader } = useIrysUploader(wallet);
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -735,7 +710,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             });
             return;
         }
-    }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed]);
+    }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed, getIrysUploader]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">

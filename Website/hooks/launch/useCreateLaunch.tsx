@@ -37,9 +37,8 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import useEditLaunch from "./useEditLaunch";
+import useIrysUploader from "../useIrysUploader";
 
-import { WebUploader } from "@irys/web-upload";
-import { WebEclipseEth, WebSolana } from "@irys/web-upload-solana";
 
 // Define the Tag type
 type Tag = {
@@ -56,30 +55,8 @@ const usuCreateLaunch = () => {
     const signature_ws_id = useRef<number | null>(null);
     const { EditLaunch } = useEditLaunch();
 
-    const getEclipseIrysUploader = async () => {
-        if (Config.PROD) {
-            const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
-            return irys;
-        }
-        const irys = await WebUploader(WebEclipseEth).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
-        return irys;
-    };
+    const { getIrysUploader } = useIrysUploader(wallet);
 
-    const getSolanaIrysUploader = async () => {
-        if (Config.PROD) {
-            const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).mainnet();
-            return irys;
-        }
-        const irys = await WebUploader(WebSolana).withProvider(wallet).withRpc(Config.RPC_NODE).devnet();
-        return irys;
-    };
-
-    const getIrysUploader = async () => {
-        if (Config.NETWORK === "eclipse") {
-            return getEclipseIrysUploader();
-        }
-        return getSolanaIrysUploader();
-    };
 
     const check_signature_update = useCallback(
         async (result: any) => {
