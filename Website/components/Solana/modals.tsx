@@ -214,7 +214,7 @@ export function ReceivedAssetModal({
     }
 
     let globalLoading = isLoading || isMintLoading || isMintRandomLoading;
-    console.log("globalLoading: ", globalLoading, isLoading, isMintLoading, isMintRandomLoading);
+    //console.log("globalLoading: ", globalLoading, isLoading, isMintLoading, isMintRandomLoading);
 
     return (
         <>
