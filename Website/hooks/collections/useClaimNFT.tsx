@@ -139,7 +139,6 @@ function serialise_claim_nft_instruction(seed: number[]): Buffer {
 }
 
 function check_randomness(data: number[]) {
-
     let valid = false;
     for (let i = 0; i < data.length; i++) {
         if (data[i] != 0) {
@@ -180,8 +179,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const orao_ws_id = useRef<number | null>(null);
     const orao_randomness = useRef<PublicKey | null>(null);
 
-
-
     const check_randomness_account = useCallback(async (result: any) => {
         //console.log("collection", result);
         // if we have a subscription field check against ws_id
@@ -193,7 +190,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let orao_randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
 
         let valid = check_randomness(orao_randomness);
-        
+
         if (valid) {
             setOraoRandoms(orao_randomness);
             console.log(orao_randomness);
@@ -228,10 +225,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
                 setOraoRandoms(orao_randomness);
                 console.log(orao_randomness);
                 setIsLoading(false);
-            
             }
-        }
-        else {
+        } else {
             orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
         }
 
@@ -384,21 +379,19 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         if (Config.NETWORK !== "eclipse") {
             orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
-        }        
-        
+        }
+
         let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
 
-      
         let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
 
         orao_randomness.current = orao_random;
 
-        let orao_treasury : PublicKey = SYSTEM_KEY;
+        let orao_treasury: PublicKey = SYSTEM_KEY;
         if (Config.NETWORK !== "eclipse") {
             let orao_network_data = await request_raw_account_data("", orao_network);
             orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
-        }    
-
+        }
 
         // check if we have the whitelist plugin
         let whitelist_mint = PROGRAM;
@@ -408,7 +401,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         console.log("collection has ", launchData.plugins.length, " plugins");
         for (let i = 0; i < launchData.plugins.length; i++) {
             if (launchData.plugins[i]["__kind"] === "Whitelist") {
-                console.log("Have whitelist plugin")
+                console.log("Have whitelist plugin");
                 console.log(launchData.plugins[i]["key"].toString());
                 whitelist_mint = launchData.plugins[i]["key"];
                 let whitelist = mintData.get(whitelist_mint.toString());
@@ -423,7 +416,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
                 whitelist_token_program = whitelist.token_program;
             }
         }
-
 
         const instruction_data = serialise_claim_nft_instruction(Array.from(key_bytes));
 
@@ -455,7 +447,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             { pubkey: whitelist_mint, isSigner: false, isWritable: true },
             { pubkey: whitelist_account, isSigner: false, isWritable: true },
             { pubkey: whitelist_token_program, isSigner: false, isWritable: false },
-
         ];
 
         if (transfer_hook_program_account !== null) {

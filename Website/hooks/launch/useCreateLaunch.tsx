@@ -75,10 +75,10 @@ const usuCreateLaunch = () => {
     };
 
     const getIrysUploader = async () => {
-       if (Config.NETWORK === "eclipse") {
-           return getEclipseIrysUploader();
-       }
-         return getSolanaIrysUploader();
+        if (Config.NETWORK === "eclipse") {
+            return getEclipseIrysUploader();
+        }
+        return getSolanaIrysUploader();
     };
 
     const check_signature_update = useCallback(
@@ -156,7 +156,6 @@ const usuCreateLaunch = () => {
             console.log("Uploading ", size, " bytes for ", Number(price), Number(atomic_price));
 
             try {
-            
                 let txArgs = await get_current_blockhash("");
 
                 var tx = new Transaction(txArgs).add(
@@ -188,7 +187,7 @@ const usuCreateLaunch = () => {
                 });
             } catch (error) {
                 setIsLoading(false);
-                console.log(error)
+                console.log(error);
                 toast.update(uploadImageToArweave, {
                     render: "Oops! Something went wrong during funding. Please try again later. ",
                     type: "error",
@@ -197,7 +196,7 @@ const usuCreateLaunch = () => {
                 });
                 return;
             }
-        
+
             const tags: Tag[] = [
                 { name: "Content-Type", value: newLaunchData.current.icon_file.type },
                 { name: "Content-Type", value: newLaunchData.current.banner_file.type },
@@ -259,8 +258,6 @@ const usuCreateLaunch = () => {
             let json_price = irys.utils.fromAtomic(json_atomic_price);
             console.log("Uploading ", json_size, " bytes for ", json_price, json_atomic_price);
 
-
-
             const fundMetadata = toast.info("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
             try {
                 let txArgs = await get_current_blockhash("");
@@ -304,7 +301,7 @@ const usuCreateLaunch = () => {
                 });
                 return;
             }
-            
+
             const json_tags: Tag[] = [{ name: "Content-Type", value: "application/json" }];
 
             const uploadMetadata = toast.info("Sign to upload token metadata on Arweave");

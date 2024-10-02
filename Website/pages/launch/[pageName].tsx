@@ -210,7 +210,13 @@ const TokenMintPage = () => {
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                             Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src={Config.token_image} width={30} height={30} alt="Token Icon" style={{ marginLeft: -3 }} />
+                                        <Image
+                                            src={Config.token_image}
+                                            width={30}
+                                            height={30}
+                                            alt="Token Icon"
+                                            style={{ marginLeft: -3 }}
+                                        />
                                     </HStack>
 
                                     <Text
@@ -428,7 +434,13 @@ const TokenMintPage = () => {
                                                 LAMPORTS_PER_SOL}{" "}
                                             of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src={Config.token_image} width={30} height={30} alt="Token Icon" style={{ marginLeft: -3 }} />
+                                        <Image
+                                            src={Config.token_image}
+                                            width={30}
+                                            height={30}
+                                            alt="Token Icon"
+                                            style={{ marginLeft: -3 }}
+                                        />
                                     </HStack>
                                 </Flex>
 

@@ -99,10 +99,10 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     };
 
     const getIrysUploader = async () => {
-       if (Config.NETWORK === "eclipse") {
-           return getEclipseIrysUploader();
-       }
-         return getSolanaIrysUploader();
+        if (Config.NETWORK === "eclipse") {
+            return getEclipseIrysUploader();
+        }
+        return getSolanaIrysUploader();
     };
 
     const handleNameChange = (e) => {
@@ -470,7 +470,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
                     return;
                 }
-                
+
                 const manifestRes = await irys.upload(JSON.stringify(newCollectionData.current.manifest), {
                     tags: [
                         { name: "Type", value: "manifest" },
@@ -679,7 +679,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: false, isWritable: false },
             { pubkey: whitelist_key, isSigner: false, isWritable: false },
-
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });

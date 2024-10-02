@@ -29,13 +29,12 @@ import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 
 export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
-
     if (mint.address.equals(WRAPPED_SOL)) {
         let mint_data: MintData = {
             mint: mint,
             uri: "",
             name: "Wrapped " + Config.token,
-            symbol: "W"+Config.token,
+            symbol: "W" + Config.token,
             icon: Config.token_image,
             extensions: 0,
             token_program: token_program,

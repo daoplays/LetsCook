@@ -188,14 +188,13 @@ const CollectionSwapPage = () => {
 
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
-        
-        console.log("launch price: ", bignum_to_num(launch.swap_price))
+
+        console.log("launch price: ", bignum_to_num(launch.swap_price));
         // check relevant plugins
         for (let i = 0; i < launch.plugins.length; i++) {
             if (launch.plugins[i]["__kind"] === "Whitelist") {
                 let whitelist_key = launch.plugins[i]["key"];
                 setWhiteList(mintData.get(whitelist_key.toString()));
-
             }
         }
     }, [collectionList, pageName, mintData, wallet]);
@@ -204,7 +203,7 @@ const CollectionSwapPage = () => {
 
     useEffect(() => {
         return () => {
-           // console.log("in use effect return");
+            // console.log("in use effect return");
             const unsub = async () => {
                 if (launch_account_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(launch_account_ws_id.current);
@@ -599,12 +598,12 @@ const CollectionSwapPage = () => {
 
                                     <HStack align="center" mb={4}>
                                         <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
-                                            
                                             {!isTokenToNFT
                                                 ? `1 NFT = ${out_amount.toLocaleString()} ${launch.token_symbol}`
                                                 : `${formatPrice(
-                                                      bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
-                                                  ,3)} ${launch.token_symbol} = 1 NFT`}
+                                                      bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
+                                                      3,
+                                                  )} ${launch.token_symbol} = 1 NFT`}
                                         </Text>
                                         <Tooltip label="With 2% Transfer Tax" hasArrow fontSize="medium" offset={[0, 10]}>
                                             <Image width={20} height={20} src="/images/help.png" alt="Help" />

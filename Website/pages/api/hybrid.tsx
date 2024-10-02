@@ -1,6 +1,11 @@
 import { ComputeBudgetProgram, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
-import { getRecentPrioritizationFees, get_current_blockhash, request_raw_account_data, serialise_HypeVote_instruction } from "../../components/Solana/state";
+import {
+    getRecentPrioritizationFees,
+    get_current_blockhash,
+    request_raw_account_data,
+    serialise_HypeVote_instruction,
+} from "../../components/Solana/state";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { CollectionData } from "../../components/collection/collectionState";
@@ -16,7 +21,6 @@ const firebaseConfig = {
 };
 
 export default async function handler(req, res) {
-
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
 
@@ -47,10 +51,9 @@ export default async function handler(req, res) {
 
             let listing = JSON.parse(snapshot.val());
 
-
             // Your data here
             const data = {
-                title: listing.collection_name + " Hybrid Swap:  "  + listing.num_available + " available",
+                title: listing.collection_name + " Hybrid Swap:  " + listing.num_available + " available",
                 icon: listing.collection_icon_url,
                 description: "Create hybrids and more at letscook.wtf!",
                 label: "Hybrid Swap",
@@ -91,13 +94,12 @@ export default async function handler(req, res) {
             let collection_data = await request_raw_account_data("", collection_key);
             const [collection] = CollectionData.struct.deserialize(collection_data);
             let mint_data = await setMintData(collection.keys[CollectionKeys.MintAddress].toString());
-           
+
             let user = new PublicKey(account);
             let instructions = await GetWrapInstructions(collection, mint_data, user, null);
 
             let txArgs = await get_current_blockhash("");
 
-        
             let message = new TransactionMessage({ payerKey: user, recentBlockhash: txArgs.blockhash, instructions });
             let compiled = message.compileToV0Message();
             let transaction = new VersionedTransaction(compiled);
@@ -106,8 +108,7 @@ export default async function handler(req, res) {
             // Process the decoded account (this is a placeholder, replace with your actual logic)
             const processedData = {
                 transaction: encoded_transaction,
-                message:
-                    "Swap a random NFT from this collection for tokens.  For more info visit letscook.wtf!",
+                message: "Swap a random NFT from this collection for tokens.  For more info visit letscook.wtf!",
             };
 
             res.status(200).json(processedData);

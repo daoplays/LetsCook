@@ -34,10 +34,9 @@ import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
 import { getMintData } from "../components/amm/launch";
 
-export const update_listings_blob = async (type : number, value: string) => {
-
+export const update_listings_blob = async (type: number, value: string) => {
     if (!Config.PROD) {
-        return
+        return;
     }
 
     if (type == 0) {
@@ -56,7 +55,6 @@ export const update_listings_blob = async (type : number, value: string) => {
         return result.body;
     }
     if (type == 1) {
-
         const response = await fetch("/.netlify/functions/update_collection", {
             method: "POST",
             body: JSON.stringify({
@@ -82,7 +80,6 @@ const GetSOLPrice = async (setSOLPrice) => {
 };
 
 const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
-
     let price_map: Map<string, number> = new Map();
 
     // don't bother doing this on devnet
@@ -105,10 +102,9 @@ const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAct
     let result_data: Map<string, any> = result["data"];
     for (let i = 0; i < mints.length; i++) {
         let result = result_data[mints[i]];
-        try{
-        price_map.set(mints[i], result["price"]);
-        }
-        catch(error){
+        try {
+            price_map.set(mints[i], result["price"]);
+        } catch (error) {
             console.log("bad mint", mints[i]);
         }
     }

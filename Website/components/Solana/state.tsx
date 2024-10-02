@@ -1210,7 +1210,7 @@ class CreateLaunch_Instruction {
         readonly amm_provider: number,
         readonly launch_type: number,
         readonly whitelist_tokens: bignum,
-        readonly whitelist_end: bignum
+        readonly whitelist_end: bignum,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateLaunch_Instruction>(
@@ -1257,7 +1257,7 @@ class CreateLaunch_Instruction {
                 args.amm_provider!,
                 args.launch_type!,
                 args.whitelist_tokens!,
-                args.whitelist_end!
+                args.whitelist_end!,
             ),
         "CreateLaunch_Instruction",
     );
@@ -1293,7 +1293,7 @@ export function serialise_CreateLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.amm_provider,
         new_launch_data.launch_type,
         new_launch_data.whitelist_amount,
-        0
+        0,
     );
     const [buf] = CreateLaunch_Instruction.struct.serialize(data);
 

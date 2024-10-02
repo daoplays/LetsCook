@@ -127,7 +127,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
         let result = await connection.getAccountInfo(token_key, "confirmed");
 
-
         let mint: Mint;
         if (result.owner.equals(TOKEN_PROGRAM_ID)) {
             try {
@@ -157,12 +156,12 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             }
         }
 
-        let mint_data : MintData = await getMintData(connection, mint, result.owner);
-        console.log("getting mint data", mint, result.owner, mint_data)
+        let mint_data: MintData = await getMintData(connection, mint, result.owner);
+        console.log("getting mint data", mint, result.owner, mint_data);
 
         setTokenName(mint_data.name);
         setTokenSymbol(mint_data.symbol);
-      
+
         // check the extensions we care about
         let transfer_hook = getTransferHook(mint);
         let transfer_fee_config = getTransferFeeConfig(mint);

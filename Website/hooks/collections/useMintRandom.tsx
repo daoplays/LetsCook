@@ -188,7 +188,6 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             { pubkey: CORE, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: assignment_data.random_address, isSigner: false, isWritable: false },
-
         ];
 
         if (transfer_hook_program_account !== null) {

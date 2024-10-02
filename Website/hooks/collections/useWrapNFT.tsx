@@ -43,9 +43,12 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 
-
-export const GetWrapInstructions = async (launchData: CollectionData, mint_account: MintData, user: PublicKey, asset_key : PublicKey | null) => {
-
+export const GetWrapInstructions = async (
+    launchData: CollectionData,
+    mint_account: MintData,
+    user: PublicKey,
+    asset_key: PublicKey | null,
+) => {
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
     let wrapped_nft_key: PublicKey;
@@ -86,10 +89,7 @@ export const GetWrapInstructions = async (launchData: CollectionData, mint_accou
 
     let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-    let launch_data_account = PublicKey.findProgramAddressSync(
-        [Buffer.from(launchData.page_name), Buffer.from("Collection")],
-        PROGRAM,
-    )[0];
+    let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
 
     let token_mint = launchData.keys[CollectionKeys.MintAddress];
 
@@ -191,16 +191,16 @@ export const GetWrapInstructions = async (launchData: CollectionData, mint_accou
         data: instruction_data,
     });
 
-    let instructions : TransactionInstruction[] = []
+    let instructions: TransactionInstruction[] = [];
 
     let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-    
+
     instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
     instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
     instructions.push(list_instruction);
 
-    return instructions
-}
+    return instructions;
+};
 
 const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
@@ -250,8 +250,6 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
         });
     }, []);
 
-    
-
     const WrapNFT = async (asset_key: PublicKey | null) => {
         console.log("in wrap nft");
 
@@ -282,15 +280,14 @@ const useWrapNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
 
-
-        let instructions = await GetWrapInstructions(launchData, mint_account, wallet.publicKey, asset_key)
+        let instructions = await GetWrapInstructions(launchData, mint_account, wallet.publicKey, asset_key);
 
         let txArgs = await get_current_blockhash("");
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        for(let i = 0; i < instructions.length; i++) {
+        for (let i = 0; i < instructions.length; i++) {
             transaction.add(instructions[i]);
         }
 

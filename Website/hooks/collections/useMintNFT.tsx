@@ -29,7 +29,6 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 
-
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();

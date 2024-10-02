@@ -129,8 +129,8 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
             //let launch_data : LaunchData = launchList.get(name);
             //let listing_data : ListingData = listingData.get(launch_data.listing.toString());
             //if (listing_data.description !== "") {
-                toast.error("Page name already exists");
-                //return false;
+            toast.error("Page name already exists");
+            //return false;
             //}
         }
 

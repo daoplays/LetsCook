@@ -29,8 +29,8 @@ const EclipseDevNetConfig: NetworkConfig = {
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
     token_image: "/images/eth.png",
-    platform_fee: "0.0001"
-}
+    platform_fee: "0.0001",
+};
 
 const DevNetConfig: NetworkConfig = {
     PROD: false,
@@ -44,7 +44,7 @@ const DevNetConfig: NetworkConfig = {
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "SOL",
     token_image: "/images/sol.png",
-    platform_fee: "0.002"
+    platform_fee: "0.002",
 };
 
 const MainNetConfig: NetworkConfig = {
@@ -59,7 +59,7 @@ const MainNetConfig: NetworkConfig = {
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
     token: "SOL",
     token_image: "/images/sol.png",
-    platform_fee: "0.002"
+    platform_fee: "0.002",
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");

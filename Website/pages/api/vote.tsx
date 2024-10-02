@@ -43,8 +43,8 @@ export default async function handler(req, res) {
             let listing_account = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             const snapshot = await get(ref(database, "data/" + listing_account.toString()));
             let listing = JSON.parse(snapshot.val());
-            let text1 = listing.name.replaceAll(" ", "%20")
-            console.log(text1.trim())
+            let text1 = listing.name.replaceAll(" ", "%20");
+            console.log(text1.trim());
 
             let actions = [
                 {
@@ -55,11 +55,11 @@ export default async function handler(req, res) {
                     label: "Not Hyped", // button text
                     href: "/api/vote?mint=" + mint + "&choice=2",
                 },
-            ]
+            ];
 
             let title = listing.name + " Hype!";
-            let image_link = listing.icon
-            let listing2 = null
+            let image_link = listing.icon;
+            let listing2 = null;
             if (mint2 !== undefined) {
                 let token_mint2 = new PublicKey(mint2);
                 let listing_account2 = PublicKey.findProgramAddressSync([token_mint2.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
@@ -77,10 +77,10 @@ export default async function handler(req, res) {
                         label: "Vote " + listing2.name, // button text
                         href: "/api/vote?mint=" + mint2 + "&choice=1",
                     },
-                ]
+                ];
 
                 title = "Hype Battle! " + listing.name + " Vs " + listing2.name;
-            } 
+            }
 
             // Your data here
             const data = {
@@ -117,7 +117,6 @@ export default async function handler(req, res) {
                 console.log("invalid vote");
                 return res.status(400).json({ error: "Invalid vote" });
             }
-            
 
             let user = new PublicKey(account);
             let mint_key = new PublicKey(mint);

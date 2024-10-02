@@ -123,7 +123,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
 
         console.log("get orao network data");
-        let orao_treasury : PublicKey = SYSTEM_KEY;
+        let orao_treasury: PublicKey = SYSTEM_KEY;
         if (Config.NETWORK !== "eclipse") {
             let orao_network_data = await request_raw_account_data("", orao_network);
             orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
