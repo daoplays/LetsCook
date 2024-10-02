@@ -33,7 +33,6 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
-import { bool } from "@raydium-io/raydium-sdk";
 
 class OraoTokenFeeConfig {
     constructor(
