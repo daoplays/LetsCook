@@ -599,11 +599,10 @@ const CollectionSwapPage = () => {
                                     <HStack align="center" mb={4}>
                                         <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
                                             {!isTokenToNFT
-                                                ? `1 NFT = ${out_amount.toLocaleString()} ${launch.token_symbol}`
+                                                ? `1 NFT = ${formatPrice(out_amount, 3)} ${launch.token_symbol}`
                                                 : `${formatPrice(
                                                       bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
-                                                      3,
-                                                  )} ${launch.token_symbol} = 1 NFT`}
+                                                      3)} ${launch.token_symbol} = 1 NFT`}
                                         </Text>
                                         <Tooltip label="With 2% Transfer Tax" hasArrow fontSize="medium" offset={[0, 10]}>
                                             <Image width={20} height={20} src="/images/help.png" alt="Help" />
@@ -636,7 +635,7 @@ const CollectionSwapPage = () => {
                                                         isTokenToNFT
                                                             ? (
                                                                 formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3))
-                                                            : out_amount.toLocaleString()
+                                                            : formatPrice(out_amount, 3)
                                                     }
                                                     onChange={(e) => {
                                                         setTokenAmount(
