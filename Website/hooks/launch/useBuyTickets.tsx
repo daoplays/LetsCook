@@ -17,7 +17,8 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { useDisclosure } from "@chakra-ui/react";
 import { toast } from "react-toastify";
 import bs58 from "bs58";
-
+import useAppRoot from "../../context/useAppRoot";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 interface BuyTicketsProps {
     launchData: LaunchData;
     value: number;
@@ -25,6 +26,8 @@ interface BuyTicketsProps {
 
 const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     const wallet = useWallet();
+    const { mintData, listingData } = useAppRoot();
+
     const { isOpen: isWarningOpened, onOpen: openWarning, onClose: closeWarning } = useDisclosure();
 
     const ticketLabel = value <= 1 ? "ticket" : "tickets";
@@ -101,29 +104,51 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
-        let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
-
+        let orao_program = PROGRAM;
         let randomKey = new Keypair();
         let key_bytes = randomKey.publicKey.toBytes();
 
+        if (Config.NETWORK !== "eclipse") {
+            orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
+        }
+
+        let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
         let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
 
         console.log("get orao network data");
-        let orao_network_data = await request_raw_account_data("", orao_network);
-        //let [orao_network_config] = OraoNetworkState.struct.deserialize(orao_network_data);
+        let orao_treasury: PublicKey = SYSTEM_KEY;
+        if (Config.NETWORK !== "eclipse") {
+            let orao_network_data = await request_raw_account_data("", orao_network);
+            orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
+        }
 
-        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
+        // check if we have the whitelist plugin
+        let whitelist_mint = SYSTEM_KEY;
+        let whitelist_account = SYSTEM_KEY;
+        let whitelist_token_program = SYSTEM_KEY;
+
+        for (let i = 0; i < launchData.plugins.length; i++) {
+            if (launchData.plugins[i]["__kind"] === "Whitelist") {
+                whitelist_mint = launchData.plugins[i]["key"];
+                let whitelist = mintData.get(whitelist_mint.toString());
+
+                whitelist_account = await getAssociatedTokenAddress(
+                    whitelist_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    whitelist.token_program,
+                );
+
+                whitelist_token_program = whitelist.token_program;
+            }
+        }
 
         const instruction_data = serialise_BuyTickets_instruction(value, Array.from(key_bytes));
 
@@ -134,13 +159,17 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: orao_random, isSigner: false, isWritable: true },
             { pubkey: orao_treasury, isSigner: false, isWritable: true },
             { pubkey: orao_network, isSigner: false, isWritable: true },
-            { pubkey: orao_program, isSigner: false, isWritable: true },
+            { pubkey: orao_program, isSigner: false, isWritable: false },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: whitelist_mint, isSigner: false, isWritable: true },
+            { pubkey: whitelist_account, isSigner: false, isWritable: true },
+            { pubkey: whitelist_token_program, isSigner: false, isWritable: false },
+            { pubkey: launchData.listing, isSigner: false, isWritable: false },
         ];
 
         const list_instruction = new TransactionInstruction({

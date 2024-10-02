@@ -13,7 +13,16 @@ import {
     Progress,
     Divider,
 } from "@chakra-ui/react";
-import { LaunchData, bignum_to_num, myU64, JoinData, request_raw_account_data } from "../../components/Solana/state";
+import {
+    LaunchData,
+    bignum_to_num,
+    myU64,
+    JoinData,
+    request_raw_account_data,
+    MintData,
+    getLaunchTypeIndex,
+    ListingData,
+} from "../../components/Solana/state";
 import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -40,10 +49,16 @@ import Loader from "../../components/loader";
 import { WarningModal } from "../../components/Solana/modals";
 import { ButtonString } from "../../components/user_status";
 import Head from "next/head";
+import useAppRoot from "../../context/useAppRoot";
+import { getSolscanLink } from "../../utils/getSolscanLink";
+import Link from "next/link";
+import formatPrice from "../../utils/formatPrice";
 
 const TokenMintPage = () => {
     const wallet = useWallet();
     const router = useRouter();
+    const { mintData, launchList, joinData, listingData } = useAppRoot();
+
     const { pageName } = router.query;
     const { xs, sm, md, lg } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
@@ -53,8 +68,13 @@ const TokenMintPage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const [launchData, setLaunchData] = useState<LaunchData | null>(null);
+    const [listing, setListing] = useState<ListingData | null>(null);
     const [join_data, setJoinData] = useState<JoinData | null>(null);
+
     const [cookState, setCookState] = useState<CookState | null>(null);
+    const [whitelist, setWhitelist] = useState<MintData | null>(null);
+    const [launch_type, setLaunchType] = useState<number>(0);
+    const [tokens_per_ticket, setTokensPerTicket] = useState<number>(0);
 
     let current_time = new Date().getTime();
 
@@ -74,210 +94,58 @@ const TokenMintPage = () => {
     const { BuyTickets, openWarning, isWarningOpened, closeWarning } = useBuyTickets({ launchData, value });
     const { CheckTickets, isLoading: isCheckingTickets } = useCheckTickets(launchData);
     const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launchData);
-    const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(launchData);
-    const { InitAMM } = useInitAMM(launchData);
+    const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(listing, launchData);
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data });
 
-    const checkLaunchData = useRef<boolean>(true);
-
-    // updates to token page are checked using a websocket to get real time updates
-    const join_account_ws_id = useRef<number | null>(null);
-    const launch_account_ws_id = useRef<number | null>(null);
-
-    // when page unloads unsub from any active websocket listeners
-    useEffect(() => {
-        return () => {
-            console.log("in use effect return");
-            const unsub = async () => {
-                const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-                if (join_account_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(join_account_ws_id.current);
-                    join_account_ws_id.current = null;
-                }
-                if (launch_account_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
-                    launch_account_ws_id.current = null;
-                }
-                await connection.removeAccountChangeListener(launch_account_ws_id.current);
-            };
-            unsub();
-        };
-    }, []);
-
-    const check_launch_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-
-            console.log("have event data", event_data, launch_account_ws_id.current);
-            let account_data = Buffer.from(event_data, "base64");
-
-            const [updated_data] = LaunchData.struct.deserialize(account_data);
-
-            console.log(updated_data);
-
-            if (updated_data.num_interactions > launchData.num_interactions) {
-                setLaunchData(updated_data);
-            }
-        },
-        [launchData],
-    );
-
-    const check_join_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-
-            console.log("have event data", event_data, join_account_ws_id.current);
-            let account_data = Buffer.from(event_data, "base64");
-            try {
-                const [updated_data] = JoinData.struct.deserialize(account_data);
-
-                console.log(updated_data);
-
-                if (join_data === null) {
-                    setJoinData(updated_data);
-                    return;
-                }
-
-                if (updated_data.num_tickets > join_data.num_tickets || updated_data.num_claimed_tickets > join_data.num_claimed_tickets) {
-                    setJoinData(updated_data);
-                }
-            } catch (error) {
-                console.log("error reading join data");
-                setJoinData(null);
-            }
-        },
-        [join_data],
-    );
-
-    // launch account subscription handler
-    useEffect(() => {
-        if (launchData === null) return;
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        if (launch_account_ws_id.current === null) {
-            console.log("subscribe 1");
-            let launch_data_account = PublicKey.findProgramAddressSync(
-                [Buffer.from(launchData.page_name), Buffer.from("Launch")],
-                PROGRAM,
-            )[0];
-
-            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
-        }
-
-        if (join_account_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
-            console.log("subscribe 2");
-            const game_id = new myU64(launchData.game_id);
-            const [game_id_buf] = myU64.struct.serialize(game_id);
-
-            let user_join_account = PublicKey.findProgramAddressSync(
-                [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
-                PROGRAM,
-            )[0];
-
-            join_account_ws_id.current = connection.onAccountChange(user_join_account, check_join_update, "confirmed");
-        }
-    }, [wallet, launchData, check_join_update, check_launch_update]);
-
     let win_prob = 0;
-
-    //if (join_data === null) {
-    //    console.log("no joiner info");
-    // }
 
     if (launchData !== null && launchData.tickets_sold > launchData.tickets_claimed) {
         //console.log("joiner", bignum_to_num(join_data.game_id), bignum_to_num(launchData.game_id));
         win_prob = (launchData.num_mints - launchData.mints_won) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
 
-    const fetchLaunchData = useCallback(async () => {
-        if (!checkLaunchData.current) return;
-        if (pageName === undefined || pageName === null) {
-            setIsLoading(false);
-            return;
-        }
+    useEffect(() => {
+        if (listingData === null || launchList === null) return;
 
-        setIsLoading(true);
+        let launch = launchList.get(pageName.toString());
+        setLaunchData(launch);
+        setListing(listingData.get(launch.listing.toString()));
+    }, [listingData, launchList, pageName]);
 
-        let new_launch_data: [LaunchData | null, number] = [launchData, 0];
+    useEffect(() => {
+        if (joinData === null) return;
+        let join = joinData.get(pageName.toString());
+        if (join !== undefined && join !== null) setJoinData(join);
+    }, [joinData, pageName]);
 
-        if (launchData === null) {
-            try {
-                let page_name = pageName ? pageName : "";
-                let launch_data_account = PublicKey.findProgramAddressSync(
-                    [Buffer.from(page_name.toString()), Buffer.from("Launch")],
-                    PROGRAM,
-                )[0];
-
-                const launch_account_data = await request_raw_account_data("", launch_data_account);
-
-                new_launch_data = LaunchData.struct.deserialize(launch_account_data);
-
-                //console.log(new_launch_data);
-
-                setLaunchData(new_launch_data[0]);
-            } catch (error) {
-                console.error("Error fetching launch data:", error);
-            }
-        }
-
-        if (wallet === null || wallet.publicKey === null) {
-            setIsLoading(false);
-            return;
-        }
-
-        const game_id = new myU64(new_launch_data[0]?.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-
-        let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
-            PROGRAM,
-        )[0];
-
-        if (join_data === null) {
-            //console.log("check join data")
-            try {
-                const join_account_data = await request_raw_account_data("", user_join_account);
-
-                if (join_account_data === null) {
-                    setIsLoading(false);
-                    checkLaunchData.current = false;
-                    return;
+    useEffect(() => {
+        if (mintData !== null && launchData !== null) {
+            for (let i = 0; i < launchData.plugins.length; i++) {
+                if (launchData.plugins[i]["__kind"] === "Whitelist") {
+                    let whitelist_mint: PublicKey = launchData.plugins[i]["key"];
+                    console.log("have whitelist ", whitelist_mint.toString());
+                    setWhitelist(mintData.get(whitelist_mint.toString()));
                 }
-
-                const [new_join_data] = JoinData.struct.deserialize(join_account_data);
-
-                console.log(new_join_data);
-
-                setJoinData(new_join_data);
-            } catch (error) {
-                console.error("Error fetching join data:", error);
-                setIsLoading(false);
-                checkLaunchData.current = false;
             }
         }
-        checkLaunchData.current = false;
-        setIsLoading(false);
-    }, [wallet, pageName, launchData, join_data]);
-
-    useEffect(() => {
-        checkLaunchData.current = true;
-    }, [wallet]);
-
-    useEffect(() => {
-        fetchLaunchData();
-    }, [fetchLaunchData, pageName]);
+    }, [mintData, launchData]);
 
     useEffect(() => {
         if (launchData) {
+            let launch_type = launchData.launch_meta["__kind"];
+            let launch_index = getLaunchTypeIndex(launch_type);
+            setLaunchType(launch_index);
+
             setTicketPrice(bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL);
+
+            if (launch_index !== 2 || launchData.tickets_sold < launchData.num_mints) {
+                let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
+                setTokensPerTicket(one_mint);
+            } else {
+                let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.tickets_sold;
+                setTokensPerTicket(one_mint);
+            }
         }
     }, [launchData]);
 
@@ -301,8 +169,7 @@ const TokenMintPage = () => {
 
     if (!launchData) return <PageNotFound />;
 
-    let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
-    let one_mint_frac = (100 * one_mint) / bignum_to_num(launchData.total_supply);
+    let one_mint_frac = (100 * tokens_per_ticket) / bignum_to_num(launchData.total_supply);
 
     const ACTIVE = [CookState.ACTIVE_NO_TICKETS, CookState.ACTIVE_TICKETS].includes(cookState);
     const MINTED_OUT = [
@@ -343,7 +210,13 @@ const TokenMintPage = () => {
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                             Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                        <Image
+                                            src={Config.token_image}
+                                            width={30}
+                                            height={30}
+                                            alt="Token Icon"
+                                            style={{ marginLeft: -3 }}
+                                        />
                                     </HStack>
 
                                     <Text
@@ -355,7 +228,17 @@ const TokenMintPage = () => {
                                     >
                                         Tickets Sold: {launchData.tickets_sold}
                                     </Text>
-
+                                    {launch_type !== 2 && (
+                                        <Text
+                                            m="0"
+                                            color="white"
+                                            fontSize="x-large"
+                                            fontFamily="ReemKufiRegular"
+                                            align={md ? "center" : "start"}
+                                        >
+                                            Total Winning Tickets: {launchData.num_mints.toLocaleString()}
+                                        </Text>
+                                    )}
                                     <Text
                                         m="0"
                                         color="white"
@@ -363,17 +246,7 @@ const TokenMintPage = () => {
                                         fontFamily="ReemKufiRegular"
                                         align={md ? "center" : "start"}
                                     >
-                                        Total Winning Tickets: {launchData.num_mints.toLocaleString()}
-                                    </Text>
-
-                                    <Text
-                                        m="0"
-                                        color="white"
-                                        fontSize="x-large"
-                                        fontFamily="ReemKufiRegular"
-                                        align={md ? "center" : "start"}
-                                    >
-                                        Tokens Per Winning Ticket: {one_mint.toLocaleString()}
+                                        Tokens Per Winning Ticket: {formatPrice(tokens_per_ticket, Math.min(3, listing.decimals))}
                                         <br />({one_mint_frac.toFixed(4)}% of total supply)
                                     </Text>
 
@@ -413,7 +286,7 @@ const TokenMintPage = () => {
                                                       ? "Cook Failed"
                                                       : "none"}
                                         </Text>
-                                        {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
+                                        {ACTIVE && <Image src={Config.token_image} width={40} height={40} alt="Token Icon" />}
                                     </HStack>
 
                                     <Box
@@ -465,6 +338,7 @@ const TokenMintPage = () => {
                                                 )}
 
                                                 {MINTED_OUT &&
+                                                    launch_type !== 2 &&
                                                     join_data !== null &&
                                                     join_data.num_tickets > join_data.num_claimed_tickets && (
                                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
@@ -509,16 +383,36 @@ const TokenMintPage = () => {
                                         <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                             <HStack alignItems="center">
                                                 <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
-                                                    Platform fee per ticket: 0.01
+                                                    Platform fee: {Config.platform_fee}
                                                 </Text>
                                                 <Image
-                                                    src="/images/sol.png"
+                                                    src={Config.token_image}
                                                     width={20}
                                                     height={20}
-                                                    alt="SOL Icon"
+                                                    alt="Token Icon"
                                                     style={{ marginLeft: -3 }}
                                                 />
                                             </HStack>
+                                            {whitelist !== null && (
+                                                <HStack alignItems="center">
+                                                    <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
+                                                        Whitelist Required
+                                                    </Text>
+                                                    <Link
+                                                        href={getSolscanLink(whitelist.mint.address, "Token")}
+                                                        target="_blank"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Image
+                                                            src={whitelist.icon}
+                                                            width={20}
+                                                            height={20}
+                                                            alt="Token Icon"
+                                                            style={{ marginLeft: -3 }}
+                                                        />
+                                                    </Link>
+                                                </HStack>
+                                            )}
                                         </VStack>
                                     ) : (
                                         <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
@@ -540,7 +434,13 @@ const TokenMintPage = () => {
                                                 LAMPORTS_PER_SOL}{" "}
                                             of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                        <Image
+                                            src={Config.token_image}
+                                            width={30}
+                                            height={30}
+                                            alt="Token Icon"
+                                            style={{ marginLeft: -3 }}
+                                        />
                                     </HStack>
                                 </Flex>
 

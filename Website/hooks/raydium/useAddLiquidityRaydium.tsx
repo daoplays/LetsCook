@@ -42,6 +42,8 @@ import {
     getLPMintAccount,
     getPoolStateAccount,
 } from "./useCreateCP";
+import { AMMData } from "../../components/Solana/jupiter_state";
+import useAppRoot from "../../context/useAppRoot";
 
 const ZERO = new BN(0);
 type BN = typeof ZERO;
@@ -81,8 +83,9 @@ class RaydiumAddLiquidity_Instruction {
     );
 }
 
-const useAddLiquidityRaydium = (launch: LaunchData) => {
+const useAddLiquidityRaydium = (amm: AMMData) => {
     const wallet = useWallet();
+    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -126,8 +129,11 @@ const useAddLiquidityRaydium = (launch: LaunchData) => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        let base_mint = launch.keys[LaunchKeys.MintAddress];
+        let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
+        let base_mint_data = mintData.get(base_mint.toString());
+        let quote_mint_data = mintData.get(quote_mint.toString());
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]
@@ -141,17 +147,17 @@ const useAddLiquidityRaydium = (launch: LaunchData) => {
         let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
 
         let user_base_account = await getAssociatedTokenAddress(
-            launch.keys[LaunchKeys.MintAddress], // mint
+            amm.base_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
+            base_mint_data.token_program,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
             quote_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
+            quote_mint_data.token_program,
         );
 
         let user_0 = token0.equals(base_mint) ? user_base_account : user_quote_account;

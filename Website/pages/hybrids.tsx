@@ -11,6 +11,7 @@ import MyTicketsTable from "../components/tables/myTicketsTable";
 import MyRewards from "../components/tables/myRewards";
 import MyRewardsTable from "../components/tables/myRewards";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
+import { CollectionData } from "../components/collection/collectionState";
 
 const BagsPage = () => {
     const { xs, sm, lg } = useResponsive();
@@ -19,9 +20,13 @@ const BagsPage = () => {
     if (!collectionList) return <Loader />;
 
     function filterTable() {
-        return collectionList.filter(function (item) {
-            return item.description !== "";
+        let filtered: CollectionData[] = [];
+        collectionList.forEach((item) => {
+            if (item.description !== "") {
+                filtered.push(item);
+            }
         });
+        return filtered;
     }
 
     return (
@@ -52,7 +57,7 @@ const BagsPage = () => {
 
                 <CollectionDashboardTable collectionList={filterTable()} />
 
-                {collectionList.length <= 0 && (
+                {collectionList.size <= 0 && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
                         <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
                             There are no collections launched yet

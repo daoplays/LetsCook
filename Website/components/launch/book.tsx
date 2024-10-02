@@ -1,16 +1,4 @@
 import {
-    DEBUG,
-    SYSTEM_KEY,
-    PROGRAM,
-    DEFAULT_FONT_SIZE,
-    LaunchKeys,
-    Config,
-    SOL_ACCOUNT_SEED,
-    DATA_ACCOUNT_SEED,
-    FEES_PROGRAM,
-    METAPLEX_META,
-} from "../../components/Solana/constants";
-import {
     LaunchDataUserInput,
     get_current_blockhash,
     send_transaction,
@@ -21,6 +9,8 @@ import {
     request_current_balance,
     uInt32ToLEBytes,
     getRecentPrioritizationFees,
+    getLaunchType,
+    getLaunchTypeIndex,
 } from "../../components/Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
@@ -97,9 +87,12 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const [localCloseDate, setLocalCloseDate] = useState<Date>(newLaunchData.current.closedate);
 
     const [teamWallet, setTeamWallet] = useState<string>(newLaunchData.current.team_wallet);
+    const [whitelist_key, setWhitelistKey] = useState<string>(newLaunchData.current.whitelist_key);
+    const [whitelist_amount, setWhitelistAmount] = useState<number>(newLaunchData.current.whitelist_amount);
+
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
     const [AMMProvider, setAMMProvider] = useState<string>("cook");
-    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
+    const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -150,6 +143,25 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             return false;
         }
 
+        if (whitelist_key !== "") {
+            try {
+                let whitelist = new PublicKey(whitelist_key);
+                balance = await request_current_balance("", whitelist);
+
+                //console.log("check balance", teamPubKey.toString(), balance);
+
+                if (balance == 0) {
+                    toast.error("Whitelist token does not exist");
+                    return false;
+                }
+            } catch (error) {
+                toast.error("Invalid Whitelist token");
+                return false;
+            }
+
+            newLaunchData.current.whitelist_key = whitelist_key;
+            newLaunchData.current.whitelist_amount = 1;
+        }
         if (!newLaunchData.current.edit_mode && localCloseDate.getTime() <= localOpenDate.getTime()) {
             toast.error("Close date must be set after launch date");
             return false;
@@ -164,12 +176,20 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
         newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
-        newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
+        newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
 
         if (AMMProvider === "cook") {
             newLaunchData.current.amm_provider = 0;
         }
         if (AMMProvider === "raydium") {
+            if (newLaunchData.current.transfer_hook_program !== null) {
+                toast.error("Raydium doesn't support transfer hook");
+                return false;
+            }
+            if (newLaunchData.current.permanent_delegate !== null) {
+                toast.error("Raydium doesn't support permanent delegate");
+                return false;
+            }
             newLaunchData.current.amm_provider = 1;
         }
 
@@ -200,7 +220,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
                         <HStack spacing={0} className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                Launch Type:
+                                Launch Mode:
                             </div>
                             <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
                                 <Stack direction="row" gap={5}>
@@ -216,15 +236,27 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             </Text>
                                         </Tooltip>
                                     </Radio>
-                                    <Radio value="Raffle">
+                                    <Radio value="Raffle" isDisabled>
                                         <Tooltip
-                                            label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                            label="Coming Soon! Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
                                             hasArrow
                                             fontSize="large"
                                             offset={[0, 10]}
                                         >
                                             <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                                 Raffle
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="IDO">
+                                        <Tooltip
+                                            label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                IDO
                                             </Text>
                                         </Tooltip>
                                     </Radio>
@@ -330,11 +362,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             Let&apos;s Cook
                                         </Text>
                                     </Radio>
+                                    {/*
                                     <Radio value="raydium">
                                         <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                             Raydium
                                         </Text>
                                     </Radio>
+                                    */}
                                 </Stack>
                             </RadioGroup>
                         </HStack>
@@ -374,6 +408,26 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     value={teamWallet}
                                     onChange={(e) => {
                                         setTeamWallet(e.target.value);
+                                    }}
+                                />
+                            </div>
+                        </HStack>
+
+                        <HStack spacing={15} w="100%">
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                WHITELIST TOKEN:
+                            </div>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    disabled={newLaunchData.current.edit_mode === true}
+                                    size={sm ? "medium" : "lg"}
+                                    required
+                                    placeholder="Enter Whitelist Token Address - Optional"
+                                    className={styles.inputBox}
+                                    type="text"
+                                    value={whitelist_key}
+                                    onChange={(e) => {
+                                        setWhitelistKey(e.target.value);
                                     }}
                                 />
                             </div>

@@ -1,9 +1,9 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
-import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys } from "./Solana/constants";
-import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData } from "./Solana/state";
+import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys, TIMEOUT } from "./Solana/constants";
+import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, ListingData } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
@@ -11,6 +11,7 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
+import { update_listings_blob } from "../pages/_contexts";
 
 export function HypeVote({
     launch_type,
@@ -18,76 +19,88 @@ export function HypeVote({
     page_name,
     positive_votes,
     negative_votes,
-    seller_key,
     isTradePage,
+    listing,
 }: {
     launch_type: number;
     launch_id: BN;
     page_name: string;
     positive_votes: number;
     negative_votes: number;
-    seller_key: PublicKey;
     isTradePage?: boolean;
+    listing: ListingData | null;
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
-    const { checkProgramData, currentUserData } = useAppRoot();
+    const { currentUserData, listingData } = useAppRoot();
     const { lg } = useResponsive();
-    const hype_vote_ws_id = useRef<number | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(
         async (result: any) => {
             console.log(result);
-            hype_vote_ws_id.current = null;
-
+            signature_ws_id.current = null;
+            setIsLoading(false);
             // if we have a subscription field check against ws_id
             if (result.err !== null) {
-                alert("Hype vote transaction failed, please try again");
+                toast.error("Transaction failed, please try again", {
+                    isLoading: false,
+                    autoClose: 3000,
+                });
                 return;
-            } else {
-                await checkProgramData();
             }
 
-            /*toast.success("First Hype Vote!",
-            {
-                position: "bottom-center",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "light",
-                icon: ({theme, type}) =>  <img src="/images/thumbs-up.svg"/>
-            });*/
+            toast.success("Voted!", {
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+            });
+
+            if (launch_type === 0) {
+                update_listings_blob(0, listing.mint.toString());
+            }
         },
-        [checkProgramData],
+        [listing, launch_type],
     );
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
 
     const Vote = useCallback(
         async ({ vote }: { vote: number }) => {
+            console.log("in vote");
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-            if (hype_vote_ws_id.current !== null) {
-                alert("Hype vote pending, please wait");
-                return;
-            }
+            let launch_data_account: PublicKey;
 
-            let launch_data_account =
-                launch_type === 0
-                    ? PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Launch")], PROGRAM)[0]
-                    : PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
+            if (launch_type === 0) {
+                launch_data_account = PublicKey.findProgramAddressSync([listing.mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            } else {
+                launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
+            }
 
             let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-            const instruction_data = serialise_HypeVote_instruction(launch_type, launch_id, vote);
+            const instruction_data = serialise_HypeVote_instruction(launch_type, vote);
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
                 { pubkey: user_data_account, isSigner: false, isWritable: true },
                 { pubkey: launch_data_account, isSigner: false, isWritable: true },
-                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             ];
 
             const list_instruction = new TransactionInstruction({
@@ -112,13 +125,14 @@ export function HypeVote({
                 let signature = transaction_response.result;
 
                 console.log("hype sig: ", signature);
-                hype_vote_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+                signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+                setTimeout(transaction_failed, TIMEOUT);
             } catch (error) {
                 console.log(error);
                 return;
             }
         },
-        [wallet, connection, launch_type, launch_id, page_name, check_signature_update],
+        [wallet, listing, connection, launch_type, page_name, check_signature_update, transaction_failed],
     );
 
     let has_voted: boolean = false;
@@ -147,23 +161,6 @@ export function HypeVote({
         }
     }
 
-    if (wallet.publicKey !== null && wallet.publicKey.toString() === seller_key.toString()) {
-        return (
-            <>
-                {total_votes > 0 && (
-                    <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
-                        {vote_ratio}
-                    </Text>
-                )}
-                {total_votes === 0 && (
-                    <Text m="0" fontSize={lg ? "large" : "x-large"} color="white">
-                        --
-                    </Text>
-                )}
-            </>
-        );
-    }
-
     if (has_voted) {
         return (
             <>
@@ -179,30 +176,33 @@ export function HypeVote({
                 <Tooltip label="Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (wallet !== null) {
+                            if (wallet.connected) {
                                 Vote({ vote: 1 });
                             } else {
                                 handleConnectWallet();
                             }
                         }}
                         src="/images/thumbs-up.svg"
-                        width={isTradePage ? 30 : 40}
-                        height={isTradePage ? 30 : 40}
+                        width={isTradePage ? 30 : 35}
+                        height={isTradePage ? 30 : 35}
                         alt="Thumbs Up"
                     />
                 </Tooltip>
+                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                    {vote_ratio}
+                </Text>
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
                     <Image
                         onClick={() => {
-                            if (wallet !== null) {
+                            if (wallet.connected) {
                                 Vote({ vote: 2 });
                             } else {
                                 handleConnectWallet();
                             }
                         }}
                         src="/images/thumbs-down.svg"
-                        width={isTradePage ? 30 : 40}
-                        height={isTradePage ? 30 : 40}
+                        width={isTradePage ? 30 : 35}
+                        height={isTradePage ? 30 : 35}
                         alt="Thumbs Down"
                     />
                 </Tooltip>

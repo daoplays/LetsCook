@@ -9,10 +9,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import trimAddress from "../utils/trimAddress";
 import Links from "./Buttons/links";
 import { useEffect } from "react";
-import { LaunchKeys } from "./Solana/constants";
+import { Config, LaunchFlags, LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
+import useAppRoot from "../context/useAppRoot";
+import ShowExtensions from "./Solana/extensions";
+import { HypeVote } from "./hypeVote";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -22,17 +25,34 @@ interface FeaturedBannerProps {
 const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => {
     const { sm, lg } = useResponsive();
     const router = useRouter();
+    const { listingData } = useAppRoot();
 
     if (!featuredLaunch) return;
+
+    let listing = listingData.get(featuredLaunch.listing.toString());
+
+    if (!listing) return;
 
     return (
         <Box
             h={lg ? 300 : 320}
-            bg={"url(" + featuredLaunch.banner + ")"}
+            bg={"url(" + listing.banner + ")"}
             bgSize="cover"
             boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
-            style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96" }}
+            style={{ borderBottom: "1px solid #868E96", borderTop: "1px solid #868E96", position: "relative" }}
         >
+            <HStack position="absolute" top={5} right={5} style={{ cursor: "pointer" }} hidden={isHomePage}>
+                <HypeVote
+                    launch_type={0}
+                    launch_id={listing.id}
+                    page_name={""}
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
+                    isTradePage={false}
+                    listing={listing}
+                />
+            </HStack>
+
             <Box
                 bg="linear-gradient(180deg, rgba(255,255,255,0) -40%, rgba(0,0,0,1) 110%)"
                 w="100%"
@@ -41,7 +61,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                 style={{ cursor: isHomePage ? "pointer" : "default" }}
             >
                 <Flex
-                    gap={lg ? 5 : 8}
+                    gap={lg ? 2 : 8}
                     flexDirection={lg || isHomePage ? "column" : "row"}
                     align={lg || !isHomePage ? "center" : "start"}
                     justify={!lg && !isHomePage ? "space-between" : "center"}
@@ -57,14 +77,26 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
 
                     <HStack spacing={lg ? 0 : 8} w="fit-content" mt={!isHomePage ? 0 : -2}>
                         {featuredLaunch !== null && (
-                            <Image
-                                src={featuredLaunch.icon}
-                                width={lg ? 130 : 200}
-                                height={lg ? 130 : 200}
-                                alt="$LOGO"
-                                hidden={lg}
-                                style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
-                            />
+                            <VStack justifyContent="center" align="center" mt={3}>
+                                <Image
+                                    src={listing.icon}
+                                    width={lg ? 130 : 200}
+                                    height={lg ? 130 : 200}
+                                    alt="$LOGO"
+                                    hidden={lg}
+                                    style={{ borderRadius: sm ? "12px" : "8px", backgroundSize: "cover" }}
+                                />
+                                <HStack
+                                    hidden={lg}
+                                    // border="1px solid rgba(255,255,255,0.15)"
+                                    p={2}
+                                    w="100%"
+                                    // borderRadius={8}
+                                    justify="center"
+                                >
+                                    <ShowExtensions extension_flag={featuredLaunch.flags[LaunchFlags.Extensions]} />
+                                </HStack>
+                            </VStack>
                         )}
                         <VStack gap={lg ? 2 : 3} alignItems={lg ? "center" : "left"}>
                             <Flex gap={lg ? 2 : 5} alignItems="center">
@@ -76,10 +108,10 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     style={{ wordBreak: "break-all" }}
                                     align={"center"}
                                 >
-                                    {featuredLaunch !== null ? featuredLaunch.symbol : ""}
+                                    {featuredLaunch !== null ? listing.symbol : ""}
                                 </Text>
 
-                                {!lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
+                                {!lg && featuredLaunch !== null && <Links socials={listing.socials} />}
 
                                 {isHomePage && !lg && (
                                     <Badge colorScheme="whatsapp" h="fit-content" borderRadius={3}>
@@ -92,9 +124,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 <HStack spacing={3} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
                                         CA:{" "}
-                                        {featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                            ? trimAddress(featuredLaunch.keys[LaunchKeys.MintAddress].toString())
-                                            : ""}
+                                        {featuredLaunch && featuredLaunch.keys && listing.mint ? trimAddress(listing.mint.toString()) : ""}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -103,9 +133,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                        ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
-                                                        : "",
+                                                    featuredLaunch && featuredLaunch.keys && listing.mint ? listing.mint.toString() : "",
                                                 );
                                             }}
                                         >
@@ -115,7 +143,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(featuredLaunch, "Token")}
+                                            href={getSolscanLink(listing.mint, "Token")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -131,9 +159,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredLaunch.keys[LaunchKeys.MintAddress]
-                                                    ? featuredLaunch.keys[LaunchKeys.MintAddress].toString()
-                                                    : ""
+                                                featuredLaunch && featuredLaunch.keys && listing.mint ? listing.mint.toString() : ""
                                             }`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
@@ -161,12 +187,15 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                 lineHeight={1.15}
                                 align={lg ? "center" : "start"}
                             >
-                                {featuredLaunch !== null ? featuredLaunch.description.substring(0, 200) : ""}
+                                {featuredLaunch !== null ? listing.description.substring(0, 200) : ""}
                             </Text>
+                            <HStack hidden={!lg}>
+                                <ShowExtensions extension_flag={featuredLaunch.flags[LaunchFlags.Extensions]} />
+                            </HStack>
                         </VStack>
                     </HStack>
 
-                    {lg && featuredLaunch !== null && <Links socials={featuredLaunch.socials} />}
+                    {lg && featuredLaunch !== null && <Links socials={listing.socials} />}
 
                     {!isHomePage && (
                         // <Link href={`/launch/${featuredLaunch?.page_name}`} >
@@ -217,7 +246,7 @@ const FeaturedBanner = ({ featuredLaunch, isHomePage }: FeaturedBannerProps) => 
                                         of {(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
                                     </Text>
                                     <Image
-                                        src="/images/sol.png"
+                                        src={Config.token_image}
                                         width={20}
                                         height={20}
                                         alt="SOL Icon"

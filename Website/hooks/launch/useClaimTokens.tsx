@@ -20,7 +20,7 @@ import {
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, FEES_PROGRAM } from "../../components/Solana/constants";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
@@ -29,7 +29,7 @@ import { toast } from "react-toastify";
 
 const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData, mintData } = useAppRoot();
+    const { checkProgramData, mintData, listingData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -51,7 +51,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             return;
         }
 
-        toast.success("Tickets Checked!", {
+        toast.success("Tokens Claimed!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
@@ -99,40 +99,32 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.keys[LaunchKeys.MintAddress].toString());
-        console.log("sol", launchData.keys[LaunchKeys.WSOLAddress].toString());
+        let listing = listingData.get(launchData.listing.toString());
 
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        let mint_account = mintData.get(launchData.keys[LaunchKeys.MintAddress].toString());
+        let mint_account = mintData.get(listing.mint.toString());
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_raffle_account_key = await getAssociatedTokenAddress(
-            launchData.keys[LaunchKeys.MintAddress], // mint
+            listing.mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
-            launchData.keys[LaunchKeys.MintAddress], // mint
+            listing.mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let transfer_hook = getTransferHook(mint_account.mint);
@@ -145,7 +137,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
             transfer_hook_program_account = transfer_hook.programId;
             transfer_hook_validation_account = PublicKey.findProgramAddressSync(
-                [Buffer.from("extra-account-metas"), launchData.keys[LaunchKeys.MintAddress].toBuffer()],
+                [Buffer.from("extra-account-metas"), listing.mint.toBuffer()],
                 transfer_hook_program_account,
             )[0];
 
@@ -183,14 +175,15 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: launchData.keys[LaunchKeys.MintAddress], isSigner: false, isWritable: true },
+            { pubkey: listing.mint, isSigner: false, isWritable: true },
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: launchData.listing, isSigner: false, isWritable: false },
 
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: mint_account.program, isSigner: false, isWritable: true },
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
+            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         if (transfer_hook_program_account !== null) {

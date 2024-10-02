@@ -1,6 +1,7 @@
 import {
     LaunchData,
     LaunchInstruction,
+    ListingData,
     getRecentPrioritizationFees,
     get_current_blockhash,
     myU64,
@@ -18,7 +19,7 @@ import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 
-const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) => {
+const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData } = useAppRoot();
 
@@ -91,21 +92,12 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launchData.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-        const game_id = new myU64(launchData.game_id);
-        const [game_id_buf] = myU64.struct.serialize(game_id);
-        console.log("game id ", launchData.game_id, game_id_buf);
-        console.log("Mint", launchData.keys[LaunchKeys.MintAddress].toString());
-        console.log("sol", launchData.keys[LaunchKeys.WSOLAddress].toString());
-
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), game_id_buf, Buffer.from("Joiner")],
+            [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 
@@ -123,8 +115,8 @@ const useRefundTickets = (launchData: LaunchData, updateData: boolean = false) =
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: true });
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

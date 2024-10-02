@@ -13,23 +13,71 @@ import {
     array,
     fixedSizeArray,
     u128,
+    BeetArgsStruct,
+    dataEnum,
+    DataEnumKeyAsKind,
+    FixableBeetArgsStruct,
+    FixableBeet,
 } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 import { Order } from "@jup-ag/limit-order-sdk";
 
 import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData } from "./state";
+import { PROGRAM } from "./constants";
 
 export interface OpenOrder {
     publicKey: PublicKey;
     account: Order;
 }
 
-export function reward_schedule(date: number, launch_data: LaunchData): number {
-    let reward_frac = launch_data.distribution[Distribution.MMRewards] / 100;
-    let total_supply = bignum_to_num(launch_data.total_supply);
-    let mm_amount = total_supply * reward_frac;
-    console.log(reward_frac, total_supply, mm_amount);
+export function getAMMKey(amm: AMMData, amm_provider: number) {
+    if (amm === null) {
+        return null;
+    }
+    let amm_seed_keys = [];
+    if (amm.base_mint.toString() < amm.quote_mint.toString()) {
+        amm_seed_keys.push(amm.base_mint);
+        amm_seed_keys.push(amm.quote_mint);
+    } else {
+        amm_seed_keys.push(amm.quote_mint);
+        amm_seed_keys.push(amm.base_mint);
+    }
+    let provider_string = amm_provider == 0 ? "CookAMM" : amm_provider === 1 ? "RaydiumCPMM" : "Raydium";
+    let amm_data_account = PublicKey.findProgramAddressSync(
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(provider_string)],
+        PROGRAM,
+    )[0];
+
+    return amm_data_account;
+}
+
+export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
+    let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
+    let amm_seed_keys = [];
+    if (base_mint.toString() < quote_mint.toString()) {
+        amm_seed_keys.push(base_mint);
+        amm_seed_keys.push(quote_mint);
+    } else {
+        amm_seed_keys.push(quote_mint);
+        amm_seed_keys.push(base_mint);
+    }
+
+    let provider_string = amm_provider == 0 ? "CookAMM" : amm_provider === 1 ? "RaydiumCPMM" : "Raydium";
+    let amm_data_account = PublicKey.findProgramAddressSync(
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(provider_string)],
+        PROGRAM,
+    )[0];
+
+    return amm_data_account;
+}
+
+export function reward_schedule(date: number, amm: AMMData): number {
+    if (amm.plugins.length === 0) {
+        return 0.0;
+    }
+
+    let mm_amount = amm.plugins[0]["total_tokens"];
     if (date < 10) {
         return 0.05 * mm_amount;
     }
@@ -60,7 +108,7 @@ export class OHLCV {
         readonly high: number[],
         readonly low: number[],
         readonly close: number[],
-        readonly volume: number,
+        readonly volume: number[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<OHLCV>(
@@ -70,7 +118,7 @@ export class OHLCV {
             ["high", uniformFixedSizeArray(u8, 4)],
             ["low", uniformFixedSizeArray(u8, 4)],
             ["close", uniformFixedSizeArray(u8, 4)],
-            ["volume", u64],
+            ["volume", uniformFixedSizeArray(u8, 4)],
         ],
         (args) => new OHLCV(args.timestamp!, args.open!, args.high!, args.low!, args.close!, args.volume!),
         "OHLCV",
@@ -93,9 +141,29 @@ export class TimeSeriesData {
     );
 }
 
+type AMMPluginEnum = {
+    TradeToEarn: { total_tokens: bignum; last_reward_date: number };
+};
+type AMMPlugin = DataEnumKeyAsKind<AMMPluginEnum>;
+
+const ammPluginBeet = dataEnum<AMMPluginEnum>([
+    [
+        "TradeToEarn",
+        new BeetArgsStruct<AMMPluginEnum["TradeToEarn"]>(
+            [
+                ["total_tokens", u64],
+                ["last_reward_date", u32],
+            ],
+            'AMMPluginEnum["TradeToEarn"]',
+        ),
+    ],
+]) as FixableBeet<AMMPlugin>;
+
 export class AMMData {
     constructor(
         readonly account_type: number,
+        readonly pool: PublicKey,
+        readonly provider: number,
         readonly base_mint: PublicKey,
         readonly quote_mint: PublicKey,
         readonly lp_mint: PublicKey,
@@ -104,13 +172,22 @@ export class AMMData {
         readonly fee: number,
         readonly num_data_accounts: number,
         readonly last_price: number[],
-        readonly transferring: number,
         readonly lp_amount: bignum,
+        readonly borrow_cost: number,
+        readonly leverage_fraction: number,
+        readonly amm_base_amount: bignum,
+        readonly amm_quote_amount: bignum,
+        readonly short_base_amount: bignum,
+        readonly long_quote_amount: bignum,
+        readonly start_time: bignum,
+        readonly plugins: AMMPluginEnum[],
     ) {}
 
     static readonly struct = new FixableBeetStruct<AMMData>(
         [
             ["account_type", u8],
+            ["pool", publicKey],
+            ["provider", u8],
             ["base_mint", publicKey],
             ["quote_mint", publicKey],
             ["lp_mint", publicKey],
@@ -119,12 +196,21 @@ export class AMMData {
             ["fee", u16],
             ["num_data_accounts", u32],
             ["last_price", uniformFixedSizeArray(u8, 4)],
-            ["transferring", u8],
             ["lp_amount", u64],
+            ["borrow_cost", u16],
+            ["leverage_fraction", u16],
+            ["amm_base_amount", u64],
+            ["amm_quote_amount", u64],
+            ["short_base_amount", u64],
+            ["long_quote_amount", u64],
+            ["start_time", u64],
+            ["plugins", array(ammPluginBeet)],
         ],
         (args) =>
             new AMMData(
                 args.account_type!,
+                args.pool!,
+                args.provider!,
                 args.base_mint!,
                 args.quote_mint!,
                 args.lp_mint!,
@@ -133,8 +219,15 @@ export class AMMData {
                 args.fee!,
                 args.num_data_accounts!,
                 args.last_price!,
-                args.transferring!,
                 args.lp_amount!,
+                args.borrow_cost!,
+                args.leverage_fraction!,
+                args.amm_base_amount!,
+                args.amm_quote_amount!,
+                args.short_base_amount!,
+                args.long_quote_amount!,
+                args.start_time!,
+                args.plugins!,
             ),
         "AMMData",
     );
@@ -144,7 +237,7 @@ export class MMUserData {
     constructor(
         readonly account_type: number,
         readonly user_key: PublicKey,
-        readonly mint_key: PublicKey,
+        readonly amm: PublicKey,
         readonly date: number,
         readonly buy_amount: bignum,
         readonly sell_amount: bignum,
@@ -154,12 +247,12 @@ export class MMUserData {
         [
             ["account_type", u8],
             ["user_key", publicKey],
-            ["mint_key", publicKey],
+            ["amm", publicKey],
             ["date", u32],
             ["buy_amount", u64],
             ["sell_amount", u64],
         ],
-        (args) => new MMUserData(args.account_type!, args.user_key!, args.mint_key!, args.date!, args.buy_amount!, args.sell_amount!),
+        (args) => new MMUserData(args.account_type!, args.user_key!, args.amm!, args.date!, args.buy_amount!, args.sell_amount!),
         "MMUserData",
     );
 }
@@ -167,7 +260,7 @@ export class MMUserData {
 export class MMLaunchData {
     constructor(
         readonly account_type: number,
-        readonly mint_key: PublicKey,
+        readonly amm: PublicKey,
         readonly date: number,
         readonly token_rewards: bignum,
         readonly buy_amount: bignum,
@@ -178,7 +271,7 @@ export class MMLaunchData {
     static readonly struct = new FixableBeetStruct<MMLaunchData>(
         [
             ["account_type", u8],
-            ["mint_key", publicKey],
+            ["amm", publicKey],
             ["date", u32],
             ["token_rewards", u64],
             ["buy_amount", u64],
@@ -188,7 +281,7 @@ export class MMLaunchData {
         (args) =>
             new MMLaunchData(
                 args.account_type!,
-                args.mint_key!,
+                args.amm!,
                 args.date!,
                 args.token_rewards!,
                 args.buy_amount!,
@@ -257,20 +350,22 @@ class ClaimReward_Instruction {
     constructor(
         readonly instruction: number,
         readonly date: number,
+        readonly amm_provider: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<ClaimReward_Instruction>(
         [
             ["instruction", u8],
             ["date", u32],
+            ["amm_provider", u8],
         ],
-        (args) => new ClaimReward_Instruction(args.instruction!, args.date!),
+        (args) => new ClaimReward_Instruction(args.instruction!, args.date!, args.amm_provider!),
         "ClaimReward_Instruction",
     );
 }
 
-export function serialise_ClaimReward_instruction(date: number): Buffer {
-    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date);
+export function serialise_ClaimReward_instruction(date: number, amm_provider: number): Buffer {
+    const data = new ClaimReward_Instruction(LaunchInstruction.get_mm_rewards, date, amm_provider);
     const [buf] = ClaimReward_Instruction.struct.serialize(data);
 
     return buf;
@@ -443,5 +538,85 @@ export class RaydiumAMM {
                 args.padding!,
             ),
         "RaydiumAMM",
+    );
+}
+
+export class MarketStateLayoutV2 {
+    constructor(
+        readonly header: number[],
+        readonly accountFlags: bignum,
+        readonly ownAddress: PublicKey,
+        readonly vaultSignerNonce: bignum,
+        readonly baseMint: PublicKey,
+        readonly quoteMint: PublicKey,
+        readonly baseVault: PublicKey,
+        readonly baseDepositsTotal: bignum,
+        readonly baseFeesAccrued: bignum,
+        readonly quoteVault: PublicKey,
+        readonly quoteDepositsTotal: bignum,
+        readonly quoteFeesAccrued: bignum,
+        readonly quoteDustThreshold: bignum,
+        readonly requestQueue: PublicKey,
+        readonly eventQueue: PublicKey,
+        readonly bids: PublicKey,
+        readonly asks: PublicKey,
+        readonly baseLotSize: bignum,
+        readonly quoteLotSize: bignum,
+        readonly feeRateBps: bignum,
+        readonly referrerRebatesAccrued: bignum,
+        readonly footer: number[],
+    ) {}
+
+    static readonly struct = new BeetStruct<MarketStateLayoutV2>(
+        [
+            ["header", uniformFixedSizeArray(u8, 5)],
+            ["accountFlags", u64],
+            ["ownAddress", publicKey],
+            ["vaultSignerNonce", u64],
+            ["baseMint", publicKey],
+            ["quoteMint", publicKey],
+            ["baseVault", publicKey],
+            ["baseDepositsTotal", u64],
+            ["baseFeesAccrued", u64],
+            ["quoteVault", publicKey],
+            ["quoteDepositsTotal", u64],
+            ["quoteFeesAccrued", u64],
+            ["quoteDustThreshold", u64],
+            ["requestQueue", publicKey],
+            ["eventQueue", publicKey],
+            ["bids", publicKey],
+            ["asks", publicKey],
+            ["baseLotSize", u64],
+            ["quoteLotSize", u64],
+            ["feeRateBps", u64],
+            ["referrerRebatesAccrued", u64],
+            ["footer", uniformFixedSizeArray(u8, 7)],
+        ],
+        (args) =>
+            new MarketStateLayoutV2(
+                args.header!,
+                args.accountFlags!,
+                args.ownAddress!,
+                args.vaultSignerNonce!,
+                args.baseMint!,
+                args.quoteMint!,
+                args.baseVault!,
+                args.baseDepositsTotal!,
+                args.baseFeesAccrued!,
+                args.quoteVault!,
+                args.quoteDepositsTotal!,
+                args.quoteFeesAccrued!,
+                args.quoteDustThreshold!,
+                args.requestQueue!,
+                args.eventQueue!,
+                args.bids!,
+                args.asks!,
+                args.baseLotSize!,
+                args.quoteLotSize!,
+                args.feeRateBps!,
+                args.referrerRebatesAccrued!,
+                args.footer!,
+            ),
+        "MarketStateLayoutV2",
     );
 }

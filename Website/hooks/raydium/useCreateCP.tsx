@@ -13,11 +13,12 @@ import {
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import bs58 from "bs58";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { Config, LaunchKeys, PROGRAM, SOL_ACCOUNT_SEED, SYSTEM_KEY } from "../../components/Solana/constants";
+import { Config, LaunchKeys, PROGRAM, SOL_ACCOUNT_SEED, SYSTEM_KEY, TIMEOUT } from "../../components/Solana/constants";
 import {
     Distribution,
     LaunchData,
     LaunchInstruction,
+    ListingData,
     bignum_to_num,
     getRecentPrioritizationFees,
     get_current_blockhash,
@@ -26,7 +27,9 @@ import {
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
 import { FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { AMMData } from "../../components/Solana/jupiter_state";
+import { toast } from "react-toastify";
 
 export function serialise_CreateCP_instruction(amount_0, amount_1, start): Buffer {
     /*
@@ -126,15 +129,49 @@ export function getAMMQuoteAccount(base_mint: PublicKey, quote_mint: PublicKey) 
     )[0];
 }
 
-export const useCreateCP = (launch: LaunchData) => {
+export const useCreateCP = (listing: ListingData, launch: LaunchData) => {
     const wallet = useWallet();
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     const [isLoading, setIsLoading] = useState(false);
+    const signature_ws_id = useRef<number | null>(null);
+
+    const check_signature_update = useCallback(async (result: any) => {
+        console.log(result);
+        signature_ws_id.current = null;
+        setIsLoading(false);
+        // if we have a subscription field check against ws_id
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again", {
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return;
+        }
+
+        toast.success("Transaction Successfull!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
+
+    const transaction_failed = useCallback(async () => {
+        if (signature_ws_id.current == null) return;
+
+        signature_ws_id.current = null;
+        setIsLoading(false);
+
+        toast.error("Transaction not processed, please try again", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
 
     const CreateCP = async () => {
         let sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
-        let base_mint = launch.keys[LaunchKeys.MintAddress];
+        let base_mint = listing.mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
@@ -174,7 +211,7 @@ export const useCreateCP = (launch: LaunchData) => {
         console.log("amm", amm_0.toString(), amm_1.toString());
 
         let quote_amount = bignum_to_num(launch.ticket_price) * launch.num_mints;
-        let total_token_amount = bignum_to_num(launch.total_supply) * Math.pow(10, launch.decimals);
+        let total_token_amount = bignum_to_num(launch.total_supply) * Math.pow(10, listing.decimals);
         let base_amount = Math.floor(total_token_amount * (launch.distribution[Distribution.LP] / 100.0));
 
         let amount_0 = token0.equals(base_mint) ? base_amount : quote_amount;
@@ -185,20 +222,34 @@ export const useCreateCP = (launch: LaunchData) => {
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let team_base_account = await getAssociatedTokenAddress(
-            launch.keys[LaunchKeys.MintAddress], // mint
+            listing.mint, // mint
             launch.keys[LaunchKeys.TeamWallet], // owner
             true, // allow owner off curve
             TOKEN_2022_PROGRAM_ID,
         );
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
+        let amm_seed_keys = [];
+        if (base_mint.toString() < quote_mint.toString()) {
+            amm_seed_keys.push(base_mint);
+            amm_seed_keys.push(quote_mint);
+        } else {
+            amm_seed_keys.push(quote_mint);
+            amm_seed_keys.push(base_mint);
+        }
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("RaydiumCPMM")],
             PROGRAM,
         )[0];
+
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
+
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
         //let keys  = transaction["instructions"][0]["keys"]
         let keys = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch.listing, isSigner: false, isWritable: false },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
             { pubkey: team_base_account, isSigner: false, isWritable: true },
@@ -224,6 +275,8 @@ export const useCreateCP = (launch: LaunchData) => {
             { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
             { pubkey: RAYDIUM_PROGRAM, isSigner: false, isWritable: false },
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
+            { pubkey: amm_data_account, isSigner: false, isWritable: true },
         ];
 
         for (let i = 0; i < keys.length; i++) {
@@ -255,6 +308,9 @@ export const useCreateCP = (launch: LaunchData) => {
             var transaction_response = await send_transaction("", encoded_transaction);
 
             let signature = transaction_response.result;
+
+            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
+            setTimeout(transaction_failed, TIMEOUT);
 
             console.log("swap sig: ", signature);
         } catch (error) {

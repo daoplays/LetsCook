@@ -48,9 +48,15 @@ const LeaderboardPage = () => {
         setName(e.target.value);
     };
 
-    const LeaderboardTable = ({ user_data }: { user_data: UserData[] }) => {
+    let userVec: UserData[] = [];
+    if (userList !== null) {
+        userList.forEach((user) => {
+            userVec.push(user);
+        });
+    }
+
+    const LeaderboardTable = () => {
         const { sm } = useResponsive();
-        const { checkProgramData } = useAppRoot();
 
         const [sortedField, setSortedField] = useState<string | null>("sauce");
         const [reverseSort, setReverseSort] = useState<boolean>(true);
@@ -62,6 +68,7 @@ const LeaderboardPage = () => {
         ];
 
         const handleHeaderClick = (field: string | null) => {
+            console.log("field", field);
             if (field === sortedField) {
                 setReverseSort(!reverseSort);
             } else {
@@ -70,7 +77,7 @@ const LeaderboardPage = () => {
             }
         };
 
-        const sortedUsers = [...user_data].sort((a, b) => {
+        const sortedUsers = userVec.sort((a, b) => {
             if (sortedField === "user") {
                 let a_name = a.user_name !== "" ? a.user_name : a.user_key.toString();
                 let b_name = b.user_name !== "" ? b.user_name : b.user_key.toString();
@@ -81,6 +88,10 @@ const LeaderboardPage = () => {
 
             return 0;
         });
+
+        console.log("sortedUsers", sortedUsers);
+
+        const rank_sorted = [...userVec].sort((a, b) => b.total_points - a.total_points);
 
         const currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
 
@@ -125,7 +136,7 @@ const LeaderboardPage = () => {
 
                         <tbody>
                             {sortedUsers.map((user, i) => {
-                                return <UserCard key={user.user_key.toString()} user={user} index={i} />;
+                                return <UserCard key={user.user_key.toString()} rank_sorted={rank_sorted} user={user} index={i} />;
                             })}
                         </tbody>
                     </table>
@@ -134,11 +145,10 @@ const LeaderboardPage = () => {
         );
     };
 
-    const UserCard = ({ user, index }: { user: UserData; index: number }) => {
+    const UserCard = ({ rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
         const isUser = user.user_key.equals(currentUserData?.user_key);
-        const sortedUsers = [...userList].sort((a, b) => b.total_points - a.total_points);
 
-        const rank = sortedUsers.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
+        const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
 
         return (
             <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
@@ -220,7 +230,7 @@ const LeaderboardPage = () => {
                     )}
                 </Flex>
 
-                <LeaderboardTable user_data={userList} />
+                <LeaderboardTable />
             </main>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>

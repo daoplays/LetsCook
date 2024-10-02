@@ -2,13 +2,15 @@ import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from 
 
 import {
     LaunchDataUserInput,
+    ListingData,
     getRecentPrioritizationFees,
     get_current_blockhash,
     request_launch_data,
+    request_raw_account_data,
     send_transaction,
     serialise_EditLaunch_instruction,
 } from "../../components/Solana/state";
-import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys } from "../../components/Solana/constants";
+import { DEBUG, SYSTEM_KEY, PROGRAM, Config, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
@@ -19,9 +21,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { generatePubKey, getRaydiumPrograms, getMarketSeedBase, getLaunchOBMAccount } from "../raydium/utils";
-import { Liquidity } from "@raydium-io/raydium-sdk";
-import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
+import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAccount } from "../raydium/useCreateCP";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
@@ -68,11 +68,12 @@ const useEditLaunch = () => {
         )[0];
 
         const launch_data = await request_launch_data("", launch_data_account);
-
+        let listing_data = await request_raw_account_data("", launch_data.listing);
+        const [listing] = ListingData.struct.deserialize(listing_data);
         console.log("launch data", launch_data);
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        var token_mint_pubkey = launch_data.keys[LaunchKeys.MintAddress];
+        var token_mint_pubkey = listing.mint;
 
         let amm_seed_keys = [];
         if (token_mint_pubkey.toString() < wrapped_sol_mint.toString()) {
@@ -84,10 +85,15 @@ const useEditLaunch = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from(launch_data.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+            ],
             PROGRAM,
         )[0];
 
+        let raydium_pool = getPoolStateAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_base_account = getAMMBaseAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_quote_account = getAMMQuoteAccount(token_mint_pubkey, wrapped_sol_mint);
         let raydium_lp_mint_account = getLPMintAccount(token_mint_pubkey, wrapped_sol_mint);
@@ -108,8 +114,11 @@ const useEditLaunch = () => {
             TOKEN_PROGRAM_ID,
         );
 
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
+
         console.log(wrapped_sol_mint.toString(), amm_data_account.toString(), cook_amm_quote_account.toString());
 
+        let pool_account = newLaunchData.current.amm_provider === 0 ? amm_data_account : raydium_pool;
         let base_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_base_account : raydium_base_account;
         let quote_amm_account = newLaunchData.current.amm_provider === 0 ? cook_amm_quote_account : raydium_quote_account;
         let amm_lp_mint = newLaunchData.current.amm_provider === 0 ? cook_lp_mint_account : raydium_lp_mint_account;
@@ -123,17 +132,20 @@ const useEditLaunch = () => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
+            { pubkey: launch_data.listing, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
             { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
+            { pubkey: pool_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
             { pubkey: amm_lp_mint, isSigner: false, isWritable: true },
 
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },

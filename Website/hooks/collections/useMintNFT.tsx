@@ -27,6 +27,8 @@ import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
+
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
@@ -114,6 +116,9 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
+        let r_data = await request_raw_account_data("", assignment_data.random_address);
+        console.log(r_data);
+
         setIsLoading(true);
 
         let asset_keypair = new Keypair();
@@ -137,7 +142,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
 

@@ -1,5 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
-import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
+import {
+    LaunchData,
+    ListingData,
+    UserData,
+    bignum_to_num,
+    create_LaunchDataInput,
+    get_current_blockhash,
+    send_transaction,
+} from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -25,8 +33,8 @@ import {
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import useCreateMarket from "../../hooks/raydium/useCreateMarket";
 import useCreateCP from "../../hooks/raydium/useCreateCP";
+import * as NProgress from "nprogress";
 
 interface Header {
     text: string;
@@ -40,7 +48,7 @@ interface TransferAccount {
 
 const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[] }) => {
     const { sm } = useResponsive();
-    const { checkProgramData } = useAppRoot();
+    const { checkProgramData, listingData } = useAppRoot();
     const wallet = useWallet();
 
     const [sortedField, setSortedField] = useState<string | null>("date");
@@ -63,8 +71,11 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     };
 
     const sortedLaunches = [...creatorLaunches].sort((a, b) => {
+        let listing_a = listingData.get(a.listing.toString());
+        let listing_b = listingData.get(b.listing.toString());
+
         if (sortedField === "symbol") {
-            return reverseSort ? b.symbol.localeCompare(a.symbol) : a.symbol.localeCompare(b.symbol);
+            return reverseSort ? listing_b.symbol.localeCompare(listing_a.symbol) : listing_a.symbol.localeCompare(listing_b.symbol);
         } else if (sortedField === "liquidity") {
             return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
         } else if (sortedField === "date") {
@@ -74,7 +85,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
         return 0;
     });
 
-    const GetFeeAccounts = useCallback(async (launch: LaunchData) => {
+    const GetFeeAccounts = useCallback(async (listing: ListingData) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const allAccounts = await connection.getProgramAccounts(TOKEN_2022_PROGRAM_ID, {
@@ -83,7 +94,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
                 {
                     memcmp: {
                         offset: 0,
-                        bytes: launch.keys[LaunchKeys.MintAddress].toString(),
+                        bytes: listing.mint.toString(),
                     },
                 },
             ],
@@ -96,7 +107,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
             if (transferFeeAmount !== null && transferFeeAmount.withheldAmount > BigInt(0)) {
                 let transfer_account: TransferAccount = {
                     pubkey: accountInfo.pubkey,
-                    amount: parseInt(transferFeeAmount.withheldAmount.toString()) / Math.pow(10, launch.decimals),
+                    amount: parseInt(transferFeeAmount.withheldAmount.toString()) / Math.pow(10, listing.decimals),
                 };
                 accountsToWithdrawFrom.push(transfer_account);
             }
@@ -113,7 +124,9 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
 
             const collectToast = toast.loading("Collecting Fee Accounts...");
 
-            let feeAccounts: TransferAccount[] = await GetFeeAccounts(launch);
+            let listing = listingData.get(launch.listing.toString());
+
+            let feeAccounts: TransferAccount[] = await GetFeeAccounts(listing);
 
             let total_fees = 0;
             for (let i = 0; i < feeAccounts.length; i++) {
@@ -136,7 +149,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
             });
 
             let user_token_key = await getAssociatedTokenAddress(
-                launch.keys[LaunchKeys.MintAddress], // mint
+                listing.mint, // mint
                 launch.keys[LaunchKeys.TeamWallet], // owner
                 true, // allow owner off curve,
                 TOKEN_2022_PROGRAM_ID,
@@ -153,7 +166,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
                 }
 
                 let withdraw_idx = createWithdrawWithheldTokensFromAccountsInstruction(
-                    launch.keys[LaunchKeys.MintAddress],
+                    listing.mint,
                     user_token_key,
                     wallet.publicKey,
                     [],
@@ -198,7 +211,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
                 autoClose: 3000,
             });
         },
-        [wallet, GetFeeAccounts],
+        [wallet, GetFeeAccounts, listingData],
     );
 
     return (
@@ -253,11 +266,11 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
 const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch: LaunchData) => Promise<void> }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
-    const { CreateMarket, isLoading: createMarketLoading } = useCreateMarket(launch);
-    const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(launch);
+    const { newLaunchData, listingData } = useAppRoot();
 
-    const { newLaunchData } = useAppRoot();
+    let listing = listingData.get(launch.listing.toString());
+    const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
+    const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(listing, launch);
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -269,7 +282,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     let current_time = new Date().getTime();
 
     const timeDifference = launchData.launch_date - current_time;
-    const isEditable = timeDifference > 48 * 60 * 60 * 1000 || launchData.description == ""; // 48 hours
+    const isEditable = timeDifference > 48 * 60 * 60 * 1000 || listing.description == ""; // 48 hours
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
 
@@ -302,10 +315,10 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const EditClicked = async (e) => {
         e.stopPropagation();
         setIsEditing(true);
-        newLaunchData.current = create_LaunchDataInput(launch, true);
+        newLaunchData.current = create_LaunchDataInput(launch, listing, true);
 
-        let bannerFile = await convertImageURLToFile(launch.banner, `${launch.name} banner image`);
-        let iconFile = await convertImageURLToFile(launch.icon, `${launch.name} icon image`);
+        let bannerFile = await convertImageURLToFile(listing.banner, `${listing.name} banner image`);
+        let iconFile = await convertImageURLToFile(listing.icon, `${listing.name} icon image`);
 
         newLaunchData.current.banner_file = bannerFile;
         newLaunchData.current.icon_file = iconFile;
@@ -328,21 +341,24 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/launch/${launch.page_name}`)}
+            onClick={() => {
+                NProgress.start();
+                router.push(`/launch/${launch.page_name}`);
+            }}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.icon}
+                            src={listing.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {launch.symbol}
+                        {listing.symbol}
                     </Text>
                 </HStack>
             </td>

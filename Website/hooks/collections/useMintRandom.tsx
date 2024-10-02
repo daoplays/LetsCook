@@ -111,14 +111,14 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -185,8 +185,8 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: nft_mint_account, isSigner: true, isWritable: true },
 
-            { pubkey: CORE, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: CORE, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: assignment_data.random_address, isSigner: false, isWritable: false },
         ];
 

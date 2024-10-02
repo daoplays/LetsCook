@@ -18,6 +18,7 @@ import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
 import useEditCollection from "../../hooks/collections/useEditCollection";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
+import * as NProgress from "nprogress";
 
 interface Header {
     text: string;
@@ -124,7 +125,10 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
-            onClick={() => router.push(`/collection/` + launch.page_name)}
+            onClick={() => {
+                NProgress.start();
+                router.push(`/collection/` + launch.page_name);
+            }}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
@@ -165,8 +169,8 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     page_name={launch.page_name}
                     positive_votes={launch.positive_votes}
                     negative_votes={launch.negative_votes}
-                    seller_key={launch.keys[CollectionKeys.Seller]}
                     isTradePage={false}
+                    listing={null}
                 />
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>

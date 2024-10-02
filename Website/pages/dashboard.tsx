@@ -9,7 +9,7 @@ import useAppRoot from "../context/useAppRoot";
 import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";
 import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
-import { LaunchKeys } from "../components/Solana/constants";
+import { CollectionKeys, LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
 import { CollectionData } from "../components/collection/collectionState";
@@ -30,12 +30,21 @@ const DashboardPage = () => {
             return;
         }
 
-        const filteredLaunches = launchList.filter((launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString());
+        const filteredLaunches: LaunchData[] = [];
+        launchList.forEach((launch) => {
+            if (launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString()) {
+                filteredLaunches.push(launch);
+            }
+        });
         setCreatorLaunches(filteredLaunches);
 
-        const filteredCollections = collectionList.filter(
-            (launch) => launch.keys[LaunchKeys.Seller].toString() === wallet.publicKey.toString(),
-        );
+        const filteredCollections: CollectionData[] = [];
+
+        collectionList.forEach((launch) => {
+            if (launch.keys[CollectionKeys.Seller].toString() === wallet.publicKey.toString()) {
+                filteredCollections.push(launch);
+            }
+        });
         setCreatorCollections(filteredCollections);
     }, [wallet, launchList, collectionList]);
 
@@ -64,7 +73,7 @@ const DashboardPage = () => {
                 </Text>
 
                 <HStack spacing={3} zIndex={99}>
-                    {["Tokens", "Collections"].map((name, i) => {
+                    {["Tokens", "Hybrids"].map((name, i) => {
                         const isActive = selected === name;
 
                         const baseStyle = {
@@ -122,7 +131,7 @@ const DashboardPage = () => {
                             newLaunchData.current = defaultUserInput;
                             router.push("/launch");
                         }}
-                        hidden={selected === "Collections"}
+                        hidden={selected === "Hybrids"}
                     >
                         New Token
                     </Button>
@@ -133,7 +142,7 @@ const DashboardPage = () => {
                         }}
                         hidden={selected === "Tokens"}
                     >
-                        New Collection
+                        New Hybrid
                     </Button>
                 </HStack>
                 {/* </Link> */}
@@ -141,7 +150,7 @@ const DashboardPage = () => {
 
             {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
 
-            {selected === "Collections" && <CollectionDashboardTable collectionList={creatorCollections} />}
+            {selected === "Hybrids" && <CollectionDashboardTable collectionList={creatorCollections} />}
 
             {creatorLaunches.length <= 0 && (
                 <HStack w="100%" align="center" justify="center" mt={25}>

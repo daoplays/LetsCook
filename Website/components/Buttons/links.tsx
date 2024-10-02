@@ -22,7 +22,7 @@ const Links = ({ socials, isTradePage }: LinksProps) => {
         <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
             {socials[Socials.Twitter] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Twitter]) : "#"} target="_blank">
-                    <Image src={twitter.src} alt="Twitter Icon" width={lg || isTradePage ? 30 : 40} height={lg || isTradePage ? 30 : 40} />
+                    <Image src={twitter.src} alt="Twitter Icon" width={lg || isTradePage ? 30 : 35} height={lg || isTradePage ? 30 : 35} />
                 </Link>
             )}
             {socials[Socials.Telegram] !== "" && (
@@ -30,19 +30,19 @@ const Links = ({ socials, isTradePage }: LinksProps) => {
                     <Image
                         src={telegram.src}
                         alt="Telegram Icon"
-                        width={lg || isTradePage ? 30 : 40}
-                        height={lg || isTradePage ? 30 : 40}
+                        width={lg || isTradePage ? 30 : 35}
+                        height={lg || isTradePage ? 30 : 35}
                     />
                 </Link>
             )}
             {socials[Socials.Discord] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Discord]) : "#"} target="_blank">
-                    <Image src={discord.src} alt="Discord Icon" width={lg || isTradePage ? 30 : 40} height={lg || isTradePage ? 30 : 40} />
+                    <Image src={discord.src} alt="Discord Icon" width={lg || isTradePage ? 30 : 35} height={lg || isTradePage ? 30 : 35} />
                 </Link>
             )}
             {socials[Socials.Website] !== "" && (
                 <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Website]) : "#"} target="_blank">
-                    <Image src={website.src} alt="Website Icon" width={lg || isTradePage ? 30 : 40} height={lg || isTradePage ? 30 : 40} />
+                    <Image src={website.src} alt="Website Icon" width={lg || isTradePage ? 30 : 35} height={lg || isTradePage ? 30 : 35} />
                 </Link>
             )}
         </HStack>

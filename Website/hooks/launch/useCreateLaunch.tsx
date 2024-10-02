@@ -14,7 +14,6 @@ import {
     PROGRAM,
     Config,
     LaunchKeys,
-    FEES_PROGRAM,
     METAPLEX_META,
     SOL_ACCOUNT_SEED,
     DATA_ACCOUNT_SEED,
@@ -38,7 +37,8 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import useEditLaunch from "./useEditLaunch";
-import { WebIrys } from "@irys/sdk";
+import useIrysUploader from "../useIrysUploader";
+
 
 // Define the Tag type
 type Tag = {
@@ -54,6 +54,9 @@ const usuCreateLaunch = () => {
 
     const signature_ws_id = useRef<number | null>(null);
     const { EditLaunch } = useEditLaunch();
+
+    const { getIrysUploader } = useIrysUploader(wallet);
+
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -117,28 +120,19 @@ const usuCreateLaunch = () => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        const irys_wallet = { name: "phantom", provider: wallet };
-        const irys = new WebIrys({
-            url: Config.IRYS_URL,
-            token: "solana",
-            wallet: irys_wallet,
-            config: {
-                providerUrl: Config.RPC_NODE,
-            },
-        });
+        const irys = await getIrysUploader();
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
             const uploadImageToArweave = toast.info("(1/4) Preparing to upload images - transferring balance to Arweave.");
 
-            let price = await irys.getPrice(newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size);
-
-            console.log("price", Number(price));
+            let size = newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size;
+            let atomic_price = await irys.getPrice(Math.ceil(1.1 * size));
+            let price = irys.utils.fromAtomic(atomic_price);
+            console.log("Uploading ", size, " bytes for ", Number(price), Number(atomic_price));
 
             try {
-                //await irys.fund(price);
-
                 let txArgs = await get_current_blockhash("");
 
                 var tx = new Transaction(txArgs).add(
@@ -146,7 +140,7 @@ const usuCreateLaunch = () => {
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(Config.IRYS_WALLET),
-                        lamports: Number(price),
+                        lamports: Number(atomic_price),
                     }),
                 );
                 tx.feePayer = wallet.publicKey;
@@ -170,7 +164,7 @@ const usuCreateLaunch = () => {
                 });
             } catch (error) {
                 setIsLoading(false);
-
+                console.log(error);
                 toast.update(uploadImageToArweave, {
                     render: "Oops! Something went wrong during funding. Please try again later. ",
                     type: "error",
@@ -236,10 +230,12 @@ const usuCreateLaunch = () => {
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
 
-            const json_price = await irys.getPrice(json_file.size);
+            let json_size = newLaunchData.current.icon_file.size + newLaunchData.current.banner_file.size;
+            let json_atomic_price = await irys.getPrice(Math.ceil(1.1 * json_size));
+            let json_price = irys.utils.fromAtomic(json_atomic_price);
+            console.log("Uploading ", json_size, " bytes for ", json_price, json_atomic_price);
 
             const fundMetadata = toast.info("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
-
             try {
                 let txArgs = await get_current_blockhash("");
 
@@ -248,7 +244,7 @@ const usuCreateLaunch = () => {
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
                         toPubkey: new PublicKey(Config.IRYS_WALLET),
-                        lamports: Number(json_price),
+                        lamports: Number(json_atomic_price),
                     }),
                 );
                 tx.feePayer = wallet.publicKey;
@@ -336,10 +332,7 @@ const usuCreateLaunch = () => {
             newLaunchData.current.token_program,
         );
 
-        let token_meta_key = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_mint_pubkey.toBuffer()],
-            METAPLEX_META,
-        )[0];
+        let listing = PublicKey.findProgramAddressSync([token_mint_pubkey.toBuffer(), Buffer.from("Listing")], PROGRAM)[0];
 
         let wrapped_sol_seed = token_mint_pubkey.toBase58().slice(0, 32);
         let wrapped_sol_account = await PublicKey.createWithSeed(program_sol_account, wrapped_sol_seed, TOKEN_PROGRAM_ID);
@@ -352,11 +345,12 @@ const usuCreateLaunch = () => {
         }
 
         let team_wallet = new PublicKey(newLaunchData.current.team_wallet);
-
+        let whitelist = newLaunchData.current.whitelist_key !== "" ? new PublicKey(newLaunchData.current.whitelist_key) : SYSTEM_KEY;
         const instruction_data = serialise_CreateLaunch_instruction(newLaunchData.current);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: listing, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
@@ -369,33 +363,25 @@ const usuCreateLaunch = () => {
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
 
             { pubkey: team_wallet, isSigner: false, isWritable: true },
-
-            { pubkey: token_meta_key, isSigner: false, isWritable: true },
-            { pubkey: METAPLEX_META, isSigner: false, isWritable: false },
-            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+            { pubkey: whitelist, isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
 
         if (newLaunchData.current.permanent_delegate !== null) {
             console.log("add PD");
             account_vector.push({ pubkey: newLaunchData.current.permanent_delegate, isSigner: false, isWritable: false });
+        } else {
+            account_vector.push({ pubkey: PROGRAM, isSigner: false, isWritable: false });
         }
         if (newLaunchData.current.transfer_hook_program !== null) {
             console.log("add hook", newLaunchData.current.transfer_hook_program.toString());
             account_vector.push({ pubkey: newLaunchData.current.transfer_hook_program, isSigner: false, isWritable: false });
-
-            if (newLaunchData.current.transfer_hook_program.equals(FEES_PROGRAM)) {
-                console.log("add hook extra");
-                let transfer_hook_validation_account = PublicKey.findProgramAddressSync(
-                    [Buffer.from("extra-account-metas"), token_mint_pubkey.toBuffer()],
-                    FEES_PROGRAM,
-                )[0];
-                account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });
-            }
+        } else {
+            account_vector.push({ pubkey: PROGRAM, isSigner: false, isWritable: false });
         }
 
         const list_instruction = new TransactionInstruction({

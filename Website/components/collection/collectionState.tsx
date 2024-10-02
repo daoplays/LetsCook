@@ -23,7 +23,7 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 
 import { CollectionKeys, Extensions, Socials } from "../Solana/constants";
-import { LaunchInstruction, request_raw_account_data } from "../Solana/state";
+import { bignum_to_num, LaunchInstruction, request_raw_account_data } from "../Solana/state";
 
 import { Box } from "@chakra-ui/react";
 
@@ -38,6 +38,8 @@ type CollectionPluginEnum = {
         return_swap_price: number;
     };
     MintProbability: { mint_prob: number };
+    Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
+    MintOnly;
 };
 type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>;
 
@@ -54,6 +56,18 @@ const collectionPluginBeet = dataEnum<CollectionPluginEnum>([
         "MintProbability",
         new BeetArgsStruct<CollectionPluginEnum["MintProbability"]>([["mint_prob", u16]], 'CollectionPluginEnum["MintProbability"]'),
     ],
+    [
+        "Whitelist",
+        new BeetArgsStruct<CollectionPluginEnum["Whitelist"]>(
+            [
+                ["key", publicKey],
+                ["amount", u64],
+                ["phase_end", u64],
+            ],
+            'CollectionPluginEnum["Whitelist"]',
+        ),
+    ],
+    ["MintOnly", new BeetArgsStruct<CollectionPluginEnum["MintOnly"]>([], 'CollectionPluginEnum["MintOnly"]')],
 ]) as FixableBeet<CollectionPlugin>;
 
 type CollectionMetaEnum = {
@@ -127,6 +141,14 @@ export interface CollectionDataUserInput {
     token_extensions: number;
     attributes: OnChainAttributes[];
 
+    //whitelist plugin
+    whitelist_key: string;
+    whitelist_amount: number;
+    whitelist_phase_end: Date;
+
+    // mint only plugin
+    mint_only: boolean;
+
     // upload state
     image_payment: boolean;
     images_uploaded: number;
@@ -175,6 +197,10 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     token_decimals: 0,
     token_extensions: 0,
     attributes: [],
+    whitelist_key: "",
+    whitelist_amount: 0,
+    whitelist_phase_end: new Date(new Date().setHours(0, 0, 0, 0)),
+    mint_only: false,
     image_payment: false,
     images_uploaded: 0,
     manifest: null,
@@ -323,10 +349,26 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
     // console.log(new_launch_data.closedate.toString());
 
     let mint_prob = 100;
+    let whitelist_key = "";
+    let whitelist_amount = 0;
+    let whitelist_phase_end = 0;
+
+    let mint_only = false;
+
     for (let i = 0; i < launch_data.plugins.length; i++) {
         if (launch_data.plugins[i]["__kind"] === "MintProbability") {
             mint_prob = launch_data.plugins[i]["mint_prob"];
             //console.log("Have mint prob", prob_string);
+        }
+        if (launch_data.plugins[i]["__kind"] === "WhiteList") {
+            whitelist_key = launch_data.plugins[i]["key"].toString();
+            whitelist_amount = launch_data.plugins[i]["amount"];
+            whitelist_phase_end = launch_data.plugins[i]["phase_end"];
+            //console.log("Have mint prob", prob_string);
+        }
+
+        if (launch_data.plugins[i]["__kind"] === "MintOnly") {
+            mint_only = true;
         }
     }
 
@@ -370,6 +412,10 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
         token_decimals: launch_data.token_decimals,
         token_extensions: launch_data.token_extensions,
         attributes: [],
+        whitelist_key: whitelist_key,
+        whitelist_amount: whitelist_amount,
+        whitelist_phase_end: new Date(bignum_to_num(whitelist_phase_end)),
+        mint_only: mint_only,
         image_payment: false,
         images_uploaded: 0,
         manifest: null,
@@ -476,6 +522,9 @@ class LaunchCollection_Instruction {
         readonly nft_extensions: number,
         readonly mint_prob: number,
         readonly attributes: Attribute[],
+        readonly whitelist_tokens: bignum,
+        readonly whitelist_end: bignum,
+        readonly mint_only: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -503,6 +552,9 @@ class LaunchCollection_Instruction {
             ["nft_extensions", u8],
             ["mint_prob", u16],
             ["attributes", array(Attribute.struct)],
+            ["whitelist_tokens", u64],
+            ["whitelist_end", u64],
+            ["mint_only", u8],
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -529,6 +581,9 @@ class LaunchCollection_Instruction {
                 args.nft_extensions!,
                 args.mint_prob!,
                 args.attributes!,
+                args.whitelist_tokens!,
+                args.whitelist_end!,
+                args.mint_only!,
             ),
         "LaunchCollection_Instruction",
     );
@@ -610,6 +665,9 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         nft_extensions,
         new_launch_data.mint_prob,
         attributes,
+        new BN(new_launch_data.whitelist_amount),
+        new BN(new_launch_data.whitelist_phase_end.getTime()),
+        new_launch_data.mint_only ? 1 : 0,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

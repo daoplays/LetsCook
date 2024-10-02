@@ -105,7 +105,7 @@ const CollectionFeaturedBanner = ({ featuredLaunch, isHomePage }: CollectionFeat
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(featuredLaunch, "Collection")}
+                                            href={getSolscanLink(featuredLaunch.keys[CollectionKeys.CollectionMint], "Collection")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >

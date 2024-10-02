@@ -36,10 +36,11 @@ import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROG
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { make_tweet } from "../../components/launch/twitter";
 import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
+import useAppRoot from "../../context/useAppRoot";
 
 const useGetMMTokens = () => {
     const wallet = useWallet();
-
+    const { listingData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -62,7 +63,10 @@ const useGetMMTokens = () => {
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
+        let listing = listingData.get(launch.listing.toString());
+
+        const token_mint = listing.mint;
+        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];
 
@@ -80,6 +84,24 @@ const useGetMMTokens = () => {
             TOKEN_2022_PROGRAM_ID,
         );
 
+        let amm_seed_keys = [];
+        if (token_mint.toString() < wsol_mint.toString()) {
+            amm_seed_keys.push(token_mint);
+            amm_seed_keys.push(wsol_mint);
+        } else {
+            amm_seed_keys.push(wsol_mint);
+            amm_seed_keys.push(token_mint);
+        }
+
+        let amm_data_account = PublicKey.findProgramAddressSync(
+            [
+                amm_seed_keys[0].toBytes(),
+                amm_seed_keys[1].toBytes(),
+                Buffer.from(launch.flags[LaunchFlags.AMMProvider] === 0 ? "CookAMM" : "RaydiumCPMM"),
+            ],
+            PROGRAM,
+        )[0];
+
         let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
         console.log(current_date);
 
@@ -88,12 +110,12 @@ const useGetMMTokens = () => {
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let launch_date_account = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
+            [amm_data_account.toBytes(), date_bytes, Buffer.from("LaunchDate")],
             PROGRAM,
         )[0];
 
         let user_date_account = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            [amm_data_account.toBytes(), wallet.publicKey.toBytes(), date_bytes],
             PROGRAM,
         )[0];
 
@@ -104,12 +126,13 @@ const useGetMMTokens = () => {
             { pubkey: user_pda_account, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
+            { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: wsol_mint, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         const instruction = new TransactionInstruction({

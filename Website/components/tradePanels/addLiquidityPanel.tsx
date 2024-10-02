@@ -4,9 +4,11 @@ import Image from "next/image";
 import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
-import { LaunchFlags } from "../Solana/constants";
+import { Config, LaunchFlags } from "../Solana/constants";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
+import useAddLiquidityRaydiumClassic from "../../hooks/raydium/useAddLiquidityRaydiumClassic";
+import { _100 } from "@raydium-io/raydium-sdk";
 
 const AddLiquidityPanel = ({
     amm,
@@ -15,19 +17,19 @@ const AddLiquidityPanel = ({
     connected,
     setTokenAmount,
     handleConnectWallet,
-    launch,
     amm_base_balance,
     amm_quote_balance,
     amm_lp_balance,
 }: PanelProps) => {
-    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(launch);
-    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity();
+    const { AddLiquidityRaydium, isLoading: addLiquidityRaydiumLoading } = useAddLiquidityRaydium(amm);
+    const { AddLiquidityRaydiumClassic, isLoading: addLiquidityRaydiumClassicLoading } = useAddLiquidityRaydiumClassic(amm);
+    const { UpdateCookLiquidity, isLoading: updateCookLiquidityLoading } = useUpdateCookLiquidity(amm);
 
     let isLoading = addLiquidityRaydiumLoading || updateCookLiquidityLoading;
 
-    let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.decimals));
+    let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.mint.decimals));
     let total_base_fee = 0;
-    let base_transfer_fee_config = getTransferFeeConfig(base_mint);
+    let base_transfer_fee_config = getTransferFeeConfig(base_mint.mint);
     if (base_transfer_fee_config !== null) {
         total_base_fee += Number(calculateFee(base_transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
@@ -67,7 +69,7 @@ const AddLiquidityPanel = ({
                         min="0"
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={launch.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
+                        <Image src={base_mint.icon} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
@@ -80,7 +82,7 @@ const AddLiquidityPanel = ({
                 <InputGroup size="md">
                     <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={quote_string} disabled />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>
@@ -113,13 +115,15 @@ const AddLiquidityPanel = ({
                 onClick={() => {
                     !connected
                         ? handleConnectWallet()
-                        : launch.flags[LaunchFlags.AMMProvider] === 0
-                          ? UpdateCookLiquidity(launch, token_amount, 0)
-                          : AddLiquidityRaydium(
-                                lp_generated * Math.pow(10, 9),
-                                token_amount * Math.pow(10, launch.decimals),
-                                max_sol_amount,
-                            );
+                        : amm.provider === 0
+                          ? UpdateCookLiquidity(token_amount * Math.pow(10, base_mint.mint.decimals), 0)
+                          : amm.provider === 1
+                            ? AddLiquidityRaydium(
+                                  lp_generated * Math.pow(10, 9),
+                                  token_amount * Math.pow(10, base_mint.mint.decimals),
+                                  max_sol_amount,
+                              )
+                            : AddLiquidityRaydiumClassic(token_amount * Math.pow(10, base_mint.mint.decimals), 2 * max_sol_amount);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

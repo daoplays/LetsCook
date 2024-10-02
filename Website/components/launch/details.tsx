@@ -4,8 +4,8 @@ import styles from "../../styles/LaunchDetails.module.css";
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useDisclosure } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
-import { Config, DEFAULT_FONT_SIZE, FEES_PROGRAM, PROGRAM } from "../../components/Solana/constants";
-import { LaunchData, LaunchDataUserInput, create_LaunchData, request_current_balance } from "../../components/Solana/state";
+import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
+import { LaunchData, LaunchDataUserInput, ListingData, create_LaunchData, request_current_balance } from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
@@ -23,7 +23,7 @@ interface DetailsPageProps {
 const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
     const router = useRouter();
     const { sm, md, lg, xl } = useResponsive();
-    const { newLaunchData } = useAppRoot();
+    const { newLaunchData, launchList, listingData } = useAppRoot();
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
@@ -126,8 +126,12 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         console.log("check balance", name, launch_data_account.toString(), balance);
 
         if (balance > 0) {
+            //let launch_data : LaunchData = launchList.get(name);
+            //let listing_data : ListingData = listingData.get(launch_data.listing.toString());
+            //if (listing_data.description !== "") {
             toast.error("Page name already exists");
-            return false;
+            //return false;
+            //}
         }
 
         newLaunchData.current.pagename = name;

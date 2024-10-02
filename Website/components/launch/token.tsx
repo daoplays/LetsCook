@@ -29,8 +29,15 @@ import {
     ModalOverlay,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { LaunchData, LaunchDataUserInput, bignum_to_num, Distribution, uInt32ToLEBytes } from "../../components/Solana/state";
-import { DEFAULT_FONT_SIZE, FEES_PROGRAM } from "../../components/Solana/constants";
+import {
+    LaunchData,
+    LaunchDataUserInput,
+    bignum_to_num,
+    Distribution,
+    uInt32ToLEBytes,
+    getLaunchType,
+    getLaunchTypeIndex,
+} from "../../components/Solana/state";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import WoodenButton from "../Buttons/woodenButton";
@@ -44,6 +51,7 @@ import getImageDimensions from "../../utils/getImageDimension";
 import { distributionLabels } from "../../constant/root";
 import trimAddress from "../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Config } from "../Solana/constants";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
     simpleLaunch: boolean;
@@ -66,11 +74,9 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
     const [mints, setMints] = useState<string>(newLaunchData.current.num_mints.toString());
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
-    const [launch_type, setLaunchType] = useState<string>(newLaunchData.current.launch_type === 1 ? "FCFS" : "Raffle");
+    const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
-
-    const [isCustomProgramId, setIsCustomProgramId] = useState(false);
 
     // token extensions
     const [transferFee, setTransferFee] = useState<string>(
@@ -327,7 +333,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                 setGrindComplete(true);
             }
         } else {
-            newLaunchData.current.launch_type = launch_type === "FCFS" ? 1 : 0;
+            newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
             newLaunchData.current.decimals = 9;
             newLaunchData.current.num_mints = 400;
             newLaunchData.current.ticket_price = 0.05;
@@ -549,13 +555,13 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                             <>
                                 <HStack spacing={0} className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                        Launch Type:
+                                        Launch Mode:
                                     </div>
                                     <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
                                         <Stack direction="row" gap={5}>
                                             <Radio value="FCFS" color="white">
                                                 <Tooltip
-                                                    label="Launch ends as soon as it is funded, first come first serve."
+                                                    label="Launch ends as soon as it is funded, first come first serve. "
                                                     hasArrow
                                                     fontSize="large"
                                                     offset={[0, 10]}
@@ -565,15 +571,27 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     </Text>
                                                 </Tooltip>
                                             </Radio>
-                                            <Radio value="Raffle">
+                                            <Radio value="Raffle" isDisabled>
                                                 <Tooltip
-                                                    label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                                    label="Coming Soon! Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
                                                     hasArrow
                                                     fontSize="large"
                                                     offset={[0, 10]}
                                                 >
                                                     <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
                                                         Raffle
+                                                    </Text>
+                                                </Tooltip>
+                                            </Radio>
+                                            <Radio value="IDO">
+                                                <Tooltip
+                                                    label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
+                                                    hasArrow
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        IDO
                                                     </Text>
                                                 </Tooltip>
                                             </Radio>
@@ -696,14 +714,13 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={newLaunchData.current.edit_mode === true || isCustomProgramId}
+                                                        disabled={newLaunchData.current.edit_mode === true}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Permanent Delegate ID"
                                                         value={permanentDelegate}
                                                         onChange={(e) => {
                                                             setPermanentDelegate(e.target.value);
-                                                            setTransferHookID(FEES_PROGRAM.toString());
                                                         }}
                                                     />
                                                 </div>
@@ -727,18 +744,13 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                             <HStack spacing={0} style={{ flexGrow: 1 }}>
                                                 <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                     <Input
-                                                        disabled={
-                                                            newLaunchData.current.edit_mode === true ||
-                                                            isCustomProgramId ||
-                                                            permanentDelegate !== ""
-                                                        }
+                                                        disabled={newLaunchData.current.edit_mode === true}
                                                         size={lg ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         placeholder="Enter Transfer Hook Program ID"
                                                         value={transferHookID}
                                                         onChange={(e) => {
                                                             setTransferHookID(e.target.value);
-                                                            setPermanentDelegate("");
                                                         }}
                                                     />
                                                 </div>
@@ -804,7 +816,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         setTotalPrice(e.target.value);
                                                     }}
                                                 />
-                                                <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                                <Image className={styles.sol} src={Config.token_image} height={30} width={30} alt="SOL" />
                                             </div>
                                         </HStack>
                                     </HStack>
@@ -828,7 +840,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                 style={{ cursor: "not-allowed" }}
                                                 readOnly
                                             />
-                                            <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                            <Image className={styles.sol} src={Config.token_image} height={30} width={30} alt="SOL" />
                                         </div>
                                     </HStack>
                                 </VStack>
@@ -1129,19 +1141,19 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     {
                                                         title: "Market Maker Rewards",
                                                         value: distribution[Distribution.MMRewards],
-                                                        color: "#66FFB6",
+                                                        color: "#66FF75",
                                                     }, // integrate MM Rewards
                                                     {
                                                         title: "Liquidity Provider Rewards",
                                                         value: distribution[Distribution.LPRewards],
-                                                        color: "#61efff",
+                                                        color: "#41F4FF",
                                                     },
                                                     {
                                                         title: "Airdrops / Marketing",
                                                         value: distribution[Distribution.Airdrops],
-                                                        color: "#988FFF",
+                                                        color: "#8A7FFF",
                                                     },
-                                                    { title: "Team", value: distribution[Distribution.Team], color: "#8CB3FF" },
+                                                    { title: "Team", value: distribution[Distribution.Team], color: "#FFF069" },
                                                     { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
                                                     { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                                                 ]}
@@ -1159,7 +1171,6 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     },
                                                     {
                                                         title: distributionLabels.headers[1].title,
-                                                        // integrate MM Rewards here
                                                         value: distribution[Distribution.MMRewards],
                                                         color: distributionLabels.headers[1].color,
                                                     },
@@ -1167,8 +1178,8 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         title: distributionLabels.headers[2].title,
                                                         value:
                                                             distribution[Distribution.LPRewards] +
-                                                            distribution[Distribution.Team] +
                                                             distribution[Distribution.Airdrops] +
+                                                            distribution[Distribution.Team] +
                                                             distribution[Distribution.Other],
                                                         color: distributionLabels.headers[2].color,
                                                     },

@@ -3,7 +3,6 @@ import { useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import MarketMakingTable from "../../components/tables/marketMakingTable";
-import OrdersTable from "../../components/tables/ordersTable";
 import useAppRoot from "../../context/useAppRoot";
 import MyRewardsTable from "../../components/tables/myRewards";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -144,9 +143,7 @@ const MarketMaker = () => {
                     )}
                 </Flex>
 
-                {selected === "Markets" && <MarketMakingTable launchList={launchList} />}
-
-                {selected === "Orders" && <OrdersTable state={selectedSubTab} launch_data={null} />}
+                {selected === "Markets" && <MarketMakingTable />}
 
                 {!wallet.connected && selected === "Orders" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
@@ -156,7 +153,7 @@ const MarketMaker = () => {
                     </HStack>
                 )}
 
-                {selected === "Rewards" && <MyRewardsTable launch_data={null} />}
+                {selected === "Rewards" && <MyRewardsTable amm={null} />}
 
                 {!wallet.connected && selected === "Rewards" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>

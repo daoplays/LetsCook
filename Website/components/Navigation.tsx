@@ -162,7 +162,7 @@ function Navigation() {
                                 />
                             </Link>
 
-                            <Link href="https://discord.gg/fZQd5yGWEr" target="_blank">
+                            <Link href="https://discord.com/invite/Q5PXHEjYRU" target="_blank">
                                 <Image
                                     src={discord}
                                     width={30}

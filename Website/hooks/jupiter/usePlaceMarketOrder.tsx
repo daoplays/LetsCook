@@ -13,7 +13,7 @@ import {
     ExtraAccountMeta,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
+import { AMMData, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -37,7 +37,7 @@ import {
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 
-const usePlaceMarketOrder = () => {
+const usePlaceMarketOrder = (amm: AMMData) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
 
@@ -83,46 +83,28 @@ const usePlaceMarketOrder = () => {
         });
     }, []);
 
-    const PlaceMarketOrder = async (launch: LaunchData, token_amount: number, sol_amount: number, order_type: number) => {
+    const PlaceMarketOrder = async (token_amount: number, sol_amount: number, order_type: number) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         setIsLoading(true);
 
-        const token_mint = launch.keys[LaunchKeys.MintAddress];
-        const wsol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        let mint_account = mintData.get(launch.keys[LaunchKeys.MintAddress].toString());
+        const token_mint = amm.base_mint;
+        const wsol_mint = amm.quote_mint;
+        let mint_account = mintData.get(token_mint.toString());
 
-        token_amount = new BN(token_amount * Math.pow(10, launch.decimals));
+        token_amount = new BN(token_amount * Math.pow(10, mint_account.mint.decimals));
         sol_amount = new BN(sol_amount * Math.pow(10, 9));
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launch.keys[LaunchKeys.MintAddress].toBytes(), Buffer.from("Temp")],
-            PROGRAM,
-        )[0];
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(launch.last_interaction)) / 24 / 60 / 60);
-        let date_bytes = uInt32ToLEBytes(current_date);
-
-        let launch_date_account = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), date_bytes, Buffer.from("LaunchDate")],
-            PROGRAM,
-        )[0];
-
-        let user_date_account = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), wallet.publicKey.toBytes(), date_bytes],
-            PROGRAM,
-        )[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let amm_seed_keys = [];
         if (token_mint.toString() < wsol_mint.toString()) {
@@ -134,7 +116,7 @@ const usePlaceMarketOrder = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
             PROGRAM,
         )[0];
 
@@ -142,7 +124,7 @@ const usePlaceMarketOrder = () => {
             token_mint, // mint
             amm_data_account, // owner
             true, // allow owner off curve
-            mint_account.program,
+            mint_account.token_program,
         );
 
         let quote_amm_account = await getAssociatedTokenAddress(
@@ -152,14 +134,18 @@ const usePlaceMarketOrder = () => {
             TOKEN_PROGRAM_ID,
         );
 
-        var team_wallet = launch.keys[LaunchKeys.TeamWallet];
+        let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
+        let date_bytes = uInt32ToLEBytes(current_date);
 
-        let team_token_account = await getAssociatedTokenAddress(
-            token_mint, // mint
-            team_wallet, // owner
-            true, // allow owner off curve
-            mint_account.program,
-        );
+        let launch_date_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), date_bytes, Buffer.from("LaunchDate")],
+            PROGRAM,
+        )[0];
+
+        let user_date_account = PublicKey.findProgramAddressSync(
+            [amm_data_account.toBytes(), wallet.publicKey.toBytes(), date_bytes],
+            PROGRAM,
+        )[0];
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -168,6 +154,8 @@ const usePlaceMarketOrder = () => {
             [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
             PROGRAM,
         )[0];
+
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
 
         let transfer_hook = getTransferHook(mint_account.mint);
 
@@ -208,7 +196,6 @@ const usePlaceMarketOrder = () => {
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
@@ -220,8 +207,7 @@ const usePlaceMarketOrder = () => {
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
 
-            { pubkey: team_wallet, isSigner: false, isWritable: true },
-            { pubkey: team_token_account, isSigner: false, isWritable: true },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
 
             { pubkey: launch_date_account, isSigner: false, isWritable: true },
             { pubkey: user_date_account, isSigner: false, isWritable: true },
@@ -229,7 +215,7 @@ const usePlaceMarketOrder = () => {
             { pubkey: price_data_account, isSigner: false, isWritable: true },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: mint_account.program, isSigner: false, isWritable: false },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
