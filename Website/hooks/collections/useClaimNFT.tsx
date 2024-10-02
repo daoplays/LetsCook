@@ -33,7 +33,6 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
-import { bool } from "@raydium-io/raydium-sdk";
 
 class OraoTokenFeeConfig {
     constructor(
@@ -180,26 +179,27 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const orao_randomness = useRef<PublicKey | null>(null);
 
     const check_randomness_account = useCallback(async (result: any) => {
-        //console.log("collection", result);
+        //console.log("randomness_update", result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
 
         //console.log("have collection data", event_data, launch_account_ws_id.current);
         let account_data = Buffer.from(event_data, "base64");
-        let orao_randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
+        let randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
 
-        let valid = check_randomness(orao_randomness);
+        let valid = check_randomness(randomness);
 
         if (valid) {
-            setOraoRandoms(orao_randomness);
-            console.log(orao_randomness);
+            setOraoRandoms(randomness);
+            //console.log(randomness);
             setIsLoading(false);
         }
     }, []);
 
     const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
+
+        //console.log("claim nft signature: ", result);
         // if we have a subscription field check against ws_id
 
         signature_ws_id.current = null;
@@ -217,16 +217,23 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         let immediate_check = await request_raw_account_data("", orao_randomness.current);
         let valid = false;
+        //console.log("immediate check ", immediate_check);
         if (immediate_check !== null) {
-            let orao_randomness = Array.from(immediate_check.slice(8 + 32, 8 + 32 + 64));
-            valid = check_randomness(orao_randomness);
+            let randomness = Array.from(immediate_check.slice(8 + 32, 8 + 32 + 64));
+            valid = check_randomness(randomness);
 
             if (valid) {
-                setOraoRandoms(orao_randomness);
-                console.log(orao_randomness);
+                setOraoRandoms(randomness);
+                //console.log(randomness);
                 setIsLoading(false);
             }
+            else {
+                //console.log("register websocket for account ", orao_randomness.current);
+                orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
+                
+            }
         } else {
+            //console.log("register websocket for account ", orao_randomness.current);
             orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
         }
 

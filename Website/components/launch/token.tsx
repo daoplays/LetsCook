@@ -571,9 +571,9 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                     </Text>
                                                 </Tooltip>
                                             </Radio>
-                                            <Radio value="Raffle" isDisabled>
+                                            <Radio value="Raffle">
                                                 <Tooltip
-                                                    label="Coming Soon! Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                                    label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
                                                     hasArrow
                                                     fontSize="large"
                                                     offset={[0, 10]}

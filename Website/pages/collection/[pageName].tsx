@@ -635,8 +635,7 @@ const CollectionSwapPage = () => {
                                                     value={
                                                         isTokenToNFT
                                                             ? (
-                                                                  bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
-                                                              ).toLocaleString()
+                                                                formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3))
                                                             : out_amount.toLocaleString()
                                                     }
                                                     onChange={(e) => {

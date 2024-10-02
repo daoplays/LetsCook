@@ -13,12 +13,13 @@ import { useRouter } from "next/router";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import { CollectionData, create_CollectionDataInput } from "../collection/collectionState";
+import { CollectionData, create_CollectionDataInput, getHybridPlugins, HybridPluginData } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
 import useEditCollection from "../../hooks/collections/useEditCollection";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
 import * as NProgress from "nprogress";
+import formatPrice from "../../utils/formatPrice";
 
 interface Header {
     text: string;
@@ -39,7 +40,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
         { text: "TOKEN", field: null },
         { text: "HYPE", field: "hype" },
         { text: "TOKENS PER NFT", field: "tokens per nft" },
-        { text: "UNWRAP FEE", field: "unwrap fee" },
+        { text: "UNWRAP FEE (%)", field: "unwrap fee" },
         { text: "TOTAL SUPPLY", field: "total supply" },
     ];
 
@@ -111,6 +112,8 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         router.push("/collection");
     };
 
+    let plugin_data : HybridPluginData = getHybridPlugins(launch);
+
     //console.log(launch);
     return (
         <tr
@@ -175,12 +178,12 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             </td>
             <td style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)).toLocaleString()}
+                    {formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3)}
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {launch.swap_fee / 100}{" "}
+                    {plugin_data.mint_only ? "--" : launch.swap_fee / 100}{" "}
                 </Text>
             </td>
             <td style={{ minWidth: "170px" }}>
