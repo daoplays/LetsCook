@@ -33,6 +33,46 @@ import bs58 from "bs58";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
+export interface HybridPluginData {
+    // mint probability
+    probability: string;
+
+    //whitelist plugin
+    whitelist_phase_end: Date | null;
+
+    // mint only plugin
+    mint_only: boolean;
+}
+
+export function getHybridPlugins(collection: CollectionData) : HybridPluginData {
+    const { prob_string_val, is_mint_only, wl_end_date_val } = collection.plugins.reduce(
+        (acc, plugin) => {
+            switch (plugin["__kind"]) {
+                case "MintProbability":
+                    acc.prob_string_val = `(${plugin["mint_prob"]}% mint chance)`;
+                    break;
+                case "MintOnly":
+                    acc.is_mint_only = true;
+                    break;
+                case "Whitelist":
+                    acc.wl_end_date_val = new Date(bignum_to_num(plugin["phase_end"]));
+                    break;
+                default:
+                    break;
+            }
+            return acc;
+        },
+        { prob_string_val: "", is_mint_only: false, wl_end_date_val: null },
+    );
+
+    return {
+        probability: prob_string_val,
+        whitelist_phase_end: wl_end_date_val,
+        mint_only: is_mint_only,
+    };
+    
+}
+
 type CollectionPluginEnum = {
     AsymmetricSwapPrice: {
         return_swap_price: number;
