@@ -75,8 +75,8 @@ const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
     const options = { method: "GET" };
 
-    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
-    setSOLPrice(result["data"]["SOL"]["price"]);
+    let result = await fetch("https://price.jup.ag/v4/price?ids=" + Config.token, options).then((response) => response.json());
+    setSOLPrice(result["data"][Config.token]["price"]);
 };
 
 const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
@@ -390,7 +390,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             ];
 
             for (let i = 0; i < accounts.length; i++) {
@@ -496,8 +496,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
             if (data[0] === 8) {
                 const [collection] = CollectionData.struct.deserialize(data);
-
-                collections.set(collection.page_name, collection);
+                collections.set(collection.page_name, collection);  
                 //console.log(collection);
                 continue;
             }
