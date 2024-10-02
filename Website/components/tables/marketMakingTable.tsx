@@ -4,7 +4,7 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
-import { LaunchKeys, LaunchFlags, Extensions, PROGRAM } from "../Solana/constants";
+import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
 import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
@@ -200,7 +200,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(listing.decimals, 3))}
                     </Text>
-                    <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
             </td>
 

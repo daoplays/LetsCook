@@ -177,8 +177,8 @@ const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: wsol_mint, isSigner: false, isWritable: true },
-            { pubkey: mint_account.token_program, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         if (transfer_hook_program_account !== null) {

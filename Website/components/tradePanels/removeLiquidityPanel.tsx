@@ -5,6 +5,7 @@ import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRay
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
 import formatPrice from "../../utils/formatPrice";
 import useRemoveLiquidityRaydiumClassic from "../../hooks/raydium/useRemoveLiquidityRaydiumClassc";
+import { Config } from "../Solana/constants";
 
 const RemoveLiquidityPanel = ({
     amm,
@@ -109,7 +110,7 @@ const RemoveLiquidityPanel = ({
                         disabled
                     />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>

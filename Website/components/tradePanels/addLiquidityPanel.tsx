@@ -4,7 +4,7 @@ import Image from "next/image";
 import useAddLiquidityRaydium from "../../hooks/raydium/useAddLiquidityRaydium";
 import useRemoveLiquidityRaydium from "../../hooks/raydium/useRemoveLiquidityRaydium";
 import useUpdateCookLiquidity from "../../hooks/jupiter/useUpdateCookLiquidity";
-import { LaunchFlags } from "../Solana/constants";
+import { Config, LaunchFlags } from "../Solana/constants";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
 import useAddLiquidityRaydiumClassic from "../../hooks/raydium/useAddLiquidityRaydiumClassic";
@@ -82,7 +82,7 @@ const AddLiquidityPanel = ({
                 <InputGroup size="md">
                     <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={quote_string} disabled />
                     <InputRightElement h="100%" w={50}>
-                        <Image src={"/images/sol.png"} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
+                        <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ borderRadius: "100%" }} />
                     </InputRightElement>
                 </InputGroup>
             </VStack>

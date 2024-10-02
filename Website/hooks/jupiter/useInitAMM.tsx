@@ -200,7 +200,7 @@ const useInitAMM = (launchData: LaunchData) => {
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: mint_account.token_program, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
 
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });

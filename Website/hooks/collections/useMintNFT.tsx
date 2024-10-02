@@ -29,7 +29,6 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 
-
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
     const { checkProgramData, mintData } = useAppRoot();
@@ -143,7 +142,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         ];
 
-        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
 

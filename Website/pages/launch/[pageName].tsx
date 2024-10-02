@@ -210,7 +210,13 @@ const TokenMintPage = () => {
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                             Price per ticket: {bignum_to_num(launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                        <Image
+                                            src={Config.token_image}
+                                            width={30}
+                                            height={30}
+                                            alt="Token Icon"
+                                            style={{ marginLeft: -3 }}
+                                        />
                                     </HStack>
 
                                     <Text
@@ -280,7 +286,7 @@ const TokenMintPage = () => {
                                                       ? "Cook Failed"
                                                       : "none"}
                                         </Text>
-                                        {ACTIVE && <Image src="/images/sol.png" width={40} height={40} alt="SOL Icon" />}
+                                        {ACTIVE && <Image src={Config.token_image} width={40} height={40} alt="Token Icon" />}
                                     </HStack>
 
                                     <Box
@@ -377,13 +383,13 @@ const TokenMintPage = () => {
                                         <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                             <HStack alignItems="center">
                                                 <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
-                                                    Platform fee: 0.003
+                                                    Platform fee: {Config.platform_fee}
                                                 </Text>
                                                 <Image
-                                                    src="/images/sol.png"
+                                                    src={Config.token_image}
                                                     width={20}
                                                     height={20}
-                                                    alt="SOL Icon"
+                                                    alt="Token Icon"
                                                     style={{ marginLeft: -3 }}
                                                 />
                                             </HStack>
@@ -401,7 +407,7 @@ const TokenMintPage = () => {
                                                             src={whitelist.icon}
                                                             width={20}
                                                             height={20}
-                                                            alt="SOL Icon"
+                                                            alt="Token Icon"
                                                             style={{ marginLeft: -3 }}
                                                         />
                                                     </Link>
@@ -428,7 +434,13 @@ const TokenMintPage = () => {
                                                 LAMPORTS_PER_SOL}{" "}
                                             of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
                                         </Text>
-                                        <Image src="/images/sol.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                                        <Image
+                                            src={Config.token_image}
+                                            width={30}
+                                            height={30}
+                                            alt="Token Icon"
+                                            style={{ marginLeft: -3 }}
+                                        />
                                     </HStack>
                                 </Flex>
 

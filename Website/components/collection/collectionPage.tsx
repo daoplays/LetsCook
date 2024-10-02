@@ -48,6 +48,7 @@ import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
 import useEditCollection from "../../hooks/collections/useEditCollection";
 import { TaggedFile } from "@irys/sdk/build/cjs/web/upload";
+import useIrysUploader from "../../hooks/useIrysUploader";
 
 interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -76,6 +77,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const signature_ws_id = useRef<number | null>(null);
 
     const { EditCollection } = useEditCollection();
+
+    const { getIrysUploader } = useIrysUploader(wallet);
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -221,6 +224,8 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     const CreateLaunch = useCallback(async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
+        const irys = await getIrysUploader();
+
         console.log(newCollectionData.current.icon_url);
         console.log(newCollectionData.current.banner_url);
         // if this is in edit mode then just call that function
@@ -245,16 +250,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        const irys_wallet = { name: "phantom", provider: wallet };
-        const irys = new WebIrys({
-            url: Config.IRYS_URL,
-            token: "solana",
-            wallet: irys_wallet,
-            config: {
-                providerUrl: Config.RPC_NODE,
-            },
-        });
-
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
         if (newCollectionData.current.icon_url == "" || newCollectionData.current.banner_url == "") {
@@ -273,13 +268,15 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 return f;
             });
 
-            let price;
+            let atomic_price;
             let size = 0;
             try {
                 for (let i = 0; i < taggedFiles.length; i++) {
                     size += taggedFiles[i].size;
                 }
-                price = await irys.getPrice(Math.ceil(1.1 * size));
+                atomic_price = await irys.getPrice(Math.ceil(1.1 * size));
+                let price = irys.utils.fromAtomic(atomic_price);
+                console.log("Uploading ", size, " bytes for ", price);
             } catch (e) {
                 toast.update(uploadImageToArweave, {
                     render: e,
@@ -302,7 +299,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
                             toPubkey: new PublicKey(Config.IRYS_WALLET),
-                            lamports: Number(price),
+                            lamports: Number(atomic_price),
                         }),
                     );
                     tx.feePayer = wallet.publicKey;
@@ -337,7 +334,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             let manifestId;
 
             let num_blocks = Math.ceil(size / 1024 / 1024 / 1024);
-
+            console.log("num_blocks", num_blocks);
             if (num_blocks > 1) {
                 let blocks: File[][] = [];
                 let block_tags: Tag[][] = [];
@@ -411,7 +408,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const manifestFile = new File([manifestBlob], "metadata.json");
 
                 let manifestPrice = await irys.getPrice(Math.ceil(1.1 * manifestFile.size));
-
                 try {
                     let txArgs = await get_current_blockhash("");
 
@@ -453,7 +449,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 const manifestRes = await irys.upload(JSON.stringify(newCollectionData.current.manifest), {
                     tags: [
                         { name: "Type", value: "manifest" },
-                        { name: "Content-Type", value: "application/x.arweave-manifest+json" },
+                        { name: "Content-Type", value: "application/x.irys-manifest+json" },
                     ],
                 });
                 console.log("manifestRes", manifestRes);
@@ -658,7 +654,6 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             { pubkey: newCollectionData.current.token_mint, isSigner: false, isWritable: true },
             { pubkey: team_wallet, isSigner: false, isWritable: false },
             { pubkey: whitelist_key, isSigner: false, isWritable: false },
-
         ];
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: true });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
@@ -715,7 +710,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             });
             return;
         }
-    }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed]);
+    }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed, getIrysUploader]);
 
     return (
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">

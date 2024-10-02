@@ -40,7 +40,6 @@ type CollectionPluginEnum = {
     MintProbability: { mint_prob: number };
     Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
     MintOnly;
-
 };
 type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>;
 
@@ -355,7 +354,7 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
     let whitelist_phase_end = 0;
 
     let mint_only = false;
-    
+
     for (let i = 0; i < launch_data.plugins.length; i++) {
         if (launch_data.plugins[i]["__kind"] === "MintProbability") {
             mint_prob = launch_data.plugins[i]["mint_prob"];
@@ -372,8 +371,6 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
             mint_only = true;
         }
     }
-
-
 
     const data: CollectionDataUserInput = {
         edit_mode: edit_mode,
@@ -527,8 +524,7 @@ class LaunchCollection_Instruction {
         readonly attributes: Attribute[],
         readonly whitelist_tokens: bignum,
         readonly whitelist_end: bignum,
-        readonly mint_only: number
-
+        readonly mint_only: number,
     ) {}
 
     static readonly struct = new FixableBeetStruct<LaunchCollection_Instruction>(
@@ -558,7 +554,7 @@ class LaunchCollection_Instruction {
             ["attributes", array(Attribute.struct)],
             ["whitelist_tokens", u64],
             ["whitelist_end", u64],
-            ["mint_only", u8]
+            ["mint_only", u8],
         ],
         (args) =>
             new LaunchCollection_Instruction(
@@ -587,7 +583,7 @@ class LaunchCollection_Instruction {
                 args.attributes!,
                 args.whitelist_tokens!,
                 args.whitelist_end!,
-                args.mint_only!
+                args.mint_only!,
             ),
         "LaunchCollection_Instruction",
     );
@@ -671,7 +667,7 @@ export function serialise_LaunchCollection_instruction(new_launch_data: Collecti
         attributes,
         new BN(new_launch_data.whitelist_amount),
         new BN(new_launch_data.whitelist_phase_end.getTime()),
-        new_launch_data.mint_only ? 1 : 0
+        new_launch_data.mint_only ? 1 : 0,
     );
     const [buf] = LaunchCollection_Instruction.struct.serialize(data);
 

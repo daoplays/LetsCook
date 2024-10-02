@@ -131,8 +131,8 @@ const useGetMMTokens = () => {
             { pubkey: user_date_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: wsol_mint, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         const instruction = new TransactionInstruction({

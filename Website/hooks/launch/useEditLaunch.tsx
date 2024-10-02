@@ -145,7 +145,7 @@ const useEditLaunch = () => {
             { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
             { pubkey: amm_lp_mint, isSigner: false, isWritable: true },
 
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: newLaunchData.current.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },

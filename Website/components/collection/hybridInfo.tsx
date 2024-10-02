@@ -43,10 +43,11 @@ import {
     TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
-import { request_current_balance, request_raw_account_data } from "../Solana/state";
+import { MintData, request_current_balance, request_raw_account_data } from "../Solana/state";
 import ShowExtensions from "../Solana/extensions";
 import DatePicker from "react-datepicker";
 import { FaCalendarAlt } from "react-icons/fa";
+import { getMintData } from "../amm/launch";
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -63,8 +64,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const [token_name, setTokenName] = useState<string>(newCollectionData.current.token_symbol);
     const [token_icon_url, setTokenIconURL] = useState<string>(newCollectionData.current.token_image_url);
     const [token_symbol, setTokenSymbol] = useState<string>(newCollectionData.current.token_symbol);
-    const [token_decimals, setTokenDecimals] = useState<number>(0);
-    const [token_extensions, setTokenExtensions] = useState<number>(0);
+    const [token_decimals, setTokenDecimals] = useState<number>(newCollectionData.current.token_decimals);
+    const [token_extensions, setTokenExtensions] = useState<number>(newCollectionData.current.token_extensions);
 
     const [team_wallet, setTeamWallet] = useState<string>(newCollectionData.current.team_wallet);
     const [swap_fee, setSwapFee] = useState<string>(
@@ -155,39 +156,11 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             }
         }
 
-        let uri = null;
-        // first look for t22 metadata
-        let metadata_pointer = getMetadataPointerState(mint);
-        console.log("metadata pinter:", metadata_pointer);
-        if (metadata_pointer !== null) {
-            let metadata = await getTokenMetadata(connection, token_key, "confirmed", TOKEN_2022_PROGRAM_ID);
-            console.log(metadata);
-            uri = metadata.uri;
-            setTokenName(metadata.name);
-            setTokenSymbol(metadata.symbol);
-        } else {
-            let token_meta_key = PublicKey.findProgramAddressSync(
-                [Buffer.from("metadata"), METAPLEX_META.toBuffer(), token_key.toBuffer()],
-                METAPLEX_META,
-            )[0];
-            let raw_meta_data = await request_raw_account_data("", token_meta_key);
+        let mint_data: MintData = await getMintData(connection, mint, result.owner);
+        console.log("getting mint data", mint, result.owner, mint_data);
 
-            if (raw_meta_data === null) {
-                toast.update(searchToken, {
-                    render: `Token Metadata Not Found!`,
-                    type: "error",
-                    isLoading: false,
-                    autoClose: 2000,
-                });
-                return;
-            }
-            let meta_data = Metadata.deserialize(raw_meta_data);
-            console.log(meta_data);
-            console.log(meta_data[0].data.symbol, meta_data[0].data.name);
-            uri = meta_data[0].data.uri;
-            setTokenName(meta_data[0].data.name);
-            setTokenSymbol(meta_data[0].data.symbol);
-        }
+        setTokenName(mint_data.name);
+        setTokenSymbol(mint_data.symbol);
 
         // check the extensions we care about
         let transfer_hook = getTransferHook(mint);
@@ -202,9 +175,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
         //console.log("deserialize meta data");
 
-        let uri_json = await fetch(uri).then((res) => res.json());
-        console.log(uri_json["image"]);
-        setTokenIconURL(uri_json["image"]);
+        setTokenIconURL(mint_data.icon);
         setTokenDecimals(mint.decimals);
         setTokenExtensions(extensions);
 
@@ -230,7 +201,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.token_name = token_name;
         newCollectionData.current.token_symbol = token_symbol;
         newCollectionData.current.token_mint = new PublicKey(token_mint);
-        newCollectionData.current.swap_rate = parseInt(swap_rate);
+        newCollectionData.current.swap_rate = parseFloat(swap_rate);
         newCollectionData.current.swap_fee = parseInt(swap_fee);
         newCollectionData.current.token_decimals = token_decimals;
         newCollectionData.current.token_extensions = token_extensions;
@@ -489,7 +460,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             size={sm ? "medium" : "lg"}
-                                            required
                                             placeholder="Enter Whitelist Token Address - Optional"
                                             className={styles.inputBox}
                                             type="text"
@@ -519,11 +489,11 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                         ml={2}
                                         py={2}
                                         size={lg ? "md" : "lg"}
-                                        isChecked={!inc_whitelist_phase_end}
+                                        isChecked={inc_whitelist_phase_end}
                                         onChange={() => setIncWhiteListPhaseEnd(!inc_whitelist_phase_end)}
                                     />
 
-                                    <div className={`${styles.textLabelInputDate} font-face-kg`} hidden={inc_whitelist_phase_end}>
+                                    <div className={`${styles.textLabelInputDate} font-face-kg`} hidden={!inc_whitelist_phase_end}>
                                         <HStack spacing={5} ml={2}>
                                             <Popover isOpen={isWLEndOpen} onClose={OnCloseWLEnd} placement="bottom" closeOnBlur={false}>
                                                 <PopoverTrigger>
