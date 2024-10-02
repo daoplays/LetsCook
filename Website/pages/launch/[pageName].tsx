@@ -377,7 +377,7 @@ const TokenMintPage = () => {
                                         <VStack hidden={MINTED_OUT || MINT_FAILED}>
                                             <HStack alignItems="center">
                                                 <Text m="0" color="white" fontSize="large" fontFamily="ReemKufiRegular">
-                                                    Platform fee: 0.003
+                                                    Platform fee: {Config.platform_fee}
                                                 </Text>
                                                 <Image
                                                     src={Config.token_image}

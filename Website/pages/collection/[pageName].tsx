@@ -51,6 +51,7 @@ import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import { findCollection } from "../../components/collection/utils";
 import BN from "bn.js";
+import formatPrice from "../../utils/formatPrice";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -161,7 +162,7 @@ const CollectionSwapPage = () => {
 
         if (launch === null) return;
 
-        //console.log("other set collection", launch);
+        console.log("other set collection", launch);
 
         if (check_initial_collection.current) {
             setCollectionData(launch);
@@ -187,16 +188,14 @@ const CollectionSwapPage = () => {
 
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
-
+        
+        console.log("launch price: ", bignum_to_num(launch.swap_price))
         // check relevant plugins
-        //console.log("checking plugins");
         for (let i = 0; i < launch.plugins.length; i++) {
             if (launch.plugins[i]["__kind"] === "Whitelist") {
                 let whitelist_key = launch.plugins[i]["key"];
-                //console.log("whitelist key", whitelist_key.toString(), mintData.get(whitelist_key.toString()));
                 setWhiteList(mintData.get(whitelist_key.toString()));
-                //console.log("phase end", new Date(bignum_to_num(launch.plugins[i]["phase_end"])).toDateString());
-                //console.log();
+
             }
         }
     }, [collectionList, pageName, mintData, wallet]);
@@ -340,7 +339,7 @@ const CollectionSwapPage = () => {
         );
 
         let user_amount = await request_token_amount("", user_token_account_key);
-        //console.log("set token balance in GAD", user_amount / Math.pow(10, launch.token_decimals));
+        console.log("set token balance in GAD", user_amount / Math.pow(10, launch.token_decimals), " decimals ", launch.token_decimals);
         setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -474,7 +473,7 @@ const CollectionSwapPage = () => {
 
     if (!launch) return <PageNotFound />;
 
-    const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price);
+    const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
 
     let progress_string = "";
     if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
@@ -600,12 +599,12 @@ const CollectionSwapPage = () => {
 
                                     <HStack align="center" mb={4}>
                                         <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
-                                            ~
+                                            
                                             {!isTokenToNFT
                                                 ? `1 NFT = ${out_amount.toLocaleString()} ${launch.token_symbol}`
-                                                : `${(
+                                                : `${formatPrice(
                                                       bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals)
-                                                  ).toLocaleString()} ${launch.token_symbol} = 1 NFT`}
+                                                  ,3)} ${launch.token_symbol} = 1 NFT`}
                                         </Text>
                                         <Tooltip label="With 2% Transfer Tax" hasArrow fontSize="medium" offset={[0, 10]}>
                                             <Image width={20} height={20} src="/images/help.png" alt="Help" />

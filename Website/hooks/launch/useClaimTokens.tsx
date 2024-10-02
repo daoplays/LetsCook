@@ -51,7 +51,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             return;
         }
 
-        toast.success("Tickets Checked!", {
+        toast.success("Tokens Claimed!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,

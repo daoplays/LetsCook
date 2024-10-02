@@ -64,8 +64,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     const [token_name, setTokenName] = useState<string>(newCollectionData.current.token_symbol);
     const [token_icon_url, setTokenIconURL] = useState<string>(newCollectionData.current.token_image_url);
     const [token_symbol, setTokenSymbol] = useState<string>(newCollectionData.current.token_symbol);
-    const [token_decimals, setTokenDecimals] = useState<number>(0);
-    const [token_extensions, setTokenExtensions] = useState<number>(0);
+    const [token_decimals, setTokenDecimals] = useState<number>(newCollectionData.current.token_decimals);
+    const [token_extensions, setTokenExtensions] = useState<number>(newCollectionData.current.token_extensions);
 
     const [team_wallet, setTeamWallet] = useState<string>(newCollectionData.current.team_wallet);
     const [swap_fee, setSwapFee] = useState<string>(
@@ -202,7 +202,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         newCollectionData.current.token_name = token_name;
         newCollectionData.current.token_symbol = token_symbol;
         newCollectionData.current.token_mint = new PublicKey(token_mint);
-        newCollectionData.current.swap_rate = parseInt(swap_rate);
+        newCollectionData.current.swap_rate = parseFloat(swap_rate);
         newCollectionData.current.swap_fee = parseInt(swap_fee);
         newCollectionData.current.token_decimals = token_decimals;
         newCollectionData.current.token_extensions = token_extensions;

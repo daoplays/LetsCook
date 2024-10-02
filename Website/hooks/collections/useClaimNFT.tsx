@@ -33,6 +33,7 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
+import { bool } from "@raydium-io/raydium-sdk";
 
 class OraoTokenFeeConfig {
     constructor(
@@ -137,6 +138,18 @@ function serialise_claim_nft_instruction(seed: number[]): Buffer {
     return buf;
 }
 
+function check_randomness(data: number[]) {
+
+    let valid = false;
+    for (let i = 0; i < data.length; i++) {
+        if (data[i] != 0) {
+            valid = true;
+            break;
+        }
+    }
+
+    return valid;
+}
 class ClaimNFT_Instruction {
     constructor(
         readonly instruction: number,
@@ -167,6 +180,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const orao_ws_id = useRef<number | null>(null);
     const orao_randomness = useRef<PublicKey | null>(null);
 
+
+
     const check_randomness_account = useCallback(async (result: any) => {
         //console.log("collection", result);
         // if we have a subscription field check against ws_id
@@ -177,13 +192,8 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let account_data = Buffer.from(event_data, "base64");
         let orao_randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
 
-        let valid = false;
-        for (let i = 0; i < orao_randomness.length; i++) {
-            if (orao_randomness[i] != 0) {
-                valid = true;
-                break;
-            }
-        }
+        let valid = check_randomness(orao_randomness);
+        
         if (valid) {
             setOraoRandoms(orao_randomness);
             console.log(orao_randomness);
@@ -208,7 +218,22 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             return;
         }
 
-        orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
+        let immediate_check = await request_raw_account_data("", orao_randomness.current);
+        let valid = false;
+        if (immediate_check !== null) {
+            let orao_randomness = Array.from(immediate_check.slice(8 + 32, 8 + 32 + 64));
+            valid = check_randomness(orao_randomness);
+
+            if (valid) {
+                setOraoRandoms(orao_randomness);
+                console.log(orao_randomness);
+                setIsLoading(false);
+            
+            }
+        }
+        else {
+            orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
+        }
 
         toast.success("Transaction successful! Waiting for Randomness", {
             type: "success",
