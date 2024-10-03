@@ -496,7 +496,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
             if (data[0] === 8) {
                 const [collection] = CollectionData.struct.deserialize(data);
-                collections.set(collection.page_name, collection);  
+                collections.set(collection.page_name, collection);
                 //console.log(collection);
                 continue;
             }

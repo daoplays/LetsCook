@@ -104,8 +104,6 @@ const CollectionSwapPage = () => {
     const [token_balance, setTokenBalance] = useState<number>(0);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
-    const [WLEndDate, setWLEndDate] = useState<Date>();
-
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [nft_amount, setNFTAmount] = useState<number>(0);
     const [isTokenToNFT, setIsTokenToNFT] = useState(false);
@@ -162,7 +160,7 @@ const CollectionSwapPage = () => {
 
         if (launch === null) return;
 
-        console.log("other set collection", launch);
+        //console.log("other set collection", launch);
 
         if (check_initial_collection.current) {
             setCollectionData(launch);
@@ -189,7 +187,7 @@ const CollectionSwapPage = () => {
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, launch.token_decimals));
 
-        console.log("launch price: ", bignum_to_num(launch.swap_price));
+        // console.log("launch price: ", bignum_to_num(launch.swap_price));
         // check relevant plugins
         for (let i = 0; i < launch.plugins.length; i++) {
             if (launch.plugins[i]["__kind"] === "Whitelist") {
@@ -449,7 +447,6 @@ const CollectionSwapPage = () => {
                             setIsTokenToNFT(true);
                             break;
                         case "Whitelist":
-                            // console.log("setting whitelist phase end to ", bignum_to_num(plugin["phase_end"]));
                             acc.wl_end_date_val = new Date(bignum_to_num(plugin["phase_end"]));
                             break;
                         default:
@@ -550,35 +547,37 @@ const CollectionSwapPage = () => {
                             </VStack>
 
                             <VStack pb={white_list && 6}>
-                                {white_list && (
+                                {white_list && wlEndDate && (wlEndDate.getTime() === 0 || new Date().getTime() < wlEndDate.getTime()) && (
                                     <VStack my={3}>
                                         <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
                                             Whitelist Token Required: <br />{" "}
-                                            <HStack justifyContent="center">
-                                                <Text mb={0}>CA: {trimAddress(white_list.mint.address.toString())}</Text>
-                                                <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                                    <Link
-                                                        href={getSolscanLink(white_list.mint.address, "Token")}
-                                                        target="_blank"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <Image
-                                                            src="/images/solscan.png"
-                                                            width={lg ? 22 : 22}
-                                                            height={lg ? 22 : 22}
-                                                            alt="Solscan icon"
-                                                        />
-                                                    </Link>
-                                                </Tooltip>
-                                            </HStack>
-                                            {wlEndDate &&
-                                                Math.floor(wlEndDate.getTime() / 1000) > 0 &&
-                                                new Date().getTime() < wlEndDate.getTime() && (
-                                                    <Text align="center" mb={0} opacity="50%">
-                                                        Until: {wlEndDate.toLocaleString()}
-                                                    </Text>
-                                                )}
                                         </Text>
+                                        <HStack justifyContent="center">
+                                            <Text color={"white"} fontFamily="ReemKufiRegular" mb={0}>
+                                                CA: {trimAddress(white_list.mint.address.toString())}
+                                            </Text>
+                                            <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                                                <Link
+                                                    href={getSolscanLink(white_list.mint.address, "Token")}
+                                                    target="_blank"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Image
+                                                        src="/images/solscan.png"
+                                                        width={lg ? 22 : 22}
+                                                        height={lg ? 22 : 22}
+                                                        alt="Solscan icon"
+                                                    />
+                                                </Link>
+                                            </Tooltip>
+                                        </HStack>
+                                        {wlEndDate &&
+                                            Math.floor(wlEndDate.getTime() / 1000) > 0 &&
+                                            new Date().getTime() < wlEndDate.getTime() && (
+                                                <Text align="center" mb={0} opacity="50%">
+                                                    Until: {wlEndDate.toLocaleString()}
+                                                </Text>
+                                            )}
                                     </VStack>
                                 )}
                                 <VStack
@@ -599,7 +598,7 @@ const CollectionSwapPage = () => {
                                     <HStack align="center" mb={4}>
                                         <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
                                             {!isTokenToNFT
-                                                ? `1 NFT = ${out_amount.toLocaleString()} ${launch.token_symbol}`
+                                                ? `1 NFT = ${formatPrice(out_amount, 3)} ${launch.token_symbol}`
                                                 : `${formatPrice(
                                                       bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
                                                       3,
@@ -634,9 +633,11 @@ const CollectionSwapPage = () => {
                                                     borderColor="rgba(134, 142, 150, 0.5)"
                                                     value={
                                                         isTokenToNFT
-                                                            ? (
-                                                                formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3))
-                                                            : out_amount.toLocaleString()
+                                                            ? formatPrice(
+                                                                  bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
+                                                                  3,
+                                                              )
+                                                            : formatPrice(out_amount, 3)
                                                     }
                                                     onChange={(e) => {
                                                         setTokenAmount(
