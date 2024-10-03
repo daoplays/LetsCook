@@ -198,7 +198,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     }, []);
 
     const check_signature_update = useCallback(async (result: any) => {
-
         //console.log("claim nft signature: ", result);
         // if we have a subscription field check against ws_id
 
@@ -226,11 +225,9 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
                 setOraoRandoms(randomness);
                 //console.log(randomness);
                 setIsLoading(false);
-            }
-            else {
+            } else {
                 //console.log("register websocket for account ", orao_randomness.current);
                 orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
-                
             }
         } else {
             //console.log("register websocket for account ", orao_randomness.current);

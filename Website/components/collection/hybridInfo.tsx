@@ -99,9 +99,19 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         setWhiteListEndDateAndTime(`${launchDateString} ${launchTimeString}`);
     }, [whitelist_phase_end, local_date, zone]);
 
-    // const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    //     setIncWhiteListPhaseEnd(e.target.checked);
-    // };
+    const handleSetIncWhiteListPhaseEnd = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // if we are going from include -> not include, set the date to zero
+        if (inc_whitelist_phase_end) {
+            let zero_date = new Date(0);
+            console.log("set date to zero, ", zero_date, zero_date.getTime());
+            setWhiteListPhaseEnd(zero_date);
+        }
+        // otherwise set the date to the current date
+        else {
+            setWhiteListPhaseEnd(new Date(new Date().setHours(0, 0, 0, 0)));
+        }
+        setIncWhiteListPhaseEnd(!inc_whitelist_phase_end);
+    };
 
     async function setMintData(e): Promise<void> {
         e.preventDefault();
@@ -234,10 +244,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
             newCollectionData.current.whitelist_key = whitelist_key;
             newCollectionData.current.whitelist_amount = 1;
-            if (inc_whitelist_phase_end) {
-                console.log("whitelist_phase_end", whitelist_phase_end.toDateString());
-                newCollectionData.current.whitelist_phase_end = whitelist_phase_end;
-            }
+            newCollectionData.current.whitelist_phase_end = whitelist_phase_end;
         }
 
         return true;
@@ -400,7 +407,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             placeholder="Enter Swap Fee (Bps - 100 = 1%)"
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
-                                            required
                                             className={styles.inputBox}
                                             type="text"
                                             value={swap_fee}
@@ -474,23 +480,12 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
                                         WHITELIST END DATE:
                                     </div>
-                                    {/* <HStack ml={2} py={2}>
-                                        <Checkbox
-                                            size="lg"
-                                            isChecked={!inc_whitelist_phase_end}
-                                            onChange={() => setIncWhiteListPhaseEnd(!inc_whitelist_phase_end)}
-                                        />
-                                        <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                            Include
-                                        </Text>
-                                    </HStack> */}
-
                                     <Switch
                                         ml={2}
                                         py={2}
                                         size={lg ? "md" : "lg"}
                                         isChecked={inc_whitelist_phase_end}
-                                        onChange={() => setIncWhiteListPhaseEnd(!inc_whitelist_phase_end)}
+                                        onChange={(e) => handleSetIncWhiteListPhaseEnd(e)}
                                     />
 
                                     <div className={`${styles.textLabelInputDate} font-face-kg`} hidden={!inc_whitelist_phase_end}>

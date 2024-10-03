@@ -5,7 +5,15 @@ import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useD
 import { PublicKey } from "@solana/web3.js";
 
 import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
-import { LaunchData, LaunchDataUserInput, ListingData, create_LaunchData, request_current_balance, request_launch_data, request_raw_account_data } from "../../components/Solana/state";
+import {
+    LaunchData,
+    LaunchDataUserInput,
+    ListingData,
+    create_LaunchData,
+    request_current_balance,
+    request_launch_data,
+    request_raw_account_data,
+} from "../../components/Solana/state";
 import useResponsive from "../../hooks/useResponsive";
 import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
@@ -126,7 +134,7 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         console.log("check balance", name, launch_data_account.toString(), balance);
 
         if (balance > 0) {
-            let launch_data : LaunchData = await request_launch_data("", launch_data_account);
+            let launch_data: LaunchData = await request_launch_data("", launch_data_account);
             if (launch_data !== null) {
                 let listing_data = await request_raw_account_data("", launch_data.listing);
                 if (listing_data !== null) {

@@ -112,7 +112,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         router.push("/collection");
     };
 
-    let plugin_data : HybridPluginData = getHybridPlugins(launch);
+    let plugin_data: HybridPluginData = getHybridPlugins(launch);
 
     //console.log(launch);
     return (

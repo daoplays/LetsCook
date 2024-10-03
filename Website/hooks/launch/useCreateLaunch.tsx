@@ -39,7 +39,6 @@ import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_I
 import useEditLaunch from "./useEditLaunch";
 import useIrysUploader from "../useIrysUploader";
 
-
 // Define the Tag type
 type Tag = {
     name: string;
@@ -56,7 +55,6 @@ const usuCreateLaunch = () => {
     const { EditLaunch } = useEditLaunch();
 
     const { getIrysUploader } = useIrysUploader(wallet);
-
 
     const check_signature_update = useCallback(
         async (result: any) => {

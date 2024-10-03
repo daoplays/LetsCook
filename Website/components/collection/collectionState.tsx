@@ -44,7 +44,7 @@ export interface HybridPluginData {
     mint_only: boolean;
 }
 
-export function getHybridPlugins(collection: CollectionData) : HybridPluginData {
+export function getHybridPlugins(collection: CollectionData): HybridPluginData {
     const { prob_string_val, is_mint_only, wl_end_date_val } = collection.plugins.reduce(
         (acc, plugin) => {
             switch (plugin["__kind"]) {
@@ -70,7 +70,6 @@ export function getHybridPlugins(collection: CollectionData) : HybridPluginData 
         whitelist_phase_end: wl_end_date_val,
         mint_only: is_mint_only,
     };
-    
 }
 
 type CollectionPluginEnum = {
@@ -239,7 +238,7 @@ export const defaultCollectionInput: CollectionDataUserInput = {
     attributes: [],
     whitelist_key: "",
     whitelist_amount: 0,
-    whitelist_phase_end: new Date(new Date().setHours(0, 0, 0, 0)),
+    whitelist_phase_end: new Date(0),
     mint_only: false,
     image_payment: false,
     images_uploaded: 0,
