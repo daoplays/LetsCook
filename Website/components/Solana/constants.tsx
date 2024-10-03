@@ -11,7 +11,26 @@ export interface NetworkConfig {
     IRYS_URL: string;
     IRYS_WALLET: string;
     COOK_FEES: PublicKey;
+    // its useful to define a few strings and images here given we have eth on eclipse and sol on solana
+    token: string;
+    token_image: string;
+    platform_fee: string;
 }
+
+const EclipseDevNetConfig: NetworkConfig = {
+    PROD: false,
+    NETWORK: "eclipse",
+    FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
+    RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
+    WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
+    IRYS_URL: "https://devnet.irys.xyz",
+    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    token: "ETH",
+    token_image: "/images/eth.png",
+    platform_fee: "0.0001",
+};
 
 const DevNetConfig: NetworkConfig = {
     PROD: false,
@@ -23,6 +42,9 @@ const DevNetConfig: NetworkConfig = {
     IRYS_URL: "https://devnet.irys.xyz",
     IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    token: "SOL",
+    token_image: "/images/sol.png",
+    platform_fee: "0.002",
 };
 
 const MainNetConfig: NetworkConfig = {
@@ -35,12 +57,17 @@ const MainNetConfig: NetworkConfig = {
     IRYS_URL: "https://node2.irys.xyz",
     IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
+    token: "SOL",
+    token_image: "/images/sol.png",
+    platform_fee: "0.002",
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
 export const CORE = new PublicKey("CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d");
+export const WRAPPED_SOL = new PublicKey("So11111111111111111111111111111111111111112");
+
 // account seeds
 export const SOL_ACCOUNT_SEED = 59957379;
 export const DATA_ACCOUNT_SEED = 7571427;

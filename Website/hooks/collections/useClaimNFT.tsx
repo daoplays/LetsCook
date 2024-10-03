@@ -137,6 +137,17 @@ function serialise_claim_nft_instruction(seed: number[]): Buffer {
     return buf;
 }
 
+function check_randomness(data: number[]) {
+    let valid = false;
+    for (let i = 0; i < data.length; i++) {
+        if (data[i] != 0) {
+            valid = true;
+            break;
+        }
+    }
+
+    return valid;
+}
 class ClaimNFT_Instruction {
     constructor(
         readonly instruction: number,
@@ -168,31 +179,26 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const orao_randomness = useRef<PublicKey | null>(null);
 
     const check_randomness_account = useCallback(async (result: any) => {
-        //console.log("collection", result);
+        //console.log("randomness_update", result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
 
         //console.log("have collection data", event_data, launch_account_ws_id.current);
         let account_data = Buffer.from(event_data, "base64");
-        let orao_randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
+        let randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
 
-        let valid = false;
-        for (let i = 0; i < orao_randomness.length; i++) {
-            if (orao_randomness[i] != 0) {
-                valid = true;
-                break;
-            }
-        }
+        let valid = check_randomness(randomness);
+
         if (valid) {
-            setOraoRandoms(orao_randomness);
-            console.log(orao_randomness);
+            setOraoRandoms(randomness);
+            //console.log(randomness);
             setIsLoading(false);
         }
     }, []);
 
     const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
+        //console.log("claim nft signature: ", result);
         // if we have a subscription field check against ws_id
 
         signature_ws_id.current = null;
@@ -208,7 +214,25 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             return;
         }
 
-        orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
+        let immediate_check = await request_raw_account_data("", orao_randomness.current);
+        let valid = false;
+        //console.log("immediate check ", immediate_check);
+        if (immediate_check !== null) {
+            let randomness = Array.from(immediate_check.slice(8 + 32, 8 + 32 + 64));
+            valid = check_randomness(randomness);
+
+            if (valid) {
+                setOraoRandoms(randomness);
+                //console.log(randomness);
+                setIsLoading(false);
+            } else {
+                //console.log("register websocket for account ", orao_randomness.current);
+                orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
+            }
+        } else {
+            //console.log("register websocket for account ", orao_randomness.current);
+            orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
+        }
 
         toast.success("Transaction successful! Waiting for Randomness", {
             type: "success",
@@ -302,12 +326,21 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             mint_info.token_program,
         );
 
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+        let team_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            launchData.keys[CollectionKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            mint_info.token_program,
+        );
 
-        let collection_metadata_account = PublicKey.findProgramAddressSync(
-            [Buffer.from("metadata"), METAPLEX_META.toBuffer(), launchData.keys[CollectionKeys.CollectionMint].toBuffer()],
-            METAPLEX_META,
-        )[0];
+        let token_destination_account = pda_token_account_key;
+        for (let i = 0; i < launchData.plugins.length; i++) {
+            if (launchData.plugins[i]["__kind"] === "MintOnly") {
+                token_destination_account = team_token_account_key;
+            }
+        }
+
+        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let transfer_hook = getTransferHook(mint_account);
 
@@ -344,22 +377,49 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             }
         }
 
-        let orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
-        let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
-
+        let orao_program = PROGRAM;
         let randomKey = new Keypair();
         let key_bytes = randomKey.publicKey.toBytes();
+
+        if (Config.NETWORK !== "eclipse") {
+            orao_program = new PublicKey("VRFzZoJdhFWL8rkvu87LpKM3RbcVezpMEc6X5GVDr7y");
+        }
+
+        let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
 
         let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
 
         orao_randomness.current = orao_random;
 
-        console.log("get orao network data");
-        let orao_network_data = await request_raw_account_data("", orao_network);
-        //let [orao_network_config] = OraoNetworkState.struct.deserialize(orao_network_data);
+        let orao_treasury: PublicKey = SYSTEM_KEY;
+        if (Config.NETWORK !== "eclipse") {
+            let orao_network_data = await request_raw_account_data("", orao_network);
+            orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
+        }
 
-        let orao_treasury = new PublicKey(orao_network_data.slice(8, 40));
-        console.log(orao_treasury.toString());
+        // check if we have the whitelist plugin
+        let whitelist_mint = PROGRAM;
+        let whitelist_account = PROGRAM;
+        let whitelist_token_program = PROGRAM;
+
+        console.log("collection has ", launchData.plugins.length, " plugins");
+        for (let i = 0; i < launchData.plugins.length; i++) {
+            if (launchData.plugins[i]["__kind"] === "Whitelist") {
+                console.log("Have whitelist plugin");
+                console.log(launchData.plugins[i]["key"].toString());
+                whitelist_mint = launchData.plugins[i]["key"];
+                let whitelist = mintData.get(whitelist_mint.toString());
+                console.log("whitelist token:", whitelist);
+                whitelist_account = await getAssociatedTokenAddress(
+                    whitelist_mint, // mint
+                    wallet.publicKey, // owner
+                    true, // allow owner off curve
+                    whitelist.token_program,
+                );
+
+                whitelist_token_program = whitelist.token_program;
+            }
+        }
 
         const instruction_data = serialise_claim_nft_instruction(Array.from(key_bytes));
 
@@ -374,18 +434,23 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
             { pubkey: token_mint, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: token_destination_account, isSigner: false, isWritable: true },
 
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
+            { pubkey: launchData.keys[CollectionKeys.TeamWallet], isSigner: false, isWritable: true },
 
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
-            { pubkey: mint_info.token_program, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+            { pubkey: mint_info.token_program, isSigner: false, isWritable: false },
 
             { pubkey: orao_random, isSigner: false, isWritable: true },
             { pubkey: orao_treasury, isSigner: false, isWritable: true },
             { pubkey: orao_network, isSigner: false, isWritable: true },
-            { pubkey: orao_program, isSigner: false, isWritable: true },
+            { pubkey: orao_program, isSigner: false, isWritable: false },
+
+            { pubkey: whitelist_mint, isSigner: false, isWritable: true },
+            { pubkey: whitelist_account, isSigner: false, isWritable: true },
+            { pubkey: whitelist_token_program, isSigner: false, isWritable: false },
         ];
 
         if (transfer_hook_program_account !== null) {

@@ -64,6 +64,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 import useCreateLaunch from "../../hooks/launch/useCreateLaunch";
+import { Config } from "../Solana/constants";
 
 // Define the Tag type
 type Tag = {
@@ -362,11 +363,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             Let&apos;s Cook
                                         </Text>
                                     </Radio>
-                                    <Radio value="raydium">
-                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                            Raydium
-                                        </Text>
-                                    </Radio>
+                                    {Config.NETWORK !== "eclipse" && (
+                                        <Radio value="raydium">
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Raydium
+                                            </Text>
+                                        </Radio>
+                                    )}
                                 </Stack>
                             </RadioGroup>
                         </HStack>
@@ -420,7 +423,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     disabled={newLaunchData.current.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
-                                    placeholder="Optional - Enter Whitelist Token Address"
+                                    placeholder="Enter Whitelist Token Address - Optional"
                                     className={styles.inputBox}
                                     type="text"
                                     value={whitelist_key}

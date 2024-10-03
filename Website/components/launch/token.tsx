@@ -51,6 +51,7 @@ import getImageDimensions from "../../utils/getImageDimension";
 import { distributionLabels } from "../../constant/root";
 import trimAddress from "../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { Config } from "../Solana/constants";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
     simpleLaunch: boolean;
@@ -560,7 +561,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                         <Stack direction="row" gap={5}>
                                             <Radio value="FCFS" color="white">
                                                 <Tooltip
-                                                    label="Launch ends as soon as it is funded, first come first serve."
+                                                    label="Launch ends as soon as it is funded, first come first serve. "
                                                     hasArrow
                                                     fontSize="large"
                                                     offset={[0, 10]}
@@ -815,7 +816,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                         setTotalPrice(e.target.value);
                                                     }}
                                                 />
-                                                <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                                <Image className={styles.sol} src={Config.token_image} height={30} width={30} alt="SOL" />
                                             </div>
                                         </HStack>
                                     </HStack>
@@ -839,7 +840,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                                                 style={{ cursor: "not-allowed" }}
                                                 readOnly
                                             />
-                                            <Image className={styles.sol} src="/images/sol.png" height={30} width={30} alt="SOL" />
+                                            <Image className={styles.sol} src={Config.token_image} height={30} width={30} alt="SOL" />
                                         </div>
                                     </HStack>
                                 </VStack>

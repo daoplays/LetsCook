@@ -211,7 +211,7 @@ const useCreateUnverifiedListing = () => {
             { pubkey: program_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
         ];
 
         const list_instruction = new TransactionInstruction({

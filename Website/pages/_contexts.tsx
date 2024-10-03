@@ -75,12 +75,22 @@ const GetSOLPrice = async (setSOLPrice) => {
     // Default options are marked with *
     const options = { method: "GET" };
 
-    let result = await fetch("https://price.jup.ag/v4/price?ids=SOL", options).then((response) => response.json());
-
-    setSOLPrice(result["data"]["SOL"]["price"]);
+    let result = await fetch("https://price.jup.ag/v4/price?ids=" + Config.token, options).then((response) => response.json());
+    setSOLPrice(result["data"][Config.token]["price"]);
 };
 
 const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
+    let price_map: Map<string, number> = new Map();
+
+    // don't bother doing this on devnet
+    if (!Config.PROD) {
+        for (let i = 0; i < mints.length; i++) {
+            price_map.set(mints[i], 0);
+        }
+        setPriceMap(price_map);
+
+        return;
+    }
     // Default options are marked with *
     const options = { method: "GET" };
 
@@ -395,7 +405,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: true },
+                { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             ];
 
             for (let i = 0; i < accounts.length; i++) {
@@ -501,7 +511,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
             if (data[0] === 8) {
                 const [collection] = CollectionData.struct.deserialize(data);
-
                 collections.set(collection.page_name, collection);
                 //console.log(collection);
                 continue;
@@ -626,8 +635,15 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         collections.forEach((collection, key) => {
             //console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
+
             if (!trade_mints.includes(collection.keys[CollectionKeys.MintAddress].toString()))
                 trade_mints.push(collection.keys[CollectionKeys.MintAddress].toString());
+            // check if we have a whitelist token
+            for (let p = 0; p < collection.plugins.length; p++) {
+                if (collection.plugins[p]["__kind"] === "Whitelist") {
+                    trade_mints.push(collection.plugins[p]["key"]);
+                }
+            }
         });
 
         GetTradeMintData(trade_mints, setMintData);
