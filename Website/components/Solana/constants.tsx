@@ -32,6 +32,21 @@ const EclipseDevNetConfig: NetworkConfig = {
     platform_fee: "0.0001",
 };
 
+const EclipseMainNetConfig: NetworkConfig = {
+    PROD: false,
+    NETWORK: "eclipse",
+    FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
+    RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
+    WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
+    IRYS_URL: "https://devnet.irys.xyz",
+    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
+    COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
+    token: "ETH",
+    token_image: "/images/eth.png",
+    platform_fee: "0.0001",
+};
+
 const DevNetConfig: NetworkConfig = {
     PROD: false,
     NETWORK: "devnet",
