@@ -15,6 +15,15 @@
 }
 
 @font-face {
+    font-family: "singlanguagefont";
+    src:
+        local("singlanguagefont"),
+        url(/fonts/singlanguagefont.woff) format("woff");
+    /* other formats include: 'woff2', 'truetype, 'opentype',
+                              'embedded-opentype', and 'svg' */
+}
+
+@font-face {
     font-family: "KGSummerSunshineBlackout";
     src:
         local("KGSummerSunshineBlackout"),
