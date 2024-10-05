@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import Head from "next/head";
-import { Card, CardBody, Flex, Heading, Stack, Text, Box, Button, Image } from "@chakra-ui/react";
+import { Card, CardBody, Flex, Heading, Stack, Text, Box, Button, Image, Progress } from "@chakra-ui/react";
 import { IoCopyOutline, IoSettingsSharp, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
 import Links from "../../components/Buttons/links";
 
@@ -8,6 +8,8 @@ const badgers = () => {
     const [isMuted, setIsMuted] = useState(true); // State to manage mute/unmute
     const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [showControls, setShowControls] = useState(false);
+    var totalNFT = 2000;
+    var soldNFT = 999;
 
     const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -37,6 +39,10 @@ const badgers = () => {
             audioRef.current.muted = !isMuted;
             setIsMuted(!isMuted);
         }
+    };
+
+    const NFTStockSoldPercentage = (nftTotal, nftSold) => {
+        return (nftTotal / nftSold) * 100;
     };
 
     return (
@@ -118,7 +124,7 @@ const badgers = () => {
                 bgSize="cover"
                 bgPosition="center"
                 bgRepeat="no-repeat"
-                h={["auto", "100%", "calc(100vh - 50px)", "calc(100vh - 50px)", "calc(100vh - 50px)"]}
+                h={"auto"}
                 w="100%"
                 display="flex"
                 justifyContent="center"
@@ -349,6 +355,27 @@ const badgers = () => {
                                                     </Box>
                                                 </span>
                                             </Stack>
+                                        </Stack>
+
+                                        <Stack spacing={2} textAlign={["center", "center", "center", "left", "left"]}>
+                                            <Text fontSize={["xl", "xl", "2xl", "3xl", "4xl"]} mb={0} lineHeight="50px">
+                                                Supply Left
+                                            </Text>
+                                            <Progress colorScheme="green" size="md" value={NFTStockSoldPercentage(soldNFT, totalNFT)} />
+
+                                            <Flex justifyContent="space-between" width="100%">
+                                                <Text fontFamily="ComicNeue" whiteSpace="nowrap" fontSize={["sm", "sm", "md", "lg", "xl"]}>
+                                                    {NFTStockSoldPercentage(soldNFT, totalNFT)}% Sold
+                                                </Text>
+                                                <Text
+                                                    fontFamily="ComicNeue"
+                                                    whiteSpace="nowrap"
+                                                    fontSize={["sm", "sm", "md", "lg", "xl"]}
+                                                    color="rgb(171,181,181)"
+                                                >
+                                                    {soldNFT} / {totalNFT}
+                                                </Text>
+                                            </Flex>
                                         </Stack>
                                     </Stack>
                                 </Flex>
