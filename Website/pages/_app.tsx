@@ -25,8 +25,6 @@ function MyApp({ Component, pageProps }) {
     const { sm } = useResponsive();
     const pathname = usePathname();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const hide = ["/curated/pepemon"];
 
     const wallets = useMemo(() => [], []);
 
