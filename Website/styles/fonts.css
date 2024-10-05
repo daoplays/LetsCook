@@ -24,6 +24,15 @@
 }
 
 @font-face {
+    font-family: "ComicNeue";
+    src:
+        local("ComicNeue"),
+        url(/fonts/ComicNeue.ttf) format("truetype");
+    /* other formats include: 'woff2', 'truetype, 'opentype',
+                              'embedded-opentype', and 'svg' */
+}
+
+@font-face {
     font-family: "KGSummerSunshineBlackout";
     src:
         local("KGSummerSunshineBlackout"),
