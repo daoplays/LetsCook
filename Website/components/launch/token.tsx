@@ -336,7 +336,7 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
             newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
             newLaunchData.current.decimals = 9;
             newLaunchData.current.num_mints = 400;
-            newLaunchData.current.ticket_price = 0.05;
+            newLaunchData.current.ticket_price = Config.NETWORK === "eclipse" ? 0.001 : 0.05;
             newLaunchData.current.minimum_liquidity = Math.round(newLaunchData.current.num_mints * newLaunchData.current.ticket_price);
 
             console.log("rewards suuply", rewardsSupply);
