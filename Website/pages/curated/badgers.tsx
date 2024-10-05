@@ -42,7 +42,7 @@ const badgers = () => {
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | Pepemon</title>
+                <title>Let&apos;s Cook | Badgers</title>
             </Head>
             <audio ref={audioRef} src="/curatedLaunches/badgers/badger_loop.mp3" autoPlay loop muted={isMuted} />
             <Flex
@@ -203,7 +203,7 @@ const badgers = () => {
                                 <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
                                     <Stack spacing="3">
                                         <Text fontSize={["2xl", "2xl", "3xl", "4xl", "6xl"]} color="white" mb={0} lineHeight="3.125rem">
-                                            BADGER BAGERS
+                                            BADGER BADGERS
                                         </Text>
                                         <Links socials={[]} />
                                         <Stack spacing={2} textAlign={["center", "center", "center", "left", "left"]}>
