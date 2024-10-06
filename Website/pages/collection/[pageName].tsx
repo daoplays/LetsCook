@@ -592,7 +592,7 @@ const CollectionSwapPage = () => {
                                     gap={0}
                                 >
                                     <Text align={sm ? "center" : "start"} className="font-face-kg" color={"white"} fontSize="x-large">
-                                        Hybrid Wrap
+                                        Collection Wrap
                                     </Text>
 
                                     <HStack align="center" mb={4}>
