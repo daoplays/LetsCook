@@ -1,3 +1,3 @@
-export const stockSoldPercentage = (nftTotal, availableNFT) => {
-    return ((availableNFT - nftTotal) / nftTotal) * 100;
+export const stockSoldPercentage = (availableNFT, nftTotal) => {
+    return ((nftTotal - availableNFT) / nftTotal) * 100;
 };

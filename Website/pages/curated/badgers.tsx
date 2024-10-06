@@ -476,12 +476,16 @@ const Badgers = () => {
                                             colorScheme="teal"
                                             borderRadius="full"
                                             padding="0"
-                                            onClick={() => {
-                                                if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-                                                    console.log("test", launch.collection_meta["__kind"]);
-                                                    MintNFT();
-                                                }
-                                            }}
+                                            onClick={
+                                                isLoading
+                                                    ? () => {}
+                                                    : assigned_nft === null || assigned_nft.status > 0
+                                                      ? () => ClaimNFT()
+                                                      : () => {
+                                                            openAssetModal();
+                                                            MintNFT();
+                                                        }
+                                            }
                                             _hover={{ boxShadow: "lg", transform: "scale(1.05)", opacity: ".90" }}
                                             height="auto"
                                             position="relative"
