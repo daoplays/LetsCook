@@ -393,7 +393,7 @@ const Pepemon = () => {
             </Head>
             <main
                 style={{
-                    height: "100%",
+                    height: "100vh",
                     background: 'url("/curatedLaunches/pepemon/BG.png")',
                     backgroundSize: "cover",
                     position: "relative",
@@ -406,12 +406,12 @@ const Pepemon = () => {
                         alt="Pepemon Title"
                         width={800}
                         height={400}
-                        style={{ position: "fixed", top: 80, padding: "0px 16x" }}
+                        style={{ position: "fixed", top: 30, padding: "0px 16x" }}
                     />
 
                     {/* // Restart Button */}
                     {wallet.connected && (
-                        <HStack w="90%" justify={"space-between"} position="fixed" top={xs ? 24 : md ? 36 : 20} px={6}>
+                        <HStack w="100%" justify={"space-between"} position="fixed" top={xs ? 24 : md ? 36 : 6} px={6}>
                             <Image
                                 src={"/curatedLaunches/pepemon/pc.png"}
                                 alt="Pepemon Release"
@@ -536,7 +536,7 @@ const Pepemon = () => {
                             alignItems: "start",
                             justifyContent: md ? "end" : "center",
                             position: "absolute",
-                            bottom: 50,
+                            bottom: 20,
                             right: 20,
                             padding: md ? 0 : 30,
                         }}

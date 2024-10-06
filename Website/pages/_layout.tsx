@@ -7,12 +7,13 @@ import SideNav from "../components/sideNav";
 const AppRootPage = ({ children }: PropsWithChildren) => {
     const pathname = usePathname();
 
+    const hide = ["/curated/pepemon"];
     return (
         <VStack h="100vh">
-            { <Navigation />}
+            {!hide.includes(pathname) && <Navigation />}
             <HStack gap={0} h="100%" w="100%">
-                {<SideNav />}
-                <VStack pt={50} h="100%" w="100%" sx={{ flex: 1, overflowY: "auto" }}>
+                {!hide.includes(pathname) && <SideNav />}
+                <VStack pt={!hide.includes(pathname) && 50} h="100%" w="100%" sx={{ flex: 1, overflowY: "auto" }}>
                     <div style={{ width: "100%", height: "100%" }}>{children}</div>
                 </VStack>
             </HStack>

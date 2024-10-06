@@ -93,37 +93,22 @@ const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAct
     }
     // Default options are marked with *
     const options = { method: "GET" };
-
-    const mint_strings = mints.join(","); // More concise way to join strings
-    const url = `https://price.jup.ag/v6/price?ids=${mint_strings}&vsToken=SOL`;
-
-    try {
-        // Fetch the price data from the API
-        const response = await fetch(url, options);
-        const result = await response.json();
-
-        // console.log("Price result: ", result);
-
-        // Initialize a Map to store the prices
-        const price_map: Map<string, number> = new Map();
-        const result_data = result.data; // Access the data directly
-
-        // Iterate through the mint addresses to populate the price map
-        for (const mint of mints) {
-            const mintData = result_data[mint]; // Get the data for the specific mint
-            if (mintData && mintData.price !== undefined) {
-                price_map.set(mint, mintData.price); // Set the price if it exists
-            } else {
-                // console.warn(`Price data not found for mint: ${mint}`); // Log a warning if price data is missing
-                price_map.set(mint, 0); // Optionally set a default value (e.g., 0)
-            }
-        }
-
-        // Update the state with the price map
-        setPriceMap(price_map);
-    } catch (error) {
-        console.error("Error fetching token prices: ", error);
+    let mint_strings = "";
+    for (let i = 0; i < mints.length; i++) {
+        mint_strings += mints[i] + ",";
     }
+    let url = "https://price.jup.ag/v6/price?ids=" + mint_strings + "&vsToken=SOL";
+    let result = await fetch(url, options).then((response) => response.json());
+    let result_data: Map<string, any> = result["data"];
+    for (let i = 0; i < mints.length; i++) {
+        let result = result_data[mints[i]];
+        try {
+            price_map.set(mints[i], result["price"]);
+        } catch (error) {
+            console.log("bad mint", mints[i]);
+        }
+    }
+    setPriceMap(price_map);
 };
 
 const GetTradeMintData = async (trade_keys: String[], setMintMap) => {
