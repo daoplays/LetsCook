@@ -1,20 +1,16 @@
-import { PublicKey } from "@solana/web3.js";
-import { useRef } from "react";
 import { CollectionKeys } from "../../../components/Solana/constants";
 
-
 export const useCollection = (collectionList, check_initial_collection, collection_key, collection_name) => {
+    if (!collectionList || !collection_name) return null;
 
-    let launch = collectionList.get(collection_name);
-
-    if (launch === null) return;
+    const collectionData = collectionList.get(collection_name);
+    if (!collectionData) return null;
 
     if (check_initial_collection.current) {
-        console.log("check intitial cllection");
-        collection_key.current = launch.keys[CollectionKeys.CollectionMint];
+        console.log("Check initial collection");
+        collection_key.current = collectionData.keys[CollectionKeys.CollectionMint];
         check_initial_collection.current = false;
-        return launch;
-    } else {
-        return null;
     }
+
+    return collectionData;
 };

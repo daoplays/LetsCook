@@ -22,6 +22,7 @@ import useMintRandom from "../../hooks/collections/useMintRandom";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
 import { MdOutlineContentCopy } from "react-icons/md";
+import formatPrice from "../../utils/formatPrice";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -30,7 +31,7 @@ const soundCollection = {
     throwing: "/Throwing.mp3",
 };
 const Badgers = () => {
-    const collection_name = "badger"
+    const collection_name = "badger";
     const wallet = useWallet();
     const [isMuted, setIsMuted] = useState(true); // State to manage mute/unmute
     const [isMusicPlaying, setIsMusicPlaying] = useState(false);
@@ -56,7 +57,7 @@ const Badgers = () => {
     const { connection } = useConnection();
     const { collectionList, mintData } = useAppRoot();
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
-
+    const collection = useCollection(collectionList, check_initial_collection, collection_key, collection_name);
     const check_initial_assignment = useRef<boolean>(true);
     let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
@@ -89,12 +90,10 @@ const Badgers = () => {
     };
 
     useEffect(() => {
-        if (collectionList !== null && check_initial_collection.current) {
-            setCollectionData(useCollection(collectionList, check_initial_collection, collection_key, collection_name));
-        } else {
-            return;
+        if (collection) {
+            setCollectionData(collection);
         }
-    }, [collectionList]);
+    }, [collection]);
 
     useEffect(() => {
         if (check_initial_nft_balance.current) {
@@ -355,6 +354,7 @@ const Badgers = () => {
     }
 
     if (launch === null) return <Loader />;
+    console.log(launch);
     return (
         <>
             <Head>
@@ -649,7 +649,10 @@ const Badgers = () => {
                                                         letterSpacing="1px"
                                                         mb="0px"
                                                     >
-                                                        1000
+                                                        {formatPrice(
+                                                            bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
+                                                            3,
+                                                        )}
                                                     </Text>
                                                 </span>
                                                 <span
@@ -674,7 +677,6 @@ const Badgers = () => {
                                                     >
                                                         ${launch.token_symbol.toLocaleString().trim()}
                                                     </Text>{" "}
-                                                    
                                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
                                                         <div
                                                             onClick={(e) => {
@@ -686,9 +688,7 @@ const Badgers = () => {
                                                                 );
                                                             }}
                                                         >
-                                                            <Box
-                                                                fontSize={[10, 10, 25, 25, 25]}
-                                                            >
+                                                            <Box fontSize={[10, 10, 25, 25, 25]}>
                                                                 <MdOutlineContentCopy color="white" />
                                                             </Box>
                                                         </div>
