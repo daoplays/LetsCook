@@ -22,7 +22,7 @@ import {
 } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
-import { Config, PROGRAM } from "../../components/Solana/constants";
+import { Config, PROGRAM, WRAPPED_SOL } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackAccount } from "@solana/spl-token";
@@ -464,13 +464,15 @@ const TradePage = () => {
             setBaseAddress(base_amm_account);
             setQuoteAddress(quote_amm_account);
 
-            console.log("base mint", base_mint.mint.address.toString(), wsol_mint.toString());
-            console.log("base key", base_amm_account.toString(), quote_amm_account.toString());
+            //console.log("base mint", base_mint.mint.address.toString(), wsol_mint.toString());
+            //console.log("base key", base_amm_account.toString(), quote_amm_account.toString());
 
             let base_amount = await request_token_amount("", base_amm_account);
             let quote_amount = await request_token_amount("", quote_amm_account);
 
-            console.log("amm amounts", base_amount, quote_amount);
+            //console.log("amm amounts", base_amount, quote_amount);
+            //console.log("amm internal amounts", bignum_to_num(amm.amm_base_amount), bignum_to_num(amm.amm_quote_amount));
+
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
 
@@ -494,7 +496,7 @@ const TradePage = () => {
                     let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
 
-                    if (ray_pool.quoteMint.equals(new PublicKey("So11111111111111111111111111111111111111112"))) {
+                    if (ray_pool.quoteMint.equals(WRAPPED_SOL)) {
                         setSOLIsQuote(true);
                     } else {
                         sol_is_quote = false;
@@ -557,7 +559,7 @@ const TradePage = () => {
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
                 let volume = Buffer.from(item.volume).readFloatLE(0);
-
+                //console.log("price data", time, open, high, low, close, volume);
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;
                 }
