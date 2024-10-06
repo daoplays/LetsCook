@@ -1,17 +1,64 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Head from "next/head";
-import { Card, CardBody, Flex, Heading, Stack, Text, Box, Button, Image, Progress } from "@chakra-ui/react";
-import { IoCopyOutline, IoSettingsSharp, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
+import { Card, CardBody, Flex, Stack, Text, Box, Button, Image, Progress, useDisclosure, HStack, Tooltip } from "@chakra-ui/react";
+import { IoSettingsSharp, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
 import Links from "../../components/Buttons/links";
-
-const badgers = () => {
+import useAppRoot from "../../context/useAppRoot";
+import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
+import { PublicKey } from "@solana/web3.js";
+import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
+import Loader from "../../components/loader";
+import { useCollection } from "../../hooks/collections/curated/useCollection";
+import { stockSoldPercentage } from "../../utils/stockSoldPercentage";
+import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import useMintNFT from "../../hooks/collections/useMintNFT";
+import { AssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { publicKey } from "@metaplex-foundation/umi";
+import type { RpcAccount } from "@metaplex-foundation/umi";
+import useClaimNFT from "../../hooks/collections/useClaimNFT";
+import useMintRandom from "../../hooks/collections/useMintRandom";
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
+import { MdOutlineContentCopy } from "react-icons/md";
+const soundCollection = {
+    success: "/Success.mp3",
+    fail: "/Fail.mp3",
+    catched: "/Catched.mp3",
+    throw: "/Throw.mp3",
+    throwing: "/Throwing.mp3",
+};
+const Badgers = () => {
+    const collection_name = "badger"
+    const wallet = useWallet();
     const [isMuted, setIsMuted] = useState(true); // State to manage mute/unmute
     const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [showControls, setShowControls] = useState(false);
-    var totalNFT = 2000;
-    var soldNFT = 999;
-
+    const [nft_balance, setNFTBalance] = useState<number>(0);
+    const [token_balance, setTokenBalance] = useState<number>(0);
+    const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
+    const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
+    const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
+    const [launch, setCollectionData] = useState<CollectionData | null>(null);
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const audioRef = useRef<HTMLAudioElement>(null);
+    const check_initial_collection = useRef<boolean>(true);
+    const collection_key = useRef<PublicKey | null>(null);
+    const check_initial_nft_balance = useRef<boolean>(true);
+    const mint_nft = useRef<boolean>(false);
+    const asset_received = useRef<AssetV1 | null>(null);
+    const asset_image = useRef<string | null>(null);
+    const launch_account_ws_id = useRef<number | null>(null);
+    const nft_account_ws_id = useRef<number | null>(null);
+    const user_token_ws_id = useRef<number | null>(null);
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
+    const { connection } = useConnection();
+    const { collectionList, mintData } = useAppRoot();
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
+
+    const check_initial_assignment = useRef<boolean>(true);
+    let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
     const togglePlayPause = () => {
         if (audioRef.current) {
@@ -41,14 +88,277 @@ const badgers = () => {
         }
     };
 
-    const NFTStockSoldPercentage = (nftTotal, nftSold) => {
-        return (nftTotal / nftSold) * 100;
-    };
+    useEffect(() => {
+        if (collectionList !== null && check_initial_collection.current) {
+            setCollectionData(useCollection(collectionList, check_initial_collection, collection_key, collection_name));
+        } else {
+            return;
+        }
+    }, [collectionList]);
 
+    useEffect(() => {
+        if (check_initial_nft_balance.current) {
+            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+            check_initial_nft_balance.current = false;
+        }
+    }, [wallet, launch]);
+
+    useEffect(() => {
+        return () => {
+            console.log("in use effect return");
+            const unsub = async () => {
+                if (launch_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
+                    launch_account_ws_id.current = null;
+                }
+                if (nft_account_ws_id.current !== null) {
+                    await connection.removeAccountChangeListener(nft_account_ws_id.current);
+                    nft_account_ws_id.current = null;
+                }
+            };
+            unsub();
+        };
+    }, [connection]);
+
+    useEffect(() => {
+        console.log("randoms have been updated", OraoRandoms);
+        if (!mint_nft.current) return;
+
+        if (OraoRandoms.length === 0) return;
+
+        openAssetModal();
+
+        mint_nft.current = false;
+    }, [OraoRandoms, openAssetModal]);
+
+    const check_launch_update = useCallback(async (result: any) => {
+        //console.log("collection", result);
+        // if we have a subscription field check against ws_id
+
+        let event_data = result.data;
+
+        //console.log("have collection data", event_data, launch_account_ws_id.current);
+        let account_data = Buffer.from(event_data, "base64");
+
+        const [updated_data] = CollectionData.struct.deserialize(account_data);
+
+        setCollectionData(updated_data);
+    }, []);
+
+    const check_assignment_update = useCallback(
+        async (result: any) => {
+            console.log("assignment", result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+
+            //console.log("have assignment data", event_data);
+            let account_data = Buffer.from(event_data, "base64");
+
+            if (account_data.length === 0) {
+                //console.log("account deleted");
+                setAssignedNFT(null);
+                mint_nft.current = false;
+                return;
+            }
+
+            const [updated_data] = AssignmentData.struct.deserialize(account_data);
+
+            console.log("in check assignment", updated_data, updated_data.nft_address.toString());
+            if (assigned_nft !== null && updated_data.num_interations === assigned_nft.num_interations) {
+                return;
+            }
+
+            if (updated_data.status < 2) {
+                asset_received.current = null;
+                asset_image.current = null;
+            } else {
+                let nft_index = updated_data.nft_index;
+                let json_url = launch.nft_meta_url + nft_index + ".json";
+                let uri_json = await fetch(json_url).then((res) => res.json());
+                asset_image.current = uri_json;
+
+                try {
+                    const umi = createUmi(Config.RPC_NODE, "confirmed");
+
+                    let asset_umiKey = publicKey(updated_data.nft_address.toString());
+                    const myAccount = await umi.rpc.getAccount(asset_umiKey);
+
+                    if (myAccount.exists) {
+                        let asset = await deserializeAssetV1(myAccount as RpcAccount);
+                        console.log("new asset", asset);
+                        asset_received.current = asset;
+                        let uri_json = await fetch(asset.uri).then((res) => res.json());
+                        asset_image.current = uri_json;
+                    } else {
+                        asset_received.current = null;
+                    }
+
+                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+                } catch (error) {
+                    asset_received.current = null;
+                }
+            }
+
+            //console.log(updated_data);
+            mint_nft.current = true;
+            setAssignedNFT(updated_data);
+        },
+        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
+    );
+    const check_user_token_update = useCallback(
+        async (result: any) => {
+            //console.log(result);
+            // if we have a subscription field check against ws_id
+
+            let event_data = result.data;
+            const [token_account] = TokenAccount.struct.deserialize(event_data);
+            let amount = bignum_to_num(token_account.amount);
+            //console.log("update quote amount", amount);
+
+            setTokenBalance(amount / Math.pow(10, launch.token_decimals));
+        },
+        [launch],
+    );
+
+    const get_assignment_data = useCallback(async () => {
+        if (launch === null || mintData === null) return;
+
+        if (!check_initial_assignment.current) {
+            return;
+        }
+
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
+        let user_token_account_key = getAssociatedTokenAddressSync(
+            launch.keys[CollectionKeys.MintAddress], // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            mint.token_program,
+        );
+
+        let user_amount = await request_token_amount("", user_token_account_key);
+        setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
+
+        let nft_assignment_account = PublicKey.findProgramAddressSync(
+            [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+            PROGRAM,
+        )[0];
+
+        let assignment_data = await request_assignment_data(nft_assignment_account);
+        //console.log("check assignment", nft_assignment_account.toString(), assignment_data);
+
+        check_initial_assignment.current = false;
+        if (assignment_data === null) {
+            return;
+        }
+
+        if (!assignment_data.random_address.equals(SYSTEM_KEY) && assignment_data.status == 0) {
+            let orao_data = await request_raw_account_data("", assignment_data.random_address);
+            let orao_randomness: number[] = Array.from(orao_data.slice(8 + 32, 8 + 32 + 64));
+
+            let valid = false;
+            for (let i = 0; i < orao_randomness.length; i++) {
+                if (orao_randomness[i] != 0) {
+                    valid = true;
+                    break;
+                }
+            }
+            if (valid) {
+                mint_nft.current = true;
+                setOraoRandoms(orao_randomness);
+            }
+        }
+
+        console.log(assignment_data);
+        setAssignedNFT(assignment_data);
+    }, [launch, mintData, wallet, setOraoRandoms]);
+
+    useEffect(() => {
+        if (launch === null || mintData === null) return;
+
+        if (launch_account_ws_id.current === null) {
+            console.log("subscribe 1");
+            let launch_data_account = PublicKey.findProgramAddressSync(
+                [Buffer.from(launch.page_name), Buffer.from("Collection")],
+                PROGRAM,
+            )[0];
+
+            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
+        }
+
+        if (wallet === null || wallet.publicKey === null) {
+            return;
+        }
+
+        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
+        if (nft_account_ws_id.current === null) {
+            console.log("subscribe 2");
+            let nft_assignment_account = PublicKey.findProgramAddressSync(
+                [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+                PROGRAM,
+            )[0];
+            nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
+        }
+
+        if (user_token_ws_id.current === null) {
+            let user_token_account_key = getAssociatedTokenAddressSync(
+                launch.keys[CollectionKeys.MintAddress], // mint
+                wallet.publicKey, // owner
+                true, // allow owner off curve
+                mint.token_program,
+            );
+            user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
+        }
+    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update, check_user_token_update]);
+
+    useEffect(() => {
+        if (launch === null) return;
+
+        if (wallet === null || wallet.publicKey === null) {
+            return;
+        }
+
+        if (check_initial_assignment.current) {
+            get_assignment_data();
+        }
+
+        if (check_initial_nft_balance.current) {
+            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+            check_initial_nft_balance.current = false;
+        }
+    }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
+
+    const tiltShaking = `@keyframes tilt-shaking {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        25% { transform: translate(5px, 5px) rotate(5deg); }
+        50% { transform: translate(0, 0) rotate(0eg); }
+        75% { transform: translate(-5px, 5px) rotate(-5deg); }
+        100% { transform: translate(0, 0) rotate(0deg); }
+    }`;
+
+    useEffect(() => {
+        const styleSheet = document.styleSheets[0];
+        styleSheet.insertRule(tiltShaking, styleSheet.cssRules.length);
+    }, [tiltShaking]);
+
+    let prob_string = "";
+
+    if (launch) {
+        for (let i = 0; i < launch.plugins.length; i++) {
+            if (launch.plugins[i]["__kind"] === "MintProbability") {
+                prob_string = `${launch.plugins[i]["mint_prob"].toString()}%`;
+                //console.log("Have mint prob", prob_string);
+            }
+        }
+    }
+
+    if (launch === null) return <Loader />;
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | Badgers</title>
+                <title>Let&apos;s Cook | {launch.page_name}</title>
             </Head>
             <audio ref={audioRef} src="/curatedLaunches/badgers/badger_loop.mp3" autoPlay loop muted={isMuted} />
             <Flex
@@ -124,14 +434,14 @@ const badgers = () => {
                 bgSize="cover"
                 bgPosition="center"
                 bgRepeat="no-repeat"
-                h={"auto"}
+                minH="100vh"
                 w="100%"
                 display="flex"
                 justifyContent="center"
                 alignItems="center"
             >
                 <Flex
-                    gap={10}
+                    gap={5}
                     style={{ width: "auto" }}
                     justifyContent={"center"}
                     alignItems={["center", "center", "center", "stretch", "stretch"]}
@@ -153,9 +463,9 @@ const badgers = () => {
                             width="100%"
                         >
                             <CardBody>
-                                <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
+                                <Flex direction="column" alignItems="center" justifyContent="center" height="100%" textColor="white">
                                     <Image
-                                        src="/curatedLaunches/badgers/badger.gif"
+                                        src={launch.collection_icon_url}
                                         alt="Green double couch with wooden legs"
                                         maxWidth={["2xs", "2xs", "3xs", "2xs", "xs"]}
                                         style={{ borderRadius: 10 }}
@@ -166,11 +476,17 @@ const badgers = () => {
                                             colorScheme="teal"
                                             borderRadius="full"
                                             padding="0"
-                                            onClick={() => alert("Button Clicked!")}
+                                            onClick={() => {
+                                                if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                    console.log("test", launch.collection_meta["__kind"]);
+                                                    MintNFT();
+                                                }
+                                            }}
                                             _hover={{ boxShadow: "lg", transform: "scale(1.05)", opacity: ".90" }}
                                             height="auto"
                                             position="relative"
                                             border={0}
+                                            isLoading={isLoading}
                                         >
                                             <Image
                                                 src="/curatedLaunches/badgers/shroombutton.png"
@@ -189,6 +505,14 @@ const badgers = () => {
                                             </Text>
                                         </Button>
                                     </Stack>
+                                    <HStack spacing={5} mt={10} fontFamily="ComicNeue">
+                                        <Text fontSize={["sm", "sm", "md", "lg", "xl"]} color="rgb(171,181,181)">
+                                            Your {launch.page_name}: {nft_balance}
+                                        </Text>
+                                        <Text fontSize={["sm", "sm", "md", "lg", "xl"]} color="rgb(171,181,181)">
+                                            Your {launch.token_symbol}: {token_balance.toLocaleString()}
+                                        </Text>
+                                    </HStack>
                                 </Flex>
                             </CardBody>
                         </Card>
@@ -209,15 +533,15 @@ const badgers = () => {
                                 <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
                                     <Stack spacing="3">
                                         <Text fontSize={["2xl", "2xl", "3xl", "4xl", "6xl"]} color="white" mb={0} lineHeight="3.125rem">
-                                            BADGER BADGERS
+                                            {launch.collection_name}
                                         </Text>
-                                        <Links socials={[]} />
+                                        <Links socials={launch.socials} />
                                         <Stack spacing={2} textAlign={["center", "center", "center", "left", "left"]}>
                                             <Text fontSize={["xl", "xl", "2xl", "3xl", "4xl"]} mb={0} lineHeight="50px">
                                                 Whitelist Phase
                                             </Text>
                                             <Stack
-                                                spacing={[5, 5, "20px", "20px", "20px"]}
+                                                spacing={[5, 5, "10px", "10px", "10px"]}
                                                 ml={0}
                                                 justifyContent={["center", "center", "center", "left", "left"]}
                                                 direction="row"
@@ -261,7 +585,7 @@ const badgers = () => {
                                             <Stack
                                                 justifyContent={["center", "center", "center", "left", "left"]}
                                                 direction="row"
-                                                spacing={[5, 5, "20px", "20px", "20px"]}
+                                                spacing={[5, 5, "10px", "10px", "10px"]}
                                                 ml={0}
                                             >
                                                 <Text
@@ -303,7 +627,7 @@ const badgers = () => {
                                             <Stack
                                                 justifyContent={["center", "center", "center", "left", "left"]}
                                                 direction="row"
-                                                spacing={[5, 5, "20px", "20px", "20px"]}
+                                                spacing={[5, 5, "10px", "10px", "10px"]}
                                                 ml={0}
                                             >
                                                 <span
@@ -348,11 +672,27 @@ const badgers = () => {
                                                         letterSpacing="1px"
                                                         mb="0px"
                                                     >
-                                                        $BADGER
+                                                        ${launch.token_symbol.toLocaleString().trim()}
                                                     </Text>{" "}
-                                                    <Box fontSize={[10, 10, 25, 25, 25]}>
-                                                        <IoCopyOutline />
-                                                    </Box>
+                                                    
+                                                    <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
+                                                        <div
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                navigator.clipboard.writeText(
+                                                                    launch && launch.keys && launch.keys[CollectionKeys.CollectionMint]
+                                                                        ? launch.keys[CollectionKeys.CollectionMint].toString()
+                                                                        : "",
+                                                                );
+                                                            }}
+                                                        >
+                                                            <Box
+                                                                fontSize={[10, 10, 25, 25, 25]}
+                                                            >
+                                                                <MdOutlineContentCopy color="white" />
+                                                            </Box>
+                                                        </div>
+                                                    </Tooltip>
                                                 </span>
                                             </Stack>
                                         </Stack>
@@ -361,11 +701,15 @@ const badgers = () => {
                                             <Text fontSize={["xl", "xl", "2xl", "3xl", "4xl"]} mb={0} lineHeight="50px">
                                                 Supply Left
                                             </Text>
-                                            <Progress colorScheme="green" size="md" value={NFTStockSoldPercentage(soldNFT, totalNFT)} />
+                                            <Progress
+                                                colorScheme="green"
+                                                size="md"
+                                                value={stockSoldPercentage(launch.num_available, launch.total_supply)}
+                                            />
 
                                             <Flex justifyContent="space-between" width="100%">
                                                 <Text fontFamily="ComicNeue" whiteSpace="nowrap" fontSize={["sm", "sm", "md", "lg", "xl"]}>
-                                                    {NFTStockSoldPercentage(soldNFT, totalNFT)}% Sold
+                                                    {stockSoldPercentage(launch.num_available, launch.total_supply)}% Sold
                                                 </Text>
                                                 <Text
                                                     fontFamily="ComicNeue"
@@ -373,7 +717,7 @@ const badgers = () => {
                                                     fontSize={["sm", "sm", "md", "lg", "xl"]}
                                                     color="rgb(171,181,181)"
                                                 >
-                                                    {soldNFT} / {totalNFT}
+                                                    {launch.num_available} / {launch.total_supply}
                                                 </Text>
                                             </Flex>
                                         </Stack>
@@ -388,4 +732,4 @@ const badgers = () => {
     );
 };
 
-export default badgers;
+export default Badgers;
