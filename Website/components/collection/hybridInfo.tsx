@@ -258,7 +258,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
-                    Hybrid Info:
+                    Collection Info:
                 </Text>
                 <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25}>

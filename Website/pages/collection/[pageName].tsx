@@ -22,7 +22,7 @@ import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { bignum_to_num, TokenAccount, request_token_amount, request_raw_account_data, MintData } from "../../components/Solana/state";
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback, useState, useMemo } from "react";
 import { useWallet, useConnection, WalletContextState } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -52,6 +52,7 @@ import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/So
 import { findCollection } from "../../components/collection/utils";
 import BN from "bn.js";
 import formatPrice from "../../utils/formatPrice";
+import useTokenBalance from "../../hooks/useTokenBalance";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -131,6 +132,13 @@ const CollectionSwapPage = () => {
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
     const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
+
+    const mintAddress = useMemo(() => {
+        return launch?.keys?.[CollectionKeys.MintAddress] || null;
+    }, [launch]);
+
+    const { tokenBalance, error } = useTokenBalance(mintAddress ? { mintAddress } : null);
+    console.log("in collection, getting balance", tokenBalance);
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
@@ -592,7 +600,7 @@ const CollectionSwapPage = () => {
                                     gap={0}
                                 >
                                     <Text align={sm ? "center" : "start"} className="font-face-kg" color={"white"} fontSize="x-large">
-                                        Hybrid Wrap
+                                        Collection Wrap
                                     </Text>
 
                                     <HStack align="center" mb={4}>

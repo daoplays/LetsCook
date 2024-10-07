@@ -25,7 +25,6 @@ function MyApp({ Component, pageProps }) {
     const { sm } = useResponsive();
     const pathname = usePathname();
 
-
     const wallets = useMemo(() => [], []);
 
     const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };

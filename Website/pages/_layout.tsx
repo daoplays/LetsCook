@@ -9,7 +9,7 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
 
     return (
         <VStack h="100vh">
-            { <Navigation />}
+            {<Navigation />}
             <HStack gap={0} h="100%" w="100%">
                 {<SideNav />}
                 <VStack pt={50} h="100%" w="100%" sx={{ flex: 1, overflowY: "auto" }}>

@@ -23,18 +23,12 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
 import { MdOutlineContentCopy } from "react-icons/md";
 import formatPrice from "../../utils/formatPrice";
-const soundCollection = {
-    success: "/Success.mp3",
-    fail: "/Fail.mp3",
-    catched: "/Catched.mp3",
-    throw: "/Throw.mp3",
-    throwing: "/Throwing.mp3",
-};
+
 const Badgers = () => {
     const collection_name = "badger";
     const wallet = useWallet();
-    const [isMuted, setIsMuted] = useState(false); // State to manage mute/unmute
-    const [isMusicPlaying, setIsMusicPlaying] = useState(true);
+    const [isMuted, setIsMuted] = useState(true); // State to manage mute/unmute
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [showControls, setShowControls] = useState(false);
     const [nft_balance, setNFTBalance] = useState<number>(0);
     const [token_balance, setTokenBalance] = useState<number>(0);
@@ -63,10 +57,15 @@ const Badgers = () => {
 
     const togglePlayPause = () => {
         if (audioRef.current) {
-            audioRef.current.muted = isMuted;
+            if (isMusicPlaying) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play().catch((error) => {
+                    console.error("Playback failed:", error); // Log any errors that occur during playback
+                });
+            }
             setIsMuted(!isMuted);
             setIsMusicPlaying(!isMusicPlaying);
-            
         }
     };
 
@@ -80,13 +79,6 @@ const Badgers = () => {
             audioRef.current.volume = event.target.value;
             setIsMuted(volume === 0);
             setIsMusicPlaying(volume !== 0);
-        }
-    };
-
-    const toggleMute = () => {
-        if (audioRef.current) {
-            audioRef.current.muted = !isMuted;
-            setIsMuted(!isMuted);
         }
     };
 
@@ -617,7 +609,7 @@ const Badgers = () => {
                                                         background: "linear-gradient(320deg, rgba(0,0,0,1) 0%, rgba(58,104,73,1) 100%)",
                                                     }}
                                                 >
-                                                    20:00 UTC
+                                                    22:00 UTC
                                                 </Text>
                                             </Stack>
                                         </Stack>
