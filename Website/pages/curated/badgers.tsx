@@ -57,7 +57,6 @@ const Badgers = () => {
     const { connection } = useConnection();
     const { collectionList, mintData } = useAppRoot();
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
-    const collection = useCollection(collectionList, check_initial_collection, collection_key, collection_name);
     const check_initial_assignment = useRef<boolean>(true);
     let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
@@ -90,17 +89,21 @@ const Badgers = () => {
     };
 
     useEffect(() => {
-        if (collection) {
-            setCollectionData(collection);
-        }
-    }, [collection]);
+        if (collectionList === null) return;
 
-    useEffect(() => {
-        if (check_initial_nft_balance.current) {
-            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
-            check_initial_nft_balance.current = false;
+        let launch = collectionList.get(collection_name);
+
+        if (launch === null) return;
+
+        if (check_initial_collection.current) {
+            console.log("check intitial collection");
+            setCollectionData(launch);
+            collection_key.current = launch.keys[CollectionKeys.CollectionMint];
+            check_initial_collection.current = false;
         }
-    }, [wallet, launch]);
+    }, [collectionList]);
+
+
 
     useEffect(() => {
         return () => {
@@ -507,10 +510,10 @@ const Badgers = () => {
                                     </Stack>
                                     <HStack spacing={5} mt={10} fontFamily="ComicNeue">
                                         <Text fontSize={["sm", "sm", "md", "lg", "xl"]} color="rgb(171,181,181)">
-                                            Your {launch.page_name}: {nft_balance}
+                                            Your NFTs: {nft_balance}
                                         </Text>
                                         <Text fontSize={["sm", "sm", "md", "lg", "xl"]} color="rgb(171,181,181)">
-                                            Your {launch.token_symbol}: {token_balance.toLocaleString()}
+                                            Your ${launch.token_symbol}: {token_balance.toLocaleString()}
                                         </Text>
                                     </HStack>
                                 </Flex>
