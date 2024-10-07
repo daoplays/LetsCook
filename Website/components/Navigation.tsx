@@ -259,9 +259,9 @@ function Navigation() {
                         </Text>
                     </div>
 
-                    <Link href={isHomePageOnly ? "#" : "/hybrids"} onClick={onToggle}>
+                    <Link href={isHomePageOnly ? "#" : "/collections"} onClick={onToggle}>
                         <Text color="white" className="font-face-kg" fontSize={24} style={{ opacity: isHomePageOnly ? 0.5 : 1 }}>
-                            Hybrids
+                            Collections
                         </Text>
                     </Link>
 

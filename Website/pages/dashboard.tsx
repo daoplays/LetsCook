@@ -73,7 +73,7 @@ const DashboardPage = () => {
                 </Text>
 
                 <HStack spacing={3} zIndex={99}>
-                    {["Tokens", "Hybrids"].map((name, i) => {
+                    {["Tokens", "Collections"].map((name, i) => {
                         const isActive = selected === name;
 
                         const baseStyle = {
@@ -131,7 +131,7 @@ const DashboardPage = () => {
                             newLaunchData.current = defaultUserInput;
                             router.push("/launch");
                         }}
-                        hidden={selected === "Hybrids"}
+                        hidden={selected === "Collections"}
                     >
                         New Token
                     </Button>
@@ -142,7 +142,7 @@ const DashboardPage = () => {
                         }}
                         hidden={selected === "Tokens"}
                     >
-                        New Hybrid
+                        New Collection
                     </Button>
                 </HStack>
                 {/* </Link> */}
@@ -150,7 +150,7 @@ const DashboardPage = () => {
 
             {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
 
-            {selected === "Hybrids" && <CollectionDashboardTable collectionList={creatorCollections} />}
+            {selected === "Collections" && <CollectionDashboardTable collectionList={creatorCollections} />}
 
             {creatorLaunches.length <= 0 && (
                 <HStack w="100%" align="center" justify="center" mt={25}>
