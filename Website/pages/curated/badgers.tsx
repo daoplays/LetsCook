@@ -380,7 +380,7 @@ const Badgers = () => {
             <Flex
                 position="fixed"
                 bottom={{ base: 1, md: 5 }}
-                left={{ base: 1, lg: 260, xl: 280 }}
+                right={{ base: 1, md: 5 }}
                 zIndex={50}
                 py={2}
                 px={3}
@@ -574,6 +574,7 @@ const Badgers = () => {
                             </CardBody>
                         </Card>
                     </Flex>
+
                     <Flex>
                         <Card
                             maxH="2xl"
@@ -588,7 +589,7 @@ const Badgers = () => {
                         >
                             <CardBody>
                                 <Flex direction="column" alignItems="center" justifyContent="center" height="100%">
-                                    <Stack spacing="3">
+                                    <Stack spacing="4">
                                         <Text fontSize={["2xl", "2xl", "3xl", "4xl", "6xl"]} color="white" mb={0} lineHeight="3.125rem">
                                             {launch.collection_name}
                                         </Text>
@@ -708,7 +709,7 @@ const Badgers = () => {
                                                     >
                                                         {formatPrice(
                                                             bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
-                                                            3,
+                                                            2,
                                                         )}
                                                     </Text>
                                                 </span>
@@ -754,9 +755,9 @@ const Badgers = () => {
                                             </Stack>
                                         </Stack>
 
-                                        <Stack spacing={2} textAlign={["center", "center", "center", "left", "left"]}>
+                                        <Stack spacing={2} mt={4} textAlign={["center", "center", "center", "left", "left"]}>
                                             <Text fontSize={["xl", "xl", "2xl", "3xl", "4xl"]} mb={0} lineHeight="50px">
-                                                Supply Left
+                                                Supply Minted
                                             </Text>
                                             <Progress
                                                 colorScheme="green"
@@ -766,7 +767,7 @@ const Badgers = () => {
 
                                             <Flex justifyContent="space-between" width="100%">
                                                 <Text fontFamily="ComicNeue" whiteSpace="nowrap" fontSize={["sm", "sm", "md", "lg", "xl"]}>
-                                                    {stockSoldPercentage(launch.num_available, launch.total_supply)}% Sold
+                                                    {stockSoldPercentage(launch.num_available, launch.total_supply).toFixed(2)}% Sold
                                                 </Text>
                                                 <Text
                                                     fontFamily="ComicNeue"
@@ -774,7 +775,7 @@ const Badgers = () => {
                                                     fontSize={["sm", "sm", "md", "lg", "xl"]}
                                                     color="rgb(171,181,181)"
                                                 >
-                                                    {launch.num_available} / {launch.total_supply}
+                                                    {launch.total_supply - launch.num_available} / {launch.total_supply}
                                                 </Text>
                                             </Flex>
                                         </Stack>
