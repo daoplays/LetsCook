@@ -1,6 +1,7 @@
+import { CollectionData } from "../../../components/collection/collectionState";
 import { CollectionKeys } from "../../../components/Solana/constants";
 
-export const useCollection = (collectionList, check_initial_collection, collection_key, collection_name) => {
+export const useCollection = (collectionList, check_initial_collection, collection_key, collection_name) : CollectionData | null => {
     if (!collectionList || !collection_name) return null;
 
     const collectionData = collectionList.get(collection_name);

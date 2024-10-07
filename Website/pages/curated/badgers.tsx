@@ -23,24 +23,23 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
 import { MdOutlineContentCopy } from "react-icons/md";
 import formatPrice from "../../utils/formatPrice";
-const soundCollection = {
-    success: "/Success.mp3",
-    fail: "/Fail.mp3",
-    catched: "/Catched.mp3",
-    throw: "/Throw.mp3",
-    throwing: "/Throwing.mp3",
-};
+import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
+import ReleaseModal from "./releaseModal";
+import UseWalletConnection from "../../hooks/useWallet";
+
 const Badgers = () => {
     const collection_name = "badger";
     const wallet = useWallet();
-    const [isMuted, setIsMuted] = useState(false); // State to manage mute/unmute
-    const [isMusicPlaying, setIsMusicPlaying] = useState(true);
+    const [isMuted, setIsMuted] = useState(true); // State to manage mute/unmute
+    const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [showControls, setShowControls] = useState(false);
     const [nft_balance, setNFTBalance] = useState<number>(0);
     const [token_balance, setTokenBalance] = useState<number>(0);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
+    const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
+    const { handleConnectWallet, handleDisconnectWallet } = UseWalletConnection();
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -60,9 +59,34 @@ const Badgers = () => {
     const check_initial_assignment = useRef<boolean>(true);
     let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
+    const modalStyle: ReceivedAssetModalStyle = {
+        check_image: "/curatedLaunches/badgers/badger.gif",
+        failed_image: "/curatedLaunches/badgers/badger.gif",
+        fontFamily: "singlanguagefont",
+        fontColor: "white",
+        succsss_h: 620,
+        failed_h: 620,
+        checking_h: 620,
+        success_w: 620,
+        failed_w: 620,
+        checking_w: 620,
+        sm_succsss_h: 570,
+        sm_success_w: 420,
+        sm_failed_h: 350,
+        sm_failed_w: 350,
+        sm_checking_h: 570,
+        sm_checking_w: 420,
+    };
+
     const togglePlayPause = () => {
         if (audioRef.current) {
-            audioRef.current.muted = isMuted;
+            if (isMusicPlaying) {
+                audioRef.current.pause();
+            } else {
+                audioRef.current.play().catch((error) => {
+                    console.error("Playback failed:", error); // Log any errors that occur during playback
+                });
+            }
             setIsMuted(!isMuted);
             setIsMusicPlaying(!isMusicPlaying);
         }
@@ -81,13 +105,6 @@ const Badgers = () => {
         }
     };
 
-    const toggleMute = () => {
-        if (audioRef.current) {
-            audioRef.current.muted = !isMuted;
-            setIsMuted(!isMuted);
-        }
-    };
-
     useEffect(() => {
         if (collectionList === null) return;
 
@@ -102,7 +119,6 @@ const Badgers = () => {
             check_initial_collection.current = false;
         }
     }, [collectionList]);
-
 
 
     useEffect(() => {
@@ -354,6 +370,7 @@ const Badgers = () => {
     }
 
     if (launch === null) return <Loader />;
+    const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
     return (
         <>
             <Head>
@@ -469,45 +486,82 @@ const Badgers = () => {
                                         maxWidth={["2xs", "2xs", "3xs", "2xs", "xs"]}
                                         style={{ borderRadius: 10 }}
                                     />
-                                    <Stack mt="1.25rem" spacing="3" align="center">
-                                        <Button
-                                            variant="outline"
-                                            colorScheme="teal"
-                                            borderRadius="full"
-                                            padding="0"
-                                            onClick={
-                                                isLoading
-                                                    ? () => {}
-                                                    : assigned_nft === null || assigned_nft.status > 0
-                                                      ? () => ClaimNFT()
-                                                      : () => {
-                                                            openAssetModal();
-                                                            MintNFT();
-                                                        }
-                                            }
-                                            _hover={{ boxShadow: "lg", transform: "scale(1.05)", opacity: ".90" }}
-                                            height="auto"
-                                            position="relative"
-                                            border={0}
-                                            isLoading={isLoading}
-                                        >
-                                            <Image
-                                                src="/curatedLaunches/badgers/shroombutton.png"
-                                                alt="Mashroom Button"
-                                                width={["100px", "", "", "", "150px"]}
-                                            />
-                                            <Text
-                                                fontSize={["xl", "xl", "xl", "2xl", "4xl"]}
-                                                color="black"
-                                                position="absolute"
-                                                top="40%"
-                                                fontWeight="bold"
-                                                className="text-stroke"
+                                    {assigned_nft === null || assigned_nft.status > 0 ? (
+                                        <Stack mt="1.25rem" spacing="3" align="center">
+                                            <Button
+                                                variant="outline"
+                                                colorScheme="teal"
+                                                borderRadius="full"
+                                                padding="0"
+                                                onClick={() => {
+                                                    if (!wallet.connected) {
+                                                        handleConnectWallet();
+                                                    }
+
+                                                    if (wallet.connected && enoughTokenBalance) {
+                                                        ClaimNFT();
+                                                    }
+                                                }}
+                                                isDisabled={!enoughTokenBalance || isLoading}
+                                                _hover={{ boxShadow: "lg", transform: "scale(1.05)", opacity: ".90" }}
+                                                height="auto"
+                                                position="relative"
+                                                border={0}
+                                                isLoading={isLoading}
                                             >
-                                                MINT
-                                            </Text>
-                                        </Button>
-                                    </Stack>
+                                                <Image
+                                                    src="/curatedLaunches/badgers/shroombutton.png"
+                                                    alt="Mashroom Button"
+                                                    width={["100px", "", "", "", "150px"]}
+                                                />
+                                                <Text
+                                                    fontSize={["xl", "xl", "xl", "2xl", "4xl"]}
+                                                    color="black"
+                                                    position="absolute"
+                                                    top="40%"
+                                                    fontWeight="bold"
+                                                    className="text-stroke"
+                                                >
+                                                    MINT
+                                                </Text>
+                                            </Button>
+                                        </Stack>
+                                    ) : (
+                                        <Stack mt="1.25rem" spacing="3" align="center">
+                                            <Button
+                                                variant="outline"
+                                                colorScheme="teal"
+                                                borderRadius="full"
+                                                padding="0"
+                                                onClick={() => {
+                                                    if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                        MintNFT();
+                                                    }
+                                                }}
+                                                _hover={{ boxShadow: "lg", transform: "scale(1.05)", opacity: ".90" }}
+                                                height="auto"
+                                                position="relative"
+                                                border={0}
+                                                isLoading={isLoading}
+                                            >
+                                                <Image
+                                                    src="/curatedLaunches/badgers/shroombutton.png"
+                                                    alt="Mashroom Button"
+                                                    width={["100px", "", "", "", "150px"]}
+                                                />
+                                                <Text
+                                                    fontSize={["xl", "xl", "xl", "2xl", "4xl"]}
+                                                    color="black"
+                                                    position="absolute"
+                                                    top="40%"
+                                                    fontWeight="bold"
+                                                    className="text-stroke"
+                                                >
+                                                    MINT
+                                                </Text>
+                                            </Button>
+                                        </Stack>
+                                    )}
                                     <HStack spacing={5} mt={10} fontFamily="ComicNeue">
                                         <Text fontSize={["sm", "sm", "md", "lg", "xl"]} color="rgb(171,181,181)">
                                             Your NFTs: {nft_balance}
@@ -730,6 +784,17 @@ const Badgers = () => {
                         </Card>
                     </Flex>
                 </Flex>
+                <ReceivedAssetModal
+                    curated={false}
+                    isWarningOpened={isAssetModalOpen}
+                    closeWarning={closeAssetModal}
+                    assignment_data={assigned_nft}
+                    collection={launch}
+                    asset={asset_received}
+                    asset_image={asset_image}
+                    style={modalStyle}
+                    isLoading={isLoading}
+                />
             </Box>
         </>
     );
