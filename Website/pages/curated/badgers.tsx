@@ -121,8 +121,6 @@ const Badgers = () => {
         }
     }, [collectionList]);
 
-    
-
     useEffect(() => {
         return () => {
             console.log("in use effect return");
@@ -741,13 +739,13 @@ const Badgers = () => {
                                                             onClick={(e) => {
                                                                 e.preventDefault();
                                                                 navigator.clipboard.writeText(
-                                                                    launch && launch.keys && launch.keys[CollectionKeys.CollectionMint]
-                                                                        ? launch.keys[CollectionKeys.CollectionMint].toString()
+                                                                    launch && launch.keys && launch.keys[CollectionKeys.MintAddress]
+                                                                        ? launch.keys[CollectionKeys.MintAddress].toString()
                                                                         : "",
                                                                 );
                                                             }}
                                                         >
-                                                            <Box fontSize={[10, 10, 25, 25, 25]}>
+                                                            <Box fontSize={[10, 10, 22, 22, 22]}>
                                                                 <MdOutlineContentCopy color="white" />
                                                             </Box>
                                                         </div>
