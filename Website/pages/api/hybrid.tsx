@@ -53,10 +53,10 @@ export default async function handler(req, res) {
 
             // Your data here
             const data = {
-                title: listing.collection_name + " Hybrid Swap:  " + listing.num_available + " available",
+                title: listing.collection_name + " Collection Swap:  " + listing.num_available + " available",
                 icon: listing.collection_icon_url,
-                description: "Create hybrids and more at letscook.wtf!",
-                label: "Hybrid Swap",
+                description: "Create collections and more at letscook.wtf!",
+                label: "Collection Swap",
                 links: {
                     actions: [
                         {

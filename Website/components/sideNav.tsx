@@ -23,7 +23,7 @@ const tabs = {
         },
         {
             icon: (size: number) => <RiGalleryFill size={size} />,
-            tab: "New Hybrid",
+            tab: "New Collection",
             url: "/collection",
         },
         {
@@ -46,8 +46,8 @@ const tabs = {
         },
         {
             icon: (size: number) => <BsPersonSquare size={size} />,
-            tab: "Hybrids",
-            url: "/hybrids",
+            tab: "Collections",
+            url: "/collections",
         },
         {
             icon: (size: number) => <FaCalendarDays size={size} />,
@@ -171,7 +171,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
             onClick={() => {
                 if (
                     (tab === "New Token" ||
-                        tab === "New Hybrid" ||
+                        tab === "New Collection" ||
                         tab === "Creator Dashboard" ||
                         tab === "My Tickets" ||
                         tab === "Leaderboard") &&

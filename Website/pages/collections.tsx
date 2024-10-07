@@ -32,7 +32,7 @@ const BagsPage = () => {
     return (
         <>
             <Head>
-                <title>Let&apos;s Cook | Hybrids</title>
+                <title>Let&apos;s Cook | Collections</title>
             </Head>
             <main>
                 <Flex
@@ -51,7 +51,7 @@ const BagsPage = () => {
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >
-                        Hybrids
+                        Collections
                     </Text>
                 </Flex>
 
