@@ -38,7 +38,7 @@ import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { setMintData } from "../amm/launch";
 import { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { WebIrys } from "@irys/sdk";
+import useIrysUploader from "../../hooks/useIrysUploader";
 import bs58 from "bs58";
 import useCreateListing from "../../hooks/listings/useCreateListing";
 import useCreateUnverifiedListing from "../../hooks/listings/useCreateUnverifiedListing";
@@ -100,6 +100,8 @@ const CreateListing = () => {
 
     const { CreateUnverifiedListing } = useCreateUnverifiedListing();
     const { CreateListing } = useCreateListing();
+
+    const { getIrysUploader } = useIrysUploader(wallet);
 
     async function handleSetCreator() {
         if (base_token === null) {
@@ -254,6 +256,8 @@ const CreateListing = () => {
             return;
         }
 
+        const irys = await getIrysUploader();
+
         let listing_account = PublicKey.findProgramAddressSync([base_token.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
 
         let balance = await request_current_balance("", listing_account);
@@ -264,16 +268,6 @@ const CreateListing = () => {
             toast.error("Listing already exists");
             return;
         }
-
-        const irys_wallet = { name: "phantom", provider: wallet };
-        const irys = new WebIrys({
-            url: Config.IRYS_URL,
-            token: "solana",
-            wallet: irys_wallet,
-            config: {
-                providerUrl: Config.RPC_NODE,
-            },
-        });
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
@@ -287,12 +281,12 @@ const CreateListing = () => {
             //await irys.fund(price);
 
             let txArgs = await get_current_blockhash("");
-
+            let irys_address = await irys.utils.getBundlerAddress();
             var tx = new Transaction(txArgs).add(
                 ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                 SystemProgram.transfer({
                     fromPubkey: wallet.publicKey,
-                    toPubkey: new PublicKey(Config.IRYS_WALLET),
+                    toPubkey: new PublicKey(irys_address),
                     lamports: Number(price),
                 }),
             );

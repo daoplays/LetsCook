@@ -82,7 +82,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
             setTokenBalance(0);
             setError(null);
             return;
-          }
+        }
 
         // Fetch the initial token balance
         fetchTokenBalance();

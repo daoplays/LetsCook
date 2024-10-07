@@ -132,12 +132,12 @@ const usuCreateLaunch = () => {
 
             try {
                 let txArgs = await get_current_blockhash("");
-
+                let irys_address = await irys.utils.getBundlerAddress();
                 var tx = new Transaction(txArgs).add(
                     ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
-                        toPubkey: new PublicKey(Config.IRYS_WALLET),
+                        toPubkey: new PublicKey(irys_address),
                         lamports: Number(atomic_price),
                     }),
                 );
@@ -236,12 +236,12 @@ const usuCreateLaunch = () => {
             const fundMetadata = toast.info("(2/4) Preparing to upload token metadata - transferring balance to Arweave.");
             try {
                 let txArgs = await get_current_blockhash("");
-
+                let irys_address = await irys.utils.getBundlerAddress();
                 var tx = new Transaction(txArgs).add(
                     ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                     SystemProgram.transfer({
                         fromPubkey: wallet.publicKey,
-                        toPubkey: new PublicKey(Config.IRYS_WALLET),
+                        toPubkey: new PublicKey(irys_address),
                         lamports: Number(json_atomic_price),
                     }),
                 );

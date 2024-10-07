@@ -26,7 +26,6 @@ import {
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { serialise_LaunchCollection_instruction } from "./collectionState";
-import { WebIrys } from "@irys/sdk";
 import { useWallet } from "@solana/wallet-adapter-react";
 import {
     Keypair,
@@ -293,12 +292,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             if (!newCollectionData.current.image_payment) {
                 try {
                     let txArgs = await get_current_blockhash("");
+                    let irys_address = await irys.utils.getBundlerAddress();
 
                     var tx = new Transaction(txArgs).add(
                         ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
-                            toPubkey: new PublicKey(Config.IRYS_WALLET),
+                            toPubkey: new PublicKey(irys_address),
                             lamports: Number(atomic_price),
                         }),
                     );
@@ -410,12 +410,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                 let manifestPrice = await irys.getPrice(Math.ceil(1.1 * manifestFile.size));
                 try {
                     let txArgs = await get_current_blockhash("");
+                    let irys_address = await irys.utils.getBundlerAddress();
 
                     var tx = new Transaction(txArgs).add(
                         ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
-                            toPubkey: new PublicKey(Config.IRYS_WALLET),
+                            toPubkey: new PublicKey(irys_address),
                             lamports: Number(manifestPrice),
                         }),
                     );
@@ -541,12 +542,13 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             if (!newCollectionData.current.metadata_payment) {
                 try {
                     let txArgs = await get_current_blockhash("");
+                    let irys_address = await irys.utils.getBundlerAddress();
 
                     var tx = new Transaction(txArgs).add(
                         ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }),
                         SystemProgram.transfer({
                             fromPubkey: wallet.publicKey,
-                            toPubkey: new PublicKey(Config.IRYS_WALLET),
+                            toPubkey: new PublicKey(irys_address),
                             lamports: Number(json_price),
                         }),
                     );
