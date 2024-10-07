@@ -59,9 +59,9 @@ input[type="file"] {
 }
 
 @font-face {
-    font-family: 'BadgerCustomFont';
+    font-family: "BadgerCustomFont";
     /* This will be the name you use in your app */
-    src: url('/public/curatedLaunches/badgers/CCSignLanguage\ Regular.ttf') format('truetype');
+    src: url("/public/curatedLaunches/badgers/CCSignLanguage\ Regular.ttf") format("truetype");
     /* Adjust the path as necessary */
     font-weight: normal;
     font-style: normal;
@@ -77,11 +77,8 @@ input[type="file"] {
     /* Adjust font weight */
     text-shadow:
         -2px -2px 0 #fff,
-        /* Top-left */
-        2px -2px 0 #fff,
-        /* Top-right */
-        -2px 2px 0 #fff,
-        /* Bottom-left */
-        2px 2px 0 #fff;
+        /* Top-left */ 2px -2px 0 #fff,
+        /* Top-right */ -2px 2px 0 #fff,
+        /* Bottom-left */ 2px 2px 0 #fff;
     /* Bottom-right */
 }

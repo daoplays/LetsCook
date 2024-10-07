@@ -269,8 +269,6 @@ const CreateListing = () => {
             return;
         }
 
-
-
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
         const uploadImageToArweave = toast.info("(1/2) Preparing to upload images - transferring balance to Arweave.");

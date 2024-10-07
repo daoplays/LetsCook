@@ -66,7 +66,6 @@ const Badgers = () => {
             audioRef.current.muted = isMuted;
             setIsMuted(!isMuted);
             setIsMusicPlaying(!isMusicPlaying);
-            
         }
     };
 
@@ -617,7 +616,7 @@ const Badgers = () => {
                                                         background: "linear-gradient(320deg, rgba(0,0,0,1) 0%, rgba(58,104,73,1) 100%)",
                                                     }}
                                                 >
-                                                    20:00 UTC
+                                                    22:00 UTC
                                                 </Text>
                                             </Stack>
                                         </Stack>
