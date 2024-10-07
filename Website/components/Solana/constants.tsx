@@ -9,7 +9,6 @@ export interface NetworkConfig {
     RPC_NODE: string;
     WSS_NODE: string;
     IRYS_URL: string;
-    IRYS_WALLET: string;
     COOK_FEES: PublicKey;
     // its useful to define a few strings and images here given we have eth on eclipse and sol on solana
     token: string;
@@ -25,7 +24,6 @@ const EclipseDevNetConfig: NetworkConfig = {
     RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
     WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
     IRYS_URL: "https://devnet.irys.xyz",
-    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
     token_image: "/images/eth.png",
@@ -40,7 +38,6 @@ const EclipseMainNetConfig: NetworkConfig = {
     RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
     WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
     IRYS_URL: "https://devnet.irys.xyz",
-    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
     token_image: "/images/eth.png",
@@ -55,7 +52,6 @@ const DevNetConfig: NetworkConfig = {
     RPC_NODE: "https://nickie-qn2k6r-fast-devnet.helius-rpc.com",
     WSS_NODE: "wss://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://devnet.irys.xyz",
-    IRYS_WALLET: "4a7s9iC5NwfUtf8fXpKWxYXcekfqiN6mRqipYXMtcrUS",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "SOL",
     token_image: "/images/sol.png",
@@ -70,7 +66,6 @@ const MainNetConfig: NetworkConfig = {
     RPC_NODE: "https://kimmie-wuj3pm-fast-mainnet.helius-rpc.com",
     WSS_NODE: "wss://mainnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://node2.irys.xyz",
-    IRYS_WALLET: "9NERQjLetzquGwdKt3X4gZ8fE8fPfSkj2xo2esmUjWsz",
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
     token: "SOL",
     token_image: "/images/sol.png",
