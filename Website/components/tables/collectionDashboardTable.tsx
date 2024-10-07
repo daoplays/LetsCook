@@ -92,7 +92,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { EditCollection } = useEditCollection();
-    const { newCollectionData } = useAppRoot();
+    const { newCollectionData, mintData } = useAppRoot();
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -112,9 +112,17 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         router.push("/collection");
     };
 
-    let plugin_data: HybridPluginData = getHybridPlugins(launch);
+    if (!mintData) {
+        console.log("Mint data not found");
+        return <></>;
+    }
 
-    //console.log(launch);
+    let plugin_data: HybridPluginData = getHybridPlugins(launch);
+    let token_mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+    if (!token_mint) {
+        console.log("Token mint not found");
+        return <></>;
+    }
     return (
         <tr
             style={{
@@ -154,7 +162,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={launch.token_icon_url}
+                            src={token_mint.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}

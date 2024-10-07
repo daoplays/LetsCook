@@ -179,7 +179,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const orao_randomness = useRef<PublicKey | null>(null);
 
     const check_randomness_account = useCallback(async (result: any) => {
-        //console.log("randomness_update", result);
+        console.log("randomness_update", result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
@@ -192,7 +192,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         if (valid) {
             setOraoRandoms(randomness);
-            //console.log(randomness);
+            console.log("randoms are valid", randomness);
             setIsLoading(false);
         }
     }, []);
@@ -230,7 +230,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
                 orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
             }
         } else {
-            //console.log("register websocket for account ", orao_randomness.current);
+            console.log("register websocket for account ", orao_randomness.current);
             orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
         }
 

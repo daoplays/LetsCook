@@ -139,6 +139,7 @@ const Badgers = () => {
     }, [connection]);
 
     useEffect(() => {
+        console.log("update randoms in effect", OraoRandoms);
         if (!mint_nft.current) return;
 
         if (OraoRandoms.length === 0) return;

@@ -106,6 +106,8 @@ const CollectionSwapPage = () => {
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
     const [token_amount, setTokenAmount] = useState<number>(0);
+    const [token_mint, setTokenMint] = useState<MintData | null>(null);
+
     const [nft_amount, setNFTAmount] = useState<number>(0);
     const [isTokenToNFT, setIsTokenToNFT] = useState(false);
 
@@ -177,6 +179,9 @@ const CollectionSwapPage = () => {
         }
 
         let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
+        setTokenMint(mint);
+
         let transfer_fee_config = getTransferFeeConfig(mint.mint);
         let input_fee =
             transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)));
@@ -660,7 +665,7 @@ const CollectionSwapPage = () => {
                                                 />
                                                 <InputRightElement h="100%" w={50}>
                                                     <Image
-                                                        src={launch.token_icon_url}
+                                                        src={token_mint.icon}
                                                         width={30}
                                                         height={30}
                                                         alt="SOL Icon"
@@ -809,7 +814,7 @@ const CollectionSwapPage = () => {
 
                             <VStack minW={220}>
                                 <Image
-                                    src={launch.token_icon_url}
+                                    src={token_mint.icon}
                                     width={180}
                                     height={180}
                                     alt="Image Frame"
