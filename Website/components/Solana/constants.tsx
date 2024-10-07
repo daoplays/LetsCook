@@ -70,7 +70,7 @@ const MainNetConfig: NetworkConfig = {
     RPC_NODE: "https://kimmie-wuj3pm-fast-mainnet.helius-rpc.com",
     WSS_NODE: "wss://mainnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
     IRYS_URL: "https://node2.irys.xyz",
-    IRYS_WALLET: "DHyDV2ZjN3rB6qNGXS48dP5onfbZd3fAEz6C5HJwSqRD",
+    IRYS_WALLET: "9NERQjLetzquGwdKt3X4gZ8fE8fPfSkj2xo2esmUjWsz",
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
     token: "SOL",
     token_image: "/images/sol.png",
@@ -103,7 +103,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = DevNetConfig;
+export let Config = MainNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,
