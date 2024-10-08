@@ -4,12 +4,22 @@ import { LaunchData } from "../components/Solana/state";
 import { CollectionData } from "../components/collection/collectionState";
 
 export const getSolscanLink = (key: PublicKey, type: string) => {
-    let network =
-        Config.NETWORK === "devnet"
-            ? `?cluster=devnet`
-            : Config.NETWORK === "eclipse"
-              ? `?cluster=custom&customUrl=https://staging-rpc.dev2.eclipsenetwork.xyz`
-              : "";
+
+    if (!key) {
+        return "";
+    }
+    
+    let network = "";
+    if (Config.NETWORK === "devnet") {
+        network = `?cluster=devnet`;
+    }
+    if (Config.NETWORK === "eclipse") {
+        if (Config.PROD) {
+            network = `?cluster=custom&customUrl=https://mainnetbeta-rpc.eclipse.xyz`;
+        } else {
+            network = `?cluster=custom&customUrl=https://devnet.dev2.eclipsenetwork.xyz`;
+        }
+    }
 
     if (type === "Token") {
         return `https://solscan.io/account/${key.toString()}${Config.PROD ? "" : network}`;

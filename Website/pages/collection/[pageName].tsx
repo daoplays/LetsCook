@@ -52,7 +52,8 @@ import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/So
 import { findCollection } from "../../components/collection/utils";
 import BN from "bn.js";
 import formatPrice from "../../utils/formatPrice";
-import useTokenBalance from "../../hooks/useTokenBalance";
+import useTokenBalance from "../../hooks/data/useTokenBalance";
+import useCollection from "../../hooks/data/useCollection";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -102,7 +103,6 @@ const CollectionSwapPage = () => {
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [out_amount, setOutAmount] = useState<number>(0);
     const [nft_balance, setNFTBalance] = useState<number>(0);
-    const [token_balance, setTokenBalance] = useState<number>(0);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
     const [token_amount, setTokenAmount] = useState<number>(0);
@@ -139,8 +139,7 @@ const CollectionSwapPage = () => {
         return launch?.keys?.[CollectionKeys.MintAddress] || null;
     }, [launch]);
 
-    const { tokenBalance, error } = useTokenBalance(mintAddress ? { mintAddress } : null);
-    console.log("in collection, getting balance", tokenBalance);
+    const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
@@ -234,10 +233,8 @@ const CollectionSwapPage = () => {
 
         if (OraoRandoms.length === 0) return;
 
-        openAssetModal();
-
         mint_nft.current = false;
-    }, [OraoRandoms, openAssetModal]);
+    }, [OraoRandoms]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -277,6 +274,11 @@ const CollectionSwapPage = () => {
                 return;
             }
 
+            // if we are started to wait for randoms then open up the modal
+            if (!updated_data.random_address.equals(SYSTEM_KEY)) {
+                openAssetModal();
+            }
+
             if (updated_data.status < 2) {
                 asset_received.current = null;
                 asset_image.current = null;
@@ -313,22 +315,7 @@ const CollectionSwapPage = () => {
             mint_nft.current = true;
             setAssignedNFT(updated_data);
         },
-        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
-    );
-
-    const check_user_token_update = useCallback(
-        async (result: any) => {
-            //console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-            const [token_account] = TokenAccount.struct.deserialize(event_data);
-            let amount = bignum_to_num(token_account.amount);
-            // console.log("update quote amount", amount);
-
-            setTokenBalance(amount / Math.pow(10, launch.token_decimals));
-        },
-        [launch],
+        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance, openAssetModal],
     );
 
     const get_assignment_data = useCallback(async () => {
@@ -338,19 +325,6 @@ const CollectionSwapPage = () => {
         if (!check_initial_assignment.current) {
             return;
         }
-
-        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-
-        let user_token_account_key = getAssociatedTokenAddressSync(
-            launch.keys[CollectionKeys.MintAddress], // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            mint.token_program,
-        );
-
-        let user_amount = await request_token_amount("", user_token_account_key);
-        console.log("set token balance in GAD", user_amount / Math.pow(10, launch.token_decimals), " decimals ", launch.token_decimals);
-        setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -403,8 +377,6 @@ const CollectionSwapPage = () => {
             return;
         }
 
-        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-
         if (nft_account_ws_id.current === null) {
             //console.log("subscribe 2");
             let nft_assignment_account = PublicKey.findProgramAddressSync(
@@ -413,17 +385,7 @@ const CollectionSwapPage = () => {
             )[0];
             nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
         }
-
-        if (user_token_ws_id.current === null) {
-            let user_token_account_key = getAssociatedTokenAddressSync(
-                launch.keys[CollectionKeys.MintAddress], // mint
-                wallet.publicKey, // owner
-                true, // allow owner off curve
-                mint.token_program,
-            );
-            user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
-        }
-    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update, check_user_token_update]);
+    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update]);
 
     useEffect(() => {
         if (launch === null) return;
@@ -482,7 +444,7 @@ const CollectionSwapPage = () => {
 
     if (!launch) return <PageNotFound />;
 
-    const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
+    const enoughTokenBalance = tokenBalance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
 
     let progress_string = "";
     if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
@@ -632,7 +594,7 @@ const CollectionSwapPage = () => {
                                                 <HStack gap={1} opacity={0.5}>
                                                     <FaWallet size={12} color="white" />
                                                     <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                        {token_balance.toLocaleString()}
+                                                        {tokenBalance.toLocaleString()}
                                                     </Text>
                                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                                         {launch.token_symbol}
@@ -912,6 +874,7 @@ const CollectionSwapPage = () => {
                 </div>
                 <ReceivedAssetModal
                     curated={false}
+                    have_randoms={OraoRandoms.length > 0}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}

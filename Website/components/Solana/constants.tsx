@@ -8,7 +8,6 @@ export interface NetworkConfig {
     RAYDIUM_FEES: PublicKey;
     RPC_NODE: string;
     WSS_NODE: string;
-    IRYS_URL: string;
     COOK_FEES: PublicKey;
     // its useful to define a few strings and images here given we have eth on eclipse and sol on solana
     token: string;
@@ -23,7 +22,6 @@ const EclipseDevNetConfig: NetworkConfig = {
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
     RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
     WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
-    IRYS_URL: "https://devnet.irys.xyz",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
     token_image: "/images/eth.png",
@@ -31,13 +29,12 @@ const EclipseDevNetConfig: NetworkConfig = {
 };
 
 const EclipseMainNetConfig: NetworkConfig = {
-    PROD: false,
+    PROD: true,
     NETWORK: "eclipse",
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
-    WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
-    IRYS_URL: "https://devnet.irys.xyz",
+    RPC_NODE: "https://mainnetbeta-rpc.eclipse.xyz",
+    WSS_NODE: "wss://mainnetbeta-rpc.eclipse.xyz",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
     token_image: "/images/eth.png",
@@ -51,7 +48,6 @@ const DevNetConfig: NetworkConfig = {
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
     RPC_NODE: "https://nickie-qn2k6r-fast-devnet.helius-rpc.com",
     WSS_NODE: "wss://devnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
-    IRYS_URL: "https://devnet.irys.xyz",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "SOL",
     token_image: "/images/sol.png",
@@ -65,7 +61,6 @@ const MainNetConfig: NetworkConfig = {
     RAYDIUM_FEES: new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
     RPC_NODE: "https://kimmie-wuj3pm-fast-mainnet.helius-rpc.com",
     WSS_NODE: "wss://mainnet.helius-rpc.com/?api-key=8c0a541e-cdf4-4c1e-8bf9-de66a1962d6f",
-    IRYS_URL: "https://node2.irys.xyz",
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
     token: "SOL",
     token_image: "/images/sol.png",
@@ -98,7 +93,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = MainNetConfig;
+export let Config = DevNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,
