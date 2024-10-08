@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Head from "next/head";
 import { Card, CardBody, Flex, Stack, Text, Box, Button, Image, Progress, useDisclosure, HStack, Tooltip } from "@chakra-ui/react";
 import { IoSettingsSharp, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
@@ -8,7 +8,6 @@ import { AssignmentData, CollectionData, request_assignment_data } from "../../c
 import { PublicKey } from "@solana/web3.js";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import Loader from "../../components/loader";
-import { useCollection } from "../../hooks/collections/curated/useCollection";
 import { stockSoldPercentage } from "../../utils/stockSoldPercentage";
 import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -26,6 +25,7 @@ import formatPrice from "../../utils/formatPrice";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import ReleaseModal from "./releaseModal";
 import UseWalletConnection from "../../hooks/useWallet";
+import useTokenBalance from "../../hooks/data/useTokenBalance";
 
 const Badgers = () => {
     const collection_name = "badger";
@@ -34,7 +34,6 @@ const Badgers = () => {
     const [isMusicPlaying, setIsMusicPlaying] = useState(false);
     const [showControls, setShowControls] = useState(false);
     const [nft_balance, setNFTBalance] = useState<number>(0);
-    const [token_balance, setTokenBalance] = useState<number>(0);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
@@ -57,6 +56,13 @@ const Badgers = () => {
     const { collectionList, mintData } = useAppRoot();
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
     const check_initial_assignment = useRef<boolean>(true);
+
+    const mintAddress = useMemo(() => {
+        return launch?.keys?.[CollectionKeys.MintAddress] || null;
+    }, [launch]);
+
+    const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
+
     let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
     const modalStyle: ReceivedAssetModalStyle = {
@@ -138,15 +144,12 @@ const Badgers = () => {
     }, [connection]);
 
     useEffect(() => {
-        console.log("update randoms in effect", OraoRandoms);
         if (!mint_nft.current) return;
 
         if (OraoRandoms.length === 0) return;
 
-        openAssetModal();
-
         mint_nft.current = false;
-    }, [OraoRandoms, openAssetModal]);
+    }, [OraoRandoms]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -185,6 +188,11 @@ const Badgers = () => {
                 return;
             }
 
+            // if we are started to wait for randoms then open up the modal
+            if (!updated_data.random_address.equals(SYSTEM_KEY)) {
+                openAssetModal();
+            }
+
             if (updated_data.status < 2) {
                 asset_received.current = null;
                 asset_image.current = null;
@@ -220,21 +228,7 @@ const Badgers = () => {
             mint_nft.current = true;
             setAssignedNFT(updated_data);
         },
-        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
-    );
-    const check_user_token_update = useCallback(
-        async (result: any) => {
-            //console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-            const [token_account] = TokenAccount.struct.deserialize(event_data);
-            let amount = bignum_to_num(token_account.amount);
-            //console.log("update quote amount", amount);
-
-            setTokenBalance(amount / Math.pow(10, launch.token_decimals));
-        },
-        [launch],
+        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance, openAssetModal],
     );
 
     const get_assignment_data = useCallback(async () => {
@@ -243,18 +237,6 @@ const Badgers = () => {
         if (!check_initial_assignment.current) {
             return;
         }
-
-        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-
-        let user_token_account_key = getAssociatedTokenAddressSync(
-            launch.keys[CollectionKeys.MintAddress], // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            mint.token_program,
-        );
-
-        let user_amount = await request_token_amount("", user_token_account_key);
-        setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -316,17 +298,7 @@ const Badgers = () => {
             )[0];
             nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
         }
-
-        if (user_token_ws_id.current === null) {
-            let user_token_account_key = getAssociatedTokenAddressSync(
-                launch.keys[CollectionKeys.MintAddress], // mint
-                wallet.publicKey, // owner
-                true, // allow owner off curve
-                mint.token_program,
-            );
-            user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
-        }
-    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update, check_user_token_update]);
+    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update]);
 
     useEffect(() => {
         if (launch === null) return;
@@ -370,7 +342,7 @@ const Badgers = () => {
     }
 
     if (launch === null) return <Loader />;
-    const enoughTokenBalance = token_balance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
+    const enoughTokenBalance = tokenBalance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
     return (
         <>
             <Head>
@@ -567,7 +539,7 @@ const Badgers = () => {
                                             Your NFTs: {nft_balance}
                                         </Text>
                                         <Text fontSize={["sm", "sm", "md", "lg", "xl"]} color="rgb(171,181,181)">
-                                            Your ${launch.token_symbol}: {token_balance.toLocaleString()}
+                                            Your ${launch.token_symbol}: {tokenBalance.toLocaleString()}
                                         </Text>
                                     </HStack>
                                 </Flex>
@@ -786,6 +758,7 @@ const Badgers = () => {
                 </Flex>
                 <ReceivedAssetModal
                     curated={false}
+                    have_randoms={OraoRandoms.length > 0}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}

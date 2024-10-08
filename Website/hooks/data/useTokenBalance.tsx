@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { TokenAccount, bignum_to_num, request_token_amount } from "../components/Solana/state";
-import useAppRoot from "../context/useAppRoot";
+import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
+import useAppRoot from "../../context/useAppRoot";
 
 interface UseTokenBalanceProps {
     mintAddress: PublicKey | null;

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import Image from "next/image";
@@ -24,6 +24,7 @@ import Loader from "../../components/loader";
 import ReleaseModal from "./releaseModal";
 import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
 import useMintNFT from "../../hooks/collections/useMintNFT";
+import useTokenBalance from "../../hooks/data/useTokenBalance";
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -42,7 +43,6 @@ const Pepemon = () => {
     const [launch, setCollectionData] = useState<CollectionData | null>(null);
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [nft_balance, setNFTBalance] = useState<number>(0);
-    const [token_balance, setTokenBalance] = useState<number>(0);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
     const collection_key = useRef<PublicKey | null>(null);
@@ -66,6 +66,12 @@ const Pepemon = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
 
     const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
+
+    const mintAddress = useMemo(() => {
+        return launch?.keys?.[CollectionKeys.MintAddress] || null;
+    }, [launch]);
+
+    const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
 
     let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
 
@@ -131,15 +137,12 @@ const Pepemon = () => {
     }, [connection]);
 
     useEffect(() => {
-        console.log("randoms have been updated", OraoRandoms);
         if (!mint_nft.current) return;
 
         if (OraoRandoms.length === 0) return;
 
-        openAssetModal();
-
         mint_nft.current = false;
-    }, [OraoRandoms, openAssetModal]);
+    }, [OraoRandoms]);
 
     const check_launch_update = useCallback(async (result: any) => {
         //console.log("collection", result);
@@ -175,8 +178,14 @@ const Pepemon = () => {
             const [updated_data] = AssignmentData.struct.deserialize(account_data);
 
             console.log("in check assignment", updated_data, updated_data.nft_address.toString());
+
             if (assigned_nft !== null && updated_data.num_interations === assigned_nft.num_interations) {
                 return;
+            }
+
+            // if we are started to wait for randoms then open up the modal
+            if (!updated_data.random_address.equals(SYSTEM_KEY)) {
+                openAssetModal();
             }
 
             if (updated_data.status < 2) {
@@ -218,22 +227,7 @@ const Pepemon = () => {
             mint_nft.current = true;
             setAssignedNFT(updated_data);
         },
-        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance],
-    );
-
-    const check_user_token_update = useCallback(
-        async (result: any) => {
-            //console.log(result);
-            // if we have a subscription field check against ws_id
-
-            let event_data = result.data;
-            const [token_account] = TokenAccount.struct.deserialize(event_data);
-            let amount = bignum_to_num(token_account.amount);
-            //console.log("update quote amount", amount);
-
-            setTokenBalance(amount / Math.pow(10, launch.token_decimals));
-        },
-        [launch],
+        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance, openAssetModal],
     );
 
     const get_assignment_data = useCallback(async () => {
@@ -242,18 +236,6 @@ const Pepemon = () => {
         if (!check_initial_assignment.current) {
             return;
         }
-
-        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
-
-        let user_token_account_key = getAssociatedTokenAddressSync(
-            launch.keys[CollectionKeys.MintAddress], // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-            mint.token_program,
-        );
-
-        let user_amount = await request_token_amount("", user_token_account_key);
-        setTokenBalance(user_amount / Math.pow(10, launch.token_decimals));
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -316,17 +298,7 @@ const Pepemon = () => {
             )[0];
             nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
         }
-
-        if (user_token_ws_id.current === null) {
-            let user_token_account_key = getAssociatedTokenAddressSync(
-                launch.keys[CollectionKeys.MintAddress], // mint
-                wallet.publicKey, // owner
-                true, // allow owner off curve
-                mint.token_program,
-            );
-            user_token_ws_id.current = connection.onAccountChange(user_token_account_key, check_user_token_update, "confirmed");
-        }
-    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update, check_user_token_update]);
+    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update]);
 
     useEffect(() => {
         if (launch === null) return;
@@ -542,7 +514,7 @@ const Pepemon = () => {
                         }}
                     >
                         <Text m={0} fontWeight={500} fontSize={md ? 30 : 32} className="font-face-pk">
-                            PEPEBALLS: {token_balance.toLocaleString()}
+                            PEPEBALLS: {tokenBalance.toLocaleString()}
                         </Text>
                         <Text m={0} fontWeight={500} fontSize={md ? 30 : 32} className="font-face-pk">
                             PEPEMON OWNED: {nft_balance}
@@ -558,6 +530,7 @@ const Pepemon = () => {
 
                 <ReceivedAssetModal
                     curated={true}
+                    have_randoms={OraoRandoms.length > 0}
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}

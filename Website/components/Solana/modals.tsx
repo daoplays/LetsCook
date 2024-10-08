@@ -131,6 +131,7 @@ interface RecievedAssetModalProps {
     style: ReceivedAssetModalStyle;
     curated?: boolean;
     isLoading: boolean;
+    have_randoms: boolean;
 }
 
 export interface ReceivedAssetModalStyle {
@@ -162,6 +163,7 @@ export function ReceivedAssetModal({
     style,
     curated,
     isLoading,
+    have_randoms,
 }: RecievedAssetModalProps) {
     const { sm } = useResponsive();
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
@@ -174,6 +176,64 @@ export function ReceivedAssetModal({
     }
 
     if (assignment_data === null) return <></>;
+
+    let waiting = !assignment_data.random_address.equals(SYSTEM_KEY) && !have_randoms;
+    let success = assignment_data.status === 2;
+    let failed = assignment_data.status === 1;
+    let checking = assignment_data.status === 0;
+
+    let height = success ? style.succsss_h : failed ? style.failed_h : style.checking_h;
+    let width = success ? style.success_w : failed ? style.failed_w : style.checking_w;
+
+    if (sm) {
+        height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
+        width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
+    }
+
+    // check if we are in a state where we are just waiting for random numbers
+    if (waiting) {
+        console.log("waiting for random data");
+        return (
+            <>
+                <Modal size="md" isCentered isOpen={isWarningOpened} onClose={closeWarning} motionPreset="slideInBottom">
+                    <ModalOverlay />
+
+                    <ModalContent h={height} w={width} style={{ background: "transparent" }}>
+                        <ModalBody
+                            bg={curated ? "url(/curatedLaunches/pepemon/vertical.png)" : "url(/images/terms-container.png)"}
+                            bgSize={curated ? "cover" : "contain"}
+                            bgRepeat={!curated && "no-repeat"}
+                            p={sm ? 10 : 14}
+                        >
+                            <VStack h="100%" position="relative">
+                                <Text
+                                    align="center"
+                                    fontSize={curated ? 50 : "large"}
+                                    style={{
+                                        fontFamily: style.fontFamily,
+                                        color: style.fontColor,
+                                        fontWeight: "semibold",
+                                    }}
+                                >
+                                    {"Generating Random Data"}
+                                </Text>
+                                <VStack align="center" fontFamily="ReemKufiRegular">
+                                    <img
+                                        loading="lazy"
+                                        src={style.check_image}
+                                        width={200}
+                                        height={200}
+                                        alt="the cooks"
+                                        style={{ borderRadius: "12px" }}
+                                    />
+                                </VStack>
+                            </VStack>
+                        </ModalBody>
+                    </ModalContent>
+                </Modal>
+            </>
+        );
+    }
 
     let asset_name = collection.nft_name + " #" + (assignment_data.nft_index + 1).toString();
     let image_url = "";
@@ -200,18 +260,6 @@ export function ReceivedAssetModal({
               : filterAttributes(asset.current.attributes.attributeList);
 
     //console.log("image_url: ", asset.current.attributes.attributeList, asset_image.current);
-
-    let success = assignment_data.status === 2;
-    let failed = assignment_data.status === 1;
-    let Checking = assignment_data.status === 0;
-
-    let height = success ? style.succsss_h : failed ? style.failed_h : style.checking_h;
-    let width = success ? style.success_w : failed ? style.failed_w : style.checking_w;
-
-    if (sm) {
-        height = success ? style.sm_succsss_h : failed ? style.sm_failed_h : style.sm_checking_h;
-        width = success ? style.sm_success_w : failed ? style.sm_failed_w : style.sm_checking_w;
-    }
 
     let globalLoading = isLoading || isMintLoading || isMintRandomLoading;
     //console.log("globalLoading: ", globalLoading, isLoading, isMintLoading, isMintRandomLoading);
@@ -271,7 +319,7 @@ export function ReceivedAssetModal({
                                     {curated ? "PEPEMON ESCAPED" : "No NFT Received!"}
                                 </Text>
                             )}
-                            {Checking && (
+                            {checking && (
                                 <Text
                                     align="center"
                                     fontSize={curated ? 50 : "large"}
@@ -285,7 +333,7 @@ export function ReceivedAssetModal({
                                 </Text>
                             )}
                             <VStack align="center" fontFamily="ReemKufiRegular">
-                                {Checking && (
+                                {checking && (
                                     <img
                                         loading="lazy"
                                         src={style.check_image}
@@ -347,7 +395,7 @@ export function ReceivedAssetModal({
                                     ))}
                                 </VStack>
                             )}
-                            {curated && Checking && (
+                            {curated && checking && (
                                 <div
                                     style={{
                                         cursor: "pointer",
@@ -377,7 +425,7 @@ export function ReceivedAssetModal({
                                     )}
                                 </div>
                             )}
-                            {!curated && Checking && (
+                            {!curated && checking && (
                                 <VStack>
                                     <button
                                         type="button"

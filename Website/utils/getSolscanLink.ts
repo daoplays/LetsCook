@@ -11,8 +11,7 @@ export const getSolscanLink = (key: PublicKey, type: string) => {
     if (Config.NETWORK === "eclipse") {
         if (Config.PROD) {
             network = `?cluster=custom&customUrl=https://mainnetbeta-rpc.eclipse.xyz`;
-        }
-        else {
+        } else {
             network = `?cluster=custom&customUrl=https://devnet.dev2.eclipsenetwork.xyz`;
         }
     }
