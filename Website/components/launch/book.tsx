@@ -467,7 +467,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 </form>
             </VStack>
 
-            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} launchData={create_LaunchData(newLaunchData.current)} />
+            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} data={create_LaunchData(newLaunchData.current)} />
         </Center>
     );
 };

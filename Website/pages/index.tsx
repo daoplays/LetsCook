@@ -10,9 +10,9 @@ import { isHomePageOnly } from "../constant/root";
 import { LaunchData } from "../components/Solana/state";
 
 const Home = () => {
-    const { homePageList } = useAppRoot();
+    const { homePageList, listingData } = useAppRoot();
 
-    if (!homePageList) return <Loader />;
+    if (!homePageList || !listingData) return <Loader />;
 
     if (homePageList.size <= 0) return <EmptyLaunch />;
 
@@ -20,6 +20,9 @@ const Home = () => {
     homePageList.forEach((launch) => {
         homePageVec.push(launch);
     });
+
+    let featuredLaunch = homePageVec[0];
+    let featuredListing = listingData.get(featuredLaunch.listing.toString());
 
     return (
         <>
@@ -30,7 +33,7 @@ const Home = () => {
                 <EmptyLaunch />
             ) : (
                 <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-                    <FeaturedBanner featuredLaunch={homePageVec[0]} isHomePage={true} />
+                    <FeaturedBanner featuredLaunch={homePageVec[0]} featuredListing={featuredListing} isHomePage={true} />
                     <GameTable launch_list={homePageList} filters={defaultLaunchTableFilters} />
                 </main>
             )}

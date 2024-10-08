@@ -942,7 +942,7 @@ export class LaunchData {
     );
 }
 
-export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchData {
+export function create_LaunchData(new_launch_data: LaunchDataUserInput): [LaunchData, ListingData] {
     // console.log(new_launch_data);
     // console.log(new_launch_data.opendate.toString());
     // console.log(new_launch_data.closedate.toString());
@@ -1004,7 +1004,7 @@ export function create_LaunchData(new_launch_data: LaunchDataUserInput): LaunchD
         [],
     );
 
-    return data;
+    return [data, listing];
 }
 
 export function create_LaunchDataInput(launch_data: LaunchData, listing: ListingData, edit_mode: boolean): LaunchDataUserInput {

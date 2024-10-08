@@ -165,7 +165,7 @@ const TokenMintPage = () => {
 
     if (!pageName) return;
 
-    if (isLoading || launchData === null) return <Loader />;
+    if (isLoading || launchData === null || listing === null) return <Loader />;
 
     if (!launchData) return <PageNotFound />;
 
@@ -189,7 +189,7 @@ const TokenMintPage = () => {
                 <title>Let&apos;s Cook | {launchData.page_name}</title>
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-                <FeaturedBanner featuredLaunch={launchData} isHomePage={false} />
+                <FeaturedBanner featuredLaunch={launchData} featuredListing={listing} isHomePage={false} />
                 <Center>
                     <VStack spacing={5} my={3} px={5} width={md ? "100%" : "80%"}>
                         <Timespan launchData={launchData} />

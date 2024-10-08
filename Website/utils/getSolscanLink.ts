@@ -4,6 +4,11 @@ import { LaunchData } from "../components/Solana/state";
 import { CollectionData } from "../components/collection/collectionState";
 
 export const getSolscanLink = (key: PublicKey, type: string) => {
+
+    if (!key) {
+        return "";
+    }
+    
     let network = "";
     if (Config.NETWORK === "devnet") {
         network = `?cluster=devnet`;
