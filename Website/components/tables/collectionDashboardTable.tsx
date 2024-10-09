@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import { CollectionData, create_CollectionDataInput, getHybridPlugins, HybridPluginData } from "../collection/collectionState";
+import { CollectionData, create_CollectionDataInput, getCollectionPlugins, CollectionPluginData } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
 import useEditCollection from "../../hooks/collections/useEditCollection";
@@ -117,7 +117,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         return <></>;
     }
 
-    let plugin_data: HybridPluginData = getHybridPlugins(launch);
+    let plugin_data: CollectionPluginData = getCollectionPlugins(launch);
     let token_mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
     if (!token_mint) {
         console.log("Token mint not found");
@@ -191,7 +191,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             </td>
             <td style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {plugin_data.mint_only ? "--" : launch.swap_fee / 100}{" "}
+                    {plugin_data.mintOnly ? "--" : launch.swap_fee / 100}{" "}
                 </Text>
             </td>
             <td style={{ minWidth: "170px" }}>

@@ -112,7 +112,6 @@ const CollectionSwapPage = () => {
 
     const collection_key = useRef<PublicKey | null>(null);
 
-    const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
 
     const mint_nft = useRef<boolean>(false);
@@ -126,7 +125,7 @@ const CollectionSwapPage = () => {
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
-    const { collection, error: collectionError } = useCollection({ pageName: pageName as string | null });
+    const { collection, collectionPlugins, error: collectionError } = useCollection({ pageName: pageName as string | null });
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
@@ -188,15 +187,14 @@ const CollectionSwapPage = () => {
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
         setOutAmount(final_output / Math.pow(10, collection.token_decimals));
 
-        // console.log("launch price: ", bignum_to_num(launch.swap_price));
-        // check relevant plugins
-        for (let i = 0; i < collection.plugins.length; i++) {
-            if (collection.plugins[i]["__kind"] === "Whitelist") {
-                let whitelist_key = collection.plugins[i]["key"];
-                setWhiteList(mintData.get(whitelist_key.toString()));
-            }
+        if (collectionPlugins.whitelistKey) {
+            setWhiteList(mintData.get(collectionPlugins.whitelistKey.toString()));
         }
-    }, [collection, mintData, wallet]);
+
+        if (collectionPlugins.mintOnly) {
+            setIsTokenToNFT(true);
+        }
+    }, [collection, collectionPlugins, mintData, wallet]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -204,10 +202,6 @@ const CollectionSwapPage = () => {
         return () => {
             // console.log("in use effect return");
             const unsub = async () => {
-                if (launch_account_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
-                    launch_account_ws_id.current = null;
-                }
                 if (nft_account_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(nft_account_ws_id.current);
                     nft_account_ws_id.current = null;
@@ -363,45 +357,11 @@ const CollectionSwapPage = () => {
             get_assignment_data();
         }
 
-        if (check_initial_nft_balance.current) {
+        if (collection_key.current && check_initial_nft_balance.current) {
             check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
             check_initial_nft_balance.current = false;
         }
     }, [collection, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
-
-    const [probString, setProbString] = useState<string>("");
-    const [mintOnly, setMintOnly] = useState<boolean>(false);
-    const [wlEndDate, setWlEndDate] = useState<Date | null>(null);
-
-    useEffect(() => {
-        if (collection) {
-            const { prob_string_val, is_mint_only, wl_end_date_val } = collection.plugins.reduce(
-                (acc, plugin) => {
-                    switch (plugin["__kind"]) {
-                        case "MintProbability":
-                            acc.prob_string_val = `(${plugin["mint_prob"]}% mint chance)`;
-                            break;
-                        case "MintOnly":
-                            acc.is_mint_only = true;
-                            // Need to set isTokenToNFT to true to make it token to NFT only
-                            setIsTokenToNFT(true);
-                            break;
-                        case "Whitelist":
-                            acc.wl_end_date_val = new Date(bignum_to_num(plugin["phase_end"]));
-                            break;
-                        default:
-                            break;
-                    }
-                    return acc;
-                },
-                { prob_string_val: "", is_mint_only: false, wl_end_date_val: null },
-            );
-
-            setProbString(prob_string_val);
-            setMintOnly(is_mint_only);
-            setWlEndDate(wl_end_date_val);
-        }
-    }, [collection]);
 
     if (!pageName) return;
 
@@ -487,39 +447,42 @@ const CollectionSwapPage = () => {
                             </VStack>
 
                             <VStack pb={white_list && 6}>
-                                {white_list && wlEndDate && (wlEndDate.getTime() === 0 || new Date().getTime() < wlEndDate.getTime()) && (
-                                    <VStack my={3}>
-                                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
-                                            Whitelist Token Required: <br />{" "}
-                                        </Text>
-                                        <HStack justifyContent="center">
-                                            <Text color={"white"} fontFamily="ReemKufiRegular" mb={0}>
-                                                CA: {trimAddress(white_list.mint.address.toString())}
+                                {white_list &&
+                                    collectionPlugins.whitelistPhaseEnd &&
+                                    (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
+                                        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime()) && (
+                                        <VStack my={3}>
+                                            <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
+                                                Whitelist Token Required: <br />{" "}
                                             </Text>
-                                            <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                                <Link
-                                                    href={getSolscanLink(white_list.mint.address, "Token")}
-                                                    target="_blank"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <Image
-                                                        src="/images/solscan.png"
-                                                        width={lg ? 22 : 22}
-                                                        height={lg ? 22 : 22}
-                                                        alt="Solscan icon"
-                                                    />
-                                                </Link>
-                                            </Tooltip>
-                                        </HStack>
-                                        {wlEndDate &&
-                                            Math.floor(wlEndDate.getTime() / 1000) > 0 &&
-                                            new Date().getTime() < wlEndDate.getTime() && (
-                                                <Text align="center" mb={0} opacity="50%">
-                                                    Until: {wlEndDate.toLocaleString()}
+                                            <HStack justifyContent="center">
+                                                <Text color={"white"} fontFamily="ReemKufiRegular" mb={0}>
+                                                    CA: {trimAddress(white_list.mint.address.toString())}
                                                 </Text>
-                                            )}
-                                    </VStack>
-                                )}
+                                                <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                                                    <Link
+                                                        href={getSolscanLink(white_list.mint.address, "Token")}
+                                                        target="_blank"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Image
+                                                            src="/images/solscan.png"
+                                                            width={lg ? 22 : 22}
+                                                            height={lg ? 22 : 22}
+                                                            alt="Solscan icon"
+                                                        />
+                                                    </Link>
+                                                </Tooltip>
+                                            </HStack>
+                                            {collectionPlugins.whitelistPhaseEnd &&
+                                                Math.floor(collectionPlugins.whitelistPhaseEnd.getTime() / 1000) > 0 &&
+                                                new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime() && (
+                                                    <Text align="center" mb={0} opacity="50%">
+                                                        Until: {collectionPlugins.whitelistPhaseEnd.toLocaleString()}
+                                                    </Text>
+                                                )}
+                                        </VStack>
+                                    )}
                                 <VStack
                                     my="auto"
                                     h="100%"
@@ -603,7 +566,7 @@ const CollectionSwapPage = () => {
                                             </InputGroup>
                                         </VStack>
 
-                                        {!mintOnly && (
+                                        {!collectionPlugins.mintOnly && (
                                             <LuArrowUpDown
                                                 size={24}
                                                 color="white"
@@ -684,7 +647,7 @@ const CollectionSwapPage = () => {
                                                                 isLoading={isLoading}
                                                                 isDisabled={!enoughTokenBalance || isLoading}
                                                             >
-                                                                Confirm {probString}
+                                                                Confirm {collectionPlugins.probability}
                                                             </Button>
                                                         </Tooltip>
                                                     ) : (
@@ -703,7 +666,7 @@ const CollectionSwapPage = () => {
                                                             }}
                                                             isLoading={isLoading}
                                                         >
-                                                            Confirm {probString}
+                                                            Confirm {collectionPlugins.probability}
                                                         </Button>
                                                     )}
                                                 </HStack>

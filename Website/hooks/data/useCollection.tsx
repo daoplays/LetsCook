@@ -1,11 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useConnection } from "@solana/wallet-adapter-react";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
 import useAppRoot from "../../context/useAppRoot";
-import { CollectionData } from "../../components/collection/collectionState";
-import { PublicKey } from "@solana/web3.js";
-import { PROGRAM } from "../../components/Solana/constants";
+import { CollectionData, CollectionPluginData, getCollectionPlugins } from "../../components/collection/collectionState";
 
 interface useCollectionProps {
     pageName: string | null;
@@ -15,6 +10,7 @@ interface useCollectionProps {
 const useCollection = (props: useCollectionProps | null) => {
     // State to store the token balance and any error messages
     const [collection, setCollection] = useState<CollectionData | null>(null);
+    const [collectionPlugins, setCollectionPlugins] = useState<CollectionPluginData | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Get the collectionList from the app's root context
@@ -45,6 +41,8 @@ const useCollection = (props: useCollectionProps | null) => {
         }
 
         setCollection(data);
+        setCollectionPlugins(getCollectionPlugins(data));
+
         setError(null);
     }, [collectionList, pageName]);
 
@@ -53,7 +51,7 @@ const useCollection = (props: useCollectionProps | null) => {
     }, [fetchCollection]);
 
     // Return the current token balance and any error message
-    return { collection, error };
+    return { collection, collectionPlugins, error };
 };
 
 export default useCollection;
