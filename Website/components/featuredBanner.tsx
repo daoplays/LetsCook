@@ -119,7 +119,9 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                 <HStack spacing={3} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={sm ? "large" : "x-large"}>
                                         CA:{" "}
-                                        {featuredLaunch && featuredLaunch.keys && featuredListing.mint ? trimAddress(featuredListing.mint.toString()) : ""}
+                                        {featuredLaunch && featuredLaunch.keys && featuredListing.mint
+                                            ? trimAddress(featuredListing.mint.toString())
+                                            : ""}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -128,7 +130,9 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    featuredLaunch && featuredLaunch.keys && featuredListing.mint ? featuredListing.mint.toString() : "",
+                                                    featuredLaunch && featuredLaunch.keys && featuredListing.mint
+                                                        ? featuredListing.mint.toString()
+                                                        : "",
                                                 );
                                             }}
                                         >
@@ -154,7 +158,9 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredListing.mint ? featuredListing.mint.toString() : ""
+                                                featuredLaunch && featuredLaunch.keys && featuredListing.mint
+                                                    ? featuredListing.mint.toString()
+                                                    : ""
                                             }`}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
