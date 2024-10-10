@@ -179,7 +179,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const orao_randomness = useRef<PublicKey | null>(null);
 
     const check_randomness_account = useCallback(async (result: any) => {
-        console.log("randomness_update", result);
+        //console.log("randomness_update", result);
         // if we have a subscription field check against ws_id
 
         let event_data = result.data;
@@ -226,11 +226,11 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
                 //console.log(randomness);
                 setIsLoading(false);
             } else {
-                //console.log("register websocket for account ", orao_randomness.current);
+                //console.log("register websocket for account 1 ", orao_randomness.current);
                 orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
             }
         } else {
-            console.log("register websocket for account ", orao_randomness.current);
+            //console.log("register websocket for account 2 ", orao_randomness.current);
             orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
         }
 
@@ -360,7 +360,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
             console.log("check extra accounts");
             let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
-            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
+            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(Uint8Array.from(hook_accounts));
             console.log(extra_account_metas);
             for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
                 console.log(extra_account_metas.extraAccountsList.extraAccounts[i]);
@@ -484,11 +484,7 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
             console.log("claim nft sig at ", new Date(), signature);
 

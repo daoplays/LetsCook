@@ -98,8 +98,7 @@ const CollectionSwapPage = () => {
     const { pageName } = router.query;
     const { xs, sm, md, lg, xl } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
-    const { collectionList, mintData } = useAppRoot();
-    const [launch, setCollectionData] = useState<CollectionData | null>(null);
+    const { mintData } = useAppRoot();
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
     const [out_amount, setOutAmount] = useState<number>(0);
     const [nft_balance, setNFTBalance] = useState<number>(0);
@@ -113,13 +112,10 @@ const CollectionSwapPage = () => {
 
     const collection_key = useRef<PublicKey | null>(null);
 
-    const launch_account_ws_id = useRef<number | null>(null);
     const nft_account_ws_id = useRef<number | null>(null);
-    const user_token_ws_id = useRef<number | null>(null);
 
     const mint_nft = useRef<boolean>(false);
     const check_initial_assignment = useRef<boolean>(true);
-    const check_initial_collection = useRef<boolean>(true);
     const check_initial_nft_balance = useRef<boolean>(true);
 
     const asset_received = useRef<AssetV1 | null>(null);
@@ -129,15 +125,17 @@ const CollectionSwapPage = () => {
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
-    const { MintNFT, isLoading: isMintLoading } = useMintNFT(launch);
-    const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(launch);
+    const { collection, collectionPlugins, error: collectionError } = useCollection({ pageName: pageName as string | null });
 
-    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(launch);
-    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(launch);
+    const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
+    const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
+
+    const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
+    const { ClaimNFT, isLoading: isClaimLoading, OraoRandoms, setOraoRandoms } = useClaimNFT(collection);
 
     const mintAddress = useMemo(() => {
-        return launch?.keys?.[CollectionKeys.MintAddress] || null;
-    }, [launch]);
+        return collection?.keys?.[CollectionKeys.MintAddress] || null;
+    }, [collection]);
 
     const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
 
@@ -163,32 +161,22 @@ const CollectionSwapPage = () => {
     };
 
     useEffect(() => {
-        if (collectionList === null || mintData === null) return;
+        if (!collection || !mintData) return;
 
-        let launch = collectionList.get(pageName.toString());
+        collection_key.current = collection.keys[CollectionKeys.CollectionMint];
 
-        if (launch === null) return;
-
-        //console.log("other set collection", launch);
-
-        if (check_initial_collection.current) {
-            setCollectionData(launch);
-            collection_key.current = launch.keys[CollectionKeys.CollectionMint];
-            check_initial_collection.current = false;
-        }
-
-        let mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+        let mint = mintData.get(collection.keys[CollectionKeys.MintAddress].toString());
 
         setTokenMint(mint);
 
         let transfer_fee_config = getTransferFeeConfig(mint.mint);
         let input_fee =
-            transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(launch.swap_price)));
-        let swap_price = bignum_to_num(launch.swap_price);
+            transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(collection.swap_price)));
+        let swap_price = bignum_to_num(collection.swap_price);
 
         let input_amount = swap_price - input_fee;
 
-        let swap_fee = Math.floor((input_amount * launch.swap_fee) / 100 / 100);
+        let swap_fee = Math.floor((input_amount * collection.swap_fee) / 100 / 100);
 
         let output = input_amount - swap_fee;
 
@@ -197,17 +185,16 @@ const CollectionSwapPage = () => {
         let final_output = output - output_fee;
 
         //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
-        setOutAmount(final_output / Math.pow(10, launch.token_decimals));
+        setOutAmount(final_output / Math.pow(10, collection.token_decimals));
 
-        // console.log("launch price: ", bignum_to_num(launch.swap_price));
-        // check relevant plugins
-        for (let i = 0; i < launch.plugins.length; i++) {
-            if (launch.plugins[i]["__kind"] === "Whitelist") {
-                let whitelist_key = launch.plugins[i]["key"];
-                setWhiteList(mintData.get(whitelist_key.toString()));
-            }
+        if (collectionPlugins.whitelistKey) {
+            setWhiteList(mintData.get(collectionPlugins.whitelistKey.toString()));
         }
-    }, [collectionList, pageName, mintData, wallet]);
+
+        if (collectionPlugins.mintOnly) {
+            setIsTokenToNFT(true);
+        }
+    }, [collection, collectionPlugins, mintData, wallet]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -215,10 +202,6 @@ const CollectionSwapPage = () => {
         return () => {
             // console.log("in use effect return");
             const unsub = async () => {
-                if (launch_account_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(launch_account_ws_id.current);
-                    launch_account_ws_id.current = null;
-                }
                 if (nft_account_ws_id.current !== null) {
                     await connection.removeAccountChangeListener(nft_account_ws_id.current);
                     nft_account_ws_id.current = null;
@@ -235,20 +218,6 @@ const CollectionSwapPage = () => {
 
         mint_nft.current = false;
     }, [OraoRandoms]);
-
-    const check_launch_update = useCallback(async (result: any) => {
-        //console.log("collection", result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-
-        //console.log("have collection data", event_data, launch_account_ws_id.current);
-        let account_data = Buffer.from(event_data, "base64");
-
-        const [updated_data] = CollectionData.struct.deserialize(account_data);
-
-        setCollectionData(updated_data);
-    }, []);
 
     const check_assignment_update = useCallback(
         async (result: any) => {
@@ -284,7 +253,7 @@ const CollectionSwapPage = () => {
                 asset_image.current = null;
             } else {
                 let nft_index = updated_data.nft_index;
-                let json_url = launch.nft_meta_url + nft_index + ".json";
+                let json_url = collection.nft_meta_url + nft_index + ".json";
                 //console.log(json_url);
                 let uri_json = await fetch(json_url).then((res) => res.json());
                 asset_image.current = uri_json;
@@ -315,19 +284,19 @@ const CollectionSwapPage = () => {
             mint_nft.current = true;
             setAssignedNFT(updated_data);
         },
-        [launch, assigned_nft, wallet, setOwnedAssets, setNFTBalance, openAssetModal],
+        [collection, assigned_nft, wallet, setOwnedAssets, setNFTBalance, openAssetModal],
     );
 
     const get_assignment_data = useCallback(async () => {
         //console.log("get assignment data", launch === null, mintData === null);
-        if (launch === null || mintData === null) return;
+        if (collection === null || mintData === null) return;
 
         if (!check_initial_assignment.current) {
             return;
         }
 
         let nft_assignment_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+            [wallet.publicKey.toBytes(), collection.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
         )[0];
 
@@ -358,37 +327,27 @@ const CollectionSwapPage = () => {
 
         //console.log(assignment_data);
         setAssignedNFT(assignment_data);
-    }, [launch, wallet, mintData, setOraoRandoms]);
+    }, [collection, wallet, mintData, setOraoRandoms]);
 
     useEffect(() => {
-        if (launch === null) return;
+        if (!collection) return;
 
-        if (launch_account_ws_id.current === null) {
-            //console.log("subscribe 1");
-            let launch_data_account = PublicKey.findProgramAddressSync(
-                [Buffer.from(launch.page_name), Buffer.from("Collection")],
-                PROGRAM,
-            )[0];
-
-            launch_account_ws_id.current = connection.onAccountChange(launch_data_account, check_launch_update, "confirmed");
-        }
-
-        if (wallet === null || wallet.publicKey === null || mintData === null) {
+        if (wallet === null || wallet.publicKey === null) {
             return;
         }
 
         if (nft_account_ws_id.current === null) {
             //console.log("subscribe 2");
             let nft_assignment_account = PublicKey.findProgramAddressSync(
-                [wallet.publicKey.toBytes(), launch.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
+                [wallet.publicKey.toBytes(), collection.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
                 PROGRAM,
             )[0];
             nft_account_ws_id.current = connection.onAccountChange(nft_assignment_account, check_assignment_update, "confirmed");
         }
-    }, [wallet, connection, launch, mintData, check_launch_update, check_assignment_update]);
+    }, [wallet, connection, collection, check_assignment_update]);
 
     useEffect(() => {
-        if (launch === null) return;
+        if (collection === null) return;
 
         if (wallet === null || wallet.publicKey === null) {
             return;
@@ -398,59 +357,25 @@ const CollectionSwapPage = () => {
             get_assignment_data();
         }
 
-        if (check_initial_nft_balance.current) {
+        if (collection_key.current && check_initial_nft_balance.current) {
             check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
             check_initial_nft_balance.current = false;
         }
-    }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
-
-    const [probString, setProbString] = useState<string>("");
-    const [mintOnly, setMintOnly] = useState<boolean>(false);
-    const [wlEndDate, setWlEndDate] = useState<Date | null>(null);
-
-    useEffect(() => {
-        if (launch) {
-            const { prob_string_val, is_mint_only, wl_end_date_val } = launch.plugins.reduce(
-                (acc, plugin) => {
-                    switch (plugin["__kind"]) {
-                        case "MintProbability":
-                            acc.prob_string_val = `(${plugin["mint_prob"]}% mint chance)`;
-                            break;
-                        case "MintOnly":
-                            acc.is_mint_only = true;
-                            // Need to set isTokenToNFT to true to make it token to NFT only
-                            setIsTokenToNFT(true);
-                            break;
-                        case "Whitelist":
-                            acc.wl_end_date_val = new Date(bignum_to_num(plugin["phase_end"]));
-                            break;
-                        default:
-                            break;
-                    }
-                    return acc;
-                },
-                { prob_string_val: "", is_mint_only: false, wl_end_date_val: null },
-            );
-
-            setProbString(prob_string_val);
-            setMintOnly(is_mint_only);
-            setWlEndDate(wl_end_date_val);
-        }
-    }, [launch]);
+    }, [collection, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     if (!pageName) return;
 
-    if (launch === null) return <Loader />;
+    if (collection === null || token_mint === null) return <Loader />;
 
-    if (!launch) return <PageNotFound />;
+    if (!collection) return <PageNotFound />;
 
-    const enoughTokenBalance = tokenBalance >= bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals);
+    const enoughTokenBalance = tokenBalance >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
     let progress_string = "";
-    if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
-        progress_string = launch.num_available.toString() + " / " + launch.total_supply.toString();
+    if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
+        progress_string = collection.num_available.toString() + " / " + collection.total_supply.toString();
     }
-    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+    if (collection.collection_meta["__kind"] === "RandomUnlimited") {
         progress_string = "Unlimited";
     }
 
@@ -460,7 +385,7 @@ const CollectionSwapPage = () => {
                 <title>Let&apos;s Cook | {pageName}</title>
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
-                <CollectionFeaturedBanner featuredLaunch={launch} isHomePage={false} />
+                <CollectionFeaturedBanner featuredLaunch={collection} isHomePage={false} />
                 <div style={{ padding: "16px" }}>
                     <VStack
                         p={md ? 22 : 50}
@@ -473,18 +398,18 @@ const CollectionSwapPage = () => {
                         <Flex gap={lg ? 12 : 24} direction={lg ? "column" : "row"} alignItems={"center"}>
                             <VStack minW={220}>
                                 <Image
-                                    src={launch.collection_icon_url}
+                                    src={collection.collection_icon_url}
                                     width={180}
                                     height={180}
                                     alt="Image Frame"
                                     style={{ backgroundSize: "cover", borderRadius: 12 }}
                                 />
                                 <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    {launch.collection_name}
+                                    {collection.collection_name}
                                 </Text>
                                 <HStack spacing={2} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                        CA: {trimAddress(launch.keys[CollectionKeys.CollectionMint].toString())}
+                                        CA: {trimAddress(collection.keys[CollectionKeys.CollectionMint].toString())}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -493,8 +418,8 @@ const CollectionSwapPage = () => {
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 navigator.clipboard.writeText(
-                                                    launch && launch.keys && launch.keys[CollectionKeys.CollectionMint]
-                                                        ? launch.keys[CollectionKeys.CollectionMint].toString()
+                                                    collection && collection.keys && collection.keys[CollectionKeys.CollectionMint]
+                                                        ? collection.keys[CollectionKeys.CollectionMint].toString()
                                                         : "",
                                                 );
                                             }}
@@ -505,7 +430,7 @@ const CollectionSwapPage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(launch.keys[CollectionKeys.CollectionMint], "Collection")}
+                                            href={getSolscanLink(collection.keys[CollectionKeys.CollectionMint], "Collection")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -518,43 +443,46 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
-                                <ShowExtensions extension_flag={launch.flags[LaunchFlags.Extensions]} />
+                                <ShowExtensions extension_flag={collection.flags[LaunchFlags.Extensions]} />
                             </VStack>
 
                             <VStack pb={white_list && 6}>
-                                {white_list && wlEndDate && (wlEndDate.getTime() === 0 || new Date().getTime() < wlEndDate.getTime()) && (
-                                    <VStack my={3}>
-                                        <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
-                                            Whitelist Token Required: <br />{" "}
-                                        </Text>
-                                        <HStack justifyContent="center">
-                                            <Text color={"white"} fontFamily="ReemKufiRegular" mb={0}>
-                                                CA: {trimAddress(white_list.mint.address.toString())}
+                                {white_list &&
+                                    collectionPlugins.whitelistPhaseEnd &&
+                                    (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
+                                        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime()) && (
+                                        <VStack my={3}>
+                                            <Text align="center" m={0} color={"white"} fontFamily="ReemKufiRegular">
+                                                Whitelist Token Required: <br />{" "}
                                             </Text>
-                                            <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                                                <Link
-                                                    href={getSolscanLink(white_list.mint.address, "Token")}
-                                                    target="_blank"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <Image
-                                                        src="/images/solscan.png"
-                                                        width={lg ? 22 : 22}
-                                                        height={lg ? 22 : 22}
-                                                        alt="Solscan icon"
-                                                    />
-                                                </Link>
-                                            </Tooltip>
-                                        </HStack>
-                                        {wlEndDate &&
-                                            Math.floor(wlEndDate.getTime() / 1000) > 0 &&
-                                            new Date().getTime() < wlEndDate.getTime() && (
-                                                <Text align="center" mb={0} opacity="50%">
-                                                    Until: {wlEndDate.toLocaleString()}
+                                            <HStack justifyContent="center">
+                                                <Text color={"white"} fontFamily="ReemKufiRegular" mb={0}>
+                                                    CA: {trimAddress(white_list.mint.address.toString())}
                                                 </Text>
-                                            )}
-                                    </VStack>
-                                )}
+                                                <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                                                    <Link
+                                                        href={getSolscanLink(white_list.mint.address, "Token")}
+                                                        target="_blank"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Image
+                                                            src="/images/solscan.png"
+                                                            width={lg ? 22 : 22}
+                                                            height={lg ? 22 : 22}
+                                                            alt="Solscan icon"
+                                                        />
+                                                    </Link>
+                                                </Tooltip>
+                                            </HStack>
+                                            {collectionPlugins.whitelistPhaseEnd &&
+                                                Math.floor(collectionPlugins.whitelistPhaseEnd.getTime() / 1000) > 0 &&
+                                                new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime() && (
+                                                    <Text align="center" mb={0} opacity="50%">
+                                                        Until: {collectionPlugins.whitelistPhaseEnd.toLocaleString()}
+                                                    </Text>
+                                                )}
+                                        </VStack>
+                                    )}
                                 <VStack
                                     my="auto"
                                     h="100%"
@@ -573,11 +501,11 @@ const CollectionSwapPage = () => {
                                     <HStack align="center" mb={4}>
                                         <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
                                             {!isTokenToNFT
-                                                ? `1 NFT = ${formatPrice(out_amount, 3)} ${launch.token_symbol}`
+                                                ? `1 NFT = ${formatPrice(out_amount, 3)} ${collection.token_symbol}`
                                                 : `${formatPrice(
-                                                      bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
+                                                      bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals),
                                                       3,
-                                                  )} ${launch.token_symbol} = 1 NFT`}
+                                                  )} ${collection.token_symbol} = 1 NFT`}
                                         </Text>
                                         <Tooltip label="With 2% Transfer Tax" hasArrow fontSize="medium" offset={[0, 10]}>
                                             <Image width={20} height={20} src="/images/help.png" alt="Help" />
@@ -597,7 +525,7 @@ const CollectionSwapPage = () => {
                                                         {tokenBalance.toLocaleString()}
                                                     </Text>
                                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                        {launch.token_symbol}
+                                                        {collection.token_symbol}
                                                     </Text>
                                                 </HStack>
                                             </HStack>
@@ -609,7 +537,8 @@ const CollectionSwapPage = () => {
                                                     value={
                                                         isTokenToNFT
                                                             ? formatPrice(
-                                                                  bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals),
+                                                                  bignum_to_num(collection.swap_price) /
+                                                                      Math.pow(10, collection.token_decimals),
                                                                   3,
                                                               )
                                                             : formatPrice(out_amount, 3)
@@ -637,7 +566,7 @@ const CollectionSwapPage = () => {
                                             </InputGroup>
                                         </VStack>
 
-                                        {!mintOnly && (
+                                        {!collectionPlugins.mintOnly && (
                                             <LuArrowUpDown
                                                 size={24}
                                                 color="white"
@@ -658,7 +587,7 @@ const CollectionSwapPage = () => {
                                                         {nft_balance}
                                                     </Text>
                                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                        {launch.collection_symbol}
+                                                        {collection.collection_symbol}
                                                     </Text>
                                                 </HStack>
                                             </HStack>
@@ -681,7 +610,7 @@ const CollectionSwapPage = () => {
                                                 />
                                                 <InputRightElement h="100%" w={50}>
                                                     <Image
-                                                        src={launch.collection_icon_url}
+                                                        src={collection.collection_icon_url}
                                                         width={30}
                                                         height={30}
                                                         alt="SOL Icon"
@@ -718,7 +647,7 @@ const CollectionSwapPage = () => {
                                                                 isLoading={isLoading}
                                                                 isDisabled={!enoughTokenBalance || isLoading}
                                                             >
-                                                                Confirm {probString}
+                                                                Confirm {collectionPlugins.probability}
                                                             </Button>
                                                         </Tooltip>
                                                     ) : (
@@ -726,24 +655,24 @@ const CollectionSwapPage = () => {
                                                             w="100%"
                                                             mt={3}
                                                             onClick={() => {
-                                                                if (launch.collection_meta["__kind"] === "RandomFixedSupply") {
+                                                                if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
                                                                     openAssetModal();
                                                                     MintNFT();
                                                                 }
-                                                                if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+                                                                if (collection.collection_meta["__kind"] === "RandomUnlimited") {
                                                                     openAssetModal();
                                                                     MintRandom();
                                                                 }
                                                             }}
                                                             isLoading={isLoading}
                                                         >
-                                                            Confirm {probString}
+                                                            Confirm {collectionPlugins.probability}
                                                         </Button>
                                                     )}
                                                 </HStack>
                                             ) : (
                                                 <Tooltip
-                                                    label={`You don't have ${launch.collection_name} NFTs`}
+                                                    label={`You don't have ${collection.collection_name} NFTs`}
                                                     hasArrow
                                                     offset={[0, 10]}
                                                     isDisabled={nft_balance > 0 || isLoading}
@@ -783,11 +712,11 @@ const CollectionSwapPage = () => {
                                     style={{ backgroundSize: "cover", borderRadius: 12 }}
                                 />
                                 <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                    {launch.token_symbol}
+                                    {collection.token_symbol}
                                 </Text>
                                 <HStack mb={1} spacing={2} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                        CA: {trimAddress(launch.keys[CollectionKeys.MintAddress].toString())}
+                                        CA: {trimAddress(collection.keys[CollectionKeys.MintAddress].toString())}
                                     </Text>
 
                                     <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -795,7 +724,7 @@ const CollectionSwapPage = () => {
                                             style={{ cursor: "pointer" }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigator.clipboard.writeText(launch.keys[CollectionKeys.MintAddress].toString());
+                                                navigator.clipboard.writeText(collection.keys[CollectionKeys.MintAddress].toString());
                                             }}
                                         >
                                             <MdOutlineContentCopy color="white" size={lg ? 22 : 22} />
@@ -804,7 +733,7 @@ const CollectionSwapPage = () => {
 
                                     <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
-                                            href={getSolscanLink(launch.keys[CollectionKeys.MintAddress], "Token")}
+                                            href={getSolscanLink(collection.keys[CollectionKeys.MintAddress], "Token")}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -820,8 +749,8 @@ const CollectionSwapPage = () => {
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
-                                                launch && launch.keys && launch.keys[CollectionKeys.MintAddress]
-                                                    ? launch.keys[CollectionKeys.MintAddress].toString()
+                                                collection && collection.keys && collection.keys[CollectionKeys.MintAddress]
+                                                    ? collection.keys[CollectionKeys.MintAddress].toString()
                                                     : ""
                                             }`}
                                             target="_blank"
@@ -837,7 +766,7 @@ const CollectionSwapPage = () => {
                                         </Link>
                                     </Tooltip>
                                 </HStack>
-                                <ShowExtensions extension_flag={launch.token_extensions} />
+                                <ShowExtensions extension_flag={collection.token_extensions} />
                             </VStack>
                         </Flex>
 
@@ -857,8 +786,8 @@ const CollectionSwapPage = () => {
                                     }}
                                     size="sm"
                                     min={0}
-                                    max={launch.total_supply}
-                                    value={launch.num_available}
+                                    max={collection.total_supply}
+                                    value={collection.num_available}
                                     boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                                 />
                                 <HStack style={{ position: "absolute", zIndex: 1 }}>
@@ -878,7 +807,7 @@ const CollectionSwapPage = () => {
                     isWarningOpened={isAssetModalOpen}
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}
-                    collection={launch}
+                    collection={collection}
                     asset={asset_received}
                     asset_image={asset_image}
                     style={modalStyle}

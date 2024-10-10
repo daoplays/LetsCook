@@ -175,7 +175,7 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             console.log("check extra accounts");
             let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
-            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
+            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(Uint8Array.from(hook_accounts));
             console.log(extra_account_metas);
             for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
                 console.log(extra_account_metas.extraAccountsList.extraAccounts[i]);
@@ -254,14 +254,7 @@ const usePlaceMarketOrder = (amm: AMMData) => {
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            console.log(signed_transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            console.log("market order", transaction_response);
-
-            let signature = transaction_response.result;
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

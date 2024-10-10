@@ -33,8 +33,8 @@ interface LaunchPreviewProps {
 const LaunchPreviewModal = ({ isOpen, onClose, data }: LaunchPreviewProps) => {
     const { xs, sm, md, lg } = useResponsive();
 
-    let launchData : LaunchData = data[0];
-    let listingData : ListingData = data[1];
+    let launchData: LaunchData = data[0];
+    let listingData: ListingData = data[1];
 
     let one_mint = (bignum_to_num(launchData.total_supply) * (launchData.distribution[0] / 100)) / launchData.num_mints;
     let one_mint_frac = (100 * one_mint) / bignum_to_num(launchData.total_supply);

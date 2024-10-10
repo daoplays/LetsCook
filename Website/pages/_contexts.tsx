@@ -228,9 +228,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }
 
     useEffect(() => {
-        if (update_program_data.current === 0 || new_program_data === null) return;
+        if (new_program_data === null) return;
 
-        //console.log("update data", update_program_data.current);
         let wallet_bytes = PublicKey.default.toBytes();
         let have_wallet = false;
         // console.log("wallet", wallet !== null ? wallet.toString() : "null");
@@ -239,18 +238,18 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             have_wallet = true;
         }
 
-        update_program_data.current -= 1;
-
         let event_data = Buffer.from(new_program_data.accountInfo.data);
         let account_key = new_program_data.accountId;
 
         if (event_data[0] === 0) {
             try {
-                //console.log("updating launch data from context");
-                const [launch] = LaunchData.struct.deserialize(event_data);
+                setLaunchData((currentData) => {
+                    const [launch] = LaunchData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(launch.page_name, launch);
+                    return newData;
+                });
 
-                launch_data.set(launch.page_name, launch);
-                setLaunchData(new Map(launch_data));
                 return;
             } catch (error) {
                 //console.log("bad launch data", data);
@@ -258,24 +257,28 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         }
 
         if (event_data[0] === 2) {
-            //console.log("updating user data from context");
-
             const [user] = UserData.struct.deserialize(event_data);
+            setUserData((currentData) => {
+                const newData = new Map(currentData);
+                newData.set(user.user_key.toString(), user);
+                return newData;
+            });
 
-            user_data.set(user.user_key.toString(), user);
-            setUserData(new Map(user_data));
             if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
                 setCurrentUserData(user);
             }
+
             return;
         }
 
         if (event_data[0] === 5) {
-            // console.log("updating mm launch data from context");
+            setMMLaunchData((currentData) => {
+                const [mm_launch] = MMLaunchData.struct.deserialize(event_data);
+                const newData = new Map(currentData);
+                newData.set(mm_launch.amm.toString() + "_" + mm_launch.date, mm_launch);
+                return newData;
+            });
 
-            const [mm] = MMLaunchData.struct.deserialize(event_data);
-            //console.log("launch mm", program_data[i].pubkey.toString());
-            mm_launch_data.set(mm.amm.toString() + "_" + mm.date, mm);
             return;
         }
 
@@ -283,32 +286,38 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             //console.log("updating amm data from context");
 
             try {
-                const [amm] = AMMData.struct.deserialize(event_data);
-                let amm_key = getAMMKey(amm, amm.provider);
-                amm_data.set(amm_key.toString(), amm);
-                setAMMData(new Map(amm_data));
+                setAMMData((currentData) => {
+                    const [amm] = AMMData.struct.deserialize(event_data);
+                    let amm_key = getAMMKey(amm, amm.provider);
+                    const newData = new Map(currentData);
+                    newData.set(amm_key.toString(), amm);
+                    return newData;
+                });
             } catch (error) {
                 console.log(error);
             }
 
             return;
         }
+
         if (event_data[0] === 8) {
-            //console.log("updating collection data from context");
+            setCollectionData((currentData) => {
+                const [collection] = CollectionData.struct.deserialize(event_data);
+                const newData = new Map(currentData);
+                newData.set(collection.page_name, collection);
+                return newData;
+            });
 
-            const [collection] = CollectionData.struct.deserialize(event_data);
-
-            collection_data.set(collection.page_name, collection);
-            setCollectionData(new Map(collection_data));
             return;
         }
 
         if (event_data[0] === 11) {
-            console.log("updating listing data from context");
-
-            const [listing] = ListingData.struct.deserialize(event_data);
-            listing_data.set(account_key.toString(), listing);
-            setListingData(new Map(listing_data));
+            setListingData((currentData) => {
+                const [listing] = ListingData.struct.deserialize(event_data);
+                const newData = new Map(currentData);
+                newData.set(account_key.toString(), listing);
+                return newData;
+            });
 
             return;
         }
@@ -327,39 +336,29 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (!isEqual) return;
 
         if (event_data[0] === 3) {
-            const [join] = JoinData.struct.deserialize(event_data);
-            //console.log("join", join);
-
-            join_data.set(join.page_name, join);
-            setJoinData(new Map(join_data));
+            setJoinData((currentData) => {
+                const [join] = JoinData.struct.deserialize(event_data);
+                const newData = new Map(currentData);
+                newData.set(join.page_name, join);
+                return newData;
+            });
 
             return;
         }
 
         if (event_data[0] === 4) {
-            const [mm_user] = MMUserData.struct.deserialize(event_data);
-            //console.log("user mm", mm_user);
-
-            mm_user_data.set(mm_user.amm.toString() + "_" + mm_user.date, mm_user);
-            setMMUserData(new Map(mm_user_data));
+            setMMUserData((currentData) => {
+                const [mm_user] = MMUserData.struct.deserialize(event_data);
+                const newData = new Map(currentData);
+                newData.set(mm_user.amm.toString() + "_" + mm_user.date, mm_user);
+                return newData;
+            });
 
             return;
         }
-    }, [
-        new_program_data,
-        wallet,
-        user_data,
-        launch_data,
-        mm_launch_data,
-        amm_data,
-        collection_data,
-        listing_data,
-        join_data,
-        mm_user_data,
-    ]);
+    }, [new_program_data, wallet]);
 
     const check_program_update = useCallback(async (result: any) => {
-        update_program_data.current += 1;
         setNewProgramData(result);
     }, []);
 
@@ -428,7 +427,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             try {
                 let signed_transaction = await wallet.signTransaction(transaction);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                const encoded_transaction = bs58.encode(Uint8Array.from(signed_transaction.serialize()));
 
                 var transaction_response = await send_transaction("", encoded_transaction);
                 console.log(transaction_response);

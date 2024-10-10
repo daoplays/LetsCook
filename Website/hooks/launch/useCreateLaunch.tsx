@@ -143,12 +143,13 @@ const usuCreateLaunch = () => {
                 );
                 tx.feePayer = wallet.publicKey;
                 let signed_transaction = await wallet.signTransaction(tx);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-                var transaction_response = await send_transaction("", encoded_transaction);
-                console.log(transaction_response);
-
-                let signature = transaction_response.result;
+                if (signature === undefined) {
+                    console.log(signature);
+                    toast.error("Transaction failed, please try again");
+                    return;
+                }
 
                 let fund_check = await irys.funder.submitFundTransaction(signature);
 
@@ -247,12 +248,13 @@ const usuCreateLaunch = () => {
                 );
                 tx.feePayer = wallet.publicKey;
                 let signed_transaction = await wallet.signTransaction(tx);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-                var transaction_response = await send_transaction("", encoded_transaction);
-                console.log(transaction_response);
-
-                let signature = transaction_response.result;
+                if (signature === undefined) {
+                    console.log(signature);
+                    toast.error("Transaction failed, please try again");
+                    return;
+                }
 
                 let fund_check = await irys.funder.submitFundTransaction(signature);
 
