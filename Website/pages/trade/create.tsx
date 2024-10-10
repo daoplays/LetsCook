@@ -13,10 +13,7 @@ import Head from "next/head";
 import LaunchAMM from "../../components/amm/launch";
 
 const CreateAMM = () => {
-    const router = useRouter();
     const { lg } = useResponsive();
-    const [screen, setScreen] = useState("token");
-    const [simpleLaunch, setSimpleLaunch] = useState(true);
 
     return (
         <>
@@ -26,7 +23,7 @@ const CreateAMM = () => {
             <main
                 style={{
                     background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)",
-                    height: simpleLaunch && "100%",
+                    height: "100%",
                     paddingTop: lg ? "25px" : "50px",
                     position: "relative",
                 }}

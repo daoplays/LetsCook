@@ -245,11 +245,9 @@ const useInitAMM = () => {
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
 
-            var transaction_response = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            let signature = transaction_response;
-
-            console.log("list sig: ", signature);
+            console.log("list amm sig: ", signature);
 
             connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
