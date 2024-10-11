@@ -174,7 +174,13 @@ interface SignatureResponseData {
 }
 
 export async function getRecentPrioritizationFees(PROD: boolean): Promise<number> {
+    
     let feeMicroLamports = 100000;
+
+    if (Config.NETWORK === "eclipse") {
+        return 10000;
+    }
+
     if (PROD) {
         try {
             const response = await fetch(Config.RPC_NODE, {

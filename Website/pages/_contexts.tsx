@@ -588,29 +588,29 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         // set up the home page data
         let close_filtered: LaunchData[] = closeFilterTable({ list: launch_data });
 
-        let home_page_data = new Map<string, LaunchData>();
-        let home_page_map = new Map<number, LaunchData>();
-        for (let i = 0; i < close_filtered.length; i++) {
-            let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-            //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
-            if (home_page_map.has(date)) {
-                let current_entry: LaunchData = home_page_map.get(date);
-                let current_listing: ListingData = listings.get(current_entry.listing.toString());
-                let close_listing: ListingData = listings.get(close_filtered[i].listing.toString());
+        // Create an array to store all launches with their hype scores
+        let all_launches: { launch: LaunchData; hype: number }[] = [];
 
-                let current_hype = current_listing.positive_votes - current_listing.negative_votes;
-                let new_hype = close_listing.positive_votes - close_listing.negative_votes;
-                if (new_hype > current_hype) {
-                    home_page_map.set(date, close_filtered[i]);
-                }
-            } else {
-                home_page_map.set(date, close_filtered[i]);
-            }
+        for (let i = 0; i < close_filtered.length; i++) {
+            let launch = close_filtered[i];
+            let listing: ListingData = listings.get(launch.listing.toString());
+            let hype = listing.positive_votes - listing.negative_votes;
+            
+            if (hype >= 0)
+                all_launches.push({ launch, hype });
         }
 
-        home_page_map.forEach((value, key) => {
-            home_page_data.set(value.page_name, value);
-        });
+        // Sort the launches by hype score in descending order
+        all_launches.sort((a, b) => b.hype - a.hype);
+
+        // Take the top 10 most hyped launches
+        let top_10_launches = all_launches.slice(0, Math.min(10, all_launches.length));
+
+        // Create the home_page_data Map with the top 10 launches
+        let home_page_data = new Map<string, LaunchData>();
+        for (let item of top_10_launches) {
+            home_page_data.set(item.launch.page_name, item.launch);
+        }
 
         //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
         setHomePageData(home_page_data);
