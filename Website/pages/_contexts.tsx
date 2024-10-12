@@ -228,6 +228,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }
 
     useEffect(() => {
+        console.log("in program update", new_program_data);
         if (new_program_data === null) return;
 
         let wallet_bytes = PublicKey.default.toBytes();
@@ -303,6 +304,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (event_data[0] === 8) {
             setCollectionData((currentData) => {
                 const [collection] = CollectionData.struct.deserialize(event_data);
+                console.log("collection update", collection);
                 const newData = new Map(currentData);
                 newData.set(collection.page_name, collection);
                 return newData;
@@ -595,9 +597,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             let launch = close_filtered[i];
             let listing: ListingData = listings.get(launch.listing.toString());
             let hype = listing.positive_votes - listing.negative_votes;
-            
-            if (hype >= 0)
-                all_launches.push({ launch, hype });
+
+            if (hype >= 0) all_launches.push({ launch, hype });
         }
 
         // Sort the launches by hype score in descending order

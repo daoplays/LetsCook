@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import useAppRoot from "../../context/useAppRoot";
 import { CollectionData, CollectionPluginData, getCollectionPlugins } from "../../components/collection/collectionState";
 import { CollectionKeys } from "../../components/Solana/constants";
-import {getTransferFeeConfig, calculateFee } from "@solana/spl-token";
+import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import { MintData, bignum_to_num } from "../../components/Solana/state";
 
 interface useCollectionProps {
@@ -43,7 +43,6 @@ const useCollection = (props: useCollectionProps | null) => {
         // get the mints
         let token_mint = mintData.get(data.keys[CollectionKeys.MintAddress].toString());
 
-
         if (!data || !token_mint) {
             setCollection(null);
             setError(`Collection or Mint for ${pageName} not found`);
@@ -52,7 +51,7 @@ const useCollection = (props: useCollectionProps | null) => {
 
         setCollection(data);
 
-        let plugins : CollectionPluginData = getCollectionPlugins(data);
+        let plugins: CollectionPluginData = getCollectionPlugins(data);
         setCollectionPlugins(plugins);
 
         setTokenMint(token_mint);
@@ -92,7 +91,7 @@ const useCollection = (props: useCollectionProps | null) => {
     }, [fetchCollection]);
 
     // Return the current token balance and any error message
-    return { collection, collectionPlugins, tokenMint, whitelistMint,outAmount, error };
+    return { collection, collectionPlugins, tokenMint, whitelistMint, outAmount, error };
 };
 
 export default useCollection;

@@ -218,7 +218,7 @@ const Badgers = () => {
                         asset_received.current = null;
                     }
 
-                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -311,10 +311,7 @@ const Badgers = () => {
             get_assignment_data();
         }
 
-        if (check_initial_nft_balance.current) {
-            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
-            check_initial_nft_balance.current = false;
-        }
+        check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
     }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     const tiltShaking = `@keyframes tilt-shaking {

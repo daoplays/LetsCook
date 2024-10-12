@@ -174,7 +174,6 @@ interface SignatureResponseData {
 }
 
 export async function getRecentPrioritizationFees(PROD: boolean): Promise<number> {
-    
     let feeMicroLamports = 100000;
 
     if (Config.NETWORK === "eclipse") {

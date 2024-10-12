@@ -22,7 +22,7 @@ import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { bignum_to_num, TokenAccount, request_token_amount, request_raw_account_data, MintData } from "../../components/Solana/state";
-import { useRef, useEffect, useCallback, useState, useMemo } from "react";
+import { useRef, useEffect, useCallback, useState, useMemo, MutableRefObject } from "react";
 import { useWallet, useConnection, WalletContextState } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -60,10 +60,18 @@ export interface AssetWithMetadata {
     metadata: any;
 }
 
-export const check_nft_balance = async (launch_key: PublicKey, wallet: WalletContextState, setOwnedAssets: any, setNFTBalance: any) => {
+export const check_nft_balance = async (
+    launch_key: PublicKey,
+    wallet: WalletContextState,
+    setOwnedAssets: any,
+    setNFTBalance: any,
+    checkBalance: MutableRefObject<boolean>,
+) => {
     if (launch_key === null || wallet === null || wallet.publicKey === null) return;
 
-    //console.log("CHECKING NFT BALANCE");
+    if (!checkBalance.current) return;
+
+    console.log("CHECKING NFT BALANCE");
 
     const umi = createUmi(Config.RPC_NODE, "confirmed");
 
@@ -89,6 +97,8 @@ export const check_nft_balance = async (launch_key: PublicKey, wallet: WalletCon
 
     setOwnedAssets(owned_assets);
     setNFTBalance(valid_lookups);
+
+    checkBalance.current = false;
 };
 
 const CollectionSwapPage = () => {
@@ -100,17 +110,13 @@ const CollectionSwapPage = () => {
     const { handleConnectWallet } = UseWalletConnection();
     const { mintData } = useAppRoot();
     const [assigned_nft, setAssignedNFT] = useState<AssignmentData | null>(null);
-    const [out_amount, setOutAmount] = useState<number>(0);
     const [nft_balance, setNFTBalance] = useState<number>(0);
     const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
     const [token_amount, setTokenAmount] = useState<number>(0);
-    const [token_mint, setTokenMint] = useState<MintData | null>(null);
 
     const [nft_amount, setNFTAmount] = useState<number>(0);
-    const [isTokenToNFT, setIsTokenToNFT] = useState(false);
-
-    const collection_key = useRef<PublicKey | null>(null);
+    const [isTokenToNFT, setIsTokenToNFT] = useState(true);
 
     const nft_account_ws_id = useRef<number | null>(null);
 
@@ -121,11 +127,16 @@ const CollectionSwapPage = () => {
     const asset_received = useRef<AssetV1 | null>(null);
     const asset_image = useRef<string | null>(null);
 
-    const [white_list, setWhiteList] = useState<MintData | null>(null);
-
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
-    const { collection, collectionPlugins, error: collectionError } = useCollection({ pageName: pageName as string | null });
+    const {
+        collection,
+        collectionPlugins,
+        tokenMint,
+        whitelistMint,
+        outAmount,
+        error: collectionError,
+    } = useCollection({ pageName: pageName as string | null });
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
@@ -159,42 +170,6 @@ const CollectionSwapPage = () => {
         sm_checking_h: 570,
         sm_checking_w: 420,
     };
-
-    useEffect(() => {
-        if (!collection || !mintData) return;
-
-        collection_key.current = collection.keys[CollectionKeys.CollectionMint];
-
-        let mint = mintData.get(collection.keys[CollectionKeys.MintAddress].toString());
-
-        setTokenMint(mint);
-
-        let transfer_fee_config = getTransferFeeConfig(mint.mint);
-        let input_fee =
-            transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(collection.swap_price)));
-        let swap_price = bignum_to_num(collection.swap_price);
-
-        let input_amount = swap_price - input_fee;
-
-        let swap_fee = Math.floor((input_amount * collection.swap_fee) / 100 / 100);
-
-        let output = input_amount - swap_fee;
-
-        let output_fee = transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(output)));
-
-        let final_output = output - output_fee;
-
-        //console.log("actual input amount was",  input_fee, input_amount,  "fee",  swap_fee,  "output", output, "output fee", output_fee, "final output", final_output);
-        setOutAmount(final_output / Math.pow(10, collection.token_decimals));
-
-        if (collectionPlugins.whitelistKey) {
-            setWhiteList(mintData.get(collectionPlugins.whitelistKey.toString()));
-        }
-
-        if (collectionPlugins.mintOnly) {
-            setIsTokenToNFT(true);
-        }
-    }, [collection, collectionPlugins, mintData, wallet]);
 
     // when page unloads unsub from any active websocket listeners
 
@@ -274,7 +249,13 @@ const CollectionSwapPage = () => {
                         asset_received.current = null;
                     }
 
-                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
+                    check_nft_balance(
+                        collection.keys[CollectionKeys.CollectionMint],
+                        wallet,
+                        setOwnedAssets,
+                        setNFTBalance,
+                        check_initial_nft_balance,
+                    );
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -357,15 +338,12 @@ const CollectionSwapPage = () => {
             get_assignment_data();
         }
 
-        if (collection_key.current && check_initial_nft_balance.current) {
-            check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance);
-            check_initial_nft_balance.current = false;
-        }
+        check_nft_balance(collection.keys[CollectionKeys.CollectionMint], wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
     }, [collection, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     if (!pageName) return;
 
-    if (collection === null || token_mint === null) return <Loader />;
+    if (collection === null || tokenMint === null) return <Loader />;
 
     if (!collection) return <PageNotFound />;
 
@@ -446,8 +424,8 @@ const CollectionSwapPage = () => {
                                 <ShowExtensions extension_flag={collection.flags[LaunchFlags.Extensions]} />
                             </VStack>
 
-                            <VStack pb={white_list && 6}>
-                                {white_list &&
+                            <VStack pb={whitelistMint && 6}>
+                                {whitelistMint &&
                                     collectionPlugins.whitelistPhaseEnd &&
                                     (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
                                         new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime()) && (
@@ -457,11 +435,11 @@ const CollectionSwapPage = () => {
                                             </Text>
                                             <HStack justifyContent="center">
                                                 <Text color={"white"} fontFamily="ReemKufiRegular" mb={0}>
-                                                    CA: {trimAddress(white_list.mint.address.toString())}
+                                                    CA: {trimAddress(whitelistMint.mint.address.toString())}
                                                 </Text>
                                                 <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                                     <Link
-                                                        href={getSolscanLink(white_list.mint.address, "Token")}
+                                                        href={getSolscanLink(whitelistMint.mint.address, "Token")}
                                                         target="_blank"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
@@ -501,7 +479,7 @@ const CollectionSwapPage = () => {
                                     <HStack align="center" mb={4}>
                                         <Text m={0} color="white" fontSize="medium" fontWeight="semibold">
                                             {!isTokenToNFT
-                                                ? `1 NFT = ${formatPrice(out_amount, 3)} ${collection.token_symbol}`
+                                                ? `1 NFT = ${formatPrice(outAmount, 3)} ${collection.token_symbol}`
                                                 : `${formatPrice(
                                                       bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals),
                                                       3,
@@ -541,7 +519,7 @@ const CollectionSwapPage = () => {
                                                                       Math.pow(10, collection.token_decimals),
                                                                   3,
                                                               )
-                                                            : formatPrice(out_amount, 3)
+                                                            : formatPrice(outAmount, 3)
                                                     }
                                                     onChange={(e) => {
                                                         setTokenAmount(
@@ -556,7 +534,7 @@ const CollectionSwapPage = () => {
                                                 />
                                                 <InputRightElement h="100%" w={50}>
                                                     <Image
-                                                        src={token_mint.icon}
+                                                        src={tokenMint.icon}
                                                         width={30}
                                                         height={30}
                                                         alt="SOL Icon"
@@ -683,6 +661,7 @@ const CollectionSwapPage = () => {
                                                         onClick={() => {
                                                             if (wallet.connected) {
                                                                 WrapNFT(null);
+                                                                check_initial_nft_balance.current = true;
                                                             } else {
                                                                 handleConnectWallet();
                                                             }
@@ -705,7 +684,7 @@ const CollectionSwapPage = () => {
 
                             <VStack minW={220}>
                                 <Image
-                                    src={token_mint.icon}
+                                    src={tokenMint.icon}
                                     width={180}
                                     height={180}
                                     alt="Image Frame"
