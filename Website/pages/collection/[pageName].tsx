@@ -104,7 +104,6 @@ export const check_nft_balance = async (
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
-    const { connection } = useConnection();
     const router = useRouter();
     const { pageName } = router.query;
     const { xs, sm, md, lg, xl } = useResponsive();
@@ -117,14 +116,7 @@ const CollectionSwapPage = () => {
     const [nft_amount, setNFTAmount] = useState<number>(0);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
 
-    const nft_account_ws_id = useRef<number | null>(null);
-
-    const mint_nft = useRef<boolean>(false);
-    const check_initial_assignment = useRef<boolean>(true);
     const check_initial_nft_balance = useRef<boolean>(true);
-
-    const asset_received = useRef<AssetV1 | null>(null);
-    const asset_image = useRef<string | null>(null);
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 

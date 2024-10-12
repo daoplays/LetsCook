@@ -1,12 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { AccountSubscriptionConfig, PublicKey } from "@solana/web3.js";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { TokenAccount, bignum_to_num, request_raw_account_data, request_token_amount } from "../../components/Solana/state";
-import useAppRoot from "../../context/useAppRoot";
+import { request_raw_account_data } from "../../components/Solana/state";
 import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
-import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
+import { AssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
 import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
@@ -35,6 +33,9 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
     // Ref to store the subscription ID, persists across re-renders
     const subscriptionRef = useRef<number | null>(null);
     const randomsWSRef = useRef<number | null>(null);
+
+    // we also set up a poll for the randoms account as a backup just in case the WS fails
+    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const collection = props?.collection || null;
     const collectionMint = collection?.keys[CollectionKeys.CollectionMint] || null;
@@ -88,6 +89,7 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
         setAssignmentData(assignment_data);
     }, [wallet]);
 
+    // Function to update asset information
     const updateAsset = useCallback(async () => {
         if (!collection || !assignmentData) {
             return;
@@ -172,6 +174,7 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
         };
     }, [connection, collectionMint, fetchAssignmentData, getAssignmentDataAccount, handleAccountChange]);
 
+    // Callback function to handle randoms account changes
     const handleRandomsChange = useCallback((accountInfo: any) => {
         let account_data = Buffer.from(accountInfo.data, "base64");
         console.log("randoms account update", account_data);
@@ -193,6 +196,22 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
         setValidRandoms(valid);
     }, []);
 
+    // poll the randoms account slowly as a fallback for the WS
+    const pollRandomsAccount = useCallback(async () => {
+        console.log("Poll randoms account");
+        if (!randomsAccount.current) return;
+
+        try {
+            const accountInfo = await connection.getAccountInfo(randomsAccount.current);
+            if (accountInfo) {
+                handleRandomsChange(accountInfo);
+            }
+        } catch (error) {
+            console.error("Error polling randoms account:", error);
+        }
+    }, [connection, handleRandomsChange]);
+
+    // Effect to handle changes in assignment data and set up randoms account subscription
     useEffect(() => {
         if (!assignmentData) {
             return;
@@ -213,17 +232,35 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
         }
 
         randomsAccount.current = random_address;
-
         console.log("randoms account", randomsAccount.current.toString());
+
+        // we now set up both a WS and a slow poll to monitor the randoms account
+
+        // Clear previous interval if it exists
+        if (pollIntervalRef.current) {
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+        }
+
+        // Clear previous WebSocket subscription if it exists
+        if (randomsWSRef.current !== null) {
+            connection.removeAccountChangeListener(randomsWSRef.current);
+            randomsWSRef.current = null;
+        }
+
         let config: AccountSubscriptionConfig = {
             commitment: "confirmed",
             encoding: "base64",
         };
 
-        // Only set up a new subscription if one doesn't already exist
-        if (randomsWSRef.current === null) {
-            randomsWSRef.current = connection.onAccountChange(randomsAccount.current, handleRandomsChange, config);
-        }
+        // set up a new subscription
+        randomsWSRef.current = connection.onAccountChange(randomsAccount.current, handleRandomsChange, config);
+
+        // Set up new polling interval
+        pollIntervalRef.current = setInterval(pollRandomsAccount, 10000);
+
+        // Perform initial poll immediately
+        pollRandomsAccount();
 
         // Cleanup function to remove the subscription when the component unmounts
         // or when the dependencies change
@@ -232,8 +269,21 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
                 connection.removeAccountChangeListener(randomsWSRef.current);
                 randomsWSRef.current = null;
             }
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+            }
         };
     }, [assignmentData, connection, handleRandomsChange]);
+
+    // Effect to stop polling when randoms become valid
+    useEffect(() => {
+        if (validRandoms && pollIntervalRef.current) {
+            console.log("clear the poll");
+            clearInterval(pollIntervalRef.current);
+            pollIntervalRef.current = null;
+        }
+    }, [validRandoms]);
 
     // Return the current token balance and any error message
     return { assignmentData, validRandoms, asset, assetMeta, error };
