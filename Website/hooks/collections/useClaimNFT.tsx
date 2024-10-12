@@ -175,63 +175,21 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
     const { MintNFT } = useMintNFT(launchData);
     const { MintRandom } = useMintRandom(launchData);
     const signature_ws_id = useRef<number | null>(null);
-    const orao_ws_id = useRef<number | null>(null);
-    const orao_randomness = useRef<PublicKey | null>(null);
-
-    const check_randomness_account = useCallback(async (result: any) => {
-        //console.log("randomness_update", result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-
-        //console.log("have collection data", event_data, launch_account_ws_id.current);
-        let account_data = Buffer.from(event_data, "base64");
-        let randomness = Array.from(account_data.slice(8 + 32, 8 + 32 + 64));
-
-        let valid = check_randomness(randomness);
-
-        if (valid) {
-            setOraoRandoms(randomness);
-            console.log("randoms are valid", randomness);
-            setIsLoading(false);
-        }
-    }, []);
 
     const check_signature_update = useCallback(async (result: any) => {
         //console.log("claim nft signature: ", result);
         // if we have a subscription field check against ws_id
 
         signature_ws_id.current = null;
-
+        setIsLoading(false);
         if (result.err !== null) {
             toast.error("Transaction failed, please try again", {
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,
             });
-            setIsLoading(false);
 
             return;
-        }
-
-        let immediate_check = await request_raw_account_data("", orao_randomness.current);
-        let valid = false;
-        //console.log("immediate check ", immediate_check);
-        if (immediate_check !== null) {
-            let randomness = Array.from(immediate_check.slice(8 + 32, 8 + 32 + 64));
-            valid = check_randomness(randomness);
-
-            if (valid) {
-                setOraoRandoms(randomness);
-                //console.log(randomness);
-                setIsLoading(false);
-            } else {
-                //console.log("register websocket for account 1 ", orao_randomness.current);
-                orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
-            }
-        } else {
-            //console.log("register websocket for account 2 ", orao_randomness.current);
-            orao_ws_id.current = connection.onAccountChange(orao_randomness.current, check_randomness_account, "confirmed");
         }
 
         toast.success("Transaction successful! Waiting for Randomness", {
@@ -388,8 +346,6 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
         let orao_network = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-network-configuration")], orao_program)[0];
 
         let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], orao_program)[0];
-
-        orao_randomness.current = orao_random;
 
         let orao_treasury: PublicKey = SYSTEM_KEY;
         if (Config.NETWORK !== "eclipse") {

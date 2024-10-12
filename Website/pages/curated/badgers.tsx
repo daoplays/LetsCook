@@ -761,8 +761,8 @@ const Badgers = () => {
                     closeWarning={closeAssetModal}
                     assignment_data={assigned_nft}
                     collection={launch}
-                    asset={asset_received}
-                    asset_image={asset_image}
+                    asset={asset_received.current}
+                    asset_image={asset_image.current}
                     style={modalStyle}
                     isLoading={isLoading}
                 />
