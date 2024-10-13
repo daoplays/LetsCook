@@ -9,7 +9,7 @@ import { PublicKey } from "@solana/web3.js";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import Loader from "../../components/loader";
 import { stockSoldPercentage } from "../../utils/stockSoldPercentage";
-import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
+import { AssetWithMetadata, fetchNFTBalance } from "../collection/[pageName]";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import { AssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
@@ -218,7 +218,7 @@ const Badgers = () => {
                         asset_received.current = null;
                     }
 
-                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
+                    fetchNFTBalance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -311,7 +311,7 @@ const Badgers = () => {
             get_assignment_data();
         }
 
-        check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
+        fetchNFTBalance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
     }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     const tiltShaking = `@keyframes tilt-shaking {

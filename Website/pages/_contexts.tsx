@@ -202,8 +202,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
     const [solPrice, setSolPrice] = useState<number>(0);
-    const [new_program_data, setNewProgramData] = useState<any>(null);
-    const update_program_data = useRef<number>(0);
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
@@ -227,142 +225,141 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         return filtered;
     }
 
-    useEffect(() => {
-        console.log("in program update", new_program_data);
-        if (new_program_data === null) return;
+    const check_program_update = useCallback(
+        async (new_program_data: any) => {
+            console.log("in program update", new_program_data);
+            if (!new_program_data) return;
 
-        let wallet_bytes = PublicKey.default.toBytes();
-        let have_wallet = false;
-        // console.log("wallet", wallet !== null ? wallet.toString() : "null");
-        if (wallet !== null && wallet.publicKey !== null) {
-            wallet_bytes = wallet.publicKey.toBytes();
-            have_wallet = true;
-        }
+            let wallet_bytes = PublicKey.default.toBytes();
+            let have_wallet = false;
+            // console.log("wallet", wallet !== null ? wallet.toString() : "null");
+            if (wallet !== null && wallet.publicKey !== null) {
+                wallet_bytes = wallet.publicKey.toBytes();
+                have_wallet = true;
+            }
 
-        let event_data = Buffer.from(new_program_data.accountInfo.data);
-        let account_key = new_program_data.accountId;
+            let event_data = Buffer.from(new_program_data.accountInfo.data);
+            let account_key = new_program_data.accountId;
 
-        if (event_data[0] === 0) {
-            try {
-                setLaunchData((currentData) => {
-                    const [launch] = LaunchData.struct.deserialize(event_data);
+            if (event_data[0] === 0) {
+                try {
+                    setLaunchData((currentData) => {
+                        const [launch] = LaunchData.struct.deserialize(event_data);
+                        const newData = new Map(currentData);
+                        newData.set(launch.page_name, launch);
+                        return newData;
+                    });
+
+                    return;
+                } catch (error) {
+                    //console.log("bad launch data", data);
+                }
+            }
+
+            if (event_data[0] === 2) {
+                const [user] = UserData.struct.deserialize(event_data);
+                setUserData((currentData) => {
                     const newData = new Map(currentData);
-                    newData.set(launch.page_name, launch);
+                    newData.set(user.user_key.toString(), user);
+                    return newData;
+                });
+
+                if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
+                    setCurrentUserData(user);
+                }
+
+                return;
+            }
+
+            if (event_data[0] === 5) {
+                setMMLaunchData((currentData) => {
+                    const [mm_launch] = MMLaunchData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(mm_launch.amm.toString() + "_" + mm_launch.date, mm_launch);
                     return newData;
                 });
 
                 return;
-            } catch (error) {
-                //console.log("bad launch data", data);
-            }
-        }
-
-        if (event_data[0] === 2) {
-            const [user] = UserData.struct.deserialize(event_data);
-            setUserData((currentData) => {
-                const newData = new Map(currentData);
-                newData.set(user.user_key.toString(), user);
-                return newData;
-            });
-
-            if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
-                setCurrentUserData(user);
             }
 
-            return;
-        }
+            if (event_data[0] === 6) {
+                //console.log("updating amm data from context");
 
-        if (event_data[0] === 5) {
-            setMMLaunchData((currentData) => {
-                const [mm_launch] = MMLaunchData.struct.deserialize(event_data);
-                const newData = new Map(currentData);
-                newData.set(mm_launch.amm.toString() + "_" + mm_launch.date, mm_launch);
-                return newData;
-            });
+                try {
+                    setAMMData((currentData) => {
+                        const [amm] = AMMData.struct.deserialize(event_data);
+                        let amm_key = getAMMKey(amm, amm.provider);
+                        const newData = new Map(currentData);
+                        newData.set(amm_key.toString(), amm);
+                        return newData;
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
 
-            return;
-        }
+                return;
+            }
 
-        if (event_data[0] === 6) {
-            //console.log("updating amm data from context");
-
-            try {
-                setAMMData((currentData) => {
-                    const [amm] = AMMData.struct.deserialize(event_data);
-                    let amm_key = getAMMKey(amm, amm.provider);
+            if (event_data[0] === 8) {
+                setCollectionData((currentData) => {
+                    const [collection] = CollectionData.struct.deserialize(event_data);
+                    console.log("collection update", collection);
                     const newData = new Map(currentData);
-                    newData.set(amm_key.toString(), amm);
+                    newData.set(collection.page_name, collection);
                     return newData;
                 });
-            } catch (error) {
-                console.log(error);
+
+                return;
             }
 
-            return;
-        }
+            if (event_data[0] === 11) {
+                setListingData((currentData) => {
+                    const [listing] = ListingData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(account_key.toString(), listing);
+                    return newData;
+                });
 
-        if (event_data[0] === 8) {
-            setCollectionData((currentData) => {
-                const [collection] = CollectionData.struct.deserialize(event_data);
-                console.log("collection update", collection);
-                const newData = new Map(currentData);
-                newData.set(collection.page_name, collection);
-                return newData;
-            });
+                return;
+            }
 
-            return;
-        }
+            // other data depends on a wallet
+            if (!have_wallet) return;
 
-        if (event_data[0] === 11) {
-            setListingData((currentData) => {
-                const [listing] = ListingData.struct.deserialize(event_data);
-                const newData = new Map(currentData);
-                newData.set(account_key.toString(), listing);
-                return newData;
-            });
+            // both join and MM user data have the user key in the same place
+            let comp_wallet_bytes = new Uint8Array(event_data.slice(1, 33));
 
-            return;
-        }
+            let isEqual = true;
+            for (let i = 0; i < wallet_bytes.length && isEqual; i++) {
+                isEqual = wallet_bytes[i] === comp_wallet_bytes[i];
+            }
 
-        // other data depends on a wallet
-        if (!have_wallet) return;
+            if (!isEqual) return;
 
-        // both join and MM user data have the user key in the same place
-        let comp_wallet_bytes = new Uint8Array(event_data.slice(1, 33));
+            if (event_data[0] === 3) {
+                setJoinData((currentData) => {
+                    const [join] = JoinData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(join.page_name, join);
+                    return newData;
+                });
 
-        let isEqual = true;
-        for (let i = 0; i < wallet_bytes.length && isEqual; i++) {
-            isEqual = wallet_bytes[i] === comp_wallet_bytes[i];
-        }
+                return;
+            }
 
-        if (!isEqual) return;
+            if (event_data[0] === 4) {
+                setMMUserData((currentData) => {
+                    const [mm_user] = MMUserData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(mm_user.amm.toString() + "_" + mm_user.date, mm_user);
+                    return newData;
+                });
 
-        if (event_data[0] === 3) {
-            setJoinData((currentData) => {
-                const [join] = JoinData.struct.deserialize(event_data);
-                const newData = new Map(currentData);
-                newData.set(join.page_name, join);
-                return newData;
-            });
-
-            return;
-        }
-
-        if (event_data[0] === 4) {
-            setMMUserData((currentData) => {
-                const [mm_user] = MMUserData.struct.deserialize(event_data);
-                const newData = new Map(currentData);
-                newData.set(mm_user.amm.toString() + "_" + mm_user.date, mm_user);
-                return newData;
-            });
-
-            return;
-        }
-    }, [new_program_data, wallet]);
-
-    const check_program_update = useCallback(async (result: any) => {
-        setNewProgramData(result);
-    }, []);
+                return;
+            }
+        },
+        [wallet],
+    );
 
     const checkUserBalance = useCallback(async () => {
         if (wallet === null || wallet.publicKey === null) {

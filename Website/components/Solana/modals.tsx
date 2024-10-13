@@ -242,7 +242,6 @@ export function ReceivedAssetModal({
     if (asset !== null) {
         asset_name = asset.name;
     }
-    console.log("in modal ", asset_image);
     if (asset_image !== null) {
         if (asset_image["name"] !== undefined) {
             asset_name = asset_image["name"];
@@ -251,7 +250,6 @@ export function ReceivedAssetModal({
             description = asset_image["description"];
         }
         image_url = asset_image["image"];
-        console.log("image url ", image_url);
     }
 
     let attributes = asset === null ? [] : asset.attributes === undefined ? [] : filterAttributes(asset.attributes.attributeList);

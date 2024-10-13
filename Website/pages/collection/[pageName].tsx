@@ -17,90 +17,40 @@ import {
     Spacer,
     useDisclosure,
 } from "@chakra-ui/react";
-import { Key, getAssetV1GpaBuilder, updateAuthority, AssetV1, fetchAssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
-import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
-import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { publicKey } from "@metaplex-foundation/umi";
-import { bignum_to_num, TokenAccount, request_token_amount, request_raw_account_data } from "../../components/Solana/state";
-import { useRef, useEffect, useCallback, useState, useMemo, MutableRefObject } from "react";
-import { useWallet, useConnection, WalletContextState } from "@solana/wallet-adapter-react";
+import { AssetV1 } from "@metaplex-foundation/mpl-core";
+import { bignum_to_num } from "../../components/Solana/state";
+import { useEffect, useCallback, useState, useMemo } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
 import UseWalletConnection from "../../hooks/useWallet";
-import FeaturedBanner from "../../components/featuredBanner";
 import Head from "next/head";
 import { MdOutlineContentCopy } from "react-icons/md";
 import trimAddress from "../../utils/trimAddress";
-import useAppRoot from "../../context/useAppRoot";
-import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys, Config, PROGRAM, Extensions, LaunchFlags, LaunchKeys, SYSTEM_KEY } from "../../components/Solana/constants";
-import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
+import { CollectionKeys, LaunchFlags, SYSTEM_KEY } from "../../components/Solana/constants";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import useMintRandom from "../../hooks/collections/useMintRandom";
 import ShowExtensions from "../../components/Solana/extensions";
-import { unpackMint, Mint, unpackAccount, getTransferFeeConfig, getAssociatedTokenAddressSync, calculateFee } from "@solana/spl-token";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { LuArrowUpDown } from "react-icons/lu";
 import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
-import { findCollection } from "../../components/collection/utils";
-import BN from "bn.js";
 import formatPrice from "../../utils/formatPrice";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
 import useCollection from "../../hooks/data/useCollection";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
+import useNFTBalance from "../../hooks/data/useNFTBalance";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
     metadata: any;
 }
-
-export const check_nft_balance = async (
-    launch_key: PublicKey,
-    wallet: WalletContextState,
-    setOwnedAssets: any,
-    setNFTBalance: any,
-    checkBalance: MutableRefObject<boolean>,
-) => {
-    if (launch_key === null || wallet === null || wallet.publicKey === null) return;
-
-    if (!checkBalance.current) return;
-
-    console.log("CHECKING NFT BALANCE");
-
-    const umi = createUmi(Config.RPC_NODE, "confirmed");
-
-    let collection_umiKey = publicKey(launch_key.toString());
-
-    const assets = await getAssetV1GpaBuilder(umi)
-        .whereField("key", Key.AssetV1)
-        .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
-        .getDeserialized();
-
-    //console.log(assets);
-    let valid_lookups = 0;
-    let owned_assets: AssetWithMetadata[] = [];
-    for (let i = 0; i < assets.length; i++) {
-        if (assets[i].owner.toString() === wallet.publicKey.toString()) {
-            valid_lookups += 1;
-            let uri_json = await fetch(assets[i].uri).then((res) => res.json());
-            let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
-            owned_assets.push(entry);
-        }
-    }
-    //console.log("have ", valid_lookups, "addresses with balance");
-
-    setOwnedAssets(owned_assets);
-    setNFTBalance(valid_lookups);
-
-    checkBalance.current = false;
-};
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
@@ -108,15 +58,11 @@ const CollectionSwapPage = () => {
     const { pageName } = router.query;
     const { xs, sm, md, lg, xl } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
-    const [nft_balance, setNFTBalance] = useState<number>(0);
-    const [owned_assets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
 
+    const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
 
-    const [nft_amount, setNFTAmount] = useState<number>(0);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
-
-    const check_initial_nft_balance = useRef<boolean>(true);
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
@@ -142,6 +88,12 @@ const CollectionSwapPage = () => {
     }, [collection]);
 
     const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
+
+    const collectionAddress = useMemo(() => {
+        return collection?.keys?.[CollectionKeys.CollectionMint] || null;
+    }, [collection]);
+
+    const { nftBalance, ownedAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(collectionAddress ? { collectionAddress } : null);
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
@@ -173,39 +125,20 @@ const CollectionSwapPage = () => {
         if (assignmentData.status < 2) {
             return;
         } else {
-            try {
-                check_nft_balance(
-                    collection.keys[CollectionKeys.CollectionMint],
-                    wallet,
-                    setOwnedAssets,
-                    setNFTBalance,
-                    check_initial_nft_balance,
-                );
-            } catch (error) {
-                console.error("Error fetching asset data", error);
-            }
+            checkNFTBalance.current = true;
+            fetchNFTBalance();
         }
-    }, [wallet, assignmentData, collection, openAssetModal]);
+    }, [assignmentData, openAssetModal, fetchNFTBalance, checkNFTBalance]);
 
     useEffect(() => {
         if (!assignmentData) return;
 
-        if (wallet === null || wallet.publicKey === null) {
-            return;
-        }
-
         updateAssignment();
-    }, [wallet, collection, assignmentData, updateAssignment]);
+    }, [collection, assignmentData, updateAssignment]);
 
     useEffect(() => {
-        if (!collection) return;
-
-        if (wallet === null || wallet.publicKey === null) {
-            return;
-        }
-
-        check_nft_balance(collection.keys[CollectionKeys.CollectionMint], wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
-    }, [collection, wallet, setOwnedAssets, setNFTBalance]);
+        fetchNFTBalance();
+    }, [collection, wallet, fetchNFTBalance]);
 
     if (!pageName) return;
 
@@ -428,7 +361,7 @@ const CollectionSwapPage = () => {
                                                 <HStack gap={1} opacity={0.5}>
                                                     <FaWallet size={12} color="white" />
                                                     <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                        {nft_balance}
+                                                        {nftBalance}
                                                     </Text>
                                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                                         {collection.collection_symbol}
@@ -445,7 +378,7 @@ const CollectionSwapPage = () => {
                                                         setNFTAmount(
                                                             !isNaN(parseFloat(e.target.value)) || e.target.value === ""
                                                                 ? parseFloat(e.target.value)
-                                                                : nft_amount,
+                                                                : nftAmount,
                                                         );
                                                     }}
                                                     disabled={true}
@@ -519,7 +452,7 @@ const CollectionSwapPage = () => {
                                                     label={`You don't have ${collection.collection_name} NFTs`}
                                                     hasArrow
                                                     offset={[0, 10]}
-                                                    isDisabled={nft_balance > 0 || isLoading}
+                                                    isDisabled={nftBalance > 0 || isLoading}
                                                 >
                                                     <Button
                                                         w="100%"
@@ -527,13 +460,13 @@ const CollectionSwapPage = () => {
                                                         onClick={() => {
                                                             if (wallet.connected) {
                                                                 WrapNFT(null);
-                                                                check_initial_nft_balance.current = true;
+                                                                checkNFTBalance.current = true;
                                                             } else {
                                                                 handleConnectWallet();
                                                             }
                                                         }}
                                                         isLoading={isWrapLoading}
-                                                        isDisabled={nft_balance <= 0 || isLoading}
+                                                        isDisabled={nftBalance <= 0 || isLoading}
                                                     >
                                                         Confirm
                                                     </Button>

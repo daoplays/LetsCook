@@ -22,7 +22,7 @@ import { DisconnectWalletButton } from "../../components/Solana/wallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
 import Loader from "../../components/loader";
 import ReleaseModal from "./releaseModal";
-import { AssetWithMetadata, check_nft_balance } from "../collection/[pageName]";
+import { AssetWithMetadata, fetchNFTBalance } from "../collection/[pageName]";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
 const soundCollection = {
@@ -217,7 +217,7 @@ const Pepemon = () => {
                         asset_received.current = null;
                     }
 
-                    check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
+                    fetchNFTBalance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
                 } catch (error) {
                     asset_received.current = null;
                 }
@@ -311,7 +311,7 @@ const Pepemon = () => {
             get_assignment_data();
         }
 
-        check_nft_balance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
+        fetchNFTBalance(collection_key.current, wallet, setOwnedAssets, setNFTBalance, check_initial_nft_balance);
     }, [launch, wallet, get_assignment_data, setOwnedAssets, setNFTBalance]);
 
     const tiltShaking = `@keyframes tilt-shaking {
