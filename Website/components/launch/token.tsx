@@ -551,53 +551,54 @@ const TokenPage = ({ setScreen, simpleLaunch }: TokenPageProps) => {
                             )}
                         </HStack>
 
+                        <HStack spacing={0} className={styles.eachField}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                                Launch Mode:
+                            </div>
+                            <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
+                                <Stack direction="row" gap={5}>
+                                    <Radio value="FCFS" color="white">
+                                        <Tooltip
+                                            label="Launch ends as soon as it is funded, first come first serve. "
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                FCFS
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="Raffle">
+                                        <Tooltip
+                                            label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Raffle
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                    <Radio value="IDO">
+                                        <Tooltip
+                                            label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                IDO
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
+                                </Stack>
+                            </RadioGroup>
+                        </HStack>
+
                         {simpleLaunch ? (
                             <>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                        Launch Mode:
-                                    </div>
-                                    <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
-                                        <Stack direction="row" gap={5}>
-                                            <Radio value="FCFS" color="white">
-                                                <Tooltip
-                                                    label="Launch ends as soon as it is funded, first come first serve. "
-                                                    hasArrow
-                                                    fontSize="large"
-                                                    offset={[0, 10]}
-                                                >
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        FCFS
-                                                    </Text>
-                                                </Tooltip>
-                                            </Radio>
-                                            <Radio value="Raffle">
-                                                <Tooltip
-                                                    label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
-                                                    hasArrow
-                                                    fontSize="large"
-                                                    offset={[0, 10]}
-                                                >
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        Raffle
-                                                    </Text>
-                                                </Tooltip>
-                                            </Radio>
-                                            <Radio value="IDO">
-                                                <Tooltip
-                                                    label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
-                                                    hasArrow
-                                                    fontSize="large"
-                                                    offset={[0, 10]}
-                                                >
-                                                    <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                        IDO
-                                                    </Text>
-                                                </Tooltip>
-                                            </Radio>
-                                        </Stack>
-                                    </RadioGroup>
-                                </HStack>
                                 <HStack spacing={6} className={styles.eachField} mt={3}>
                                     <HStack>
                                         <div className={`${styles.textLabel} font-face-kg`}>Rewards Supply</div>

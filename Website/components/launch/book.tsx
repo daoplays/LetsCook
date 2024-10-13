@@ -34,6 +34,7 @@ import {
     Stack,
     Radio,
     Tooltip,
+    Switch,
 } from "@chakra-ui/react";
 import { useMediaQuery } from "react-responsive";
 import { WebIrys } from "@irys/sdk";
@@ -65,6 +66,7 @@ import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 import useCreateLaunch from "../../hooks/launch/useCreateLaunch";
 import { Config } from "../Solana/constants";
+import Image from "next/image";
 
 // Define the Tag type
 type Tag = {
@@ -104,6 +106,22 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
     //console.log(zone);
+
+    const [includeLaunchDate, setIncludeLaunchDate] = useState<boolean>(false);
+
+    const handleSetIncLaunchDate = (e: React.ChangeEvent<HTMLInputElement>) => {
+        // if we are going from include -> not include, set the date to zero
+        if (includeLaunchDate) {
+            let zero_date = new Date(0);
+            console.log("set date to zero, ", zero_date, zero_date.getTime());
+            setLocalOpenDate(zero_date);
+        }
+        // otherwise set the date to the current date
+        else {
+            setLocalOpenDate(new Date(new Date().setHours(0, 0, 0, 0)));
+        }
+        setIncludeLaunchDate(!includeLaunchDate);
+    };
 
     useEffect(() => {
         let splitLaunchDate = localOpenDate.getTime() > 0 ? localOpenDate.toString().split(" ") : new Date().toString().split(" ");
@@ -219,93 +237,71 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
-                        <HStack spacing={0} className={styles.eachField}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                Launch Mode:
-                            </div>
-                            <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
-                                <Stack direction="row" gap={5}>
-                                    <Radio value="FCFS" color="white">
-                                        <Tooltip
-                                            label="Launch ends as soon as it is funded, first come first serve."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                FCFS
-                                            </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                    <Radio value="Raffle">
-                                        <Tooltip
-                                            label="Launch Runs for a set period of time (default 24hrs), users can buy tickets to enter the raffle."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                Raffle
-                                            </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                    <Radio value="IDO">
-                                        <Tooltip
-                                            label="Launch Runs for a set period of time (default 24hrs).  If funded, tokens are distributed pro rata between all ticket holders."
-                                            hasArrow
-                                            fontSize="large"
-                                            offset={[0, 10]}
-                                        >
-                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                                IDO
-                                            </Text>
-                                        </Tooltip>
-                                    </Radio>
-                                </Stack>
-                            </RadioGroup>
-                        </HStack>
-                        <HStack spacing={15}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                        <HStack spacing={15} w="100%" className={styles.eachField}>
+                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
                                 OPEN DATE:
                             </div>
+                            <HStack>
+                                <Switch
+                                    ml={2}
+                                    py={2}
+                                    size={lg ? "md" : "lg"}
+                                    isChecked={includeLaunchDate}
+                                    onChange={(e) => handleSetIncLaunchDate(e)}
+                                />
+                                {!includeLaunchDate && (
+                                    <Tooltip
+                                        label="This launch will start immediately if no open date is specified."
+                                        hasArrow
+                                        w={270}
+                                        fontSize="large"
+                                        offset={[0, 10]}
+                                    >
+                                        <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                    </Tooltip>
+                                )}
+                            </HStack>
 
-                            <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                <HStack spacing={5}>
-                                    <Popover isOpen={isStartOpen} onClose={onCloseStart} placement="bottom" closeOnBlur={false}>
-                                        <PopoverTrigger>
-                                            <IconButton
-                                                onClick={onToggleStart}
-                                                aria-label="FaCalendarAlt"
-                                                icon={<FaCalendarAlt size={22} />}
-                                            />
-                                        </PopoverTrigger>
-                                        <PopoverContent width="fit-content">
-                                            <PopoverArrow />
-                                            <PopoverCloseButton />
-                                            <PopoverHeader h={34} />
-                                            <PopoverBody>
-                                                <DatePicker
-                                                    disabled={newLaunchData.current.edit_mode === true}
-                                                    showTimeSelect
-                                                    timeFormat="HH:mm"
-                                                    timeIntervals={15}
-                                                    selected={localOpenDate}
-                                                    onChange={(date) => {
-                                                        setLocalOpenDate(date);
-                                                        //onCloseStart();
-                                                    }}
-                                                    onClickOutside={() => onCloseStart()}
-                                                    inline
+                            {includeLaunchDate && (
+                                <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                    <HStack spacing={5} ml={2}>
+                                        <Popover isOpen={isStartOpen} onClose={onCloseStart} placement="bottom" closeOnBlur={false}>
+                                            <PopoverTrigger>
+                                                <IconButton
+                                                    onClick={onToggleStart}
+                                                    aria-label="FaCalendarAlt"
+                                                    icon={<FaCalendarAlt size={22} />}
                                                 />
-                                            </PopoverBody>
-                                        </PopoverContent>
-                                    </Popover>
+                                            </PopoverTrigger>
+                                            <PopoverContent width="fit-content">
+                                                <PopoverArrow />
+                                                <PopoverCloseButton />
+                                                <PopoverHeader h={34} />
+                                                <PopoverBody>
+                                                    <DatePicker
+                                                        disabled={newLaunchData.current.edit_mode === true}
+                                                        showTimeSelect
+                                                        keepOpen
+                                                        timeFormat="HH:mm"
+                                                        timeIntervals={15}
+                                                        selected={localOpenDate}
+                                                        onChange={(date) => {
+                                                            setLocalOpenDate(date);
+                                                            //onCloseStart();
+                                                        }}
+                                                        onClickOutside={() => onCloseStart()}
+                                                        inline
+                                                    />
+                                                </PopoverBody>
+                                            </PopoverContent>
+                                        </Popover>
 
-                                    <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
-                                        {launchDateAndTime}
-                                    </Text>
-                                </HStack>
-                            </div>
+                                        <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
+                                            {launchDateAndTime}
+                                        </Text>
+                                    </HStack>
+                                </div>
+                            )}
                         </HStack>
 
                         <HStack spacing={15}>
