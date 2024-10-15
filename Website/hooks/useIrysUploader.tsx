@@ -46,14 +46,12 @@ const useIrysUploader = (wallet) => {
     }, [wallet, getIrysUploader]);
 
     const uploadFiles = useCallback(
-        async (connection: Connection, files: File[]) => {
+        async (connection: Connection, files: File[], toast_text: string) => {
             let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
             let size = files.reduce((sum, file) => sum + file.size, 0);
             let atomic_price = await uploader.getPrice(Math.ceil(1.1 * size));
-            let price = uploader.utils.fromAtomic(atomic_price);
-            console.log("Uploading ", size, " bytes for ", Number(price), Number(atomic_price));
-
+            toast.info("Transferring funds for "+toast_text+" upload");
             try {
                 let txArgs = await get_current_blockhash("");
                 let irys_address = await uploader.utils.getBundlerAddress();
@@ -92,7 +90,7 @@ const useIrysUploader = (wallet) => {
                 tags.push({ name: "Content-Type", value: files[i].type });
             }
 
-            const uploadToArweave = toast.info("Sign to upload files on Arweave.");
+            const uploadToArweave = toast.info("Sign to upload "+ toast_text +" on Arweave.");
 
             let receipt;
 
@@ -102,15 +100,14 @@ const useIrysUploader = (wallet) => {
                     tags,
                 });
                 toast.update(uploadToArweave, {
-                    render: `Files have been uploaded successfully!
-                View: https://gateway.irys.xyz/${receipt.id}`,
+                    render: toast_text + " have been uploaded successfully! View: https://gateway.irys.xyz/${receipt.id}",
                     type: "success",
                     isLoading: false,
                     autoClose: 2000,
                 });
             } catch (error) {
                 toast.update(uploadToArweave, {
-                    render: `Failed to upload files, please try again later.`,
+                    render: "Failed to upload "+toast_text+", please try again later.",
                     type: "error",
                     isLoading: false,
                     autoClose: 3000,

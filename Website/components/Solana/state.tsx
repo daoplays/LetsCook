@@ -781,7 +781,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     tele_url: "",
     twt_url: "",
     disc_url: "",
-    opendate: new Date(new Date().setHours(0, 0, 0, 0)),
+    opendate: new Date(0),
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
     token_keypair: null,

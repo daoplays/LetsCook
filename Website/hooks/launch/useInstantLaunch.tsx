@@ -105,11 +105,14 @@ function serialise_CreateInstantLaunch_instruction(new_launch_data: LaunchDataUs
 }
 
 const useInstantLaunch = () => {
+    const router = useRouter();
     const wallet = useWallet();
     const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
+    const amm_id = useRef<string>("");
+
 
     const { uploadFiles } = useIrysUploader(wallet);
 
@@ -129,6 +132,11 @@ const useInstantLaunch = () => {
                 isLoading: false,
                 autoClose: 3000,
             });
+
+            router.push(`/trade/${amm_id.current}`).then(() => {
+                window.location.reload();
+            });
+
 
             signature_ws_id.current = null;
         },
@@ -158,7 +166,7 @@ const useInstantLaunch = () => {
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
         if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
-            let receipt = await uploadFiles(connection, [newLaunchData.current.icon_file]);
+            let receipt = await uploadFiles(connection, [newLaunchData.current.icon_file], "Images");
 
             console.log(receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id);
 
@@ -178,7 +186,7 @@ const useInstantLaunch = () => {
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
 
-            let receipt = await uploadFiles(connection, [json_file]);
+            let receipt = await uploadFiles(connection, [json_file], "Metadata");
 
             console.log("json recipet", receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id);
 
@@ -208,6 +216,8 @@ const useInstantLaunch = () => {
             [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
             PROGRAM,
         )[0];
+
+        amm_id.current = amm_data_account.toString()
 
         let base_amm_account = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
