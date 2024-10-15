@@ -252,11 +252,13 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
 
         try {
             let signed_transaction = await wallet.signTransaction(list_transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
+            if (signature === undefined) {
+                console.log(signature);
+                toast.error("Transaction failed, please try again");
+                return;
+            }
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, TIMEOUT);
 

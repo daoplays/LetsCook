@@ -167,11 +167,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
             console.log("mint nft sig at ", new Date(), signature);
 

@@ -153,13 +153,7 @@ const useGetMMTokens = () => {
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            console.log("get tokens", transaction_response);
-
-            let signature = transaction_response.result;
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
 

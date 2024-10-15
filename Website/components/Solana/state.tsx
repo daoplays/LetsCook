@@ -175,6 +175,11 @@ interface SignatureResponseData {
 
 export async function getRecentPrioritizationFees(PROD: boolean): Promise<number> {
     let feeMicroLamports = 100000;
+
+    if (Config.NETWORK === "eclipse") {
+        return 10000;
+    }
+
     if (PROD) {
         try {
             const response = await fetch(Config.RPC_NODE, {
@@ -1039,7 +1044,7 @@ export function create_LaunchDataInput(launch_data: LaunchData, listing: Listing
         closedate: new Date(bignum_to_num(launch_data.end_date)),
         team_wallet: launch_data.keys[LaunchKeys.TeamWallet].toString(),
         token_keypair: null,
-        amm_fee: 0,
+        amm_fee: 25,
         amm_provider: launch_data.flags[LaunchFlags.AMMProvider],
         token_program: null,
         transfer_fee: 0,

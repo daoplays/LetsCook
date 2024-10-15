@@ -57,8 +57,8 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
         let filtered = [];
         launch_list.forEach((item) => {
             if (
-                (filters.start_date === null || (filters.start_date !== null && item.launch_date >= filters.start_date)) &&
-                (filters.end_date === null || (filters.end_date !== null && item.launch_date < filters.end_date))
+                (filters.start_date === null || (filters.start_date !== null && item.launch_date < filters.end_date)) &&
+                (filters.end_date === null || (filters.end_date !== null && item.end_date >= filters.start_date))
             ) {
                 filtered.push(item);
             }

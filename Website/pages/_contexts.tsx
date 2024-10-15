@@ -202,8 +202,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
     const [solPrice, setSolPrice] = useState<number>(0);
-    const [new_program_data, setNewProgramData] = useState<any>(null);
-    const update_program_data = useRef<number>(0);
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
@@ -227,141 +225,141 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         return filtered;
     }
 
-    useEffect(() => {
-        if (update_program_data.current === 0 || new_program_data === null) return;
+    const check_program_update = useCallback(
+        async (new_program_data: any) => {
+            console.log("in program update", new_program_data);
+            if (!new_program_data) return;
 
-        //console.log("update data", update_program_data.current);
-        let wallet_bytes = PublicKey.default.toBytes();
-        let have_wallet = false;
-        // console.log("wallet", wallet !== null ? wallet.toString() : "null");
-        if (wallet !== null && wallet.publicKey !== null) {
-            wallet_bytes = wallet.publicKey.toBytes();
-            have_wallet = true;
-        }
+            let wallet_bytes = PublicKey.default.toBytes();
+            let have_wallet = false;
+            // console.log("wallet", wallet !== null ? wallet.toString() : "null");
+            if (wallet !== null && wallet.publicKey !== null) {
+                wallet_bytes = wallet.publicKey.toBytes();
+                have_wallet = true;
+            }
 
-        update_program_data.current -= 1;
+            let event_data = Buffer.from(new_program_data.accountInfo.data);
+            let account_key = new_program_data.accountId;
 
-        let event_data = Buffer.from(new_program_data.accountInfo.data);
-        let account_key = new_program_data.accountId;
+            if (event_data[0] === 0) {
+                try {
+                    setLaunchData((currentData) => {
+                        const [launch] = LaunchData.struct.deserialize(event_data);
+                        const newData = new Map(currentData);
+                        newData.set(launch.page_name, launch);
+                        return newData;
+                    });
 
-        if (event_data[0] === 0) {
-            try {
-                //console.log("updating launch data from context");
-                const [launch] = LaunchData.struct.deserialize(event_data);
+                    return;
+                } catch (error) {
+                    //console.log("bad launch data", data);
+                }
+            }
 
-                launch_data.set(launch.page_name, launch);
-                setLaunchData(new Map(launch_data));
+            if (event_data[0] === 2) {
+                const [user] = UserData.struct.deserialize(event_data);
+                setUserData((currentData) => {
+                    const newData = new Map(currentData);
+                    newData.set(user.user_key.toString(), user);
+                    return newData;
+                });
+
+                if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
+                    setCurrentUserData(user);
+                }
+
                 return;
-            } catch (error) {
-                //console.log("bad launch data", data);
-            }
-        }
-
-        if (event_data[0] === 2) {
-            //console.log("updating user data from context");
-
-            const [user] = UserData.struct.deserialize(event_data);
-
-            user_data.set(user.user_key.toString(), user);
-            setUserData(new Map(user_data));
-            if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
-                setCurrentUserData(user);
-            }
-            return;
-        }
-
-        if (event_data[0] === 5) {
-            // console.log("updating mm launch data from context");
-
-            const [mm] = MMLaunchData.struct.deserialize(event_data);
-            //console.log("launch mm", program_data[i].pubkey.toString());
-            mm_launch_data.set(mm.amm.toString() + "_" + mm.date, mm);
-            return;
-        }
-
-        if (event_data[0] === 6) {
-            //console.log("updating amm data from context");
-
-            try {
-                const [amm] = AMMData.struct.deserialize(event_data);
-                let amm_key = getAMMKey(amm, amm.provider);
-                amm_data.set(amm_key.toString(), amm);
-                setAMMData(new Map(amm_data));
-            } catch (error) {
-                console.log(error);
             }
 
-            return;
-        }
-        if (event_data[0] === 8) {
-            //console.log("updating collection data from context");
+            if (event_data[0] === 5) {
+                setMMLaunchData((currentData) => {
+                    const [mm_launch] = MMLaunchData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(mm_launch.amm.toString() + "_" + mm_launch.date, mm_launch);
+                    return newData;
+                });
 
-            const [collection] = CollectionData.struct.deserialize(event_data);
+                return;
+            }
 
-            collection_data.set(collection.page_name, collection);
-            setCollectionData(new Map(collection_data));
-            return;
-        }
+            if (event_data[0] === 6) {
+                //console.log("updating amm data from context");
 
-        if (event_data[0] === 11) {
-            console.log("updating listing data from context");
+                try {
+                    setAMMData((currentData) => {
+                        const [amm] = AMMData.struct.deserialize(event_data);
+                        let amm_key = getAMMKey(amm, amm.provider);
+                        const newData = new Map(currentData);
+                        newData.set(amm_key.toString(), amm);
+                        return newData;
+                    });
+                } catch (error) {
+                    console.log(error);
+                }
 
-            const [listing] = ListingData.struct.deserialize(event_data);
-            listing_data.set(account_key.toString(), listing);
-            setListingData(new Map(listing_data));
+                return;
+            }
 
-            return;
-        }
+            if (event_data[0] === 8) {
+                setCollectionData((currentData) => {
+                    const [collection] = CollectionData.struct.deserialize(event_data);
+                    console.log("collection update", collection);
+                    const newData = new Map(currentData);
+                    newData.set(collection.page_name, collection);
+                    return newData;
+                });
 
-        // other data depends on a wallet
-        if (!have_wallet) return;
+                return;
+            }
 
-        // both join and MM user data have the user key in the same place
-        let comp_wallet_bytes = new Uint8Array(event_data.slice(1, 33));
+            if (event_data[0] === 11) {
+                setListingData((currentData) => {
+                    const [listing] = ListingData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(account_key.toString(), listing);
+                    return newData;
+                });
 
-        let isEqual = true;
-        for (let i = 0; i < wallet_bytes.length && isEqual; i++) {
-            isEqual = wallet_bytes[i] === comp_wallet_bytes[i];
-        }
+                return;
+            }
 
-        if (!isEqual) return;
+            // other data depends on a wallet
+            if (!have_wallet) return;
 
-        if (event_data[0] === 3) {
-            const [join] = JoinData.struct.deserialize(event_data);
-            //console.log("join", join);
+            // both join and MM user data have the user key in the same place
+            let comp_wallet_bytes = new Uint8Array(event_data.slice(1, 33));
 
-            join_data.set(join.page_name, join);
-            setJoinData(new Map(join_data));
+            let isEqual = true;
+            for (let i = 0; i < wallet_bytes.length && isEqual; i++) {
+                isEqual = wallet_bytes[i] === comp_wallet_bytes[i];
+            }
 
-            return;
-        }
+            if (!isEqual) return;
 
-        if (event_data[0] === 4) {
-            const [mm_user] = MMUserData.struct.deserialize(event_data);
-            //console.log("user mm", mm_user);
+            if (event_data[0] === 3) {
+                setJoinData((currentData) => {
+                    const [join] = JoinData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(join.page_name, join);
+                    return newData;
+                });
 
-            mm_user_data.set(mm_user.amm.toString() + "_" + mm_user.date, mm_user);
-            setMMUserData(new Map(mm_user_data));
+                return;
+            }
 
-            return;
-        }
-    }, [
-        new_program_data,
-        wallet,
-        user_data,
-        launch_data,
-        mm_launch_data,
-        amm_data,
-        collection_data,
-        listing_data,
-        join_data,
-        mm_user_data,
-    ]);
+            if (event_data[0] === 4) {
+                setMMUserData((currentData) => {
+                    const [mm_user] = MMUserData.struct.deserialize(event_data);
+                    const newData = new Map(currentData);
+                    newData.set(mm_user.amm.toString() + "_" + mm_user.date, mm_user);
+                    return newData;
+                });
 
-    const check_program_update = useCallback(async (result: any) => {
-        update_program_data.current += 1;
-        setNewProgramData(result);
-    }, []);
+                return;
+            }
+        },
+        [wallet],
+    );
 
     const checkUserBalance = useCallback(async () => {
         if (wallet === null || wallet.publicKey === null) {
@@ -430,7 +428,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             try {
                 let signed_transaction = await wallet.signTransaction(transaction);
-                const encoded_transaction = bs58.encode(signed_transaction.serialize());
+                const encoded_transaction = bs58.encode(Uint8Array.from(signed_transaction.serialize()));
 
                 var transaction_response = await send_transaction("", encoded_transaction);
                 console.log(transaction_response);
@@ -591,29 +589,28 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         // set up the home page data
         let close_filtered: LaunchData[] = closeFilterTable({ list: launch_data });
 
-        let home_page_data = new Map<string, LaunchData>();
-        let home_page_map = new Map<number, LaunchData>();
-        for (let i = 0; i < close_filtered.length; i++) {
-            let date = Math.floor(bignum_to_num(close_filtered[i].end_date) / (24 * 60 * 60 * 1000));
-            //console.log(close_filtered[i].symbol, new Date(bignum_to_num(close_filtered[i].end_date)), date);
-            if (home_page_map.has(date)) {
-                let current_entry: LaunchData = home_page_map.get(date);
-                let current_listing: ListingData = listings.get(current_entry.listing.toString());
-                let close_listing: ListingData = listings.get(close_filtered[i].listing.toString());
+        // Create an array to store all launches with their hype scores
+        let all_launches: { launch: LaunchData; hype: number }[] = [];
 
-                let current_hype = current_listing.positive_votes - current_listing.negative_votes;
-                let new_hype = close_listing.positive_votes - close_listing.negative_votes;
-                if (new_hype > current_hype) {
-                    home_page_map.set(date, close_filtered[i]);
-                }
-            } else {
-                home_page_map.set(date, close_filtered[i]);
-            }
+        for (let i = 0; i < close_filtered.length; i++) {
+            let launch = close_filtered[i];
+            let listing: ListingData = listings.get(launch.listing.toString());
+            let hype = listing.positive_votes - listing.negative_votes;
+
+            if (hype >= 0) all_launches.push({ launch, hype });
         }
 
-        home_page_map.forEach((value, key) => {
-            home_page_data.set(value.page_name, value);
-        });
+        // Sort the launches by hype score in descending order
+        all_launches.sort((a, b) => b.hype - a.hype);
+
+        // Take the top 10 most hyped launches
+        let top_10_launches = all_launches.slice(0, Math.min(10, all_launches.length));
+
+        // Create the home_page_data Map with the top 10 launches
+        let home_page_data = new Map<string, LaunchData>();
+        for (let item of top_10_launches) {
+            home_page_data.set(item.launch.page_name, item.launch);
+        }
 
         //console.log(home_page_data, bignum_to_num(home_page_data[0].total_supply));
         setHomePageData(home_page_data);

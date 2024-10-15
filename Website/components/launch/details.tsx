@@ -108,6 +108,11 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
             return false;
         }
 
+        if (name === "") {
+            toast.error("Page name cannot be empty");
+            return false;
+        }
+
         if (description.length > 250) {
             toast.error("Description should be less than 250 characters long");
             return false;

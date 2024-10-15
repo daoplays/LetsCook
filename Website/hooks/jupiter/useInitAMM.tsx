@@ -152,7 +152,7 @@ const useInitAMM = (launchData: LaunchData) => {
             console.log("check extra accounts");
             let hook_accounts = await request_raw_account_data("", transfer_hook_validation_account);
 
-            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(hook_accounts);
+            let extra_account_metas = ExtraAccountMetaAccountDataLayout.decode(Uint8Array.from(hook_accounts));
             console.log(extra_account_metas);
             for (let i = 0; i < extra_account_metas.extraAccountsList.count; i++) {
                 console.log(extra_account_metas.extraAccountsList.extraAccounts[i]);
@@ -247,11 +247,7 @@ const useInitAMM = (launchData: LaunchData) => {
 
         try {
             let signed_transaction = await wallet.signTransaction(list_transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
-
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            let signature = transaction_response.result;
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
             console.log("list sig: ", signature);
 

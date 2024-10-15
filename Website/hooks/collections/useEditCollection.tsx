@@ -154,17 +154,13 @@ const useEditCollection = () => {
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            const encoded_transaction = bs58.encode(signed_transaction.serialize());
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            var transaction_response = await send_transaction("", encoded_transaction);
-
-            if (transaction_response.result === "INVALID") {
-                console.log(transaction_response);
+            if (signature === "INVALID") {
+                console.log(signature);
                 toast.error("Transaction failed, please try again");
                 return;
             }
-
-            let signature = transaction_response.result;
 
             if (DEBUG) {
                 console.log("edit collection signature: ", signature);

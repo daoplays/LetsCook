@@ -125,8 +125,8 @@ interface RecievedAssetModalProps {
     isWarningOpened?: boolean;
     closeWarning?: () => void;
     collection: CollectionData;
-    asset: MutableRefObject<AssetV1>;
-    asset_image: MutableRefObject<string>;
+    asset: AssetV1;
+    asset_image: string;
     assignment_data: AssignmentData;
     style: ReceivedAssetModalStyle;
     curated?: boolean;
@@ -220,7 +220,7 @@ export function ReceivedAssetModal({
                                 <VStack align="center" fontFamily="ReemKufiRegular">
                                     <img
                                         loading="lazy"
-                                        src={style.check_image}
+                                        src={"/images/cooking.gif"}
                                         width={200}
                                         height={200}
                                         alt="the cooks"
@@ -239,25 +239,20 @@ export function ReceivedAssetModal({
     let image_url = "";
     let description = "";
 
-    if (asset.current !== null) {
-        asset_name = asset.current.name;
+    if (asset !== null) {
+        asset_name = asset.name;
     }
-    if (asset_image.current !== null) {
-        if (asset_image.current["name"] !== undefined) {
-            asset_name = asset_image.current["name"];
+    if (asset_image !== null) {
+        if (asset_image["name"] !== undefined) {
+            asset_name = asset_image["name"];
         }
-        if (asset_image.current["description"] !== undefined) {
-            description = asset_image.current["description"];
+        if (asset_image["description"] !== undefined) {
+            description = asset_image["description"];
         }
-        image_url = asset_image.current["image"];
+        image_url = asset_image["image"];
     }
 
-    let attributes =
-        asset.current === null
-            ? []
-            : asset.current.attributes === undefined
-              ? []
-              : filterAttributes(asset.current.attributes.attributeList);
+    let attributes = asset === null ? [] : asset.attributes === undefined ? [] : filterAttributes(asset.attributes.attributeList);
 
     //console.log("image_url: ", asset.current.attributes.attributeList, asset_image.current);
 
@@ -354,7 +349,7 @@ export function ReceivedAssetModal({
                                     />
                                 )}
 
-                                {success && (
+                                {success && image_url && (
                                     <img
                                         loading="lazy"
                                         src={image_url}

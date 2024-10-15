@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { Center, VStack, Text, HStack, Input, chakra, Flex, Box } from "@chakra-ui/react";
 import {
     Mint,
@@ -27,6 +27,59 @@ import { Config, Extensions, METAPLEX_META, NetworkConfig, WRAPPED_SOL } from ".
 import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
+import { useConnection } from "@solana/wallet-adapter-react";
+
+export async function getMint(connection: Connection, mint_string: string): Promise<[Mint, PublicKey] | null> {
+    if (mint_string === "" || !mint_string) {
+        return [null, null];
+    }
+
+    let mint_address: PublicKey;
+
+    try {
+        // Attempt to create a PublicKey instance
+        mint_address = new PublicKey(mint_string);
+        // If no error is thrown, input is a valid public key
+    } catch (error) {
+        toast.error("Invalid public key", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+        return [null, null];
+    }
+
+    let result = await connection.getAccountInfo(mint_address, "confirmed");
+
+    let mint: Mint;
+    if (result.owner.equals(TOKEN_PROGRAM_ID)) {
+        try {
+            mint = unpackMint(mint_address, result, TOKEN_PROGRAM_ID);
+            console.log(mint);
+        } catch (error) {
+            toast.error("Error loading spl token", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return [null, null];
+        }
+    } else {
+        try {
+            mint = unpackMint(mint_address, result, TOKEN_2022_PROGRAM_ID);
+            console.log(mint);
+        } catch (error) {
+            toast.error("Error loading token22", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            return [null, null];
+        }
+    }
+
+    return [mint, result.owner];
+}
 
 export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
     if (mint.address.equals(WRAPPED_SOL)) {
@@ -116,45 +169,14 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
 }
 
 export async function setMintData(token_mint: string): Promise<MintData | null> {
-    if (token_mint === "" || !token_mint) {
-        return null;
-    }
-
-    let token_key;
-
-    try {
-        // Attempt to create a PublicKey instance
-        token_key = new PublicKey(token_mint);
-        // If no error is thrown, input is a valid public key
-    } catch (error) {
-        return null;
-    }
-
     const connection = new Connection(Config.RPC_NODE, {
         wsEndpoint: Config.WSS_NODE,
     });
-    let result = await connection.getAccountInfo(token_key, "confirmed");
-    //console.log(result)
-    let mint: Mint;
-    let token_program: PublicKey;
-    if (result.owner.equals(TOKEN_PROGRAM_ID)) {
-        try {
-            mint = unpackMint(token_key, result, TOKEN_PROGRAM_ID);
-            token_program = TOKEN_PROGRAM_ID;
-            // console.log(mint);
-        } catch (error) {
-            console.log(error);
-            return null;
-        }
-    } else {
-        try {
-            mint = unpackMint(token_key, result, TOKEN_2022_PROGRAM_ID);
-            token_program = TOKEN_2022_PROGRAM_ID;
-            // console.log(mint);
-        } catch (error) {
-            console.log(error);
-            return null;
-        }
+
+    let [mint, token_program]: [Mint, PublicKey] = await getMint(connection, token_mint);
+
+    if (!mint || !token_program) {
+        return null;
     }
 
     let mint_data = await getMintData(connection, mint, token_program);
@@ -164,6 +186,9 @@ export async function setMintData(token_mint: string): Promise<MintData | null> 
 
 const LaunchAMM = () => {
     const { sm, md, lg, xl } = useResponsive();
+
+    const { connection } = useConnection();
+
     const [base_address, setBaseAddress] = useState<string>("");
     const [base_token, setBaseToken] = useState<MintData | null>(null);
     const [quote_address, setQuoteAddress] = useState<string>("");
@@ -183,6 +208,20 @@ const LaunchAMM = () => {
     async function handleSetQuoteData() {
         setQuoteToken(await setMintData(quote_address));
     }
+
+    const getWSOL = useCallback(async () => {
+        let [wsol_mint, token_program] = await getMint(connection, WRAPPED_SOL.toString());
+        let wsol = await getMintData(connection, wsol_mint, token_program);
+        setQuoteToken(wsol);
+        setQuoteAddress(WRAPPED_SOL.toString());
+    }, [connection]);
+
+    useEffect(() => {
+        if (quote_token === null) {
+            getWSOL();
+        }
+    }, [quote_token, getWSOL]);
+
     return (
         <Center
             style={{
@@ -361,13 +400,14 @@ const LaunchAMM = () => {
                                                     className={styles.inputBox}
                                                     type="text"
                                                     value={quote_address}
+                                                    readOnly={true}
                                                     onChange={(e) => {
                                                         setQuoteAddress(e.target.value);
                                                     }}
                                                 />
                                             </div>
 
-                                            <div style={{ marginLeft: "12px" }}>
+                                            {/*<div style={{ marginLeft: "12px" }}>
                                                 <label className={styles.label}>
                                                     <button
                                                         type="button"
@@ -380,7 +420,7 @@ const LaunchAMM = () => {
                                                         Search
                                                     </button>
                                                 </label>
-                                            </div>
+                                            </div>*/}
                                         </HStack>
 
                                         <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
@@ -464,7 +504,7 @@ const LaunchAMM = () => {
                                         />
                                     </div>
                                 </HStack>
-                                <HStack spacing={0} w="100%" className={styles.eachField}>
+                                {/*<HStack spacing={0} w="100%" className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
                                         Short Frac:
                                     </div>
@@ -483,7 +523,7 @@ const LaunchAMM = () => {
                                             }}
                                         />
                                     </div>
-                                </HStack>
+                                </HStack>*/}
                                 <HStack spacing={0} w="100%" className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
                                         AMM Fee:
@@ -504,7 +544,7 @@ const LaunchAMM = () => {
                                         />
                                     </div>
                                 </HStack>
-                                <HStack spacing={0} w="100%" className={styles.eachField}>
+                                {/*<HStack spacing={0} w="100%" className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
                                         Borrow Fee:
                                     </div>
@@ -523,7 +563,7 @@ const LaunchAMM = () => {
                                             }}
                                         />
                                     </div>
-                                </HStack>
+                                </HStack>*/}
                             </VStack>
                         </HStack>
 
