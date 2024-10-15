@@ -21,12 +21,12 @@ export const getSolscanLink = (key: PublicKey, type: string) => {
     }
 
     if (type === "Token") {
-        return `https://solscan.io/account/${key.toString()}${Config.PROD ? "" : network}`;
+        return `https://solscan.io/account/${key.toString()}${network}`;
     }
 
     if (type === "Collection") {
         if (Config.NETWORK === "eclipse") {
-            return `https://solscan.io/account/${key.toString()}${Config.PROD ? "" : network}`;
+            return `https://solscan.io/account/${key.toString()}${network}`;
         }
 
         return `https://core.metaplex.com/explorer/collection/${key.toString()}${Config.PROD ? "" : `?env=devnet`}`;
