@@ -2,9 +2,9 @@ import { LaunchData, LaunchDataUserInput, defaultUserInput } from "../components
 import { useEffect, useRef, useState } from "react";
 import { FormControl, FormLabel, Text, Switch, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
 import { FaEye } from "react-icons/fa";
-import TokenPage from "../components/launch/token";
-import DetailsPage from "../components/launch/details";
-import BookPage from "../components/launch/book";
+import TokenPage from "../components/launch/advanceLaunch/token";
+import DetailsPage from "../components/launch/advanceLaunch/details";
+import BookPage from "../components/launch/advanceLaunch/book";
 import LaunchPreviewModal from "../components/launchPreview/modal";
 import useAppRoot from "../context/useAppRoot";
 import { useRouter } from "next/router";

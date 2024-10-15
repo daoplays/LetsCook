@@ -2,14 +2,13 @@ import { LaunchData, LaunchDataUserInput, defaultUserInput } from "../../compone
 import { useEffect, useRef, useState } from "react";
 import { FormControl, FormLabel, Text, Switch, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
 import { FaEye } from "react-icons/fa";
-import TokenPage from "../../components/launch/token";
-import DetailsPage from "../../components/launch/details";
-import BookPage from "../../components/launch/book";
 import LaunchPreviewModal from "../../components/launchPreview/modal";
 import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
+import LaunchPage from "../../components/launch/launch";
+import AdvanceLaunch from "../../components/launch/advanceLaunch";
 
 const TokenLaunch = () => {
     const router = useRouter();
@@ -45,11 +44,8 @@ const TokenLaunch = () => {
                     />
                 </FormControl>
 
-                {screen === "token" && <TokenPage setScreen={setScreen} simpleLaunch={simpleLaunch} />}
+                {simpleLaunch ? <LaunchPage /> : <AdvanceLaunch activeScreen={screen} simpleLaunch={simpleLaunch}/>}
 
-                {screen === "details" && <DetailsPage setScreen={setScreen} simpleLaunch={simpleLaunch} />}
-
-                {screen === "book" && <BookPage setScreen={setScreen} />}
             </main>
         </>
     );

@@ -37,21 +37,21 @@ import {
     uInt32ToLEBytes,
     getLaunchType,
     getLaunchTypeIndex,
-} from "../../components/Solana/state";
+} from "../../Solana/state";
 import Image from "next/image";
-import styles from "../../styles/Launch.module.css";
-import WoodenButton from "../Buttons/woodenButton";
-import useResponsive from "../../hooks/useResponsive";
+import styles from "../../../styles/Launch.module.css";
+import WoodenButton from "../../Buttons/woodenButton";
+import useResponsive from "../../../hooks/useResponsive";
 import { useRouter } from "next/router";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import useAppRoot from "../../context/useAppRoot";
+import useAppRoot from "../../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { FaDollarSign } from "react-icons/fa";
-import getImageDimensions from "../../utils/getImageDimension";
-import { distributionLabels } from "../../constant/root";
-import trimAddress from "../../utils/trimAddress";
+import getImageDimensions from "../../../utils/getImageDimension";
+import { distributionLabels } from "../../../constant/root";
+import trimAddress from "../../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { Config } from "../Solana/constants";
+import { Config } from "../../Solana/constants";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
     simpleLaunch: boolean;

@@ -1,10 +1,10 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, useEffect } from "react";
-import styles from "../../styles/LaunchDetails.module.css";
+import styles from "../../../styles/LaunchDetails.module.css";
 
 import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useDisclosure } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
-import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../components/Solana/constants";
+import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../Solana/constants";
 import {
     LaunchData,
     LaunchDataUserInput,
@@ -13,15 +13,15 @@ import {
     request_current_balance,
     request_launch_data,
     request_raw_account_data,
-} from "../../components/Solana/state";
-import useResponsive from "../../hooks/useResponsive";
+} from "../../Solana/state";
+import useResponsive from "../../../hooks/useResponsive";
 import { useRouter } from "next/router";
-import useAppRoot from "../../context/useAppRoot";
+import useAppRoot from "../../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
-import useCreateLaunch from "../../hooks/launch/useCreateLaunch";
-import LaunchPreviewModal from "../launchPreview/modal";
+import useCreateLaunch from "../../../hooks/launch/useCreateLaunch";
+import LaunchPreviewModal from "../../launchPreview/modal";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;

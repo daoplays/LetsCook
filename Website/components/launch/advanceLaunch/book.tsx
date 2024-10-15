@@ -11,7 +11,7 @@ import {
     getRecentPrioritizationFees,
     getLaunchType,
     getLaunchTypeIndex,
-} from "../../components/Solana/state";
+} from "../../Solana/state";
 import { Dispatch, SetStateAction, MutableRefObject, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
     Center,
@@ -52,20 +52,20 @@ import {
 } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import DatePicker from "react-datepicker";
-import styles from "../../styles/LaunchBook.module.css";
+import styles from "../../../styles/LaunchBook.module.css";
 import bs58 from "bs58";
-import useResponsive from "../../hooks/useResponsive";
+import useResponsive from "../../../hooks/useResponsive";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
-import LaunchPreviewModal from "../launchPreview/modal";
-import useAppRoot from "../../context/useAppRoot";
+import LaunchPreviewModal from "../../launchPreview/modal";
+import useAppRoot from "../../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
-import useCreateLaunch from "../../hooks/launch/useCreateLaunch";
-import { Config } from "../Solana/constants";
+import useCreateLaunch from "../../../hooks/launch/useCreateLaunch";
+import { Config } from "../../Solana/constants";
 import Image from "next/image";
 
 // Define the Tag type
