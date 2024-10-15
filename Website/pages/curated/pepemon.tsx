@@ -27,7 +27,7 @@ const soundCollection = {
 const Pepemon = () => {
     const { xs, sm, md, lg } = useResponsive();
     const wallet = useWallet();
-    const collection_name = "pepemon";
+    const collection_name = Config.PROD ? "pepemon_gen1" : "pepemon";
     const { handleConnectWallet } = UseWalletConnection();
 
     const {
