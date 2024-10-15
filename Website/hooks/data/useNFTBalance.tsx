@@ -19,6 +19,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     const [error, setError] = useState<string | null>(null);
 
     const checkNFTBalance = useRef<boolean>(true);
+    const checkInitialNFTBalance = useRef<boolean>(true);
 
     // Get the Solana connection and wallet
     const { connection } = useConnection();
@@ -68,7 +69,10 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
         }
 
         // Fetch the initial token balance
-        fetchNFTBalance();
+        if (checkInitialNFTBalance.current) {
+            fetchNFTBalance();
+            checkInitialNFTBalance.current = false;
+        }
     }, [connection, fetchNFTBalance]);
 
     // Return the current nfts and any error message

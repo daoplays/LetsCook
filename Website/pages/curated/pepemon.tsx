@@ -380,7 +380,7 @@ const Pepemon = () => {
 
                     {/* // Restart Button */}
                     {wallet.connected && (
-                        <HStack w="90%" justify={"space-between"} position="fixed" top={xs ? 24 : md ? 36 : 20} px={6}>
+                        <HStack w="90%" justify={"space-between"} position="fixed" top={md ? 36 : 20} px={xs ? 2 : 16}>
                             <Image
                                 src={"/curatedLaunches/pepemon/pc.png"}
                                 alt="Pepemon Release"
