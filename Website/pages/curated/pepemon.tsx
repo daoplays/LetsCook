@@ -3,10 +3,8 @@ import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import Image from "next/image";
 import { Flex, VStack, Text, useDisclosure, Button, HStack } from "@chakra-ui/react";
-import useMintRandom from "../../hooks/collections/useMintRandom";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
-import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import UseWalletConnection from "../../hooks/useWallet";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
@@ -17,6 +15,7 @@ import useTokenBalance from "../../hooks/data/useTokenBalance";
 import useCollection from "../../hooks/data/useCollection";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
+
 const soundCollection = {
     success: "/Success.mp3",
     fail: "/Fail.mp3",
@@ -53,11 +52,10 @@ const Pepemon = () => {
     const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
-    const { isLoading: isMintRandomLoading } = useMintRandom(collection);
 
-    const { ClaimNFT, isLoading: isClaimLoading} = useClaimNFT(collection);
+    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection);
 
-    let isLoading = isClaimLoading || isMintRandomLoading || isMintLoading;
+    let isLoading = isClaimLoading || isMintLoading;
 
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/curatedLaunches/pepemon/Pepeball.png",

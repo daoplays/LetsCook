@@ -220,7 +220,7 @@ export function ReceivedAssetModal({
                                 <VStack align="center" fontFamily="ReemKufiRegular">
                                     <img
                                         loading="lazy"
-                                        src={style.check_image}
+                                        src={"/images/cooking.gif"}
                                         width={200}
                                         height={200}
                                         alt="the cooks"
