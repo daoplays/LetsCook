@@ -106,14 +106,12 @@ function serialise_CreateInstantLaunch_instruction(new_launch_data: LaunchDataUs
 
 const useInstantLaunch = () => {
     const wallet = useWallet();
-    const router = useRouter();
-    const { newLaunchData, checkProgramData } = useAppRoot();
+    const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
-    const { EditLaunch } = useEditLaunch();
 
-    const { getIrysUploader, uploadFiles } = useIrysUploader(wallet);
+    const { uploadFiles } = useIrysUploader(wallet);
 
     const check_signature_update = useCallback(
         async (result: any) => {
@@ -126,16 +124,15 @@ const useInstantLaunch = () => {
                 return;
             }
 
-            toast.success("Launch (1/2) Complete", {
+            toast.success("Launch Complete!", {
                 type: "success",
                 isLoading: false,
                 autoClose: 3000,
             });
 
-            await EditLaunch();
             signature_ws_id.current = null;
         },
-        [EditLaunch],
+        [],
     );
 
     const transaction_failed = useCallback(async () => {
@@ -154,30 +151,9 @@ const useInstantLaunch = () => {
     const CreateInstantLaunch = async () => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        console.log(newLaunchData.current.icon_url);
-        console.log(newLaunchData.current.banner_url);
-        // if this is in edit mode then just call that function
-        if (newLaunchData.current.edit_mode === true) {
-            await EditLaunch();
-            return;
-        }
-
-        // check if the launch account already exists, if so just skip all this
-        let test_launch_data_account = PublicKey.findProgramAddressSync(
-            [Buffer.from(newLaunchData.current.pagename), Buffer.from("Launch")],
-            PROGRAM,
-        )[0];
-
-        let account_balance = await request_current_balance("", test_launch_data_account);
-        if (account_balance > 0) {
-            await EditLaunch();
-            return;
-        }
         setIsLoading(true);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        const irys = await getIrysUploader();
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
