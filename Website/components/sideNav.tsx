@@ -51,7 +51,7 @@ const tabs = {
         },
         {
             icon: (size: number) => <FaCalendarDays size={size} />,
-            tab: "Calendar",
+            tab: "Token Launches",
             url: "/calendar",
         },
     ],
