@@ -44,7 +44,7 @@ const TokenLaunch = () => {
                     />
                 </FormControl>
 
-                {simpleLaunch ? <LaunchPage /> : <AdvanceLaunch activeScreen={screen} simpleLaunch={simpleLaunch} />}
+                {simpleLaunch ? <LaunchPage /> : <AdvanceLaunch activeScreen={screen} />}
             </main>
         </>
     );
