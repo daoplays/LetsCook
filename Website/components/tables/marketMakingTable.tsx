@@ -15,6 +15,8 @@ import { Mint } from "@solana/spl-token";
 import ShowExtensions, { getExtensions } from "../Solana/extensions";
 import { PublicKey } from "@solana/web3.js";
 import { HypeVote } from "../hypeVote";
+import Links from "../Buttons/links";
+import formatPrice from "../../utils/formatPrice";
 
 interface Header {
     text: string;
@@ -22,6 +24,9 @@ interface Header {
 }
 
 function nFormatter(num, digits) {
+    if (num < 1) {
+        return formatPrice(num, digits);
+    }
     const lookup = [
         { value: 1, symbol: "" },
         { value: 1e3, symbol: "k" },
@@ -87,7 +92,7 @@ const MarketMakingTable = () => {
         { text: "PRICE", field: null },
         { text: "FDMC", field: "fdmc" },
         { text: "REWARDS (24H)", field: "rewards" },
-        { text: "EXTENSIONS", field: null },
+        { text: "SOCIALS", field: null },
         { text: "HYPE", field: null },
         { text: "TRADE", field: null },
     ];
@@ -216,14 +221,14 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "200px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {mm_rewards.toLocaleString()}
+                        {nFormatter(mm_rewards, 2)}
                     </Text>
                     <Image src={listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
                 </HStack>
             </td>
 
             <td style={{ minWidth: "140px" }}>
-                <ShowExtensions extension_flag={getExtensions(amm_launch.mint)} />
+                <Links socials={listing.socials} />
             </td>
             <td style={{ minWidth: "150px" }}>
                 <HypeVote
