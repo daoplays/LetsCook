@@ -25,10 +25,9 @@ import LaunchPreviewModal from "../../launchPreview/modal";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
-    simpleLaunch: boolean;
 }
 
-const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
+const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const router = useRouter();
     const { sm, md, lg, xl } = useResponsive();
     const { newLaunchData, launchList, listingData } = useAppRoot();
@@ -158,19 +157,6 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
         newLaunchData.current.twt_url = twitter;
         newLaunchData.current.disc_url = discord;
         newLaunchData.current.tele_url = telegram;
-
-        // if this is a simple launch we need to set a bunch of other stuff
-        if (simpleLaunch) {
-            let now = new Date();
-            let start = new Date(now.getTime());
-            let end = new Date(start.getTime() + 24 * 60 * 60000);
-
-            newLaunchData.current.opendate = new Date(0);
-            newLaunchData.current.closedate = end;
-            newLaunchData.current.team_wallet = Config.COOK_FEES.toString();
-            newLaunchData.current.amm_fee = 25;
-            newLaunchData.current.amm_provider = 1;
-        }
 
         return true;
     }
@@ -346,13 +332,6 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
                         </VStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
-                            {simpleLaunch && (
-                                <HStack>
-                                    <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={(e) => preview(e)}>
-                                        PREVIEW
-                                    </button>
-                                </HStack>
-                            )}
                             <HStack spacing={3}>
                                 <button
                                     type="button"
@@ -366,15 +345,11 @@ const DetailsPage = ({ setScreen, simpleLaunch }: DetailsPageProps) => {
                                 <button
                                     type="button"
                                     onClick={(e) => {
-                                        if (simpleLaunch) {
-                                            confirm(e);
-                                        } else {
-                                            nextPage(e);
-                                        }
+                                        nextPage(e);
                                     }}
                                     className={`${styles.nextBtn} font-face-kg `}
                                 >
-                                    {simpleLaunch ? "CONFIRM" : "NEXT (2/3)"}
+                                    NEXT (2/3)
                                 </button>
                             </HStack>
                         </VStack>

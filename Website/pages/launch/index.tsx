@@ -7,7 +7,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
-import LaunchPage from "../../components/launch/launch";
+import LaunchPage from "../../components/launch/instant";
 import AdvanceLaunch from "../../components/launch/advanceLaunch";
 
 const TokenLaunch = () => {
@@ -44,8 +44,7 @@ const TokenLaunch = () => {
                     />
                 </FormControl>
 
-                {simpleLaunch ? <LaunchPage /> : <AdvanceLaunch activeScreen={screen} simpleLaunch={simpleLaunch}/>}
-
+                {simpleLaunch ? <LaunchPage /> : <AdvanceLaunch activeScreen={screen} simpleLaunch={simpleLaunch} />}
             </main>
         </>
     );

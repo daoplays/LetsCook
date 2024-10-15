@@ -4,15 +4,14 @@ import DetailsPage from "./details";
 import BookPage from "./book";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
-    simpleLaunch: boolean;
 }
-const AdvanceLaunch = ({activeScreen, simpleLaunch}) => {
+const AdvanceLaunch = ({ activeScreen }) => {
     const [screen, setScreen] = useState(activeScreen);
     return (
         <main>
-            {screen === "token" && <TokenPage setScreen={setScreen} simpleLaunch={simpleLaunch} />}
+            {screen === "token" && <TokenPage setScreen={setScreen} />}
 
-            {screen === "details" && <DetailsPage setScreen={setScreen} simpleLaunch={simpleLaunch} />}
+            {screen === "details" && <DetailsPage setScreen={setScreen} />}
 
             {screen === "book" && <BookPage setScreen={setScreen} />}
         </main>

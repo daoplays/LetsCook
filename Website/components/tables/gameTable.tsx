@@ -159,9 +159,14 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
 const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     const { listingData } = useAppRoot();
+    const router = useRouter();
 
     let listing = listingData.get(launch.listing.toString());
-    const router = useRouter();
+
+    if (!listing) {
+        return <></>;
+    }
+
     let name = listing.symbol;
 
     let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
@@ -222,7 +227,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity) / LAMPORTS_PER_SOL} SOL
+                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)} SOL
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>

@@ -1,40 +1,37 @@
-import {useState} from "react";
-import {
-    Center,
-    VStack,
-    Text,
-    HStack,
-    Input,
-    chakra,
-    Spinner,
-} from "@chakra-ui/react";
+import { useRef, useState } from "react";
+import { Center, VStack, Text, HStack, Input, chakra, Spinner } from "@chakra-ui/react";
 import { Keypair } from "@solana/web3.js";
-import {
-    getLaunchType,
-    getLaunchTypeIndex,
-} from "../../components/Solana/state";
+import { defaultUserInput, getLaunchType, getLaunchTypeIndex, LaunchDataUserInput } from "../Solana/state";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
 import useResponsive from "../../hooks/useResponsive";
 import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import getImageDimensions from "../../utils/getImageDimension";
+import { Config } from "../Solana/constants";
+import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import useInstantLaunch from "../../hooks/launch/useInstantLaunch";
+import stylesDescription from "../../styles/LaunchDetails.module.css";
 
 const LaunchPage = () => {
     const { sm, md, lg, xl } = useResponsive();
-    const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
-    const [name, setName] = useState<string>(newLaunchData.current.name);
-    const [symbol, setSymbol] = useState<string>(newLaunchData.current.symbol);
-    const [displayImg, setDisplayImg] = useState<string>(newLaunchData.current.displayImg);
-    const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
+    const instantLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
+    const { newLaunchData } = useAppRoot();
 
-    const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
-    const [telegram, setTelegram] = useState<string>(newLaunchData.current.tele_url);
-    const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
-    const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
+    const [name, setName] = useState<string>(instantLaunchData.current.name);
+    const [symbol, setSymbol] = useState<string>(instantLaunchData.current.symbol);
+    const [displayImg, setDisplayImg] = useState<string>(instantLaunchData.current.displayImg);
 
+    const [description, setDescription] = useState<string>(instantLaunchData.current.description);
+
+    const [web, setWeb] = useState<string>(instantLaunchData.current.web_url);
+    const [telegram, setTelegram] = useState<string>(instantLaunchData.current.tele_url);
+    const [twitter, setTwitter] = useState(instantLaunchData.current.twt_url);
+    const [discord, setDiscord] = useState(instantLaunchData.current.disc_url);
+
+    const { CreateInstantLaunch } = useInstantLaunch();
 
     const handleNameChange = (e) => {
         setName(e.target.value);
@@ -56,7 +53,7 @@ const LaunchPage = () => {
                 const dimensions = await getImageDimensions(file);
 
                 if (dimensions.width === dimensions.height) {
-                    newLaunchData.current.icon_file = file;
+                    instantLaunchData.current.icon_file = file;
                     setDisplayImg(URL.createObjectURL(e.target.files[0]));
                 } else {
                     toast.error("Please upload an image with equal width and height.");
@@ -67,12 +64,10 @@ const LaunchPage = () => {
         }
     };
 
-
-
     async function setData(e): Promise<boolean> {
         e.preventDefault();
 
-        if (newLaunchData.current.icon_file === null) {
+        if (instantLaunchData.current.icon_file === null) {
             toast.error("Please select an icon image.");
             return false;
         }
@@ -87,26 +82,52 @@ const LaunchPage = () => {
             return false;
         }
 
+        if (description.length > 250) {
+            toast.error("Description should be less than 250 characters long");
+            return false;
+        }
 
-        newLaunchData.current.token_keypair = Keypair.generate();
+        instantLaunchData.current.token_keypair = Keypair.generate();
 
-        newLaunchData.current.name = name;
-        newLaunchData.current.symbol = symbol;
-        newLaunchData.current.displayImg = displayImg;
+        instantLaunchData.current.name = name;
+        instantLaunchData.current.symbol = symbol;
+        instantLaunchData.current.displayImg = displayImg;
 
-        newLaunchData.current.web_url = web;
-        newLaunchData.current.twt_url = twitter;
-        newLaunchData.current.disc_url = discord;
-        newLaunchData.current.tele_url = telegram;
+        instantLaunchData.current.description = description;
 
-        newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
+        instantLaunchData.current.web_url = web;
+        instantLaunchData.current.twt_url = twitter;
+        instantLaunchData.current.disc_url = discord;
+        instantLaunchData.current.tele_url = telegram;
+
+        instantLaunchData.current.launch_type = 3;
+
+        // we also set a bunch of other things
+        instantLaunchData.current.amm_fee = 25;
+        instantLaunchData.current.amm_provider = 0;
+        instantLaunchData.current.team_wallet = Config.COOK_FEES.toString();
+
+        instantLaunchData.current.token_program = TOKEN_2022_PROGRAM_ID;
+        instantLaunchData.current.decimals = 6;
+        instantLaunchData.current.total_supply = 1e9;
+
+        instantLaunchData.current.transfer_fee = 0;
+        instantLaunchData.current.max_transfer_fee = 0;
+
+        instantLaunchData.current.permanent_delegate = null;
+        instantLaunchData.current.transfer_hook_program = null;
+
+        instantLaunchData.current.distribution = [50, 50, 0, 0, 0, 0, 0];
+
+        newLaunchData.current = { ...instantLaunchData.current };
+
         return true;
     }
 
-
-    async function nextPage(e) {
-        console.log("in next page");
-        await setData(e);
+    async function submit(e) {
+        console.log("in submit");
+        let success = await setData(e);
+        if (success) CreateInstantLaunch();
     }
 
     const Browse = () => (
@@ -119,14 +140,16 @@ const LaunchPage = () => {
                     <input id="file" type="file" onChange={handleFileChange} />
                     <span
                         className={styles.browse}
-                        style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        style={{ cursor: instantLaunchData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
                     >
                         BROWSE
                     </span>
                 </label>
             </div>
             <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected (Size Limit: 1MB)"}
+                {instantLaunchData.current.icon_file !== null
+                    ? instantLaunchData.current.icon_file.name
+                    : "No File Selected (Size Limit: 1MB)"}
             </Text>
         </HStack>
     );
@@ -135,7 +158,7 @@ const LaunchPage = () => {
         <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} height="100%" width="100%">
             <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
-                    QUICK LAUNCH
+                    INSTANT LAUNCH
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
                     <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
@@ -184,7 +207,7 @@ const LaunchPage = () => {
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             placeholder="Enter Token Name. (Ex. Solana)"
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={instantLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
@@ -205,7 +228,7 @@ const LaunchPage = () => {
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Token Ticker. (Ex. $SOL)"
-                                            disabled={newLaunchData.current.edit_mode === true}
+                                            disabled={instantLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             required
@@ -217,11 +240,29 @@ const LaunchPage = () => {
                                     </div>
                                 </HStack>
 
-
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
                         <VStack w="100%" spacing={30} mt={42} mb={25}>
+                            <div className={stylesDescription.launchBodyLowerVertical}>
+                                <div className={`${stylesDescription.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
+                                    DESCRIPTION:
+                                </div>
+                                <div>
+                                    <textarea
+                                        maxLength={250}
+                                        required
+                                        placeholder="Feel free to provide more details about your token, it will be displayed in your token metadata."
+                                        style={{ minHeight: 200 }}
+                                        className={`${stylesDescription.inputBox} ${stylesDescription.inputTxtarea}`}
+                                        value={description}
+                                        onChange={(e) => {
+                                            setDescription(e.target.value);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
@@ -298,9 +339,7 @@ const LaunchPage = () => {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    if (!isLoading) {
-                                        nextPage(e);
-                                    }
+                                    submit(e);
                                 }}
                                 className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
@@ -311,7 +350,6 @@ const LaunchPage = () => {
                     </VStack>
                 </form>
             </VStack>
-
         </Center>
     );
 };

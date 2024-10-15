@@ -595,6 +595,8 @@ export function getLaunchType(launch_type: number): string {
             return "FCFS";
         case 2:
             return "IDO";
+        case 3:
+            return "Instant";
         default:
             return "FCFS";
     }
@@ -608,6 +610,8 @@ export function getLaunchTypeIndex(launch_type: string): number {
             return 1;
         case "IDO":
             return 2;
+        case "Instant":
+            return 3;
         default:
             return 1;
     }
@@ -710,6 +714,8 @@ export const enum LaunchInstruction {
     create_unverified_listing = 24,
     create_listing = 25,
     swap_raydium_classic = 26,
+    init_cook_external = 27,
+    create_instant_launch = 28,
 }
 
 export interface LaunchDataUserInput {
