@@ -3,7 +3,7 @@ import { Box, Button, Center, HStack, Link, TableContainer, Text, Tooltip } from
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Distribution, JoinedLaunch, LaunchData, ListingData, bignum_to_num } from "../Solana/state";
+import { Distribution, JoinedLaunch, LaunchData, ListingData, MintData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
 import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -44,7 +44,7 @@ function nFormatter(num, digits) {
 
 interface AMMLaunch {
     amm_data: AMMData;
-    mint: Mint;
+    mint: MintData;
     listing: ListingData;
 }
 
@@ -97,7 +97,7 @@ const MarketMakingTable = () => {
                 //console.log("mint data", mint_data);
                 let amm_launch: AMMLaunch = {
                     amm_data: amm,
-                    mint: mint.mint,
+                    mint: mint,
                     listing: listing,
                 };
                 amm_launches.push(amm_launch);
@@ -139,8 +139,8 @@ const MarketMakingTable = () => {
         }
 
         if (sortedField === "fdmc") {
-            let total_supply_a = Number(a.mint.supply) / Math.pow(10, a.listing.decimals);
-            let total_supply_b = Number(b.mint.supply) / Math.pow(10, b.listing.decimals);
+            let total_supply_a = Number(a.mint.mint.supply) / Math.pow(10, a.listing.decimals);
+            let total_supply_b = Number(b.mint.mint.supply) / Math.pow(10, b.listing.decimals);
             let price_a =
                 a.amm_data.provider === 0
                     ? Buffer.from(a.amm_data.last_price).readFloatLE(0)
@@ -233,10 +233,8 @@ const MarketMakingTable = () => {
 const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
-    const { ammData, listingData, jupPrices } = useAppRoot();
+    const { ammData, jupPrices } = useAppRoot();
 
-    let listing_key = PublicKey.findProgramAddressSync([amm_launch.mint.address.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-    let listing = listingData.get(listing_key.toString());
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
     let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
 
@@ -246,15 +244,19 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             : jupPrices.get(amm_launch.amm_data.base_mint.toString());
     //console.log(amm_launch);
     let total_supply =
-        amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.supply) / Math.pow(10, listing.decimals) : 0;
+        amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals) : 0;
     let market_cap = total_supply * last_price * SOLPrice;
 
-    let cook_amm_address = getAMMKeyFromMints(listing.mint, 0);
-    let raydium_cpmm_address = getAMMKeyFromMints(listing.mint, 1);
-    let raydium_amm_address = getAMMKeyFromMints(listing.mint, 2);
+    let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
+    let raydium_cpmm_address = getAMMKeyFromMints(amm_launch.listing.mint, 1);
+    let raydium_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 2);
 
     let cook_amm = ammData.get(cook_amm_address.toString());
     let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
+
+    if (!have_cook_amm) {
+        return <></>;
+    }
 
     let raydium_cpmm = ammData.get(raydium_cpmm_address.toString());
     let have_raydium_cpmm = raydium_cpmm && bignum_to_num(raydium_cpmm.start_time) > 0;
@@ -278,10 +280,10 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
             onClick={() => {
-                if (cook_amm_address) {
+                if (have_cook_amm) {
                     router.push("/trade/" + cook_amm_address);
                 } else if (show_birdeye) {
-                    router.push("https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana");
+                    router.push("https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana");
                 } else if (have_raydium_amm) {
                     router.push("/trade/" + raydium_amm_address.toString());
                 } else if (have_raydium_cpmm) {
@@ -294,14 +296,14 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
                             alt="Launch icon"
-                            src={listing.icon}
+                            src={amm_launch.mint.icon}
                             width={45}
                             height={45}
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
                     <Text fontSize={"large"} m={0}>
-                        {listing.symbol}
+                        {amm_launch.listing.symbol}
                     </Text>
                 </HStack>
             </td>
@@ -309,7 +311,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(listing.decimals, 3))}
+                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.listing.decimals, 3))}
                     </Text>
                     <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
@@ -329,29 +331,29 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {nFormatter(mm_rewards, 2)}
                     </Text>
-                    <Image src={listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
+                    <Image src={amm_launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
                 </HStack>
             </td>
 
             <td style={{ minWidth: "140px" }}>
-                <Links socials={listing.socials} />
+                <Links socials={amm_launch.listing.socials} />
             </td>
             <td style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={0}
-                    launch_id={listing.id}
+                    launch_id={amm_launch.listing.id}
                     page_name={""}
-                    positive_votes={listing.positive_votes}
-                    negative_votes={listing.negative_votes}
+                    positive_votes={amm_launch.listing.positive_votes}
+                    negative_votes={amm_launch.listing.negative_votes}
                     isTradePage={false}
-                    listing={listing}
+                    listing={amm_launch.listing}
                 />
             </td>
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center" gap={3}>
                     {show_birdeye && (
                         <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={"https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana"} target="_blank">
+                            <Link href={"https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana"} target="_blank">
                                 <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
                             </Link>
                         </Tooltip>

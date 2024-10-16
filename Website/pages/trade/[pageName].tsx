@@ -418,7 +418,7 @@ const TradePage = () => {
         //const hashArray = Array.from(new Uint8Array(hashBuffer));
         //console.log(hashArray.slice(0, 8));
         //("check market data");
-        if (amm === null) return;
+        if (!amm) return;
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
