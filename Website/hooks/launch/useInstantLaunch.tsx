@@ -166,21 +166,20 @@ const useInstantLaunch = () => {
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
         if (image_url.current == "") {
-            try{
+            try {
                 let receipt = await uploadFiles(connection, [newLaunchData.current.icon_file], "Images");
 
                 console.log(receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id);
 
-                newLaunchData.current.icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
+                newLaunchData.current.icon_url =
+                    "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
                 image_url.current = newLaunchData.current.icon_url;
-            }
-            catch(e){
+            } catch (e) {
                 console.log(e);
                 setIsLoading(false);
                 return;
             }
-        }
-        else {
+        } else {
             console.log("using existing image url ", image_url.current);
             newLaunchData.current.icon_url = image_url.current;
         }
@@ -198,21 +197,19 @@ const useInstantLaunch = () => {
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
 
-            try{
+            try {
                 let receipt = await uploadFiles(connection, [json_file], "Metadata");
 
                 console.log("json recipet", receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id);
 
                 newLaunchData.current.uri = "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id;
                 meta_url.current = newLaunchData.current.uri;
-            }
-            catch(e){
+            } catch (e) {
                 console.log(e);
                 setIsLoading(false);
                 return;
             }
-        }
-        else {
+        } else {
             console.log("using existing meta url ", meta_url.current);
             newLaunchData.current.uri = meta_url.current;
         }

@@ -156,25 +156,25 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                     </Tooltip>
 
                                     {Config.NETWORK !== "eclipse" && (
-                                    <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
-                                        <Link
-                                            href={`https://rugcheck.xyz/tokens/${
-                                                featuredLaunch && featuredLaunch.keys && featuredListing.mint
-                                                    ? featuredListing.mint.toString()
-                                                    : ""
-                                            }`}
-                                            target="_blank"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <Image
-                                                src="/images/rugcheck.jpeg"
-                                                width={lg ? 25 : 35}
-                                                height={lg ? 25 : 35}
-                                                alt="Rugcheck icon"
-                                                style={{ borderRadius: "100%" }}
-                                            />
-                                        </Link>
-                                    </Tooltip>
+                                        <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
+                                            <Link
+                                                href={`https://rugcheck.xyz/tokens/${
+                                                    featuredLaunch && featuredLaunch.keys && featuredListing.mint
+                                                        ? featuredListing.mint.toString()
+                                                        : ""
+                                                }`}
+                                                target="_blank"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <Image
+                                                    src="/images/rugcheck.jpeg"
+                                                    width={lg ? 25 : 35}
+                                                    height={lg ? 25 : 35}
+                                                    alt="Rugcheck icon"
+                                                    style={{ borderRadius: "100%" }}
+                                                />
+                                            </Link>
+                                        </Tooltip>
                                     )}
                                 </HStack>
                             )}

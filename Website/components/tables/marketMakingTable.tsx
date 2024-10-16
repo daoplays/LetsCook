@@ -55,13 +55,13 @@ const MarketMakingTable = () => {
     const { ammData, SOLPrice, mintData, listingData, jupPrices } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string>("fdmc");
-    const [reverseSort, setReverseSort] = useState<boolean>(false);
+    const [reverseSort, setReverseSort] = useState<boolean>(true);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
 
     const tableHeaders: Header[] = [
         { text: "TOKEN", field: "symbol" },
         { text: "PRICE", field: "price" },
-        { text: "FDMC", field: "fdmc" },
+        { text: "MARKET CAP", field: "fdmc" },
         { text: "REWARDS (24H)", field: "rewards" },
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },
@@ -244,7 +244,9 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             : jupPrices.get(amm_launch.amm_data.base_mint.toString());
     //console.log(amm_launch);
     let total_supply =
-        amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals) : 0;
+        amm_launch.mint !== null && amm_launch.mint !== undefined
+            ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals)
+            : 0;
     let market_cap = total_supply * last_price * SOLPrice;
 
     let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
@@ -331,7 +333,13 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {nFormatter(mm_rewards, 2)}
                     </Text>
-                    <Image src={amm_launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
+                    <Image
+                        src={amm_launch.listing.icon}
+                        width={30}
+                        height={30}
+                        alt="SOL Icon"
+                        style={{ marginLeft: -3, borderRadius: "5px" }}
+                    />
                 </HStack>
             </td>
 
@@ -354,14 +362,26 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     {show_birdeye && (
                         <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={"https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana"} target="_blank">
-                                <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                <Image
+                                    src="/images/birdeye.png"
+                                    alt="Birdeye Icon"
+                                    width={lg ? 30 : 40}
+                                    height={lg ? 30 : 40}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
                             </Link>
                         </Tooltip>
                     )}
                     {have_cook_amm && (
                         <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={"/trade/" + cook_amm_address} target="_blank">
-                                <Image src="/favicon.ico" alt="Cook Icon" width={lg ? 30 : 35} height={lg ? 30 : 35} />
+                                <Image
+                                    src="/favicon.ico"
+                                    alt="Cook Icon"
+                                    width={lg ? 30 : 35}
+                                    height={lg ? 30 : 35}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
                             </Link>
                         </Tooltip>
                     )}
@@ -369,7 +389,13 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                         <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
                             {have_raydium_amm && (
                                 <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
-                                    <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                    <Image
+                                        src="/images/raydium.png"
+                                        alt="Raydium Icon"
+                                        width={lg ? 30 : 40}
+                                        height={lg ? 30 : 40}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
                                 </Link>
                             )}
                         </Tooltip>
@@ -378,7 +404,13 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                         <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
                             {have_raydium_amm && (
                                 <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
-                                    <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                    <Image
+                                        src="/images/raydium.png"
+                                        alt="Raydium Icon"
+                                        width={lg ? 30 : 40}
+                                        height={lg ? 30 : 40}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
                                 </Link>
                             )}
                         </Tooltip>

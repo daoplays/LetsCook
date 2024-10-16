@@ -174,7 +174,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
 
     const socialsExist = listing.socials.some((social) => social !== "");
 
-    console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString())
+    console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString());
 
     return (
         <tr

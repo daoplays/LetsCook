@@ -33,6 +33,7 @@ import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
 import { getMintData } from "../components/amm/launch";
+import { useSOLPrice } from "../hooks/data/useSOLPrice";
 
 export const update_listings_blob = async (type: number, value: string) => {
     if (!Config.PROD) {
@@ -68,20 +69,6 @@ export const update_listings_blob = async (type: number, value: string) => {
         const result = await response.json();
         console.log(result);
         return result.body;
-    }
-};
-
-const GetSOLPrice = async (setSOLPrice) => {
-    // Default options are marked with *
-    const options = { method: "GET" };
-
-    let result = await fetch("https://price.jup.ag/v4/price?ids=" + Config.token, options).then((response) => response.json());
-    console.log("price result", result);
-    try{
-        setSOLPrice(result["data"][Config.token]["price"]);
-    }
-    catch(error){
-        console.log("error getting price", error);
     }
 };
 
@@ -207,7 +194,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [home_page_data, setHomePageData] = useState<Map<string, LaunchData> | null>(null);
 
     const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
-    const [solPrice, setSolPrice] = useState<number>(0);
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
@@ -217,6 +203,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
+
+    const { SOLPrice } = useSOLPrice();
 
     function closeFilterTable({ list }: { list: Map<string, LaunchData> }) {
         let current_time = new Date().getTime();
@@ -667,7 +655,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-        GetSOLPrice(setSolPrice);
     }, []);
 
     return (
@@ -687,7 +674,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             newLaunchData={newLaunchData}
             ammData={amm_data}
             userSOLBalance={userSOLBalance}
-            SOLPrice={solPrice}
+            SOLPrice={SOLPrice}
             mintData={mintData}
             newCollectionData={newCollectionData}
             collectionList={collection_data}

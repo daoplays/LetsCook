@@ -97,7 +97,6 @@ const TokenMintPage = () => {
     const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(listing, launchData);
     const { InitAMM, isLoading: isInitLoading } = useInitAMM(launchData);
 
-
     const cook_state = useDetermineCookState({ current_time, launchData, join_data });
 
     let win_prob = 0;
@@ -304,7 +303,7 @@ const TokenMintPage = () => {
                                                         CheckTickets();
                                                     }
                                                 } else if (ButtonString(cook_state, join_data, launchData) === "Waiting for LP") {
-                                                    InitAMM()
+                                                    InitAMM();
 
                                                     return;
                                                 } else if (

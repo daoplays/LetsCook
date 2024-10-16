@@ -272,7 +272,7 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
             let signed_transaction = await wallet.signTransaction(transaction);
             var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            console.log("liquidity sig", signature)
+            console.log("liquidity sig", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
