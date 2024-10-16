@@ -180,7 +180,6 @@ const MarketMakingTable = () => {
         return 0;
     });
 
-    console.log(sorted_rows)
     return (
         <TableContainer>
             <table
