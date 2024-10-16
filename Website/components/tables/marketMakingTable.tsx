@@ -45,7 +45,7 @@ function nFormatter(num, digits) {
 interface AMMLaunch {
     amm_data: AMMData;
     mint: Mint;
-    listing: ListingData
+    listing: ListingData;
 }
 
 const MarketMakingTable = () => {
@@ -58,7 +58,6 @@ const MarketMakingTable = () => {
     const [reverseSort, setReverseSort] = useState<boolean>(false);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
 
-
     const tableHeaders: Header[] = [
         { text: "TOKEN", field: "symbol" },
         { text: "PRICE", field: "price" },
@@ -70,7 +69,7 @@ const MarketMakingTable = () => {
     ];
 
     const handleHeaderClick = (e) => {
-        console.log("click header,", e, sortedField)
+        console.log("click header,", e, sortedField);
         if (e == sortedField) {
             setReverseSort(!reverseSort);
         } else {
@@ -93,7 +92,7 @@ const MarketMakingTable = () => {
 
             let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             let listing = listingData.get(listing_key.toString());
-            let mint = mintData.get(amm.base_mint.toString())
+            let mint = mintData.get(amm.base_mint.toString());
             if (listing && mint) {
                 //console.log("mint data", mint_data);
                 let amm_launch: AMMLaunch = {
@@ -104,15 +103,13 @@ const MarketMakingTable = () => {
                 amm_launches.push(amm_launch);
             }
         });
-    
+
         setRows([...amm_launches]);
     }, [mintData, listingData, ammData]);
 
-    const sorted_rows = [...rows]
-
+    const sorted_rows = [...rows];
 
     sorted_rows.sort((a, b) => {
-
         if (sortedField === "symbol") {
             if (a.listing.symbol < b.listing.symbol) {
                 return reverseSort ? 1 : -1;
@@ -124,8 +121,14 @@ const MarketMakingTable = () => {
         }
 
         if (sortedField === "price") {
-            let price_a = a.amm_data.provider === 0 ? Buffer.from(a.amm_data.last_price).readFloatLE(0) : jupPrices.get(a.amm_data.base_mint.toString());
-            let price_b = b.amm_data.provider === 0 ? Buffer.from(b.amm_data.last_price).readFloatLE(0) : jupPrices.get(b.amm_data.base_mint.toString());
+            let price_a =
+                a.amm_data.provider === 0
+                    ? Buffer.from(a.amm_data.last_price).readFloatLE(0)
+                    : jupPrices.get(a.amm_data.base_mint.toString());
+            let price_b =
+                b.amm_data.provider === 0
+                    ? Buffer.from(b.amm_data.last_price).readFloatLE(0)
+                    : jupPrices.get(b.amm_data.base_mint.toString());
             if (price_a < price_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -138,8 +141,14 @@ const MarketMakingTable = () => {
         if (sortedField === "fdmc") {
             let total_supply_a = Number(a.mint.supply) / Math.pow(10, a.listing.decimals);
             let total_supply_b = Number(b.mint.supply) / Math.pow(10, b.listing.decimals);
-            let price_a = a.amm_data.provider === 0 ? Buffer.from(a.amm_data.last_price).readFloatLE(0) : jupPrices.get(a.amm_data.base_mint.toString());
-            let price_b = b.amm_data.provider === 0 ? Buffer.from(b.amm_data.last_price).readFloatLE(0) : jupPrices.get(b.amm_data.base_mint.toString());
+            let price_a =
+                a.amm_data.provider === 0
+                    ? Buffer.from(a.amm_data.last_price).readFloatLE(0)
+                    : jupPrices.get(a.amm_data.base_mint.toString());
+            let price_b =
+                b.amm_data.provider === 0
+                    ? Buffer.from(b.amm_data.last_price).readFloatLE(0)
+                    : jupPrices.get(b.amm_data.base_mint.toString());
             let market_cap_a = total_supply_a * price_a * SOLPrice;
             let market_cap_b = total_supply_b * price_b * SOLPrice;
             if (market_cap_a < market_cap_b) {
@@ -163,7 +172,6 @@ const MarketMakingTable = () => {
             }
             return 0;
         }
-
 
         if (sortedField === "hype") {
             let hype_a = a.listing.positive_votes - a.listing.negative_votes;
@@ -198,7 +206,7 @@ const MarketMakingTable = () => {
                         {tableHeaders.map((i) => (
                             <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
                                 <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
-                                <Text
+                                    <Text
                                         fontSize={sm ? "medium" : "large"}
                                         m={0}
                                         onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}

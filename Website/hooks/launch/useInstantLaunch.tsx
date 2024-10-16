@@ -113,35 +113,30 @@ const useInstantLaunch = () => {
     const signature_ws_id = useRef<number | null>(null);
     const amm_id = useRef<string>("");
 
-
     const { uploadFiles } = useIrysUploader(wallet);
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            // if we have a subscription field check against ws_id
-            signature_ws_id.current = null;
-            setIsLoading(false);
+    const check_signature_update = useCallback(async (result: any) => {
+        // if we have a subscription field check against ws_id
+        signature_ws_id.current = null;
+        setIsLoading(false);
 
-            if (result.err !== null) {
-                toast.error("Transaction failed, please try again");
-                return;
-            }
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again");
+            return;
+        }
 
-            toast.success("Launch Complete!", {
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
+        toast.success("Launch Complete!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
 
-            router.push(`/trade/${amm_id.current}`).then(() => {
-                window.location.reload();
-            });
+        router.push(`/trade/${amm_id.current}`).then(() => {
+            window.location.reload();
+        });
 
-
-            signature_ws_id.current = null;
-        },
-        [],
-    );
+        signature_ws_id.current = null;
+    }, []);
 
     const transaction_failed = useCallback(async () => {
         if (signature_ws_id.current == null) return;
@@ -217,7 +212,7 @@ const useInstantLaunch = () => {
             PROGRAM,
         )[0];
 
-        amm_id.current = amm_data_account.toString()
+        amm_id.current = amm_data_account.toString();
 
         let base_amm_account = await getAssociatedTokenAddress(
             token_mint_pubkey, // mint
@@ -242,7 +237,7 @@ const useInstantLaunch = () => {
         )[0];
 
         const instruction_data = serialise_CreateInstantLaunch_instruction(newLaunchData.current);
-        console.log("idx data", instruction_data.length)
+        console.log("idx data", instruction_data.length);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
