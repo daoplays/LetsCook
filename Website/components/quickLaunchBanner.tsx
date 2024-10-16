@@ -44,7 +44,7 @@ const QuickLaunchBanner = () => {
                             }
                         }}
                     >
-                        <WoodenButton label="Quick Launch" size={28} />
+                        <WoodenButton label="Instant Launch" size={28} />
                     </div>
                 </VStack>
             </Box>
