@@ -983,10 +983,10 @@ const BuyAndSell = ({
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    AMM Fee (bps):
+                    AMM LP Fee:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {amm.fee}
+                    {amm.fee * 0.01}%
                 </Text>
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
@@ -1182,27 +1182,27 @@ const InfoContent = ({
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    FDMC:
+                    MARKET CAP:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    $
                     {(total_supply * price * sol_price).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                     })}{" "}
-                    USDC
                 </Text>
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    TVL:
+                    LIQUIDITY:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    $
                     {((quote_amount / Math.pow(10, 9)) * sol_price).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                     })}{" "}
-                    USDC
                 </Text>
             </HStack>
 

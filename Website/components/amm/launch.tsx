@@ -526,13 +526,13 @@ const LaunchAMM = () => {
                                 </HStack>*/}
                                 <HStack spacing={0} w="100%" className={styles.eachField}>
                                     <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
-                                        AMM Fee:
+                                        AMM LP Fee:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             bg="#494949"
-                                            placeholder="Enter AMM Fee (Bps - 100 = 1%)"
+                                            placeholder="Enter AMM LP Fee (Bps - 100 = 1%)"
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}

@@ -61,7 +61,7 @@ const MarketMakingTable = () => {
     const tableHeaders: Header[] = [
         { text: "TOKEN", field: "symbol" },
         { text: "PRICE", field: "price" },
-        { text: "FDMC", field: "fdmc" },
+        { text: "MARKET CAP", field: "fdmc" },
         { text: "REWARDS (24H)", field: "rewards" },
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },
@@ -244,7 +244,9 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             : jupPrices.get(amm_launch.amm_data.base_mint.toString());
     //console.log(amm_launch);
     let total_supply =
-        amm_launch.mint !== null && amm_launch.mint !== undefined ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals) : 0;
+        amm_launch.mint !== null && amm_launch.mint !== undefined
+            ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals)
+            : 0;
     let market_cap = total_supply * last_price * SOLPrice;
 
     let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
@@ -331,7 +333,13 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     <Text fontSize={"large"} m={0}>
                         {nFormatter(mm_rewards, 2)}
                     </Text>
-                    <Image src={amm_launch.listing.icon} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3, borderRadius: "5px" }} />
+                    <Image
+                        src={amm_launch.listing.icon}
+                        width={30}
+                        height={30}
+                        alt="SOL Icon"
+                        style={{ marginLeft: -3, borderRadius: "5px" }}
+                    />
                 </HStack>
             </td>
 
