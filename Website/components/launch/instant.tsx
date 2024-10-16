@@ -243,7 +243,7 @@ const LaunchPage = () => {
                                 {!lg && <Browse />}
                             </VStack>
                         </HStack>
-                        <VStack w="100%" spacing={30} mt={42} mb={25}>
+                        <VStack w="100%" spacing={30} my={18}>
                             <div className={stylesDescription.launchBodyLowerVertical}>
                                 <div className={`${stylesDescription.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
                                     DESCRIPTION:
@@ -253,7 +253,7 @@ const LaunchPage = () => {
                                         maxLength={250}
                                         required
                                         placeholder="Feel free to provide more details about your token, it will be displayed in your token metadata."
-                                        style={{ minHeight: 200 }}
+                                        style={{ minHeight: 200, fontSize: lg ? "medium" : "large" }}
                                         className={`${stylesDescription.inputBox} ${stylesDescription.inputTxtarea}`}
                                         value={description}
                                         onChange={(e) => {
@@ -270,6 +270,7 @@ const LaunchPage = () => {
                                         <input
                                             placeholder="Enter your Website URL (optional)"
                                             className={styles.inputBox}
+                                            style={{ fontSize: lg ? "medium" : "large" }}
                                             type="text"
                                             value={web}
                                             onChange={(e) => {
@@ -288,6 +289,7 @@ const LaunchPage = () => {
                                         <input
                                             className={styles.inputBox}
                                             placeholder="Enter your Telegram Invite URL (optional)"
+                                            style={{ fontSize: lg ? "medium" : "large" }}
                                             type="text"
                                             value={telegram}
                                             onChange={(e) => {
@@ -306,6 +308,7 @@ const LaunchPage = () => {
                                             required
                                             className={styles.inputBox}
                                             placeholder="Enter your Twitter URL (optional)"
+                                            style={{ fontSize: lg ? "medium" : "large" }}
                                             type="text"
                                             value={twitter}
                                             onChange={(e) => {
@@ -324,6 +327,7 @@ const LaunchPage = () => {
                                         <input
                                             className={styles.inputBox}
                                             placeholder="Enter your Discord Invite URL (optional)"
+                                            style={{ fontSize: lg ? "medium" : "large" }}
                                             type="text"
                                             value={discord}
                                             onChange={(e) => {
@@ -335,7 +339,7 @@ const LaunchPage = () => {
                             </div>
                         </VStack>
 
-                        <HStack mt={md ? 0 : 30}>
+                        <HStack mb={30}>
                             <button
                                 type="button"
                                 onClick={(e) => {

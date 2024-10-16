@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import LaunchPage from "../../components/launch/instant";
-import AdvanceLaunch from "../../components/launch/advanceLaunch";
+import AdvanceLaunch from "../../components/launch/advancedLaunch";
 
 const TokenLaunch = () => {
     const router = useRouter();

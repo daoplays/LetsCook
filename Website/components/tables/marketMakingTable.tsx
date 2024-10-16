@@ -182,6 +182,17 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             onMouseOut={(e) => {
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
+            onClick={() => {
+                if (cook_amm_address) {
+                    router.push("/trade/" + cook_amm_address);
+                } else if (show_birdeye) {
+                    router.push("https://birdeye.so/token/" + listing.mint.toString() + "?chain=solana");
+                } else if (have_raydium_amm) {
+                    router.push("/trade/" + raydium_amm_address.toString());
+                } else if (have_raydium_cpmm) {
+                    router.push("/trade/" + raydium_cpmm_address.toString());
+                }
+            }}
         >
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
@@ -212,14 +223,14 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {nFormatter(market_cap, 2)}
+                        ${nFormatter(market_cap, 2)}
                     </Text>
-                    <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    {/* <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} /> */}
                 </HStack>
             </td>
 
             <td style={{ minWidth: "200px" }}>
-                <HStack justify="center">
+                <HStack justify="center" gap={2}>
                     <Text fontSize={"large"} m={0}>
                         {nFormatter(mm_rewards, 2)}
                     </Text>
