@@ -27,11 +27,6 @@ const tabs = {
             url: "/collection",
         },
         {
-            icon: (size: number) => <FaList size={size} />,
-            tab: "New Listing",
-            url: "/listing",
-        },
-        {
             icon: (size: number) => <GiCook size={size} />,
             tab: "Creator Dashboard",
             url: "/dashboard",

@@ -155,6 +155,7 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                         </Link>
                                     </Tooltip>
 
+                                    {Config.NETWORK !== "eclipse" && (
                                     <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
                                         <Link
                                             href={`https://rugcheck.xyz/tokens/${
@@ -174,6 +175,7 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                             />
                                         </Link>
                                     </Tooltip>
+                                    )}
                                 </HStack>
                             )}
 
