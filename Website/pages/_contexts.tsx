@@ -76,7 +76,13 @@ const GetSOLPrice = async (setSOLPrice) => {
     const options = { method: "GET" };
 
     let result = await fetch("https://price.jup.ag/v4/price?ids=" + Config.token, options).then((response) => response.json());
-    setSOLPrice(result["data"][Config.token]["price"]);
+    console.log("price result", result);
+    try{
+        setSOLPrice(result["data"][Config.token]["price"]);
+    }
+    catch(error){
+        console.log("error getting price", error);
+    }
 };
 
 const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
