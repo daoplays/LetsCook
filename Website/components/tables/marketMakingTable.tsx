@@ -362,14 +362,26 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     {show_birdeye && (
                         <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={"https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana"} target="_blank">
-                                <Image src="/images/birdeye.png" alt="Birdeye Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                <Image
+                                    src="/images/birdeye.png"
+                                    alt="Birdeye Icon"
+                                    width={lg ? 30 : 40}
+                                    height={lg ? 30 : 40}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
                             </Link>
                         </Tooltip>
                     )}
                     {have_cook_amm && (
                         <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
                             <Link href={"/trade/" + cook_amm_address} target="_blank">
-                                <Image src="/favicon.ico" alt="Cook Icon" width={lg ? 30 : 35} height={lg ? 30 : 35} />
+                                <Image
+                                    src="/favicon.ico"
+                                    alt="Cook Icon"
+                                    width={lg ? 30 : 35}
+                                    height={lg ? 30 : 35}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
                             </Link>
                         </Tooltip>
                     )}
@@ -377,7 +389,13 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                         <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
                             {have_raydium_amm && (
                                 <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
-                                    <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                    <Image
+                                        src="/images/raydium.png"
+                                        alt="Raydium Icon"
+                                        width={lg ? 30 : 40}
+                                        height={lg ? 30 : 40}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
                                 </Link>
                             )}
                         </Tooltip>
@@ -386,7 +404,13 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                         <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
                             {have_raydium_amm && (
                                 <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
-                                    <Image src="/images/raydium.png" alt="Raydium Icon" width={lg ? 30 : 40} height={lg ? 30 : 40} />
+                                    <Image
+                                        src="/images/raydium.png"
+                                        alt="Raydium Icon"
+                                        width={lg ? 30 : 40}
+                                        height={lg ? 30 : 40}
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
                                 </Link>
                             )}
                         </Tooltip>
