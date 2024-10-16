@@ -978,7 +978,7 @@ const BuyAndSell = ({
                           : (user_base_balance / Math.pow(10, base_mint.mint.decimals)).toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                             })}{" "}
-                    {selected === "Buy" ? "SOL" : selected === "LP-" ? "LP" : base_mint.symbol}
+                    {selected === "Buy" ? Config.token : selected === "LP-" ? "LP" : base_mint.symbol}
                 </Text>
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
