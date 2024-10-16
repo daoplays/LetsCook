@@ -200,8 +200,8 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
 
-            { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: wsol_mint, isSigner: false, isWritable: true },
+            { pubkey: token_mint, isSigner: false, isWritable: false },
+            { pubkey: wsol_mint, isSigner: false, isWritable: false },
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },

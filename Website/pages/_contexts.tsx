@@ -24,7 +24,7 @@ import {
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, getAMMKey, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys } from "../components/Solana/constants";
+import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren, SetStateAction, Dispatch } from "react";
@@ -76,7 +76,13 @@ const GetSOLPrice = async (setSOLPrice) => {
     const options = { method: "GET" };
 
     let result = await fetch("https://price.jup.ag/v4/price?ids=" + Config.token, options).then((response) => response.json());
-    setSOLPrice(result["data"][Config.token]["price"]);
+    console.log("price result", result);
+    try{
+        setSOLPrice(result["data"][Config.token]["price"]);
+    }
+    catch(error){
+        console.log("error getting price", error);
+    }
 };
 
 const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
@@ -177,7 +183,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
     const [selectedNetwork, setSelectedNetwork] = useState(Config.NETWORK);
-    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(true);
+    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(false);
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
@@ -400,9 +406,11 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
             const instruction_data = serialise_basic_instruction(LaunchInstruction.close_account);
+            let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
             var account_vector = [
                 { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+                { pubkey: program_sol_account, isSigner: false, isWritable: true },
                 { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             ];
 

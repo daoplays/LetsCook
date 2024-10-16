@@ -12,7 +12,7 @@ import Links from "../Buttons/links";
 import { FaSort } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { ButtonString } from "../user_status";
-import { LaunchKeys } from "../Solana/constants";
+import { Config, LaunchKeys } from "../Solana/constants";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -159,15 +159,22 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
 const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     const { sm, md, lg } = useResponsive();
     const { listingData } = useAppRoot();
+    const router = useRouter();
 
     let listing = listingData.get(launch.listing.toString());
-    const router = useRouter();
+
+    if (!listing) {
+        return <></>;
+    }
+
     let name = listing.symbol;
 
     let splitDate = new Date(bignum_to_num(launch.end_date)).toUTCString().split(" ");
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     const socialsExist = listing.socials.some((social) => social !== "");
+
+    console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString())
 
     return (
         <tr
@@ -222,7 +229,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity) / LAMPORTS_PER_SOL} SOL
+                    {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>

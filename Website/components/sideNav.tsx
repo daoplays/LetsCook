@@ -27,11 +27,6 @@ const tabs = {
             url: "/collection",
         },
         {
-            icon: (size: number) => <FaList size={size} />,
-            tab: "New Listing",
-            url: "/listing",
-        },
-        {
             icon: (size: number) => <GiCook size={size} />,
             tab: "Creator Dashboard",
             url: "/dashboard",
@@ -51,7 +46,7 @@ const tabs = {
         },
         {
             icon: (size: number) => <FaCalendarDays size={size} />,
-            tab: "Calendar",
+            tab: "Token Launches",
             url: "/calendar",
         },
     ],

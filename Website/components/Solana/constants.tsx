@@ -105,7 +105,7 @@ export const enum Screen {
     LEADERBOARD = 6,
 }
 
-export const enum Socials {
+export enum Socials {
     Website = 0,
     Twitter = 1,
     Telegram = 2,
