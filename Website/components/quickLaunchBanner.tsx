@@ -15,7 +15,7 @@ const QuickLaunchBanner = () => {
         <Box
             w="100%"
             h={lg ? 350 : 400}
-            bg={"url(./images/banner.png)"}
+            bg={"url(/images/Banner.png)"}
             bgSize="cover"
             boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
             style={{ borderBottom: "1px solid #868E96" }}

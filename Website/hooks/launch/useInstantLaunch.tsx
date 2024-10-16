@@ -93,7 +93,7 @@ function serialise_CreateInstantLaunch_instruction(new_launch_data: LaunchDataUs
         new_launch_data.symbol,
         new_launch_data.uri,
         new_launch_data.icon_url,
-        new_launch_data.description,
+        "",
         new_launch_data.web_url,
         new_launch_data.twt_url,
         new_launch_data.tele_url,
@@ -242,6 +242,7 @@ const useInstantLaunch = () => {
         )[0];
 
         const instruction_data = serialise_CreateInstantLaunch_instruction(newLaunchData.current);
+        console.log("idx data", instruction_data.length)
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -285,6 +286,8 @@ const useInstantLaunch = () => {
         transaction.partialSign(newLaunchData.current.token_keypair);
 
         const createLaunch = toast.info("(3/4) Setting up your launch accounts");
+
+        console.log("tx size", transaction.serializeMessage().length);
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
