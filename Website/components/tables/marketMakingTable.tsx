@@ -18,6 +18,7 @@ import { HypeVote } from "../hypeVote";
 import Links from "../Buttons/links";
 import formatPrice from "../../utils/formatPrice";
 import { FaSort } from "react-icons/fa";
+import Loader from "../loader";
 
 interface Header {
     text: string;
@@ -187,6 +188,10 @@ const MarketMakingTable = () => {
 
         return 0;
     });
+
+    if (!mintData || !listingData || !ammData) {
+        return <Loader/>;
+    }
 
     return (
         <TableContainer>
