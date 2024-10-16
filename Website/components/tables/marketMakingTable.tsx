@@ -223,14 +223,14 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {nFormatter(market_cap, 2)}
+                        ${nFormatter(market_cap, 2)}
                     </Text>
-                    <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
+                    {/* <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} /> */}
                 </HStack>
             </td>
 
             <td style={{ minWidth: "200px" }}>
-                <HStack justify="center">
+                <HStack justify="center" gap={2}>
                     <Text fontSize={"large"} m={0}>
                         {nFormatter(mm_rewards, 2)}
                     </Text>
