@@ -177,7 +177,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
     const [selectedNetwork, setSelectedNetwork] = useState(Config.NETWORK);
-    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(true);
+    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(false);
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);

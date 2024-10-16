@@ -18,6 +18,14 @@ interface LinksProps {
 const Links = ({ socials, isTradePage }: LinksProps) => {
     const { lg } = useResponsive();
 
+    if (!socials || Object.values(Socials).every((key) => !socials[key])) {
+        return (
+            <Text fontSize="large" opacity="25%">
+                No Socials
+            </Text>
+        );
+    }
+
     return (
         <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
             {socials[Socials.Twitter] !== "" && (
