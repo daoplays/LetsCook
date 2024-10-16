@@ -112,6 +112,8 @@ const useInstantLaunch = () => {
 
     const signature_ws_id = useRef<number | null>(null);
     const amm_id = useRef<string>("");
+    const image_url = useRef<string>("");
+    const meta_url = useRef<string>("");
 
     const { uploadFiles } = useIrysUploader(wallet);
 
@@ -130,6 +132,9 @@ const useInstantLaunch = () => {
             isLoading: false,
             autoClose: 3000,
         });
+
+        image_url.current = "";
+        meta_url.current = "";
 
         router.push(`/trade/${amm_id.current}`).then(() => {
             window.location.reload();
@@ -160,15 +165,27 @@ const useInstantLaunch = () => {
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
 
-        if (newLaunchData.current.icon_url == "" || newLaunchData.current.icon_url == "") {
-            let receipt = await uploadFiles(connection, [newLaunchData.current.icon_file], "Images");
+        if (image_url.current == "") {
+            try{
+                let receipt = await uploadFiles(connection, [newLaunchData.current.icon_file], "Images");
 
-            console.log(receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id);
+                console.log(receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id);
 
-            newLaunchData.current.icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
+                newLaunchData.current.icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[newLaunchData.current.icon_file.name].id;
+                image_url.current = newLaunchData.current.icon_url;
+            }
+            catch(e){
+                console.log(e);
+                setIsLoading(false);
+                return;
+            }
+        }
+        else {
+            console.log("using existing image url ", image_url.current);
+            newLaunchData.current.icon_url = image_url.current;
         }
 
-        if (newLaunchData.current.uri == "") {
+        if (meta_url.current == "") {
             // console.log(icon_url, banner_url);
             var metadata = {
                 name: newLaunchData.current.name,
@@ -181,11 +198,23 @@ const useInstantLaunch = () => {
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
 
-            let receipt = await uploadFiles(connection, [json_file], "Metadata");
+            try{
+                let receipt = await uploadFiles(connection, [json_file], "Metadata");
 
-            console.log("json recipet", receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id);
+                console.log("json recipet", receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id);
 
-            newLaunchData.current.uri = "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id;
+                newLaunchData.current.uri = "https://gateway.irys.xyz/" + receipt.manifest.paths[json_file.name].id;
+                meta_url.current = newLaunchData.current.uri;
+            }
+            catch(e){
+                console.log(e);
+                setIsLoading(false);
+                return;
+            }
+        }
+        else {
+            console.log("using existing meta url ", meta_url.current);
+            newLaunchData.current.uri = meta_url.current;
         }
 
         let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
@@ -280,7 +309,7 @@ const useInstantLaunch = () => {
 
         transaction.partialSign(newLaunchData.current.token_keypair);
 
-        const createLaunch = toast.info("(3/4) Setting up your launch accounts");
+        const createLaunch = toast.info("(3/3) Setting up your launch");
 
         console.log("tx size", transaction.serializeMessage().length);
 
@@ -320,7 +349,7 @@ const useInstantLaunch = () => {
         }
     };
 
-    return { CreateInstantLaunch };
+    return { CreateInstantLaunch, image_url, meta_url, isLoading };
 };
 
 export default useInstantLaunch;
