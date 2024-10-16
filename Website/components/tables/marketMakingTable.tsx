@@ -3,7 +3,7 @@ import { Box, Button, Center, HStack, Link, TableContainer, Text, Tooltip } from
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Distribution, JoinedLaunch, LaunchData, bignum_to_num } from "../Solana/state";
+import { Distribution, JoinedLaunch, LaunchData, ListingData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
 import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -17,6 +17,7 @@ import { PublicKey } from "@solana/web3.js";
 import { HypeVote } from "../hypeVote";
 import Links from "../Buttons/links";
 import formatPrice from "../../utils/formatPrice";
+import { FaSort } from "react-icons/fa";
 
 interface Header {
     text: string;
@@ -44,18 +45,32 @@ function nFormatter(num, digits) {
 interface AMMLaunch {
     amm_data: AMMData;
     mint: Mint;
+    listing: ListingData
 }
 
 const MarketMakingTable = () => {
     const wallet = useWallet();
     const { sm } = useResponsive();
 
-    const { ammData, SOLPrice, mintData, listingData } = useAppRoot();
+    const { ammData, SOLPrice, mintData, listingData, jupPrices } = useAppRoot();
 
-    const [sortedField, setSortedField] = useState<string>("end_date");
+    const [sortedField, setSortedField] = useState<string>("fdmc");
     const [reverseSort, setReverseSort] = useState<boolean>(false);
+    const [rows, setRows] = useState<AMMLaunch[]>([]);
+
+
+    const tableHeaders: Header[] = [
+        { text: "TOKEN", field: "symbol" },
+        { text: "PRICE", field: "price" },
+        { text: "FDMC", field: "fdmc" },
+        { text: "REWARDS (24H)", field: "rewards" },
+        { text: "SOCIALS", field: null },
+        { text: "HYPE", field: "hype" },
+        { text: "TRADE", field: null },
+    ];
 
     const handleHeaderClick = (e) => {
+        console.log("click header,", e, sortedField)
         if (e == sortedField) {
             setReverseSort(!reverseSort);
         } else {
@@ -64,39 +79,108 @@ const MarketMakingTable = () => {
         }
     };
 
-    //console.log(ammData, mintData);
-    let amm_launches: AMMLaunch[] = [];
-    if (mintData !== null) {
+    useEffect(() => {
+        if (!mintData || !listingData || !ammData) {
+            return;
+        }
+
+        let amm_launches: AMMLaunch[] = [];
         ammData.forEach((amm, i) => {
             //console.log("CHECK AMM IN TABLE", amm.base_mint.toString());
             if (bignum_to_num(amm.start_time) === 0) {
                 return;
             }
-            let mint_data = mintData.get(amm.base_mint.toString());
-            //console.log(amm.base_mint.toString(), mint_data);
+
             let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             let listing = listingData.get(listing_key.toString());
-            if (listing && mint_data) {
+            let mint = mintData.get(amm.base_mint.toString())
+            if (listing && mint) {
                 //console.log("mint data", mint_data);
                 let amm_launch: AMMLaunch = {
                     amm_data: amm,
-                    mint: mintData !== null ? mintData.get(amm.base_mint.toString()).mint : null,
+                    mint: mint.mint,
+                    listing: listing,
                 };
                 amm_launches.push(amm_launch);
             }
         });
-    }
+    
+        setRows([...amm_launches]);
+    }, [mintData, listingData, ammData]);
 
-    const tableHeaders: Header[] = [
-        { text: "TOKEN", field: null },
-        { text: "PRICE", field: null },
-        { text: "FDMC", field: "fdmc" },
-        { text: "REWARDS (24H)", field: "rewards" },
-        { text: "SOCIALS", field: null },
-        { text: "HYPE", field: null },
-        { text: "TRADE", field: null },
-    ];
+    const sorted_rows = [...rows]
 
+
+    sorted_rows.sort((a, b) => {
+
+        if (sortedField === "symbol") {
+            if (a.listing.symbol < b.listing.symbol) {
+                return reverseSort ? 1 : -1;
+            }
+            if (a.listing.symbol > b.listing.symbol) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        if (sortedField === "price") {
+            let price_a = a.amm_data.provider === 0 ? Buffer.from(a.amm_data.last_price).readFloatLE(0) : jupPrices.get(a.amm_data.base_mint.toString());
+            let price_b = b.amm_data.provider === 0 ? Buffer.from(b.amm_data.last_price).readFloatLE(0) : jupPrices.get(b.amm_data.base_mint.toString());
+            if (price_a < price_b) {
+                return reverseSort ? 1 : -1;
+            }
+            if (price_a > price_b) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        if (sortedField === "fdmc") {
+            let total_supply_a = Number(a.mint.supply) / Math.pow(10, a.listing.decimals);
+            let total_supply_b = Number(b.mint.supply) / Math.pow(10, b.listing.decimals);
+            let price_a = a.amm_data.provider === 0 ? Buffer.from(a.amm_data.last_price).readFloatLE(0) : jupPrices.get(a.amm_data.base_mint.toString());
+            let price_b = b.amm_data.provider === 0 ? Buffer.from(b.amm_data.last_price).readFloatLE(0) : jupPrices.get(b.amm_data.base_mint.toString());
+            let market_cap_a = total_supply_a * price_a * SOLPrice;
+            let market_cap_b = total_supply_b * price_b * SOLPrice;
+            if (market_cap_a < market_cap_b) {
+                return reverseSort ? 1 : -1;
+            }
+            if (market_cap_a > market_cap_b) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        if (sortedField === "rewards") {
+            let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(a.amm_data.start_time)) / 24 / 60 / 60);
+            let mm_rewards_a = reward_schedule(current_date, a.amm_data);
+            let mm_rewards_b = reward_schedule(current_date, b.amm_data);
+            if (mm_rewards_a < mm_rewards_b) {
+                return reverseSort ? 1 : -1;
+            }
+            if (mm_rewards_a > mm_rewards_b) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+
+        if (sortedField === "hype") {
+            let hype_a = a.listing.positive_votes - a.listing.negative_votes;
+            let hype_b = b.listing.positive_votes - b.listing.negative_votes;
+            if (hype_a < hype_b) {
+                return reverseSort ? 1 : -1;
+            }
+            if (hype_a > hype_b) {
+                return reverseSort ? -1 : 1;
+            }
+            return 0;
+        }
+
+        return 0;
+    });
+
+    console.log(sorted_rows)
     return (
         <TableContainer>
             <table
@@ -115,10 +199,14 @@ const MarketMakingTable = () => {
                         {tableHeaders.map((i) => (
                             <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
                                 <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
-                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
+                                <Text
+                                        fontSize={sm ? "medium" : "large"}
+                                        m={0}
+                                        onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                    >
                                         {i.text}
                                     </Text>
-                                    {/* {i.text === "LOGO" || i.text === "END" ? <></> : <FaSort />} */}
+                                    {!i.field ? <></> : <FaSort />}
                                 </HStack>
                             </th>
                         ))}
@@ -126,7 +214,7 @@ const MarketMakingTable = () => {
                 </thead>
 
                 <tbody>
-                    {amm_launches.map((launch, i) => (
+                    {sorted_rows.map((launch, i) => (
                         <LaunchCard key={i} amm_launch={launch} SOLPrice={SOLPrice} />
                     ))}
                 </tbody>
