@@ -25,6 +25,12 @@ label.label input[type="file"] {
 .inputBox::file-selector-button::after {
     opacity: 0 !important;
 }
+
+.inputBox::placeholder {
+    color: #a8a7a7; /* Change this to your desired color */
+    opacity: 1; /* Optional: change opacity */
+}
+
 .help {
     position: fixed;
     top: 70px;

@@ -19,6 +19,11 @@ label.label input[type="file"] {
     flex-direction: row;
     width: 100%;
 }
+.inputBox::placeholder {
+    color: #a8a7a7; /* Change this to your desired color */
+    opacity: 1; /* Optional: change opacity */
+}
+
 .inputBox::file-selector-button {
     color: #683309;
     background-image: url(../public/images/Wood\ Panel.png);
