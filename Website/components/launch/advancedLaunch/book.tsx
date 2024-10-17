@@ -372,14 +372,14 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
                         <HStack spacing={15} w="100%">
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
-                                AMM Fee:
+                                AMM LP Fee:
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
                                     disabled={true}
                                     size={sm ? "medium" : "lg"}
                                     required
-                                    placeholder="Enter AMM Fee in bps (Ex. 100 = 1%)"
+                                    placeholder="Enter AMM LP Fee in bps (Ex. 100 = 1%)"
                                     className={styles.inputBox}
                                     type="text"
                                     value={AMMProvider === "raydium" ? 25 : parseInt(amm_fee) > 0 ? amm_fee : ""}

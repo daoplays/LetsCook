@@ -172,6 +172,8 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
             mint_account.token_program,
         );
 
+        console.log("lp", cook_lp_mint_account.toString(), user_lp_token_account_key.toString());
+
         let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -215,8 +217,8 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: wsol_mint, isSigner: false, isWritable: true },
+            { pubkey: token_mint, isSigner: false, isWritable: false },
+            { pubkey: wsol_mint, isSigner: false, isWritable: false },
             { pubkey: cook_lp_mint_account, isSigner: false, isWritable: true },
 
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
@@ -269,6 +271,8 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
             var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
+
+            console.log("liquidity sig", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

@@ -978,15 +978,15 @@ const BuyAndSell = ({
                           : (user_base_balance / Math.pow(10, base_mint.mint.decimals)).toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                             })}{" "}
-                    {selected === "Buy" ? "SOL" : selected === "LP-" ? "LP" : base_mint.symbol}
+                    {selected === "Buy" ? Config.token : selected === "LP-" ? "LP" : base_mint.symbol}
                 </Text>
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    AMM Fee (bps):
+                    AMM LP Fee:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {amm.fee}
+                    {amm.fee * 0.01}%
                 </Text>
             </HStack>
             <HStack justify="space-between" w="100%" mt={2}>
@@ -1144,9 +1144,9 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {volume.toLocaleString()}
+                        {(volume * price).toLocaleString()}
                     </Text>
-                    <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
+                    <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
                 </HStack>
             </HStack>
 
@@ -1182,27 +1182,27 @@ const InfoContent = ({
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    FDMC:
+                    MARKET CAP:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    $
                     {(total_supply * price * sol_price).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                    })}{" "}
-                    USDC
+                    })}
                 </Text>
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    TVL:
+                    LIQUIDITY:
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                    $
                     {((quote_amount / Math.pow(10, 9)) * sol_price).toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                    })}{" "}
-                    USDC
+                    })}
                 </Text>
             </HStack>
 

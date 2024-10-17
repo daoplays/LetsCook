@@ -12,7 +12,7 @@ import Links from "../Buttons/links";
 import { FaSort } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { ButtonString } from "../user_status";
-import { LaunchKeys } from "../Solana/constants";
+import { Config, LaunchKeys } from "../Solana/constants";
 
 export interface LaunchTableFilters {
     start_date: Date | null;
@@ -174,6 +174,8 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
 
     const socialsExist = listing.socials.some((social) => social !== "");
 
+    console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString());
+
     return (
         <tr
             style={{
@@ -227,7 +229,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             </td>
             <td style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {bignum_to_num(launch.minimum_liquidity / LAMPORTS_PER_SOL)} SOL
+                    {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
                 </Text>
             </td>
             <td style={{ minWidth: "150px" }}>

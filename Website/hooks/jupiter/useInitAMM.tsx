@@ -52,10 +52,6 @@ const useInitAMM = (launchData: LaunchData) => {
             return;
         }
 
-        if (Config.PROD) {
-            let response = await make_tweet(launchData.page_name);
-            console.log(response);
-        }
         signature_ws_id.current = null;
     }, []);
 

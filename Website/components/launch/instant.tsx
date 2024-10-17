@@ -72,8 +72,18 @@ const LaunchPage = () => {
             return false;
         }
 
+        if (symbol.length == 0) {
+            toast.error("ymbol length must be > 0 characters");
+            return false;
+        }
+
         if (symbol.length > 10) {
             toast.error("Maximum symbol length is 10 characters");
+            return false;
+        }
+
+        if (name.length == 0) {
+            toast.error("Name must be > 0 characters");
             return false;
         }
 
