@@ -1144,9 +1144,9 @@ const InfoContent = ({
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {volume.toLocaleString()}
+                        {(volume * price).toLocaleString()}
                     </Text>
-                    <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
+                    <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
                 </HStack>
             </HStack>
 
