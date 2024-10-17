@@ -60,6 +60,7 @@ const MarketMakingTable = () => {
     const [rows, setRows] = useState<AMMLaunch[]>([]);
 
     const tableHeaders: Header[] = [
+        { text: "Launch date", field: "lunchDate" },
         { text: "TOKEN", field: "symbol" },
         { text: "PRICE", field: "price" },
         { text: "MARKET CAP", field: "fdmc" },
@@ -111,6 +112,15 @@ const MarketMakingTable = () => {
     const sorted_rows = [...rows];
 
     sorted_rows.sort((a, b) => {
+        if (sortedField === "lunchDate") {
+            if (new Date(a.amm_data.start_time.toNumber() * 1000) < new Date(b.amm_data.start_time.toNumber() * 1000)) {
+                return reverseSort ? 1 : -1;
+            }
+            if (new Date(a.amm_data.start_time.toNumber() * 1000) > new Date(b.amm_data.start_time.toNumber() * 1000)) {
+                return reverseSort ? -1 : 1;
+            }
+        }
+
         if (sortedField === "symbol") {
             if (a.listing.symbol < b.listing.symbol) {
                 return reverseSort ? 1 : -1;
@@ -190,7 +200,7 @@ const MarketMakingTable = () => {
     });
 
     if (!mintData || !listingData || !ammData) {
-        return <Loader/>;
+        return <Loader />;
     }
 
     return (
@@ -298,6 +308,11 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 }
             }}
         >
+            <td style={{ minWidth: "160px" }}>
+                <Text fontSize={"large"} m={0}>
+                    {new Date(amm_launch.amm_data.start_time * 1000).toLocaleString()}
+                </Text>
+            </td>
             <td style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
