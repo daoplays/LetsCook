@@ -200,6 +200,11 @@ const LaunchAMM = () => {
     const [short_fraction, setShortFraction] = useState<string>("");
     const [borrow_cost, setBorrowCost] = useState<string>("");
 
+    const [web, setWeb] = useState<string>("");
+    const [telegram, setTelegram] = useState<string>("");
+    const [twitter, setTwitter] = useState<string>("");
+    const [discord, setDiscord] = useState<string>("");
+
     const { InitAMM, isLoading } = useInitAMM();
 
     async function handleSetBaseData() {
@@ -222,6 +227,10 @@ const LaunchAMM = () => {
         }
     }, [quote_token, getWSOL]);
 
+    useEffect(() => {
+        console.log(sm, md, lg, xl);
+    }, [sm, md, lg, xl]);
+
     return (
         <Center
             style={{
@@ -234,16 +243,16 @@ const LaunchAMM = () => {
                     AMM Info:
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
-                    <VStack px={lg ? 4 : 12} spacing={25}>
-                        <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                    <VStack px={lg || xl ? 4 : 12} spacing={25}>
+                        <HStack w="100%" spacing={lg || xl ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack w="100%" spacing={lg || xl ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                                     {base_token ? (
                                         <VStack spacing={3}>
                                             <Image
                                                 src={base_token.icon}
-                                                width={lg ? 180 : 180}
-                                                height={lg ? 180 : 180}
+                                                width={lg || xl ? 180 : 180}
+                                                height={lg || xl ? 180 : 180}
                                                 alt="Image Frame"
                                                 style={{ backgroundSize: "cover", borderRadius: 12 }}
                                             />
@@ -254,8 +263,8 @@ const LaunchAMM = () => {
                                             justify="center"
                                             align="center"
                                             style={{
-                                                minWidth: lg ? 180 : 180,
-                                                minHeight: lg ? 180 : 180,
+                                                minWidth: lg || xl ? 180 : 180,
+                                                minHeight: lg || xl ? 180 : 180,
                                                 cursor: "pointer",
                                             }}
                                             borderRadius={12}
@@ -270,10 +279,10 @@ const LaunchAMM = () => {
                                     )}
 
                                     <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                        <HStack spacing={0} className={styles.eachField}>
+                                        <HStack spacing={5} className={styles.eachField}>
                                             <div
                                                 className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "100px" : "132px" }}
+                                                style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
                                             >
                                                 Base Token:
                                             </div>
@@ -281,7 +290,7 @@ const LaunchAMM = () => {
                                             <div className={styles.textLabelInput}>
                                                 <Input
                                                     placeholder="Search Token"
-                                                    size={lg ? "md" : "lg"}
+                                                    size={lg || xl ? "md" : "lg"}
                                                     required
                                                     className={styles.inputBox}
                                                     type="text"
@@ -312,7 +321,7 @@ const LaunchAMM = () => {
                                             <HStack spacing={5} className={styles.eachField}>
                                                 <div
                                                     className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "100px" }}
+                                                    style={{ minWidth: lg || xl ? "80px" : "100px" }}
                                                 >
                                                     Name:
                                                 </div>
@@ -322,7 +331,7 @@ const LaunchAMM = () => {
                                                         placeholder="Token Name"
                                                         readOnly={true}
                                                         disabled
-                                                        size={lg ? "md" : "lg"}
+                                                        size={lg || xl ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         type="text"
                                                         value={base_token ? base_token.name : ""}
@@ -330,7 +339,7 @@ const LaunchAMM = () => {
                                                 </div>
                                                 <div
                                                     className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "110px" }}
+                                                    style={{ minWidth: lg || xl ? "80px" : "110px" }}
                                                 >
                                                     Symbol:
                                                 </div>
@@ -341,7 +350,7 @@ const LaunchAMM = () => {
                                                         placeholder="Token Symbol"
                                                         readOnly={true}
                                                         disabled
-                                                        size={lg ? "md" : "lg"}
+                                                        size={lg || xl ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         type="text"
                                                         value={base_token ? base_token.symbol : ""}
@@ -351,15 +360,15 @@ const LaunchAMM = () => {
                                         </Flex>
                                     </VStack>
                                 </HStack>
-                                <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack w="100%" spacing={lg || xl ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                                     {quote_token ? (
                                         <VStack spacing={3}>
                                             <Image
                                                 src={quote_token.icon}
-                                                width={lg ? 180 : 180}
-                                                height={lg ? 180 : 180}
+                                                width={lg || xl ? 180 : 180}
+                                                height={lg || xl ? 180 : 180}
                                                 alt="Image Frame"
-                                                style={{ backgroundSize: "cover", borderRadius: 12 }}
+                                                style={{ minHeight: 180, minWidth: 180 }}
                                             />
                                             <ShowExtensions extension_flag={quote_token.extensions} />
                                         </VStack>
@@ -368,8 +377,8 @@ const LaunchAMM = () => {
                                             justify="center"
                                             align="center"
                                             style={{
-                                                minWidth: lg ? 180 : 180,
-                                                minHeight: lg ? 180 : 180,
+                                                minWidth: lg || xl ? 180 : 180,
+                                                minHeight: lg || xl ? 180 : 180,
                                                 cursor: "pointer",
                                             }}
                                             borderRadius={12}
@@ -383,11 +392,11 @@ const LaunchAMM = () => {
                                         </VStack>
                                     )}
 
-                                    <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                        <HStack spacing={0} className={styles.eachField}>
+                                    <VStack spacing={8} align="start" width="100%">
+                                        <HStack spacing={5} className={styles.eachField}>
                                             <div
                                                 className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "100px" : "132px" }}
+                                                style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
                                             >
                                                 Quote Token:
                                             </div>
@@ -395,7 +404,7 @@ const LaunchAMM = () => {
                                             <div className={styles.textLabelInput}>
                                                 <Input
                                                     placeholder="Search Token"
-                                                    size={lg ? "md" : "lg"}
+                                                    size={lg || xl ? "md" : "lg"}
                                                     required
                                                     className={styles.inputBox}
                                                     type="text"
@@ -423,51 +432,52 @@ const LaunchAMM = () => {
                                             </div>*/}
                                         </HStack>
 
-                                        <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
-                                            <HStack spacing={5} className={styles.eachField}>
-                                                <div
-                                                    className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "100px" }}
-                                                >
-                                                    Name:
-                                                </div>
+                                        <HStack spacing={5} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg || xl ? "80px" : "100px" }}
+                                            >
+                                                Name:
+                                            </div>
 
-                                                <div className={styles.textLabelInput}>
-                                                    <Input
-                                                        placeholder="Token Name"
-                                                        readOnly={true}
-                                                        disabled
-                                                        size={lg ? "md" : "lg"}
-                                                        className={styles.inputBox}
-                                                        type="text"
-                                                        value={quote_token ? quote_token.name : ""}
-                                                    />
-                                                </div>
-                                                <div
-                                                    className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "110px" }}
-                                                >
-                                                    Symbol:
-                                                </div>
-                                                <div className={styles.textLabelInput}>
-                                                    <Input
-                                                        // pl={9}
-                                                        bg="#494949"
-                                                        placeholder="Token Symbol"
-                                                        readOnly={true}
-                                                        disabled
-                                                        size={lg ? "md" : "lg"}
-                                                        className={styles.inputBox}
-                                                        type="text"
-                                                        value={quote_token ? quote_token.symbol : ""}
-                                                    />
-                                                </div>
-                                            </HStack>
-                                        </Flex>
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    placeholder="Token Name"
+                                                    readOnly={true}
+                                                    disabled
+                                                    size={lg || xl ? "md" : "lg"}
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                    value={quote_token ? quote_token.name : ""}
+                                                />
+                                            </div>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg || xl ? "80px" : "110px" }}
+                                            >
+                                                Symbol:
+                                            </div>
+                                            <div className={styles.textLabelInput}>
+                                                <Input
+                                                    // pl={9}
+                                                    bg="#494949"
+                                                    placeholder="Token Symbol"
+                                                    readOnly={true}
+                                                    disabled
+                                                    size={lg || xl ? "md" : "lg"}
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                    value={quote_token ? quote_token.symbol : ""}
+                                                />
+                                            </div>
+                                        </HStack>
                                     </VStack>
                                 </HStack>
-                                <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                <HStack spacing={5} w="100%" className={styles.eachField}>
+                                    <div
+                                        className={`${styles.textLabel} font-face-kg`}
+                                        style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
+                                    >
                                         Base Amount:
                                     </div>
 
@@ -475,7 +485,7 @@ const LaunchAMM = () => {
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Base Amount"
-                                            size={lg ? "md" : "lg"}
+                                            size={lg || xl ? "md" : "lg"}
                                             className={styles.inputBox}
                                             type="text"
                                             value={base_amount}
@@ -485,8 +495,11 @@ const LaunchAMM = () => {
                                         />
                                     </div>
                                 </HStack>
-                                <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                <HStack spacing={5} w="100%" className={styles.eachField}>
+                                    <div
+                                        className={`${styles.textLabel} font-face-kg`}
+                                        style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
+                                    >
                                         Quote Amount:
                                     </div>
 
@@ -494,7 +507,7 @@ const LaunchAMM = () => {
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Quote Amount"
-                                            size={lg ? "md" : "lg"}
+                                            size={lg || xl ? "md" : "lg"}
                                             className={styles.inputBox}
                                             type="text"
                                             value={quote_amount}
@@ -505,7 +518,7 @@ const LaunchAMM = () => {
                                     </div>
                                 </HStack>
                                 {/*<HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg || xl ? "100px" : "140px" }}>
                                         Short Frac:
                                     </div>
 
@@ -513,7 +526,7 @@ const LaunchAMM = () => {
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Short Pool Fraction (10 = 10% of base amount)"
-                                            size={lg ? "md" : "lg"}
+                                            size={lg || xl ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}
                                             type="text"
@@ -524,8 +537,11 @@ const LaunchAMM = () => {
                                         />
                                     </div>
                                 </HStack>*/}
-                                <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                <HStack spacing={5} w="100%" className={styles.eachField}>
+                                    <div
+                                        className={`${styles.textLabel} font-face-kg`}
+                                        style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
+                                    >
                                         AMM Fee:
                                     </div>
 
@@ -533,7 +549,7 @@ const LaunchAMM = () => {
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter AMM Fee (Bps - 100 = 1%)"
-                                            size={lg ? "md" : "lg"}
+                                            size={lg || xl ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}
                                             type="text"
@@ -545,7 +561,7 @@ const LaunchAMM = () => {
                                     </div>
                                 </HStack>
                                 {/*<HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg || xl ? "100px" : "140px" }}>
                                         Borrow Fee:
                                     </div>
 
@@ -553,7 +569,7 @@ const LaunchAMM = () => {
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Short Borrow Fee (Bps - 100 = 1%)"
-                                            size={lg ? "md" : "lg"}
+                                            size={lg || xl ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}
                                             type="text"
@@ -566,7 +582,82 @@ const LaunchAMM = () => {
                                 </HStack>*/}
                             </VStack>
                         </HStack>
+                        <VStack w="100%" spacing={30} my={18}>
+                            <div className={styles.launchBodyLowerHorizontal}>
+                                <div className={styles.eachField}>
+                                    <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
+                                    <div className={styles.textLabelInput}>
+                                        <input
+                                            placeholder="Enter your Website URL (optional)"
+                                            className={styles.inputBox}
+                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            type="text"
+                                            value={web}
+                                            onChange={(e) => {
+                                                setWeb(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
 
+                            <div className={styles.launchBodyLowerHorizontal}>
+                                <div className={styles.eachField}>
+                                    <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
+
+                                    <div className={styles.textLabelInput}>
+                                        <input
+                                            className={styles.inputBox}
+                                            placeholder="Enter your Telegram Invite URL (optional)"
+                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            type="text"
+                                            value={telegram}
+                                            onChange={(e) => {
+                                                setTelegram(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={styles.launchBodyLowerHorizontal}>
+                                <div className={styles.eachField}>
+                                    <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
+
+                                    <div className={styles.textLabelInput}>
+                                        <input
+                                            required
+                                            className={styles.inputBox}
+                                            placeholder="Enter your Twitter URL (optional)"
+                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            type="text"
+                                            value={twitter}
+                                            onChange={(e) => {
+                                                setTwitter(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={styles.launchBodyLowerHorizontal}>
+                                <div className={styles.eachField}>
+                                    <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
+
+                                    <div className={styles.textLabelInput}>
+                                        <input
+                                            className={styles.inputBox}
+                                            placeholder="Enter your Discord Invite URL (optional)"
+                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            type="text"
+                                            value={discord}
+                                            onChange={(e) => {
+                                                setDiscord(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </VStack>
                         <HStack mt={md ? 0 : 30}>
                             <button
                                 type="button"
