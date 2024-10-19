@@ -126,7 +126,7 @@ function Navigation() {
                                 }}
                             >
                                 <HStack alignItems="start">
-                                    <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
+                                    <Image src="/images/eclipse.png" alt="solana logo" width={20} height={20} />
                                     <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
                                         Eclipse
                                     </Text>
