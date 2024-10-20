@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Config } from "../../components/Solana/constants";
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export const useSOLPrice = () => {
     const [SOLPrice, setPrice] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const have_price = useRef<boolean>(false);
 
     const fetchPrice = useCallback(async () => {
@@ -19,38 +18,54 @@ export const useSOLPrice = () => {
             const result = await response.json();
             console.log("price result", result);
             setPrice(result.data[Config.token].price);
-            have_price.current = true;
             setError(null);
+            have_price.current = true;
+            return true; // Indicate successful fetch
         } catch (error) {
             console.log("error getting price", error);
-            throw error;
+            setError("Failed to fetch SOL price");
+            return false; // Indicate failed fetch
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const getSOLPrice = useCallback(async () => {
-        if (have_price.current) {
-            return;
-        }
-        setLoading(true);
-        try {
-            await fetchPrice();
-        } catch (error) {
-            console.log("First attempt failed, retrying after 1 second...");
-            await delay(1000); // Wait for 1 second
-            try {
-                await fetchPrice();
-            } catch (retryError) {
-                console.log("Retry failed", retryError);
-                setError("Failed to fetch SOL price after retry");
+    const startFetchingPrice = useCallback(() => {
+        const fetchAndRetry = async () => {
+            const success = await fetchPrice();
+            if (success) {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                }
+                console.log("Price fetched successfully, stopping retries");
+            } else {
+                console.log("Fetch failed, will retry in 1 second");
             }
+        };
+
+        // Clear any existing interval
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
         }
+
+        // Start the interval
+        intervalRef.current = setInterval(fetchAndRetry, 1000);
+
+        // Trigger the first fetch immediately
+        fetchAndRetry();
     }, [fetchPrice]);
 
     useEffect(() => {
-        getSOLPrice();
-    }, [getSOLPrice]);
+        startFetchingPrice();
 
-    return { SOLPrice, loading, error, refetch: getSOLPrice };
+        // Cleanup function to clear the interval when the component unmounts
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [startFetchingPrice]);
+
+    return { SOLPrice, loading, error };
 };
