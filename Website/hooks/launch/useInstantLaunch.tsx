@@ -263,7 +263,6 @@ const useInstantLaunch = () => {
         )[0];
 
         const instruction_data = serialise_CreateInstantLaunch_instruction(newLaunchData.current);
-        console.log("idx data", instruction_data.length);
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
@@ -307,8 +306,6 @@ const useInstantLaunch = () => {
         transaction.partialSign(newLaunchData.current.token_keypair);
 
         const createLaunch = toast.info("(3/3) Setting up your launch");
-
-        console.log("tx size", transaction.serializeMessage().length);
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
