@@ -55,18 +55,18 @@ const MarketMakingTable = () => {
 
     const { ammData, SOLPrice, mintData, listingData, jupPrices } = useAppRoot();
 
-    const [sortedField, setSortedField] = useState<string>("fdmc");
+    const [sortedField, setSortedField] = useState<string>("liquidity");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
 
     const tableHeaders: Header[] = [
         { text: "TOKEN", field: "symbol" },
         { text: "PRICE", field: "price" },
+        { text: "LIQUIDITY", field: "liquidity" },
         { text: "MARKET CAP", field: "fdmc" },
         { text: "REWARDS (24H)", field: "rewards" },
         { text: "SOCIALS", field: null },
         { text: "HYPE", field: "hype" },
-        { text: "TRADE", field: null },
     ];
 
     const handleHeaderClick = (e) => {
@@ -139,6 +139,19 @@ const MarketMakingTable = () => {
             return 0;
         }
 
+        if (sortedField === "liquidity") {
+           
+            let liquidity_a = a.amm_data.amm_quote_amount / Math.pow(10, 9)  * SOLPrice;
+            let liquidity_b = b.amm_data.amm_quote_amount / Math.pow(10, 9)  * SOLPrice;
+            if (liquidity_a < liquidity_b) {
+                return reverseSort ? 1 : -1;
+            }
+            if (liquidity_a > liquidity_b) {
+                return reverseSort ? -1 : 1;
+            }
+        }
+
+
         if (sortedField === "fdmc") {
             let total_supply_a = Number(a.mint.mint.supply) / Math.pow(10, a.listing.decimals);
             let total_supply_b = Number(b.mint.mint.supply) / Math.pow(10, b.listing.decimals);
@@ -160,6 +173,7 @@ const MarketMakingTable = () => {
             }
             return 0;
         }
+
 
         if (sortedField === "rewards") {
             let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(a.amm_data.start_time)) / 24 / 60 / 60);
@@ -253,25 +267,15 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals)
             : 0;
     let market_cap = total_supply * last_price * SOLPrice;
+    let liquidity = Number(amm_launch.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
 
     let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
-    let raydium_cpmm_address = getAMMKeyFromMints(amm_launch.listing.mint, 1);
-    let raydium_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 2);
-
     let cook_amm = ammData.get(cook_amm_address.toString());
     let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
 
     if (!have_cook_amm) {
         return <></>;
     }
-
-    let raydium_cpmm = ammData.get(raydium_cpmm_address.toString());
-    let have_raydium_cpmm = raydium_cpmm && bignum_to_num(raydium_cpmm.start_time) > 0;
-
-    let raydium_amm = ammData.get(raydium_amm_address.toString());
-    let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0;
-
-    let show_birdeye = !have_raydium_amm && !have_raydium_cpmm && !have_cook_amm;
 
     return (
         <tr
@@ -287,15 +291,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
             onClick={() => {
-                if (have_cook_amm) {
-                    router.push("/trade/" + cook_amm_address);
-                } else if (show_birdeye) {
-                    router.push("https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana");
-                } else if (have_raydium_amm) {
-                    router.push("/trade/" + raydium_amm_address.toString());
-                } else if (have_raydium_cpmm) {
-                    router.push("/trade/" + raydium_cpmm_address.toString());
-                }
+               router.push("/trade/" + cook_amm_address);
             }}
         >
             <td style={{ minWidth: "160px" }}>
@@ -324,14 +320,23 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
+
+            <td style={{ minWidth: "150px" }}>
+                <HStack justify="center">
+                    <Text fontSize={"large"} m={0}>
+                        ${nFormatter(liquidity, 2)}
+                    </Text>
+                </HStack>
+            </td>
+
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
                         ${nFormatter(market_cap, 2)}
                     </Text>
-                    {/* <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} /> */}
                 </HStack>
             </td>
+
 
             <td style={{ minWidth: "200px" }}>
                 <HStack justify="center" gap={2}>
@@ -361,66 +366,6 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     isTradePage={false}
                     listing={amm_launch.listing}
                 />
-            </td>
-            <td style={{ minWidth: "150px" }}>
-                <HStack justify="center" gap={3}>
-                    {show_birdeye && (
-                        <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={"https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana"} target="_blank">
-                                <Image
-                                    src="/images/birdeye.png"
-                                    alt="Birdeye Icon"
-                                    width={lg ? 30 : 40}
-                                    height={lg ? 30 : 40}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            </Link>
-                        </Tooltip>
-                    )}
-                    {have_cook_amm && (
-                        <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={"/trade/" + cook_amm_address} target="_blank">
-                                <Image
-                                    src="/favicon.ico"
-                                    alt="Cook Icon"
-                                    width={lg ? 30 : 35}
-                                    height={lg ? 30 : 35}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            </Link>
-                        </Tooltip>
-                    )}
-                    {have_raydium_amm && (
-                        <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
-                            {have_raydium_amm && (
-                                <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
-                                    <Image
-                                        src="/images/raydium.png"
-                                        alt="Raydium Icon"
-                                        width={lg ? 30 : 40}
-                                        height={lg ? 30 : 40}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </Link>
-                            )}
-                        </Tooltip>
-                    )}
-                    {have_raydium_cpmm && (
-                        <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
-                            {have_raydium_amm && (
-                                <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
-                                    <Image
-                                        src="/images/raydium.png"
-                                        alt="Raydium Icon"
-                                        width={lg ? 30 : 40}
-                                        height={lg ? 30 : 40}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </Link>
-                            )}
-                        </Tooltip>
-                    )}
-                </HStack>
             </td>
         </tr>
     );

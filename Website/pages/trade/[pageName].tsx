@@ -471,8 +471,8 @@ const TradePage = () => {
             let quote_amount = await request_token_amount("", quote_amm_account);
 
             //console.log("amm amounts", base_amount, quote_amount);
-            //console.log("amm internal amounts", bignum_to_num(amm.amm_base_amount), bignum_to_num(amm.amm_quote_amount));
-
+            //console.log("amm internal amounts", amm.amm_base_amount.toString(), amm.amm_quote_amount.toString());
+            //console.log("price", (quote_amount/1e9) / (base_amount / Math.pow(10, base_mint.mint.decimals)));
             setBaseAmount(base_amount);
             setQuoteAmount(quote_amount);
 
@@ -1109,6 +1109,7 @@ const InfoContent = ({
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
 
+    //console.log(price, total_supply, sol_price, quote_amount)
     return (
         <VStack spacing={8} w="100%" mb={3}>
             <HStack mt={-2} px={5} justify="space-between" w="100%">
