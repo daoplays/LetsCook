@@ -89,11 +89,13 @@ const LeaderboardPage = () => {
             return 0;
         });
 
-        console.log("sortedUsers", sortedUsers);
+        //console.log("sortedUsers", sortedUsers);
 
         const rank_sorted = [...userVec].sort((a, b) => b.total_points - a.total_points);
 
-        const currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
+        let currentUserIndex = -1;
+        if (sortedUsers && currentUserData)
+            currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
 
         if (currentUserIndex !== -1) {
             const currentUser = sortedUsers.splice(currentUserIndex, 1)[0];
@@ -146,7 +148,9 @@ const LeaderboardPage = () => {
     };
 
     const UserCard = ({ rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
-        const isUser = user.user_key.equals(currentUserData?.user_key);
+        let isUser = false;
+        if (user && currentUserData)
+            isUser = user.user_key.equals(currentUserData?.user_key);
 
         const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
 
