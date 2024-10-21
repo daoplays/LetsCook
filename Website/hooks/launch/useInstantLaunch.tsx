@@ -271,10 +271,10 @@ const useInstantLaunch = () => {
             { pubkey: listing, isSigner: false, isWritable: true },
 
             { pubkey: program_data_account, isSigner: false, isWritable: true },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: false },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
-            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: false },
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
