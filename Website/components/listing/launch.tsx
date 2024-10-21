@@ -42,6 +42,7 @@ import useIrysUploader from "../../hooks/useIrysUploader";
 import bs58 from "bs58";
 import useCreateListing from "../../hooks/listings/useCreateListing";
 import useCreateUnverifiedListing from "../../hooks/listings/useCreateUnverifiedListing";
+import useEditListing from "../../hooks/listings/useEditListing";
 
 // Define the Tag type
 type Tag = {
@@ -100,6 +101,7 @@ const CreateListing = () => {
 
     const { CreateUnverifiedListing } = useCreateUnverifiedListing();
     const { CreateListing } = useCreateListing();
+    const { EditListing } = useEditListing();
 
     const { getIrysUploader } = useIrysUploader(wallet);
 
@@ -158,6 +160,21 @@ const CreateListing = () => {
         }
 
         setBaseToken(mint_data);
+
+        let listing_key = PublicKey.findProgramAddressSync(
+            [(new PublicKey(base_address)).toBytes(),  Buffer.from("Listing")],
+            PROGRAM,
+        )[0];
+        let listing_account = await connection.getAccountInfo(listing_key);
+        if (!listing_account)
+            return;
+
+        const [listing] = ListingData.struct.deserialize(listing_account.data);
+        setWeb(listing.socials[Socials.Website]);
+        setTelegram(listing.socials[Socials.Telegram]);
+        setTwitter(listing.socials[Socials.Twitter]);
+        setDiscord(listing.socials[Socials.Discord]);
+
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,7 +252,7 @@ const CreateListing = () => {
             discord: discord,
         };
 
-        await CreateListing(new_listing, accept);
+        await EditListing(new_listing);
     }
 
     async function setRequestData(e): Promise<void> {
