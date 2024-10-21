@@ -51,12 +51,14 @@ interface AMMLaunch {
 
 const MarketMakingTable = () => {
     const wallet = useWallet();
-    const { sm } = useResponsive();
+    const { xs, sm, md } = useResponsive();
 
+    const mobileOrTablet = xs || sm || md;
     const { ammData, SOLPrice, mintData, listingData, jupPrices } = useAppRoot();
 
     const [sortedField, setSortedField] = useState<string>("liquidity");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
+    const [lastTap, setLastTap] = useState(0);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
 
     const tableHeaders: Header[] = [
@@ -77,6 +79,18 @@ const MarketMakingTable = () => {
             setSortedField(e);
             setReverseSort(false);
         }
+    };
+
+    const handleDoubleTap = (i) => {
+        const now = Date.now();
+        const DOUBLE_TAP_DELAY = 300;
+
+        if (now - lastTap < DOUBLE_TAP_DELAY) {
+            if (i.field !== null) {
+                handleHeaderClick(i.field);
+            }
+        }
+        setLastTap(now);
     };
 
     useEffect(() => {
@@ -140,9 +154,8 @@ const MarketMakingTable = () => {
         }
 
         if (sortedField === "liquidity") {
-           
-            let liquidity_a = a.amm_data.amm_quote_amount / Math.pow(10, 9)  * SOLPrice;
-            let liquidity_b = b.amm_data.amm_quote_amount / Math.pow(10, 9)  * SOLPrice;
+            let liquidity_a = (a.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
+            let liquidity_b = (b.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
             if (liquidity_a < liquidity_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -150,7 +163,6 @@ const MarketMakingTable = () => {
                 return reverseSort ? -1 : 1;
             }
         }
-
 
         if (sortedField === "fdmc") {
             let total_supply_a = Number(a.mint.mint.supply) / Math.pow(10, a.listing.decimals);
@@ -173,7 +185,6 @@ const MarketMakingTable = () => {
             }
             return 0;
         }
-
 
         if (sortedField === "rewards") {
             let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(a.amm_data.start_time)) / 24 / 60 / 60);
@@ -204,9 +215,8 @@ const MarketMakingTable = () => {
     });
 
     if (!mintData || !listingData || !ammData) {
-        return <Loader/>;
+        return <Loader />;
     }
-
     return (
         <TableContainer>
             <table
@@ -228,7 +238,9 @@ const MarketMakingTable = () => {
                                     <Text
                                         fontSize={sm ? "medium" : "large"}
                                         m={0}
-                                        onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                        {...(mobileOrTablet
+                                            ? { onTouchEnd: () => handleDoubleTap(i) }
+                                            : { onClick: i.field !== null ? () => handleHeaderClick(i.field) : () => {} })}
                                     >
                                         {i.text}
                                     </Text>
@@ -291,7 +303,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
             onClick={() => {
-               router.push("/trade/" + cook_amm_address);
+                router.push("/trade/" + cook_amm_address);
             }}
         >
             <td style={{ minWidth: "160px" }}>
@@ -320,7 +332,6 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                 </HStack>
             </td>
 
-
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
@@ -336,7 +347,6 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
                     </Text>
                 </HStack>
             </td>
-
 
             <td style={{ minWidth: "200px" }}>
                 <HStack justify="center" gap={2}>
