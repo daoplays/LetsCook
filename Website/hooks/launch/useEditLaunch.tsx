@@ -135,8 +135,8 @@ const useEditLaunch = () => {
             { pubkey: launch_data.listing, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
-            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
-            { pubkey: token_mint_pubkey, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: false },
+            { pubkey: token_mint_pubkey, isSigner: false, isWritable: false },
 
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: pool_account, isSigner: false, isWritable: true },

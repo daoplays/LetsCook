@@ -106,6 +106,8 @@ const TokenMintPage = () => {
         win_prob = (launchData.num_mints - launchData.mints_won) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
 
+    console.log("launch", launchData)
+
     useEffect(() => {
         if (listingData === null || launchList === null) return;
 

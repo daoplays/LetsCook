@@ -353,17 +353,17 @@ const usuCreateLaunch = () => {
             { pubkey: listing, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
 
-            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: true },
+            { pubkey: wrapped_sol_mint, isSigner: false, isWritable: false },
             { pubkey: wrapped_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: program_data_account, isSigner: false, isWritable: true },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: false },
 
             { pubkey: token_mint_pubkey, isSigner: true, isWritable: true },
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
 
-            { pubkey: team_wallet, isSigner: false, isWritable: true },
-            { pubkey: whitelist, isSigner: false, isWritable: true },
+            { pubkey: team_wallet, isSigner: false, isWritable: false },
+            { pubkey: whitelist, isSigner: false, isWritable: false },
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });

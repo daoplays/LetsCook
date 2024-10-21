@@ -75,6 +75,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
     const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
+    console.log("launch type", getLaunchType(newLaunchData.current.launch_type))
+
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
     // token extensions
@@ -300,6 +302,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         }
 
         newLaunchData.current.token_keypair = Keypair.generate();
+
+        newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
 
         newLaunchData.current.name = name;
         newLaunchData.current.symbol = symbol;

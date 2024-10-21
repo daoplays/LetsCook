@@ -112,7 +112,7 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
             { pubkey: launchData.keys[LaunchKeys.WSOLAddress], isSigner: false, isWritable: true },
             { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
             { pubkey: wrapped_sol_mint, isSigner: false, isWritable: false },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: false },
         ];
 
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });

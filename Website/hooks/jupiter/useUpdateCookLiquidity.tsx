@@ -228,7 +228,7 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
             { pubkey: amm_data_account, isSigner: false, isWritable: true },
             { pubkey: base_amm_account, isSigner: false, isWritable: true },
             { pubkey: quote_amm_account, isSigner: false, isWritable: true },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
+            { pubkey: program_sol_account, isSigner: false, isWritable: false },
 
             { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: mint_account.token_program, isSigner: false, isWritable: false },

@@ -95,9 +95,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     const [amm_fee, setAMMFee] = useState<string>(newLaunchData.current.amm_fee.toString());
     const [AMMProvider, setAMMProvider] = useState<string>("cook");
-    const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
-
-    const signature_ws_id = useRef<number | null>(null);
 
     const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
     const [closeDateAndTime, setCloseDateAndTime] = useState("-- --");
@@ -195,7 +192,6 @@ const BookPage = ({ setScreen }: BookPageProps) => {
         newLaunchData.current.closedate = localCloseDate;
         newLaunchData.current.team_wallet = teamWallet;
         newLaunchData.current.amm_fee = AMMProvider === "raydium" ? 25 : parseInt(amm_fee);
-        newLaunchData.current.launch_type = getLaunchTypeIndex(launch_type);
 
         if (AMMProvider === "cook") {
             newLaunchData.current.amm_provider = 0;
