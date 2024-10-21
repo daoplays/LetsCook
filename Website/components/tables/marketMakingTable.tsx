@@ -154,8 +154,8 @@ const MarketMakingTable = () => {
         }
 
         if (sortedField === "liquidity") {
-            let liquidity_a = (a.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
-            let liquidity_b = (b.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
+            let liquidity_a = (a.amm_data.amm_quote_amount / Math.pow(10, 9));
+            let liquidity_b = (b.amm_data.amm_quote_amount / Math.pow(10, 9));
             if (liquidity_a < liquidity_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -175,8 +175,8 @@ const MarketMakingTable = () => {
                 b.amm_data.provider === 0
                     ? Buffer.from(b.amm_data.last_price).readFloatLE(0)
                     : jupPrices.get(b.amm_data.base_mint.toString());
-            let market_cap_a = total_supply_a * price_a * SOLPrice;
-            let market_cap_b = total_supply_b * price_b * SOLPrice;
+            let market_cap_a = total_supply_a * price_a;
+            let market_cap_b = total_supply_b * price_b;
             if (market_cap_a < market_cap_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -279,7 +279,10 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals)
             : 0;
     let market_cap = total_supply * last_price * SOLPrice;
+    let market_cap_string = "$" + nFormatter(market_cap, 2);
+
     let liquidity = Number(amm_launch.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
+    let liquidity_string = "$" + nFormatter(liquidity, 2);
 
     let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
     let cook_amm = ammData.get(cook_amm_address.toString());
@@ -335,7 +338,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        ${nFormatter(liquidity, 2)}
+                    {SOLPrice === 0 ? "--": liquidity_string}
                     </Text>
                 </HStack>
             </td>
@@ -343,7 +346,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        ${nFormatter(market_cap, 2)}
+                        {SOLPrice === 0 ? "--": market_cap_string}
                     </Text>
                 </HStack>
             </td>
