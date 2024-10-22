@@ -161,20 +161,15 @@ const CreateListing = () => {
 
         setBaseToken(mint_data);
 
-        let listing_key = PublicKey.findProgramAddressSync(
-            [(new PublicKey(base_address)).toBytes(),  Buffer.from("Listing")],
-            PROGRAM,
-        )[0];
+        let listing_key = PublicKey.findProgramAddressSync([new PublicKey(base_address).toBytes(), Buffer.from("Listing")], PROGRAM)[0];
         let listing_account = await connection.getAccountInfo(listing_key);
-        if (!listing_account)
-            return;
+        if (!listing_account) return;
 
         const [listing] = ListingData.struct.deserialize(listing_account.data);
         setWeb(listing.socials[Socials.Website]);
         setTelegram(listing.socials[Socials.Telegram]);
         setTwitter(listing.socials[Socials.Twitter]);
         setDiscord(listing.socials[Socials.Discord]);
-
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

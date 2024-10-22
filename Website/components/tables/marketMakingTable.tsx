@@ -154,8 +154,8 @@ const MarketMakingTable = () => {
         }
 
         if (sortedField === "liquidity") {
-            let liquidity_a = (a.amm_data.amm_quote_amount / Math.pow(10, 9));
-            let liquidity_b = (b.amm_data.amm_quote_amount / Math.pow(10, 9));
+            let liquidity_a = a.amm_data.amm_quote_amount / Math.pow(10, 9);
+            let liquidity_b = b.amm_data.amm_quote_amount / Math.pow(10, 9);
             if (liquidity_a < liquidity_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -338,7 +338,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                    {SOLPrice === 0 ? "--": liquidity_string}
+                        {SOLPrice === 0 ? "--" : liquidity_string}
                     </Text>
                 </HStack>
             </td>
@@ -346,7 +346,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {SOLPrice === 0 ? "--": market_cap_string}
+                        {SOLPrice === 0 ? "--" : market_cap_string}
                     </Text>
                 </HStack>
             </td>

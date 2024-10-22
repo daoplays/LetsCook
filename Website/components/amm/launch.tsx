@@ -28,6 +28,7 @@ import ShowExtensions from "../Solana/extensions";
 import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 import { useConnection } from "@solana/wallet-adapter-react";
+import useInitExternalAMM from "../../hooks/cookAMM/useInitExternalAMM";
 
 export async function getMint(connection: Connection, mint_string: string): Promise<[Mint, PublicKey] | null> {
     if (mint_string === "" || !mint_string) {
@@ -205,7 +206,10 @@ const LaunchAMM = () => {
     const [twitter, setTwitter] = useState<string>("");
     const [discord, setDiscord] = useState<string>("");
 
-    const { InitAMM, isLoading } = useInitAMM();
+    const [burnLP, setBurnLP] = useState<number>(0);
+    const [wrapETH, setWrapETH] = useState<number>(0);
+
+    const { InitExternalAMM, isLoading } = useInitExternalAMM();
 
     async function handleSetBaseData() {
         setBaseToken(await setMintData(base_address));
@@ -663,14 +667,17 @@ const LaunchAMM = () => {
                                 type="button"
                                 className={`${styles.nextBtn} font-face-kg `}
                                 onClick={() => {
-                                    InitAMM(
-                                        base_address,
-                                        quote_address,
+                                    InitExternalAMM(
+                                        base_token,
+                                        quote_token,
+                                        web,
+                                        twitter,
+                                        telegram,
+                                        discord,
                                         parseFloat(base_amount),
                                         parseFloat(quote_amount),
-                                        parseInt(swap_fee),
-                                        parseInt(short_fraction),
-                                        parseInt(borrow_cost),
+                                        wrapETH,
+                                        burnLP,
                                     );
                                 }}
                             >

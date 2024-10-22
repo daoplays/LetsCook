@@ -149,8 +149,7 @@ const LeaderboardPage = () => {
 
     const UserCard = ({ rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
         let isUser = false;
-        if (user && currentUserData)
-            isUser = user.user_key.equals(currentUserData?.user_key);
+        if (user && currentUserData) isUser = user.user_key.equals(currentUserData?.user_key);
 
         const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
 

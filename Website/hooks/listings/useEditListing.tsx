@@ -166,10 +166,7 @@ const useEditListing = () => {
             return;
         }
 
-        let listing = PublicKey.findProgramAddressSync(
-            [token_mint.toBytes(), Buffer.from("Listing")],
-            PROGRAM,
-        )[0];
+        let listing = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
 
         const instruction_data = serialise_CreateListing_instruction(new_listing);
 
