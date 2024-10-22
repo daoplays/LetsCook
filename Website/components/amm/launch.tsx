@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, Box } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, Box, Switch, Tooltip } from "@chakra-ui/react";
 import {
     Mint,
     TOKEN_2022_PROGRAM_ID,
@@ -197,7 +197,7 @@ const LaunchAMM = () => {
 
     const [base_amount, setBaseAmount] = useState<string>("");
     const [quote_amount, setQuoteAmount] = useState<string>("");
-    const [swap_fee, setSwapFee] = useState<string>("");
+    const [swap_fee, setSwapFee] = useState<string>("25");
     const [short_fraction, setShortFraction] = useState<string>("");
     const [borrow_cost, setBorrowCost] = useState<string>("");
 
@@ -546,7 +546,7 @@ const LaunchAMM = () => {
                                         className={`${styles.textLabel} font-face-kg`}
                                         style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
                                     >
-                                        AMM Fee:
+                                        AMM LP Fee:
                                     </div>
 
                                     <div className={styles.textLabelInput}>
@@ -558,9 +558,7 @@ const LaunchAMM = () => {
                                             className={styles.inputBox}
                                             type="text"
                                             value={swap_fee}
-                                            onChange={(e) => {
-                                                setSwapFee(e.target.value);
-                                            }}
+                                            disabled={true}
                                         />
                                     </div>
                                 </HStack>
@@ -661,6 +659,53 @@ const LaunchAMM = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            <HStack spacing={15} w="100%" className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
+                                    WRAP {Config.token}:
+                                </div>
+                                <HStack>
+                                    <Switch
+                                        ml={2}
+                                        py={2}
+                                        size={lg ? "md" : "lg"}
+                                        isChecked={wrapETH === 1}
+                                        onChange={() => setWrapETH(wrapETH === 0 ? 1 : 0)}
+                                    />
+                                    <Tooltip
+                                        label={"Program will wrap the quote token for you"}
+                                        hasArrow
+                                        w={270}
+                                        fontSize="large"
+                                        offset={[0, 10]}
+                                    >
+                                        <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                    </Tooltip>
+                                </HStack>
+                            </HStack>
+                            <HStack spacing={15} w="100%" className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
+                                    BURN LP TOKENS:
+                                </div>
+                                <HStack>
+                                    <Switch
+                                        ml={2}
+                                        py={2}
+                                        size={lg ? "md" : "lg"}
+                                        isChecked={burnLP === 1}
+                                        onChange={() => setBurnLP(burnLP === 0 ? 1 : 0)}
+                                    />
+                                    <Tooltip
+                                        label={"Program will burn your LP tokens rather than transferring them to you"}
+                                        hasArrow
+                                        w={270}
+                                        fontSize="large"
+                                        offset={[0, 10]}
+                                    >
+                                        <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                    </Tooltip>
+                                </HStack>
+                            </HStack>
                         </VStack>
                         <HStack mt={md ? 0 : 30}>
                             <button

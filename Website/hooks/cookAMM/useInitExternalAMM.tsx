@@ -263,8 +263,8 @@ const useInitExternalAMM = () => {
             twitter,
             telegram,
             discord,
-            baseAmount,
-            quoteAmount,
+            baseAmount * Math.pow(10, baseMint.mint.decimals),
+            quoteAmount * Math.pow(10, quoteMint.mint.decimals),
             wrap,
             burn,
         );

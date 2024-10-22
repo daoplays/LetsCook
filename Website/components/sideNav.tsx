@@ -27,6 +27,11 @@ const tabs = {
             url: "/collection",
         },
         {
+            icon: (size: number) => <RiGalleryFill size={size} />,
+            tab: "New AMM",
+            url: "/trade/create",
+        },
+        {
             icon: (size: number) => <GiCook size={size} />,
             tab: "Creator Dashboard",
             url: "/dashboard",
