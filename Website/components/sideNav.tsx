@@ -9,7 +9,7 @@ import { BsPersonSquare } from "react-icons/bs";
 import { RiGalleryFill, RiGalleryLine } from "react-icons/ri";
 import Image from "next/image";
 import useAppRoot from "../context/useAppRoot";
-import { FaFire, FaHome, FaList } from "react-icons/fa";
+import { FaFire, FaHome, FaList, FaChartBar } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import * as NProgress from "nprogress";
@@ -27,7 +27,7 @@ const tabs = {
             url: "/collection",
         },
         {
-            icon: (size: number) => <RiGalleryFill size={size} />,
+            icon: (size: number) => <FaChartBar  size={size} />,
             tab: "New AMM",
             url: "/trade/create",
         },

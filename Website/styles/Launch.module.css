@@ -82,9 +82,17 @@ label.label input[type="file"] {
 }
 .textLabelInput input {
 }
-.textLabelInput {
+.textLabelInputamms {
     position: relative;
-    width: 100%;
+}
+.textLabelInputamms input {
+    position: relative;
+    background-color: #494949;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.761);
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
 }
 .textLabelInput input {
     position: relative;
