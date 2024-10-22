@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { Center, VStack, Text, HStack, Input, chakra, Flex, Box, Switch, Tooltip } from "@chakra-ui/react";
 import {
     Mint,
@@ -29,6 +29,7 @@ import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 import { useConnection } from "@solana/wallet-adapter-react";
 import useInitExternalAMM from "../../hooks/cookAMM/useInitExternalAMM";
+import useTokenBalance from "../../hooks/data/useTokenBalance";
 
 export async function getMint(connection: Connection, mint_string: string): Promise<[Mint, PublicKey] | null> {
     if (mint_string === "" || !mint_string) {
@@ -186,7 +187,7 @@ export async function setMintData(token_mint: string): Promise<MintData | null> 
 }
 
 const LaunchAMM = () => {
-    const { sm, md, lg, xl } = useResponsive();
+    const { xs, sm, md, lg, xl } = useResponsive();
 
     const { connection } = useConnection();
 
@@ -210,6 +211,18 @@ const LaunchAMM = () => {
     const [wrapETH, setWrapETH] = useState<number>(0);
 
     const { InitExternalAMM, isLoading } = useInitExternalAMM();
+
+    const baseMintAddress = useMemo(() => {
+        return base_token?.mint?.address || null;
+    }, [base_token]);
+
+    const { tokenBalance: baseBalance } = useTokenBalance(baseMintAddress ? { mintAddress: baseMintAddress } : null);
+
+    const quoteMintAdress = useMemo(() => {
+        return quote_token?.mint?.address || null;
+    }, [quote_token]);
+
+    const { tokenBalance: quoteBalance } = useTokenBalance(quoteMintAdress ? { mintAddress: quoteMintAdress } : null);
 
     async function handleSetBaseData() {
         setBaseToken(await setMintData(base_address));
@@ -247,16 +260,16 @@ const LaunchAMM = () => {
                     AMM Info:
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }}>
-                    <VStack px={lg || xl ? 4 : 12} spacing={25}>
-                        <HStack w="100%" spacing={lg || xl ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                    <VStack px={xs || sm || md ? 4 : 42} spacing={25}>
+                        <HStack w="100%" spacing={xs || sm || md ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                <HStack w="100%" spacing={lg || xl ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack w="100%" spacing={xs || sm || md ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                                     {base_token ? (
                                         <VStack spacing={3}>
                                             <Image
                                                 src={base_token.icon}
-                                                width={lg || xl ? 180 : 180}
-                                                height={lg || xl ? 180 : 180}
+                                                width={200}
+                                                height={200}
                                                 alt="Image Frame"
                                                 style={{ backgroundSize: "cover", borderRadius: 12 }}
                                             />
@@ -266,11 +279,8 @@ const LaunchAMM = () => {
                                         <VStack
                                             justify="center"
                                             align="center"
-                                            style={{
-                                                minWidth: lg || xl ? 180 : 180,
-                                                minHeight: lg || xl ? 180 : 180,
-                                                cursor: "pointer",
-                                            }}
+                                            width={200}
+                                            height={200}
                                             borderRadius={12}
                                             border="2px dashed rgba(134, 142, 150, 0.5)"
                                             as={chakra.label}
@@ -283,18 +293,20 @@ const LaunchAMM = () => {
                                     )}
 
                                     <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                        <HStack spacing={5} className={styles.eachField}>
-                                            <div
+                                        <HStack spacing={{ base: 2, md: 5 }} className={styles.eachField}>
+                                            <Text
                                                 className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
+                                                w={{ base: "70px", xl: "78px" }}
+                                                flexShrink={0}
+                                                mb={0}
                                             >
                                                 Base Token:
-                                            </div>
+                                            </Text>
 
-                                            <div className={styles.textLabelInput}>
+                                            <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                                 <Input
                                                     placeholder="Search Token"
-                                                    size={lg || xl ? "md" : "lg"}
+                                                    size={xs || sm || md ? "md" : "lg"}
                                                     required
                                                     className={styles.inputBox}
                                                     type="text"
@@ -313,7 +325,7 @@ const LaunchAMM = () => {
                                                             handleSetBaseData();
                                                         }}
                                                         className={styles.browse}
-                                                        style={{ cursor: "pointer", padding: "5px 10px" }}
+                                                        style={{ cursor: "pointer", padding: "5px 10px", fontSize: sm ? "12px" : "20px" }}
                                                     >
                                                         Search
                                                     </button>
@@ -322,39 +334,42 @@ const LaunchAMM = () => {
                                         </HStack>
 
                                         <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
-                                            <HStack spacing={5} className={styles.eachField}>
-                                                <div
+                                            <HStack spacing={{ base: 2, md: 5 }} className={styles.eachField}>
+                                                <Text
                                                     className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg || xl ? "80px" : "100px" }}
+                                                    w={{ base: "70px", xl: "78px" }}
+                                                    flexShrink={0}
+                                                    mb={0}
                                                 >
                                                     Name:
-                                                </div>
+                                                </Text>
 
-                                                <div className={styles.textLabelInput}>
+                                                <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                                     <Input
                                                         placeholder="Token Name"
                                                         readOnly={true}
                                                         disabled
-                                                        size={lg || xl ? "md" : "lg"}
+                                                        size={xs || sm || md ? "md" : "lg"}
                                                         className={styles.inputBox}
                                                         type="text"
                                                         value={base_token ? base_token.name : ""}
                                                     />
                                                 </div>
-                                                <div
+                                                <Text
                                                     className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg || xl ? "80px" : "110px" }}
+                                                    w={{ base: "70px", xl: "auto" }}
+                                                    mb={0}
                                                 >
                                                     Symbol:
-                                                </div>
-                                                <div className={styles.textLabelInput}>
+                                                </Text>
+                                                <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                                     <Input
                                                         // pl={9}
                                                         bg="#494949"
                                                         placeholder="Token Symbol"
                                                         readOnly={true}
                                                         disabled
-                                                        size={lg || xl ? "md" : "lg"}
+                                                        size={xs || sm || md ? "sm" : "lg"}
                                                         className={styles.inputBox}
                                                         type="text"
                                                         value={base_token ? base_token.symbol : ""}
@@ -364,25 +379,19 @@ const LaunchAMM = () => {
                                         </Flex>
                                     </VStack>
                                 </HStack>
-                                <HStack w="100%" spacing={lg || xl ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                                <HStack w="100%" spacing={xs || sm || md ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                                     {quote_token ? (
                                         <VStack spacing={3}>
-                                            <Image
-                                                src={quote_token.icon}
-                                                width={lg || xl ? 180 : 180}
-                                                height={lg || xl ? 180 : 180}
-                                                alt="Image Frame"
-                                                style={{ minHeight: 180, minWidth: 180 }}
-                                            />
+                                            <Image src={quote_token.icon} width={200} height={200} alt="Image Frame" />
                                             <ShowExtensions extension_flag={quote_token.extensions} />
                                         </VStack>
                                     ) : (
                                         <VStack
                                             justify="center"
                                             align="center"
+                                            width={200}
+                                            height={200}
                                             style={{
-                                                minWidth: lg || xl ? 180 : 180,
-                                                minHeight: lg || xl ? 180 : 180,
                                                 cursor: "pointer",
                                             }}
                                             borderRadius={12}
@@ -397,18 +406,14 @@ const LaunchAMM = () => {
                                     )}
 
                                     <VStack spacing={8} align="start" width="100%">
-                                        <HStack spacing={5} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
-                                            >
+                                        <HStack spacing={{ base: 2, md: 5 }} className={styles.eachField}>
+                                            <Text className={`${styles.textLabel} font-face-kg`} w={{ base: "70px", xl: "78px" }} mb={0}>
                                                 Quote Token:
-                                            </div>
-
-                                            <div className={styles.textLabelInput}>
+                                            </Text>
+                                            <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                                 <Input
                                                     placeholder="Search Token"
-                                                    size={lg || xl ? "md" : "lg"}
+                                                    size={xs || sm || md ? "md" : "lg"}
                                                     required
                                                     className={styles.inputBox}
                                                     type="text"
@@ -419,7 +424,6 @@ const LaunchAMM = () => {
                                                     }}
                                                 />
                                             </div>
-
                                             {/*<div style={{ marginLeft: "12px" }}>
                                                 <label className={styles.label}>
                                                     <button
@@ -436,39 +440,39 @@ const LaunchAMM = () => {
                                             </div>*/}
                                         </HStack>
 
-                                        <HStack spacing={5} className={styles.eachField}>
-                                            <div
+                                        <HStack spacing={{ base: 2, md: 5 }} className={styles.eachField}>
+                                            <Text
                                                 className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg || xl ? "80px" : "100px" }}
+                                                w={{ base: "70px", xl: "78px" }}
+                                                flexShrink={0}
+                                                mb={0}
                                             >
                                                 Name:
-                                            </div>
+                                            </Text>
 
-                                            <div className={styles.textLabelInput}>
+                                            <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                                 <Input
                                                     placeholder="Token Name"
                                                     readOnly={true}
                                                     disabled
-                                                    size={lg || xl ? "md" : "lg"}
+                                                    size={xs || sm || md ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     type="text"
                                                     value={quote_token ? quote_token.name : ""}
                                                 />
                                             </div>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg || xl ? "80px" : "110px" }}
-                                            >
+                                            <Text className={`${styles.textLabel} font-face-kg`} w={{ base: "70px", xl: "auto" }} mb={0}>
                                                 Symbol:
-                                            </div>
-                                            <div className={styles.textLabelInput}>
+                                            </Text>
+
+                                            <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                                 <Input
                                                     // pl={9}
                                                     bg="#494949"
                                                     placeholder="Token Symbol"
                                                     readOnly={true}
                                                     disabled
-                                                    size={lg || xl ? "md" : "lg"}
+                                                    size={xs || sm || md ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     type="text"
                                                     value={quote_token ? quote_token.symbol : ""}
@@ -477,60 +481,75 @@ const LaunchAMM = () => {
                                         </HStack>
                                     </VStack>
                                 </HStack>
-                                <HStack spacing={5} w="100%" className={styles.eachField}>
-                                    <div
-                                        className={`${styles.textLabel} font-face-kg`}
-                                        style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
-                                    >
-                                        Base Amount:
-                                    </div>
+                                <VStack width={"100%"} spacing={3}>
+                                    <HStack spacing={{ base: 2, md: 5 }} w="100%" className={styles.eachField}>
+                                        <Text className={`${styles.textLabel} font-face-kg`} w={{ base: "70px", xl: "170px" }} mb={7}>
+                                            Base Amount:
+                                        </Text>
 
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            bg="#494949"
-                                            placeholder="Enter Base Amount"
-                                            size={lg || xl ? "md" : "lg"}
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={base_amount}
-                                            onChange={(e) => {
-                                                setBaseAmount(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
-                                <HStack spacing={5} w="100%" className={styles.eachField}>
-                                    <div
-                                        className={`${styles.textLabel} font-face-kg`}
-                                        style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
-                                    >
-                                        Quote Amount:
-                                    </div>
+                                        <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
+                                            <Input
+                                                bg="#494949"
+                                                placeholder="Enter Base Amount"
+                                                size={xs || sm || md ? "md" : "lg"}
+                                                className={styles.inputBox}
+                                                type="text"
+                                                value={base_amount}
+                                                onChange={(e) => {
+                                                    setBaseAmount(e.target.value);
+                                                }}
+                                            />
+                                            <Flex w={"100%"} gap={1} mt={2} alignItems={"center"} justifyContent={"flex-end"} opacity={0.5}>
+                                                <Text textAlign={"right"} mb={0} fontFamily={"ChalkBoard"} fontSize={"18px"}>
+                                                    Available Balance: {baseBalance}
+                                                </Text>
+                                                {base_token ? (
+                                                    <Image width={35} height={35} src={base_token.icon} alt="base balance" />
+                                                ) : (
+                                                    ""
+                                                )}
+                                            </Flex>
+                                        </div>
+                                    </HStack>
+                                    <HStack spacing={{ base: 2, md: 5 }} w="100%" className={styles.eachField}>
+                                        <Text className={`${styles.textLabel} font-face-kg`} w={{ base: "70px", xl: "170px" }} mb={7}>
+                                            Quote Amount:
+                                        </Text>
 
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            bg="#494949"
-                                            placeholder="Enter Quote Amount"
-                                            size={lg || xl ? "md" : "lg"}
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={quote_amount}
-                                            onChange={(e) => {
-                                                setQuoteAmount(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </HStack>
-                                {/*<HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg || xl ? "100px" : "140px" }}>
+                                        <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
+                                            <Input
+                                                bg="#494949"
+                                                placeholder="Enter Quote Amount"
+                                                size={xs || sm || md ? "md" : "lg"}
+                                                className={styles.inputBox}
+                                                type="text"
+                                                value={quote_amount}
+                                                onChange={(e) => {
+                                                    setQuoteAmount(e.target.value);
+                                                }}
+                                            />
+                                            <Flex w={"100%"} gap={1} mt={2} alignItems={"center"} justifyContent={"flex-end"}>
+                                                <Text textAlign={"right"} mb={0} fontFamily={"ChalkBoard"} fontSize={"18px"} opacity={0.5}>
+                                                    Available Balance: {quoteBalance}
+                                                </Text>
+                                                {quote_token ? (
+                                                    <Image width={35} height={35} src={quote_token.icon} alt="quote balance" />
+                                                ) : (
+                                                    ""
+                                                )}
+                                            </Flex>
+                                        </div>
+                                    </HStack>
+                                    {/*<HStack spacing={0} w="100%" className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: xs || sm || md ? "100px" : "140px" }}>
                                         Short Frac:
                                     </div>
 
-                                    <div className={styles.textLabelInput}>
+                                    <div className={styles.textLabelInputamms} style={{flexGrow: 1}}>
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Short Pool Fraction (10 = 10% of base amount)"
-                                            size={lg || xl ? "md" : "lg"}
+                                            size={xs || sm || md ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}
                                             type="text"
@@ -541,37 +560,35 @@ const LaunchAMM = () => {
                                         />
                                     </div>
                                 </HStack>*/}
-                                <HStack spacing={5} w="100%" className={styles.eachField}>
-                                    <div
-                                        className={`${styles.textLabel} font-face-kg`}
-                                        style={{ minWidth: lg || xl ? "80px" : "100px", maxWidth: lg || xl ? "80px" : "auto" }}
-                                    >
-                                        AMM LP Fee:
-                                    </div>
+                                    <HStack spacing={{ base: 2, md: 5 }} w="100%" className={styles.eachField}>
+                                        <Text className={`${styles.textLabel} font-face-kg`} w={{ base: "70px", xl: "170px" }} mb={0}>
+                                            AMM LP Fee:
+                                        </Text>
 
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            bg="#494949"
-                                            placeholder="Enter AMM Fee (Bps - 100 = 1%)"
-                                            size={lg || xl ? "md" : "lg"}
-                                            maxLength={8}
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={swap_fee}
-                                            disabled={true}
-                                        />
-                                    </div>
-                                </HStack>
+                                        <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
+                                            <Input
+                                                bg="#494949"
+                                                placeholder="Enter AMM Fee (Bps - 100 = 1%)"
+                                                size={xs || sm || md ? "md" : "lg"}
+                                                maxLength={8}
+                                                className={styles.inputBox}
+                                                type="text"
+                                                value={swap_fee}
+                                                disabled={true}
+                                            />
+                                        </div>
+                                    </HStack>
+                                </VStack>
                                 {/*<HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg || xl ? "100px" : "140px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: xs || sm || md ? "100px" : "140px" }}>
                                         Borrow Fee:
                                     </div>
 
-                                    <div className={styles.textLabelInput}>
+                                    <div className={styles.textLabelInputamms} style={{flexGrow: 1}}>
                                         <Input
                                             bg="#494949"
                                             placeholder="Enter Short Borrow Fee (Bps - 100 = 1%)"
-                                            size={lg || xl ? "md" : "lg"}
+                                            size={xs || sm || md ? "md" : "lg"}
                                             maxLength={8}
                                             className={styles.inputBox}
                                             type="text"
@@ -588,11 +605,11 @@ const LaunchAMM = () => {
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
-                                    <div className={styles.textLabelInput}>
+                                    <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                         <input
                                             placeholder="Enter your Website URL (optional)"
                                             className={styles.inputBox}
-                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            style={{ fontSize: xs || sm || md ? "medium" : "large" }}
                                             type="text"
                                             value={web}
                                             onChange={(e) => {
@@ -607,11 +624,11 @@ const LaunchAMM = () => {
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
 
-                                    <div className={styles.textLabelInput}>
+                                    <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                         <input
                                             className={styles.inputBox}
                                             placeholder="Enter your Telegram Invite URL (optional)"
-                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            style={{ fontSize: xs || sm || md ? "medium" : "large" }}
                                             type="text"
                                             value={telegram}
                                             onChange={(e) => {
@@ -625,12 +642,12 @@ const LaunchAMM = () => {
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
 
-                                    <div className={styles.textLabelInput}>
+                                    <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                         <input
                                             required
                                             className={styles.inputBox}
                                             placeholder="Enter your Twitter URL (optional)"
-                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            style={{ fontSize: xs || sm || md ? "medium" : "large" }}
                                             type="text"
                                             value={twitter}
                                             onChange={(e) => {
@@ -645,11 +662,11 @@ const LaunchAMM = () => {
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
 
-                                    <div className={styles.textLabelInput}>
+                                    <div className={styles.textLabelInputamms} style={{ flexGrow: 1 }}>
                                         <input
                                             className={styles.inputBox}
                                             placeholder="Enter your Discord Invite URL (optional)"
-                                            style={{ fontSize: lg || xl ? "medium" : "large" }}
+                                            style={{ fontSize: xs || sm || md ? "medium" : "large" }}
                                             type="text"
                                             value={discord}
                                             onChange={(e) => {
