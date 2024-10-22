@@ -28,12 +28,10 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
 
     const haveMintData = useRef<boolean | null>(false);
 
-
     const mintAddress = props?.mintAddress || null;
 
     // Function to get mint data for the given mint address
     const getMintData = useCallback(async () => {
-
         if (haveMintData.current) return;
 
         if (!mintData || !mintAddress) {
@@ -45,7 +43,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
         if (!mint) {
             // if we dont have the mint data, we should fetch it
             let newMintData = await setMintData(mintAddress.toString());
-            if (newMintData){
+            if (newMintData) {
                 setTokenMint(newMintData);
                 haveMintData.current = true;
             }
@@ -59,7 +57,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
     const getUserTokenAccount = useCallback(() => {
         if (!wallet.publicKey) return null;
         if (!tokenMint) return null;
-        
+
         return getAssociatedTokenAddressSync(mintAddress, wallet.publicKey, true, tokenMint.token_program);
     }, [wallet.publicKey, mintAddress, tokenMint]);
 

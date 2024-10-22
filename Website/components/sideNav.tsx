@@ -27,7 +27,7 @@ const tabs = {
             url: "/collection",
         },
         {
-            icon: (size: number) => <FaChartBar  size={size} />,
+            icon: (size: number) => <FaChartBar size={size} />,
             tab: "New AMM",
             url: "/trade/create",
         },

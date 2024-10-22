@@ -165,8 +165,8 @@ const MarketMakingTable = () => {
         }
 
         if (sortedField === "fdmc") {
-            let total_supply_a = Number(a.mint.mint.supply) / Math.pow(10, a.listing.decimals);
-            let total_supply_b = Number(b.mint.mint.supply) / Math.pow(10, b.listing.decimals);
+            let total_supply_a = Number(a.mint.mint.supply) / Math.pow(10, a.mint.mint.decimals);
+            let total_supply_b = Number(b.mint.mint.supply) / Math.pow(10, b.mint.mint.decimals);
             let price_a =
                 a.amm_data.provider === 0
                     ? Buffer.from(a.amm_data.last_price).readFloatLE(0)
@@ -276,7 +276,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     //console.log(amm_launch);
     let total_supply =
         amm_launch.mint !== null && amm_launch.mint !== undefined
-            ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals)
+            ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.mint.mint.decimals)
             : 0;
     let market_cap = total_supply * last_price * SOLPrice;
     let market_cap_string = "$" + nFormatter(market_cap, 2);
@@ -329,7 +329,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
             <td style={{ minWidth: "150px" }}>
                 <HStack justify="center">
                     <Text fontSize={"large"} m={0}>
-                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.listing.decimals, 3))}
+                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.mint.mint.decimals, 3))}
                     </Text>
                     <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
                 </HStack>
