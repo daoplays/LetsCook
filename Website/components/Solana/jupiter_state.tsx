@@ -23,7 +23,7 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 import { Order } from "@jup-ag/limit-order-sdk";
 
-import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData } from "./state";
+import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData, MintData } from "./state";
 import { PROGRAM } from "./constants";
 
 export interface OpenOrder {
@@ -72,12 +72,13 @@ export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
     return amm_data_account;
 }
 
-export function reward_schedule(date: number, amm: AMMData): number {
+export function reward_schedule(date: number, amm: AMMData, mint: MintData): number {
     if (amm.plugins.length === 0) {
         return 0.0;
     }
-
-    let mm_amount = amm.plugins[0]["total_tokens"];
+    
+    let mm_amount = Number(amm.plugins[0]["total_tokens"] / Math.pow(10, mint.mint.decimals));
+    console.log(mm_amount, mm_amount.toString())
     if (date < 10) {
         return 0.05 * mm_amount;
     }

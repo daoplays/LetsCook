@@ -1107,7 +1107,7 @@ const InfoContent = ({
     const {AddTradeRewards} = useAddTradeRewards();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    let reward = reward_schedule(current_date, amm);
+    let reward = reward_schedule(current_date, amm, base_mint);
     if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
@@ -1160,7 +1160,7 @@ const InfoContent = ({
                         SESSION REWARDS: 
                     </Text>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        <FaPlusCircle onClick={() => {}}/>
+                        <FaPlusCircle onClick={() => AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), 1000)}/>
                     </Text>
                 </HStack>
                 <HStack>

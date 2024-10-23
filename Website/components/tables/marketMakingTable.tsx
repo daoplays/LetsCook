@@ -188,8 +188,8 @@ const MarketMakingTable = () => {
 
         if (sortedField === "rewards") {
             let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(a.amm_data.start_time)) / 24 / 60 / 60);
-            let mm_rewards_a = reward_schedule(current_date, a.amm_data);
-            let mm_rewards_b = reward_schedule(current_date, b.amm_data);
+            let mm_rewards_a = reward_schedule(current_date, a.amm_data, a.mint);
+            let mm_rewards_b = reward_schedule(current_date, b.amm_data, b.mint);
             if (mm_rewards_a < mm_rewards_b) {
                 return reverseSort ? 1 : -1;
             }
@@ -267,7 +267,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     const { ammData, jupPrices } = useAppRoot();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
-    let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
+    let mm_rewards = reward_schedule(current_date, amm_launch.amm_data, amm_launch.mint);
 
     let last_price =
         amm_launch.amm_data.provider === 0

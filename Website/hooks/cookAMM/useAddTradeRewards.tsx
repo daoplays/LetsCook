@@ -113,7 +113,7 @@ const useAddTradeRewards = () => {
         }
 
         let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("AMM")],
+            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("CookAMM")],
             PROGRAM,
         )[0];
 
@@ -126,6 +126,9 @@ const useAddTradeRewards = () => {
             true, // allow owner off curve
             base_mint_account.owner,
         );
+
+        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
+
 
 
         const instruction_data = serialise_AddTradeRewards_instruction(
@@ -142,6 +145,7 @@ const useAddTradeRewards = () => {
 
             { pubkey: base_mint, isSigner: false, isWritable: false },
             { pubkey: quote_mint, isSigner: false, isWritable: false },
+            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
 
             { pubkey: base_mint_account.owner, isSigner: false, isWritable: false },
             {
