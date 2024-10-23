@@ -45,7 +45,7 @@ import UseWalletConnection from "../../hooks/useWallet";
 import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
-import useWebSocket from "react-use-websocket";
+import { FaPlusCircle } from "react-icons/fa";
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
@@ -55,6 +55,7 @@ import SellPanel from "../../components/tradePanels/sellPanel";
 import BuyPanel from "../../components/tradePanels/buyPanel";
 import formatPrice from "../../utils/formatPrice";
 import Loader from "../../components/loader";
+import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -1103,6 +1104,8 @@ const InfoContent = ({
 }) => {
     const { lg } = useResponsive();
 
+    const {AddTradeRewards} = useAddTradeRewards();
+
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm);
     if (mm_data !== null && mm_data !== undefined) {
@@ -1152,9 +1155,14 @@ const InfoContent = ({
             </HStack>
 
             <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    SESSION REWARDS:
-                </Text>
+                <HStack>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        SESSION REWARDS: 
+                    </Text>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        <FaPlusCircle onClick={() => {}}/>
+                    </Text>
+                </HStack>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                         {reward.toLocaleString()}

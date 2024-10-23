@@ -34,7 +34,6 @@ import {
 } from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig, PROGRAM, Socials } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
-import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { setMintData } from "../amm/launch";
 import { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";

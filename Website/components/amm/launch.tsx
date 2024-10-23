@@ -25,7 +25,6 @@ import useResponsive from "../../hooks/useResponsive";
 import { MintData } from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig, WRAPPED_SOL } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
-import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 import { useConnection } from "@solana/wallet-adapter-react";
 import useInitExternalAMM from "../../hooks/cookAMM/useInitExternalAMM";
