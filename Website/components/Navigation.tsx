@@ -102,11 +102,11 @@ function Navigation() {
                                 >
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
                                     <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
-                                        Solana
+                                        Solana Mainnet
                                     </Text>
                                 </HStack>
                             </MenuItem>
-                            {/* <MenuItem
+                            <MenuItem
                                 borderRadius={5}
                                 onClick={async () => {
                                     await router.push("https://devnet.letscook.wtf");
@@ -115,10 +115,10 @@ function Navigation() {
                                 <HStack alignItems="start">
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
                                     <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
-                                        Devnet
+                                        Solana Devnet
                                     </Text>
                                 </HStack>
-                            </MenuItem> */}
+                            </MenuItem>
                             <MenuItem
                                 borderRadius={5}
                                 onClick={async () => {
