@@ -60,22 +60,24 @@ const BuyPanel = ({
 
     let liquidity_factor = 1;
     for (let i = 0; i < amm.plugins.length; i++) {
-        console.log(amm.plugins[i])
+        console.log(amm.plugins[i]);
         if (amm.plugins[i]["__kind"] == "LiquidityScaling") {
             let amm_plugin = amm.plugins[i];
             let threshold = bignum_to_num(amm_plugin["threshold"]);
             if (amm_quote_balance < threshold) {
-                liquidity_factor = Math.min(1, (amm_plugin["scalar"] / 100) * amm_quote_balance / threshold)
+                liquidity_factor = Math.min(1, ((amm_plugin["scalar"] / 100) * amm_quote_balance) / threshold);
                 console.log("liquidity factor: ", liquidity_factor);
             }
-       }
+        }
     }
 
     let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
     let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
     let quote_input_amount = quote_raw - amm_quote_fee;
     let base_output =
-    liquidity_factor * (quote_input_amount * amm_base_balance) / (amm_quote_balance + quote_input_amount) / Math.pow(10, base_mint.mint.decimals);
+        (liquidity_factor * (quote_input_amount * amm_base_balance)) /
+        (amm_quote_balance + quote_input_amount) /
+        Math.pow(10, base_mint.mint.decimals);
     let base_output_string = formatPrice(base_output, base_mint.mint.decimals);
 
     console.log(amm_base_balance, amm_quote_balance);

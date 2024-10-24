@@ -20,20 +20,14 @@ class AddTradeRewards_Instruction {
     static readonly struct = new FixableBeetStruct<AddTradeRewards_Instruction>(
         [
             ["instruction", u8],
-            ["quantity", u64]
+            ["quantity", u64],
         ],
-        (args) =>
-            new AddTradeRewards_Instruction(
-                args.instruction!,
-                args.quantity!,
-            ),
+        (args) => new AddTradeRewards_Instruction(args.instruction!, args.quantity!),
         "AddTradeRewards_Instruction",
     );
 }
 
-export function serialise_AddTradeRewards_instruction(
-    quantity: number,
-): Buffer {
+export function serialise_AddTradeRewards_instruction(quantity: number): Buffer {
     const data = new AddTradeRewards_Instruction(LaunchInstruction.add_trade_rewards, quantity);
     const [buf] = AddTradeRewards_Instruction.struct.serialize(data);
 
@@ -84,11 +78,7 @@ const useAddTradeRewards = () => {
         });
     }, []);
 
-    const AddTradeRewards = async (
-        base_mint_string: string,
-        quote_mint_string: string,
-        base_quantity: number
-    ) => {
+    const AddTradeRewards = async (base_mint_string: string, quote_mint_string: string, base_quantity: number) => {
         toast.info("Sending Transaction", {
             isLoading: false,
             autoClose: 3000,
@@ -117,7 +107,6 @@ const useAddTradeRewards = () => {
             PROGRAM,
         )[0];
 
-
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let user_base = await getAssociatedTokenAddress(
@@ -129,11 +118,7 @@ const useAddTradeRewards = () => {
 
         let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
 
-
-
-        const instruction_data = serialise_AddTradeRewards_instruction(
-            base_quantity * Math.pow(10, base_mint_data.decimals)
-        );
+        const instruction_data = serialise_AddTradeRewards_instruction(base_quantity * Math.pow(10, base_mint_data.decimals));
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },

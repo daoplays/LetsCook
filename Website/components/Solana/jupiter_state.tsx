@@ -91,9 +91,9 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
                 return 0.02 * mm_amount;
             }
             return 0.0;
-       }
+        }
     }
-    
+
     return 0.0;
 }
 
@@ -149,7 +149,7 @@ export class TimeSeriesData {
 
 type AMMPluginEnum = {
     TradeToEarn: { total_tokens: bignum; last_reward_date: number };
-    LiquidityScaling: {scalar: number, threshold: bignum, active: number}
+    LiquidityScaling: { scalar: number; threshold: bignum; active: number };
 };
 type AMMPlugin = DataEnumKeyAsKind<AMMPluginEnum>;
 

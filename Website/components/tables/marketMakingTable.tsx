@@ -282,7 +282,7 @@ const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice:
     let market_cap_string = "$" + nFormatter(market_cap, 2);
 
     let liquidity = Number(amm_launch.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
-    let liquidity_string = "$" + nFormatter(liquidity, 2);
+    let liquidity_string = "$" + nFormatter(Math.min(market_cap, 2 * liquidity), 2);
 
     let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
     let cook_amm = ammData.get(cook_amm_address.toString());

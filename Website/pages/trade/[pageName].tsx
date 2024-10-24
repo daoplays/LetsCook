@@ -1105,13 +1105,16 @@ const InfoContent = ({
 }) => {
     const { lg } = useResponsive();
 
-    const {AddTradeRewards} = useAddTradeRewards();
+    const { AddTradeRewards } = useAddTradeRewards();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm, base_mint);
     if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
+
+    let market_cap = total_supply * price * sol_price;
+    let liquidity = Math.min(market_cap, 2 * (quote_amount / Math.pow(10, 9)) * sol_price);
 
     //console.log(price, total_supply, sol_price, quote_amount)
     return (
@@ -1158,10 +1161,10 @@ const InfoContent = ({
             <HStack px={5} justify="space-between" w="100%">
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        SESSION REWARDS: 
+                        SESSION REWARDS:
                     </Text>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        <FaPlusCircle onClick={() => AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), 1000)}/>
+                        <FaPlusCircle onClick={() => AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), 1000)} />
                     </Text>
                 </HStack>
                 <HStack>
@@ -1196,7 +1199,7 @@ const InfoContent = ({
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                     $
-                    {(total_supply * price * sol_price).toLocaleString("en-US", {
+                    {market_cap.toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                     })}
@@ -1209,7 +1212,7 @@ const InfoContent = ({
                 </Text>
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                     $
-                    {((quote_amount / Math.pow(10, 9)) * sol_price).toLocaleString("en-US", {
+                    {liquidity.toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                     })}
