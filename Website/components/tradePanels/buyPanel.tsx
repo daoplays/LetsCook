@@ -66,7 +66,6 @@ const BuyPanel = ({
             let threshold = bignum_to_num(amm_plugin["threshold"]);
             if (amm_quote_balance < threshold) {
                 liquidity_factor = Math.min(1, ((amm_plugin["scalar"] / 10) * amm_quote_balance) / threshold);
-                console.log("liquidity factor: ", liquidity_factor);
             }
         }
     }
@@ -83,7 +82,8 @@ const BuyPanel = ({
     console.log(amm_base_balance, amm_quote_balance);
     let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
     let base_no_slip = sol_amount / price;
-    let slippage = base_no_slip / base_output - 1;
+    let slippage = base_no_slip / (base_output/liquidity_factor) - 1;
+
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";

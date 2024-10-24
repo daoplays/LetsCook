@@ -207,7 +207,7 @@ const TradePage = () => {
         if (!amm) {
             return;
         }
-        console.log("accounts", amm.base_key.toString(), amm.quote_key.toString());
+        //console.log("accounts", amm.base_key.toString(), amm.quote_key.toString());
         let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
         let listing = listingData.get(listing_key.toString());
         setListing(listing);
