@@ -78,8 +78,8 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
     }
 
     for (let i = 0; i < amm.plugins.length; i++) {
-        if (amm.plugins[i]["TradeToEarn"]) {
-            let amm_plugin = amm.plugins[i]["TradeToEarn"];
+        if (amm.plugins[i]["__kind"] == "TradeToEarn") {
+            let amm_plugin = amm.plugins[i];
             let mm_amount = Number(amm_plugin["total_tokens"] / Math.pow(10, mint.mint.decimals));
             if (date < 10) {
                 return 0.05 * mm_amount;

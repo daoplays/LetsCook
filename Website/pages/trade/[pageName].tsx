@@ -27,7 +27,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackAccount } from "@solana/spl-token";
 
-import { HStack, VStack, Text, Box, Tooltip, Link } from "@chakra-ui/react";
+import { HStack, VStack, Text, Box, Tooltip, Link, Modal, ModalBody, ModalContent, Input, ModalOverlay, useDisclosure } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -46,6 +46,7 @@ import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
 import { FaPlusCircle } from "react-icons/fa";
+import styles from "../../styles/Launch.module.css";
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
@@ -56,6 +57,7 @@ import BuyPanel from "../../components/tradePanels/buyPanel";
 import formatPrice from "../../utils/formatPrice";
 import Loader from "../../components/loader";
 import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
+import { toast } from "react-toastify";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -128,6 +130,8 @@ const TradePage = () => {
     const { ammData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
 
     const { pageName } = router.query;
+
+
 
     const [leftPanel, setLeftPanel] = useState("Info");
 
@@ -885,6 +889,84 @@ const TradePage = () => {
     );
 };
 
+const AddRewardModal = ({amm, isOpen, onClose} : {amm : AMMData, isOpen : boolean, onClose: () => void}) => {
+
+    const { xs, lg } = useResponsive();
+    const [quantity, setQuantity] = useState<string>("");
+    const { AddTradeRewards } = useAddTradeRewards();
+
+    const handleSubmit = (e) => {
+        let value = parseInt(quantity);
+        if (isNaN(value)) {
+            toast.error("Invalid quantity");
+            return;
+        }
+        if (!amm) {
+            toast.error("Waiting for AMM Data");
+            return;
+        }
+        AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), value);
+    };
+
+    return(
+        <>
+    <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <ModalOverlay />
+        <ModalContent
+            bg="url(/images/square-frame.png)"
+            bgSize="contain"
+            bgRepeat="no-repeat"
+            h={345}
+            py={xs ? 6 : 12}
+            px={xs ? 8 : 10}
+        >
+            <ModalBody>
+                <VStack align="start" justify={"center"} h="100%" spacing={0} mt={xs ? -8 : 0}>
+                    <Text className="font-face-kg" color="white" fontSize="x-large">
+                        Total Rewards
+                    </Text>
+                    <Input
+                        placeholder={"Enter Total Reward Quantity"}
+                        size={lg ? "md" : "lg"}
+                        maxLength={25}
+                        required
+                        type="text"
+                        value={quantity}
+                        onChange={e => setQuantity(e.target.value)}
+                        color="white"
+                    />
+                    <HStack mt={xs ? 6 : 10} justify="end" align="end" w="100%">
+                        <Text
+                            mr={3}
+                            align="end"
+                            fontSize={"medium"}
+                            style={{
+                                fontFamily: "KGSummerSunshineBlackout",
+                                color: "#fc3838",
+                                cursor: "pointer",
+                            }}
+                            onClick={onClose}
+                        >
+                            Go Back
+                        </Text>
+                        <button
+                            type="button"
+                            onClick={async (e) => {
+                                handleSubmit(e);
+                            }}
+                            className={`${styles.nextBtn} font-face-kg`}
+                        >
+                            Add
+                        </button>
+                    </HStack>
+                </VStack>
+            </ModalBody>
+        </ModalContent>
+    </Modal>
+    </>
+    )
+}
+
 const BuyAndSell = ({
     amm,
     base_mint,
@@ -1104,8 +1186,9 @@ const InfoContent = ({
     mm_data: MMLaunchData | null;
 }) => {
     const { lg } = useResponsive();
+    const { isOpen : isRewardsOpen, onOpen : onRewardsOpen, onClose : onRewardsClose } = useDisclosure();
 
-    const { AddTradeRewards } = useAddTradeRewards();
+
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm, base_mint);
@@ -1118,6 +1201,7 @@ const InfoContent = ({
 
     //console.log(price, total_supply, sol_price, quote_amount)
     return (
+        <>
         <VStack spacing={8} w="100%" mb={3}>
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
@@ -1164,7 +1248,7 @@ const InfoContent = ({
                         SESSION REWARDS:
                     </Text>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        <FaPlusCircle onClick={() => AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), 1000)} />
+                        <FaPlusCircle onClick={() => onRewardsOpen()} />
                     </Text>
                 </HStack>
                 <HStack>
@@ -1250,6 +1334,9 @@ const InfoContent = ({
                 </HStack>
             )}
         </VStack>
+        <AddRewardModal amm={amm} isOpen={isRewardsOpen} onClose={onRewardsClose} />
+        </>
+
     );
 };
 
