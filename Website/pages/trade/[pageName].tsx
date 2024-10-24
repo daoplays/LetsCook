@@ -1164,7 +1164,7 @@ const InfoContent = ({
                         SESSION REWARDS:
                     </Text>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        <FaPlusCircle onClick={() => AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), 1000)} />
+                        <FaPlusCircle onClick={() => {}} />
                     </Text>
                 </HStack>
                 <HStack>
