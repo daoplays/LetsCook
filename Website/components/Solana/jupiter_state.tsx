@@ -76,19 +76,24 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
     if (amm.plugins.length === 0) {
         return 0.0;
     }
-    
-    let mm_amount = Number(amm.plugins[0]["total_tokens"] / Math.pow(10, mint.mint.decimals));
-    console.log(mm_amount, mm_amount.toString())
-    if (date < 10) {
-        return 0.05 * mm_amount;
-    }
-    if (date >= 10 && date < 20) {
-        return 0.03 * mm_amount;
-    }
-    if (date >= 20 && date < 30) {
-        return 0.02 * mm_amount;
-    }
 
+    for (let i = 0; i < amm.plugins.length; i++) {
+        if (amm.plugins[i]["TradeToEarn"]) {
+            let amm_plugin = amm.plugins[i]["TradeToEarn"];
+            let mm_amount = Number(amm_plugin["total_tokens"] / Math.pow(10, mint.mint.decimals));
+            if (date < 10) {
+                return 0.05 * mm_amount;
+            }
+            if (date >= 10 && date < 20) {
+                return 0.03 * mm_amount;
+            }
+            if (date >= 20 && date < 30) {
+                return 0.02 * mm_amount;
+            }
+            return 0.0;
+       }
+    }
+    
     return 0.0;
 }
 
@@ -144,6 +149,7 @@ export class TimeSeriesData {
 
 type AMMPluginEnum = {
     TradeToEarn: { total_tokens: bignum; last_reward_date: number };
+    LiquidityScaling: {scalar: number, threshold: bignum, active: number}
 };
 type AMMPlugin = DataEnumKeyAsKind<AMMPluginEnum>;
 
@@ -156,6 +162,17 @@ const ammPluginBeet = dataEnum<AMMPluginEnum>([
                 ["last_reward_date", u32],
             ],
             'AMMPluginEnum["TradeToEarn"]',
+        ),
+    ],
+    [
+        "LiquidityScaling",
+        new BeetArgsStruct<AMMPluginEnum["LiquidityScaling"]>(
+            [
+                ["scalar", u16],
+                ["threshold", u64],
+                ["active", u8],
+            ],
+            'AMMPluginEnum["LiquidityScaling"]',
         ),
     ],
 ]) as FixableBeet<AMMPlugin>;
