@@ -65,7 +65,7 @@ const BuyPanel = ({
             let amm_plugin = amm.plugins[i];
             let threshold = bignum_to_num(amm_plugin["threshold"]);
             if (amm_quote_balance < threshold) {
-                liquidity_factor = Math.min(1, ((amm_plugin["scalar"] / 100) * amm_quote_balance) / threshold);
+                liquidity_factor = Math.min(1, ((amm_plugin["scalar"] / 10) * amm_quote_balance) / threshold);
                 console.log("liquidity factor: ", liquidity_factor);
             }
         }
