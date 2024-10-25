@@ -96,6 +96,7 @@ async function getTokenPrices(mints: string[], setPriceMap: Dispatch<SetStateAct
 
         // Process each chunk
         await Promise.all(
+            mintChunks.map(async (chunk) => {
                 const mintString = chunk.join(",");
                 const url = `https://price.jup.ag/v6/price?ids=${mintString}&vsToken=SOL`;
 
