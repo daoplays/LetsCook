@@ -1148,7 +1148,7 @@ const InfoContent = ({
 
             <HStack mt={-2} px={5} justify="space-between" w="100%">
                 <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    VOLUME (24h):
+                    VOLUME (24H):
                 </Text>
                 <HStack>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>

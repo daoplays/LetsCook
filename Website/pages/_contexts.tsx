@@ -639,7 +639,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         });
 
-        GetTradeMintData(trade_mints, setMintData);
+        GetTradeMintData(trade_mints.slice(0, 98), setMintData);
         GetTokenPrices(price_mints, setJupPrices);
     }, [program_data, wallet]);
 
