@@ -6,7 +6,7 @@ import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import { JoinedLaunch, LaunchData, MintData, bignum_to_num } from "../Solana/state";
-import { AMMData, MMLaunchData, MMUserData, getAMMKey } from "../Solana/jupiter_state";
+import { AMMData, AMMPluginData, MMLaunchData, MMUserData, getAMMKey, getAMMPlugins } from "../Solana/jupiter_state";
 import { LaunchKeys, LaunchFlags, PROGRAM } from "../Solana/constants";
 import useGetMMRewards from "../../hooks/jupiter/useGetMMRewards";
 import { PublicKey } from "@solana/web3.js";
@@ -174,6 +174,8 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
     const { sm, md, lg } = useResponsive();
     const { GetMMRewards, isLoading: isMMRewardsLoading } = useGetMMRewards(reward.amm, reward.amm_provider);
 
+    let amm_plugins: AMMPluginData = getAMMPlugins(reward.amm);
+
     let days_rewards = bignum_to_num(reward.launch_reward.token_rewards);
     days_rewards /= Math.pow(10, reward.base_mint.mint.decimals);
 
@@ -186,8 +188,9 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
     let user_percent = (100 * user_traded) / total_traded;
     let user_amount = (days_rewards * user_percent) / 100;
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(reward.amm.start_time)) / 24 / 60 / 60);
-    let time_left = (new Date().getTime() / 1000 - bignum_to_num(reward.amm.start_time)) / 24 / 60 / 60 - current_date;
+    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let current_date = today - amm_plugins.trade_reward_first_date;
+    let time_left = new Date().getTime() / 1000 / 24 / 60 / 60 - amm_plugins.trade_reward_first_date - current_date;
     time_left *= 24;
     time_left = 24 - time_left;
     //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
