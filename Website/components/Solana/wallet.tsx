@@ -24,8 +24,8 @@ export function DisconnectWalletButton() {
                 <HStack
                     align="center"
                     color="white"
-                    className="font-face-rk"
-                    style={{ backgroundColor: "#683309", borderRadius: 20 }}
+                    className="font-face-rk bg-white text-black"
+                    style={{ borderRadius: 20 }}
                     py={1}
                     px={3}
                 >

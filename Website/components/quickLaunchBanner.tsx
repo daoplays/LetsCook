@@ -12,25 +12,19 @@ const QuickLaunchBanner = () => {
     const { sm, md, lg, xl, xxl } = useResponsive();
 
     return (
-        <Box
-            w="100%"
-            h={lg ? 350 : 400}
-            bg={"url(/images/Banner.png)"}
-            bgSize="cover"
-            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.30)inset"
-        >
-            <Box bg="linear-gradient(180deg, rgba(255,255,255,0) -60%, rgba(0,0,0,1) 150%)" w="100%" h="100%">
-                <VStack px={4} justify="center" w="100%" h={"100%"} spacing={6}>
-                    <Text m={0} fontSize={sm ? 24 : md ? 45 : 60} color="white" className="font-face-kg" align={"center"}>
-                        Create a token in seconds
+        <Box w="100%" h={lg ? 350 : 300} mt={{lg: "50px"}} bgSize="cover">
+            <Box w="100%" h="100%">
+                <VStack px={4} justify="center" w="100%" h={"100%"} spacing={5}>
+                    <Text m={0} fontSize={sm ? 24 : md ? 45 : 60} color="white" className="font-face-kg2" align={"center"} fontWeight="extrabold" lineHeight="30px">
+                        CREATE A TOKEN IN SECONDS
                     </Text>
                     <Text
                         m="0"
-                        mb="2"
-                        className="font-face-kg"
-                        fontSize={sm ? "small" : lg ? "large" : "x-large"}
+                        className="font-face-kg2"
+                        fontSize={sm ? "small" : lg ? "large" : "xx-large"}
                         color="white"
                         align={"center"}
+                        fontWeight="bold"
                     >
                         Skip the Bonding Curve. Trade Instantly.
                     </Text>
@@ -43,7 +37,7 @@ const QuickLaunchBanner = () => {
                             }
                         }}
                     >
-                        <WoodenButton label="Instant Launch" size={28} />
+                        <WoodenButton label="QUICK LAUNCH" size={28} />
                     </div>
                 </VStack>
             </Box>

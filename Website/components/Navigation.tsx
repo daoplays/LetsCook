@@ -31,6 +31,8 @@ import { FaChevronDown } from "react-icons/fa";
 import twitter from "../public/images/Twitter.png";
 import discord from "../public/images/discord.png";
 import { TbLayoutSidebarLeftExpandFilled, TbLayoutSidebarRightExpandFilled } from "react-icons/tb";
+import { PiHamburgerFill } from "react-icons/pi";
+
 
 function Navigation() {
     const router = useRouter();
@@ -43,43 +45,28 @@ function Navigation() {
     return (
         <>
             <HStack
-                bg="url(/images/header_fill.jpeg)"
-                backgroundSize="cover"
-                height={50}
+                height={90}
                 px={4}
-                alignItems="center"
+                pt={5}
+                alignItems="flex-start"
                 justify="space-between"
                 position="fixed"
                 top={0}
                 left={0}
                 right={0}
                 zIndex={1000}
-                style={{
-                    boxShadow: "0px 2px 13px 0px rgba(0, 0, 0, 0.50)",
-                }}
             >
                 <HStack>
                     <div style={{ cursor: "pointer" }} onClick={() => setSidePanelCollapsed(!sidePanelCollapsed)} hidden={sm}>
                         {sidePanelCollapsed ? (
-                            <TbLayoutSidebarRightExpandFilled size={35} color="#683309" />
+                            <PiHamburgerFill  size={35} color="#FE6A00" />
                         ) : (
-                            <TbLayoutSidebarLeftExpandFilled size={35} color="#683309" />
+                            <PiHamburgerFill  size={35} color="#fff" />
                         )}
                     </div>
-                    <Text
-                        fontSize={md ? "medium" : "x-large"}
-                        color={"#683309"}
-                        className="font-face-kg"
-                        style={{ cursor: "pointer", margin: "auto 0" }}
-                        onClick={() => router.push("/")}
-                        // hidden={xs}
-                    >
-                        LET&apos;S COOK
-                    </Text>
-
                     <Menu>
                         <MenuButton>
-                            <Badge px={2} py={1} borderRadius={20} bg="rgb(104,51,10, .95)" color="white">
+                            <Badge px={2} py={1} borderRadius={20} color="Black" bg="white">
                                 <HStack spacing={1} alignItems="center">
                                     <Text m={0}>
                                         {selectedNetwork === "mainnet"
@@ -134,18 +121,6 @@ function Navigation() {
                             </MenuItem>
                         </MenuList>
                     </Menu>
-                </HStack>
-
-                <HStack gap={3}>
-                    <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
-                        <div className={styles.sauce}>
-                            <Image height={sm ? 15 : 20} width={sm ? 15 : 20} src="/images/sauce.png" alt="Sauce" />
-                            <Text m={0} fontSize={sm ? "small" : "medium"}>
-                                {currentUserData === null ? 0 : currentUserData.total_points}
-                            </Text>
-                        </div>
-                    </Tooltip>
-
                     <Show breakpoint="(min-width: 1024px)">
                         <HStack>
                             <Link href="https://twitter.com/letscook_sol" target="_blank">
@@ -155,7 +130,6 @@ function Navigation() {
                                     height={30}
                                     alt={"Twitter"}
                                     style={{
-                                        backgroundColor: "#683309",
                                         borderRadius: "50%",
                                         padding: 5,
                                     }}
@@ -169,7 +143,6 @@ function Navigation() {
                                     height={30}
                                     alt={"Discord"}
                                     style={{
-                                        backgroundColor: "#683309",
                                         borderRadius: "50%",
                                         padding: 5,
                                     }}
@@ -177,6 +150,19 @@ function Navigation() {
                             </Link>
                         </HStack>
                     </Show>
+                </HStack>
+                <HStack>
+                    <Image src="/images/letscooknewlogo.png" width={150} height={0} className="w-[50px] md:w-[150px] h-auto" alt="Let's Cook Logo"/>
+                </HStack>
+                <HStack gap={3}>
+                    <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
+                        <div className={styles.sauce} style={{background: "white", color: "black"}}>
+                            <Image height={sm ? 15 : 20} width={sm ? 15 : 20} src="/images/sauce.png" alt="Sauce" />
+                            <Text m={0} fontSize={sm ? "small" : "medium"}>
+                                {currentUserData === null ? 0 : currentUserData.total_points}
+                            </Text>
+                        </div>
+                    </Tooltip>
 
                     <Show breakpoint="(max-width: 1024px)">
                         <Image

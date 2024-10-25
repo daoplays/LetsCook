@@ -1,6 +1,7 @@
 import Head from "next/head";
 import MarketMakingTable from "../components/tables/marketMakingTable";
 import QuickLaunchBanner from "../components/quickLaunchBanner";
+import Image from "next/image";
 
 const Home = () => {
     return (
@@ -9,9 +10,9 @@ const Home = () => {
                 <title>Let&apos;s Cook</title>
             </Head>
 
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
+            <main className="bg-background-index">
                 <QuickLaunchBanner />
-                <MarketMakingTable />
+                <MarketMakingTable/>
             </main>
         </>
     );

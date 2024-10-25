@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
+import { Box, Flex, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -151,30 +151,30 @@ const MarketMakingTable = () => {
     }
 
     return (
-        <Table>
-            <TableHeader>
-                {tableHeaders.map((header) => (
-                    <TableHead className="min-w-[140px] border-b" key={header.text}>
-                        {header.field ? (
-                            <div
-                                onClick={() => header.field && handleSort(header.field)}
-                                className="cursor-pointer flex justify-center font-semibold"
-                            >
-                                {header.text}
-                                <FaSort className="ml-2 h-4 w-4" />
-                            </div>
-                        ) : (
-                            header.text
-                        )}
-                    </TableHead>
-                ))}
-            </TableHeader>
-            <TableBody>
-                {sortedRows.map((launch, i) => (
-                    <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
-                ))}
-            </TableBody>
-        </Table>
+            <Table className="md:w-[90%] rounded-lg">
+                <TableHeader>
+                    {tableHeaders.map((header) => (
+                        <TableHead className="min-w-[140px] border-b" key={header.text}>
+                            {header.field ? (
+                                <div
+                                    onClick={() => header.field && handleSort(header.field)}
+                                    className="flex cursor-pointer justify-center font-semibold"
+                                >
+                                    {header.text}
+                                    <FaSort className="ml-2 h-4 w-4" />
+                                </div>
+                            ) : (
+                                header.text
+                            )}
+                        </TableHead>
+                    ))}
+                </TableHeader>
+                <TableBody>
+                    {sortedRows.map((launch, i) => (
+                        <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
+                    ))}
+                </TableBody>
+            </Table>
     );
 };
 
@@ -207,7 +207,7 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
         <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
             <TableCell className="w-[150px]">
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 rounded-lg overflow-hidden">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
                         <Image
                             alt={`${amm_launch.listing.symbol} icon`}
                             src={amm_launch.mint.icon}

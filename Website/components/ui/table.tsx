@@ -3,8 +3,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(({ className, ...props }, ref) => (
-    <div className="relative w-full overflow-auto">
-        <table ref={ref} className={cn("w-full caption-bottom text-sm bg-gray-900 text-white", className)} {...props} />
+    <div className="relative w-full overflow-auto flex xl:justify-center">
+        <table ref={ref} className={cn("w-full caption-bottom text-sm bg-[#303030] text-white", className)} {...props} />
     </div>
 ));
 Table.displayName = "Table";

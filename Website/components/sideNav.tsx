@@ -102,7 +102,7 @@ const SideNav = () => {
 
     return (
         <VStack
-            bg="url(/images/rough-white.png)"
+            bg="#161616"
             backgroundSize="cover"
             width={sidePanelCollapsed ? "260px" : "fit-content"}
             h="calc(100%)"
@@ -112,6 +112,7 @@ const SideNav = () => {
             pt={50}
             overflowY="auto"
             hidden={sm}
+            color="#FE6A00"
         >
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
@@ -160,9 +161,9 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
         <HStack
             justify={sidePanelCollapsed ? "start" : "center"}
             w="100%"
-            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.15)inset"
-            bg={isActive ? "#683309" : "transparent"}
-            color={isActive ? "white" : "#683309"}
+            boxShadow="0px 0px 14.9px 0px rgba(255, 255, 255, 0.4)inset"
+            color={isActive ? "white" : "white"}
+            className={isActive? "bg-custom-gradient" : "none"}
             cursor={"pointer"}
             borderRadius={8}
             spacing={4}

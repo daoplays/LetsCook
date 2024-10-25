@@ -11,7 +11,14 @@ module.exports = {
     theme: {
         extend: {
             borderRadius: {},
-            colors: {},
+            backgroundImage: {
+                'custom-gradient': ' linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%)',
+                'background-index': ' url(/images/letscooksidenavbg.png), linear-gradient(180deg, rgba(22,22,22,1) 0%, rgba(236,35,0,1) 100%)',
+            },
+            colors: {
+                navigation: '#4e150a',
+                buttonPrimary: '#F9DC81'
+            },
         },
     },
     plugins: [require("tailwindcss-animate")],
