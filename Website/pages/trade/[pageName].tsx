@@ -19,6 +19,8 @@ import {
     RaydiumAMM,
     getAMMKey,
     getAMMKeyFromMints,
+    AMMPluginData,
+    getAMMPlugins,
 } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
@@ -27,7 +29,20 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackAccount } from "@solana/spl-token";
 
-import { HStack, VStack, Text, Box, Tooltip, Link } from "@chakra-ui/react";
+import {
+    HStack,
+    VStack,
+    Text,
+    Box,
+    Tooltip,
+    Link,
+    Modal,
+    ModalBody,
+    ModalContent,
+    Input,
+    ModalOverlay,
+    useDisclosure,
+} from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -46,6 +61,7 @@ import ShowExtensions from "../../components/Solana/extensions";
 import { getSolscanLink } from "../../utils/getSolscanLink";
 import { IoMdSwap } from "react-icons/io";
 import { FaPlusCircle } from "react-icons/fa";
+import styles from "../../styles/Launch.module.css";
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
@@ -56,6 +72,7 @@ import BuyPanel from "../../components/tradePanels/buyPanel";
 import formatPrice from "../../utils/formatPrice";
 import Loader from "../../components/loader";
 import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
+import { toast } from "react-toastify";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -114,7 +131,10 @@ function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
     if (list === null || list === undefined) return null;
     if (amm === null || amm === undefined) return null;
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
+    let plugins : AMMPluginData = getAMMPlugins(amm);
+    if (plugins.trade_reward_first_date === 0) return null;
+
+    let current_date = Math.floor((new Date().getTime() / 1000) / 24 / 60 / 60) - plugins.trade_reward_first_date;
     let key = getAMMKey(amm, amm.provider);
     return list.get(key.toString() + "_" + current_date);
 }
@@ -885,6 +905,83 @@ const TradePage = () => {
     );
 };
 
+const AddRewardModal = ({ amm, isOpen, onClose }: { amm: AMMData; isOpen: boolean; onClose: () => void }) => {
+    const { xs, lg } = useResponsive();
+    const [quantity, setQuantity] = useState<string>("");
+    const { AddTradeRewards } = useAddTradeRewards();
+
+    const handleSubmit = (e) => {
+        let value = parseInt(quantity);
+        if (isNaN(value)) {
+            toast.error("Invalid quantity");
+            return;
+        }
+        if (!amm) {
+            toast.error("Waiting for AMM Data");
+            return;
+        }
+        AddTradeRewards(amm.base_mint.toString(), amm.quote_mint.toString(), value);
+    };
+
+    return (
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} isCentered>
+                <ModalOverlay />
+                <ModalContent
+                    bg="url(/images/square-frame.png)"
+                    bgSize="contain"
+                    bgRepeat="no-repeat"
+                    h={345}
+                    py={xs ? 6 : 12}
+                    px={xs ? 8 : 10}
+                >
+                    <ModalBody>
+                        <VStack align="start" justify={"center"} h="100%" spacing={0} mt={xs ? -8 : 0}>
+                            <Text className="font-face-kg" color="white" fontSize="x-large">
+                                Total Rewards
+                            </Text>
+                            <Input
+                                placeholder={"Enter Total Reward Quantity"}
+                                size={lg ? "md" : "lg"}
+                                maxLength={25}
+                                required
+                                type="text"
+                                value={quantity}
+                                onChange={(e) => setQuantity(e.target.value)}
+                                color="white"
+                            />
+                            <HStack mt={xs ? 6 : 10} justify="end" align="end" w="100%">
+                                <Text
+                                    mr={3}
+                                    align="end"
+                                    fontSize={"medium"}
+                                    style={{
+                                        fontFamily: "KGSummerSunshineBlackout",
+                                        color: "#fc3838",
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={onClose}
+                                >
+                                    Go Back
+                                </Text>
+                                <button
+                                    type="button"
+                                    onClick={async (e) => {
+                                        handleSubmit(e);
+                                    }}
+                                    className={`${styles.nextBtn} font-face-kg`}
+                                >
+                                    Add
+                                </button>
+                            </HStack>
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
+        </>
+    );
+};
+
 const BuyAndSell = ({
     amm,
     base_mint,
@@ -1104,8 +1201,7 @@ const InfoContent = ({
     mm_data: MMLaunchData | null;
 }) => {
     const { lg } = useResponsive();
-
-    const { AddTradeRewards } = useAddTradeRewards();
+    const { isOpen: isRewardsOpen, onOpen: onRewardsOpen, onClose: onRewardsClose } = useDisclosure();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
     let reward = reward_schedule(current_date, amm, base_mint);
@@ -1116,140 +1212,153 @@ const InfoContent = ({
     let market_cap = total_supply * price * sol_price;
     let liquidity = Math.min(market_cap, 2 * (quote_amount / Math.pow(10, 9)) * sol_price);
 
+    let market_cap_string =
+        sol_price === 0
+            ? "--"
+            : market_cap.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              });
+
+    let liquidity_string =
+        sol_price === 0
+            ? "--"
+            : liquidity.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              });
+
     //console.log(price, total_supply, sol_price, quote_amount)
     return (
-        <VStack spacing={8} w="100%" mb={3}>
-            <HStack mt={-2} px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    POOL:
-                </Text>
-                <HStack>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {amm.provider === 0 ? "Let's Cook" : "Raydium"}
-                    </Text>
-
-                    {amm.provider === 0 && <Image src="/favicon.ico" alt="Cook Icon" width={30} height={30} />}
-
-                    {amm.provider === 1 && <Image src="/images/raydium.png" alt="Raydium Icon" width={30} height={30} />}
-                </HStack>
-            </HStack>
-
-            <HStack mt={-2} px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    PRICE:
-                </Text>
-                <HStack>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {formatPrice(price, 5)}
-                    </Text>
-                    <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" />
-                </HStack>
-            </HStack>
-
-            <HStack mt={-2} px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    VOLUME (24H):
-                </Text>
-                <HStack>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {(volume * price).toLocaleString()}
-                    </Text>
-                    <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
-                </HStack>
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <HStack>
+        <>
+            <VStack spacing={8} w="100%" mb={3}>
+                <HStack mt={-2} px={5} justify="space-between" w="100%">
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        SESSION REWARDS:
+                        POOL:
                     </Text>
+                    <HStack>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {amm.provider === 0 ? "Let's Cook" : "Raydium"}
+                        </Text>
+
+                        {amm.provider === 0 && <Image src="/favicon.ico" alt="Cook Icon" width={30} height={30} />}
+
+                        {amm.provider === 1 && <Image src="/images/raydium.png" alt="Raydium Icon" width={30} height={30} />}
+                    </HStack>
+                </HStack>
+
+                <HStack mt={-2} px={5} justify="space-between" w="100%">
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        <FaPlusCircle onClick={() => {}} />
+                        PRICE:
                     </Text>
+                    <HStack>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {formatPrice(price, 5)}
+                        </Text>
+                        <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" />
+                    </HStack>
                 </HStack>
-                <HStack>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {reward.toLocaleString()}
+
+                <HStack mt={-2} px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        VOLUME (24h):
                     </Text>
-                    <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
+                    <HStack>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {(volume * price).toLocaleString()}
+                        </Text>
+                        <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
+                    </HStack>
                 </HStack>
-            </HStack>
 
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    MM SESSION VOLUME:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {mm_data ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
-                </Text>
-            </HStack>
+                <HStack px={5} justify="space-between" w="100%">
+                    <HStack>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            SESSION REWARDS:
+                        </Text>
+                        {reward === -1 && (
+                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                                <FaPlusCircle onClick={() => onRewardsOpen()} />
+                            </Text>
+                        )}
+                    </HStack>
+                    <HStack>
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                            {reward.toLocaleString()}
+                        </Text>
+                        <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
+                    </HStack>
+                </HStack>
 
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    SUPPLY:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    {total_supply.toLocaleString()}
-                </Text>
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    MARKET CAP:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    $
-                    {market_cap.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                    })}
-                </Text>
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    LIQUIDITY:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                    $
-                    {liquidity.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                    })}
-                </Text>
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    HYPE:
-                </Text>
-                <HypeVote
-                    launch_type={0}
-                    launch_id={listing.id}
-                    page_name={""}
-                    positive_votes={listing.positive_votes}
-                    negative_votes={listing.negative_votes}
-                    isTradePage={true}
-                    listing={listing}
-                />
-            </HStack>
-
-            <HStack px={5} justify="space-between" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    SOCIALS:
-                </Text>
-                <Links socials={listing.socials} isTradePage={true} />
-            </HStack>
-
-            {base_mint.extensions && (
                 <HStack px={5} justify="space-between" w="100%">
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        EXTENSIONS:
+                        MM SESSION VOLUME:
                     </Text>
-                    <ShowExtensions extension_flag={base_mint.extensions} />
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {mm_data ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
+                    </Text>
                 </HStack>
-            )}
-        </VStack>
+
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        SUPPLY:
+                    </Text>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        {total_supply.toLocaleString()}
+                    </Text>
+                </HStack>
+
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        MARKET CAP:
+                    </Text>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        ${market_cap_string}
+                    </Text>
+                </HStack>
+
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        LIQUIDITY:
+                    </Text>
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                        ${liquidity_string}
+                    </Text>
+                </HStack>
+
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        HYPE:
+                    </Text>
+                    <HypeVote
+                        launch_type={0}
+                        launch_id={listing.id}
+                        page_name={""}
+                        positive_votes={listing.positive_votes}
+                        negative_votes={listing.negative_votes}
+                        isTradePage={true}
+                        listing={listing}
+                    />
+                </HStack>
+
+                <HStack px={5} justify="space-between" w="100%">
+                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                        SOCIALS:
+                    </Text>
+                    <Links socials={listing.socials} isTradePage={true} />
+                </HStack>
+
+                {base_mint.extensions && (
+                    <HStack px={5} justify="space-between" w="100%">
+                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
+                            EXTENSIONS:
+                        </Text>
+                        <ShowExtensions extension_flag={base_mint.extensions} />
+                    </HStack>
+                )}
+            </VStack>
+            <AddRewardModal amm={amm} isOpen={isRewardsOpen} onClose={onRewardsClose} />
+        </>
     );
 };
 

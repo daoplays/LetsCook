@@ -77,34 +77,27 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
         return 0.0;
     }
 
-    for (let i = 0; i < amm.plugins.length; i++) {
-        if (amm.plugins[i]["TradeToEarn"]) {
-            let amm_plugin = amm.plugins[i]["TradeToEarn"];
-            let mm_amount = Number(amm_plugin["total_tokens"] / Math.pow(10, mint.mint.decimals));
-            if (date < 10) {
-                return 0.05 * mm_amount;
-            }
-            if (date >= 10 && date < 20) {
-                return 0.03 * mm_amount;
-            }
-            if (date >= 20 && date < 30) {
-                return 0.02 * mm_amount;
-            }
-            return 0.0;
-        }
+    let plugins :AMMPluginData = getAMMPlugins(amm);
+    if (plugins.trade_reward_tokens === 0) {
+        return 0.0;
     }
-
+    
+    let mm_amount = Number(plugins.trade_reward_tokens / Math.pow(10, mint.mint.decimals));
+    let first_date = plugins.trade_reward_first_date
+    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let date_delta = current_date - first_date;
+    if (date_delta < 10) {
+        return 0.05 * mm_amount;
+    }
+    if (date_delta >= 10 && date_delta < 20) {
+        return 0.03 * mm_amount;
+    }
+    if (date_delta >= 20 && date_delta < 30) {
+        return 0.02 * mm_amount;
+    }
     return 0.0;
-}
+       
 
-export function MM_reward_schedule(date: number, total_rewards: number): number {
-    if (date < 0 || date >= 30) return 0;
-
-    if (date < 10) return 0.05 * total_rewards;
-
-    if (date >= 10 && date < 20) return 0.03 * total_rewards;
-
-    if (date >= 20 && date < 30) return 0.02 * total_rewards;
 }
 
 export class OHLCV {
@@ -147,8 +140,49 @@ export class TimeSeriesData {
     );
 }
 
+export interface AMMPluginData {
+    // trade rewards
+    trade_reward_tokens: bignum;
+    trade_reward_first_date: number;
+    trade_reward_last_date: number;
+
+    //liquidity plugin
+    liquidity_scalar: number;
+    liquidity_threshold: bignum;
+    liquidity_active: number;
+}
+
+export function getAMMPlugins(amm: AMMData): AMMPluginData {
+    const initialData: AMMPluginData = {
+        trade_reward_tokens: 0,
+        trade_reward_first_date: 0,
+        trade_reward_last_date: 0,
+        liquidity_scalar: 0,
+        liquidity_threshold: 0,
+        liquidity_active: 0,
+    };
+
+    return amm.plugins.reduce((acc, plugin) => {
+        switch (plugin["__kind"]) {
+            case "TradeToEarn":
+                acc.trade_reward_tokens = plugin["total_tokens"];
+                acc.trade_reward_first_date = plugin["first_reward_date"];
+                acc.trade_reward_last_date = plugin["last_reward_date"];
+                break;
+            case "LiquidityScaling":
+                acc.liquidity_scalar = plugin["scalar"];
+                acc.liquidity_threshold = plugin["threshold"];
+                acc.liquidity_active = plugin["active"];
+                break;
+            default:
+                break;
+        }
+        return acc;
+    }, initialData);
+}
+
 type AMMPluginEnum = {
-    TradeToEarn: { total_tokens: bignum; last_reward_date: number };
+    TradeToEarn: { total_tokens: bignum; first_reward_date: number; last_reward_date: number };
     LiquidityScaling: { scalar: number; threshold: bignum; active: number };
 };
 type AMMPlugin = DataEnumKeyAsKind<AMMPluginEnum>;
@@ -159,6 +193,7 @@ const ammPluginBeet = dataEnum<AMMPluginEnum>([
         new BeetArgsStruct<AMMPluginEnum["TradeToEarn"]>(
             [
                 ["total_tokens", u64],
+                ["first_reward_date", u32],
                 ["last_reward_date", u32],
             ],
             'AMMPluginEnum["TradeToEarn"]',

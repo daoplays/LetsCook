@@ -82,8 +82,7 @@ const BuyPanel = ({
     console.log(amm_base_balance, amm_quote_balance);
     let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
     let base_no_slip = sol_amount / price;
-    let slippage = base_no_slip / (base_output/liquidity_factor) - 1;
-
+    let slippage = base_no_slip / (base_output / liquidity_factor) - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";

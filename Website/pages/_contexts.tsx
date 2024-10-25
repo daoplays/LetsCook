@@ -83,8 +83,8 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
 async function getTokenPrices(mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>): Promise<void> {
     const priceMap = new Map<string, number>();
 
-    // Don't bother doing this on devnet
-    if (!Config.PROD) {
+    // Don't bother doing this is not solana mainnet
+    if (!(Config.NETWORK == "mainnet")) {
         mints.forEach((mint) => priceMap.set(mint, 0));
         setPriceMap(priceMap);
         return;
@@ -129,6 +129,7 @@ async function getTokenPrices(mints: string[], setPriceMap: Dispatch<SetStateAct
         mints.forEach((mint) => priceMap.set(mint, 0));
         setPriceMap(priceMap);
     }
+
 }
 
 const BATCH_SIZE = 100; // Solana's maximum batch size for getMultipleAccountsInfo
@@ -523,7 +524,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     amm_data.set(amm_key.toString(), amm);
                     //console.log("AMM", amm.provider, amm.base_mint.toString());
                 } catch (error) {
-                    console.log(error);
+                    console.log("bad amm data", program_data[i].pubkey.toString());
+                    //console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
                 }
 
