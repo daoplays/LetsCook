@@ -77,27 +77,27 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
         return 0.0;
     }
 
-    for (let i = 0; i < amm.plugins.length; i++) {
-        if (amm.plugins[i]["__kind"] == "TradeToEarn") {
-            let amm_plugin = amm.plugins[i];
-            let mm_amount = Number(amm_plugin["total_tokens"] / Math.pow(10, mint.mint.decimals));
-            let first_date = amm_plugin["first_reward_date"];
-            let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-            let date_delta = current_date - first_date;
-            if (date_delta < 10) {
-                return 0.05 * mm_amount;
-            }
-            if (date_delta >= 10 && date_delta < 20) {
-                return 0.03 * mm_amount;
-            }
-            if (date_delta >= 20 && date_delta < 30) {
-                return 0.02 * mm_amount;
-            }
-            return 0.0;
-        }
+    let plugins :AMMPluginData = getAMMPlugins(amm);
+    if (plugins.trade_reward_tokens === 0) {
+        return 0.0;
     }
-
+    
+    let mm_amount = Number(plugins.trade_reward_tokens / Math.pow(10, mint.mint.decimals));
+    let first_date = plugins.trade_reward_first_date
+    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let date_delta = current_date - first_date;
+    if (date_delta < 10) {
+        return 0.05 * mm_amount;
+    }
+    if (date_delta >= 10 && date_delta < 20) {
+        return 0.03 * mm_amount;
+    }
+    if (date_delta >= 20 && date_delta < 30) {
+        return 0.02 * mm_amount;
+    }
     return 0.0;
+       
+
 }
 
 export class OHLCV {

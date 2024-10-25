@@ -19,6 +19,8 @@ import {
     RaydiumAMM,
     getAMMKey,
     getAMMKeyFromMints,
+    AMMPluginData,
+    getAMMPlugins,
 } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
@@ -129,7 +131,10 @@ function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
     if (list === null || list === undefined) return null;
     if (amm === null || amm === undefined) return null;
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
+    let plugins : AMMPluginData = getAMMPlugins(amm);
+    if (plugins.trade_reward_first_date === 0) return null;
+
+    let current_date = Math.floor((new Date().getTime() / 1000) / 24 / 60 / 60) - plugins.trade_reward_first_date;
     let key = getAMMKey(amm, amm.provider);
     return list.get(key.toString() + "_" + current_date);
 }
