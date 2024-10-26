@@ -1,6 +1,6 @@
 .inputBox {
     /* width: 100%; */
-    font-family: "ChalkBoard";
+    font-family: "Kufam", sans-serif;
 }
 label.label input[type="file"] {
     display: none;
@@ -11,7 +11,7 @@ label.label input[type="file"] {
     font-family: "ChalkBoard";
 } */
 .browse {
-    font-family: "KGSummerSunshineBlackout";
+    font-family: "Kufam", sans-serif;
 }
 .inputBox::file-selector-button {
     color: #683309;
@@ -187,16 +187,16 @@ label.label input[type="file"] {
     width: 100%;
 }
 .browse {
-    color: #683309;
-    background-image: url(../public/images/Wood\ Panel.png);
+    color: white;
+    background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
     background-size: cover;
     padding: 10px;
     font-size: 20px;
     border-radius: 5px;
 }
 .nextBtn {
-    color: #683309;
-    background-image: url(../public/images/Wood\ Panel.png);
+    color: white;
+    background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
     background-size: cover;
     padding: 10px 20px;
     font-size: 20px;
@@ -211,7 +211,7 @@ label.label input[type="file"] {
 @media screen and (max-width: 1000px) {
     .inputBox {
         /* width: 100%; */
-        font-family: "ChalkBoard";
+    font-family: "Kufam", sans-serif;
     }
 
     .launchBody {
@@ -364,8 +364,8 @@ label.label input[type="file"] {
         width: 100%;
     }
     .browse {
-        color: #683309;
-        background-image: url(../public/images/Wood\ Panel.png);
+        color: white;
+        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
         background-size: cover;
         padding: 10px;
         font-size: 20px;
@@ -401,7 +401,7 @@ label.label input[type="file"] {
 @media screen and (max-width: 1000px) {
     .inputBox {
         /* width: 100%; */
-        font-family: "ChalkBoard";
+    font-family: "Kufam", sans-serif;
     }
 
     .launchBody {
@@ -554,8 +554,8 @@ label.label input[type="file"] {
         width: 100%;
     }
     .browse {
-        color: #683309;
-        background-image: url(../public/images/Wood\ Panel.png);
+        color: white;
+        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
         background-size: cover;
         padding: 10px;
         font-size: 20px;

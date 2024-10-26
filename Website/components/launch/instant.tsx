@@ -165,12 +165,12 @@ const LaunchPage = () => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} height="100%" width="100%">
+        <Center height="100%" width="100%">
             <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
-                    INSTANT LAUNCH
+                <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="xxx-large">
+                    QUICK LAUNCH
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030]">
                     <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (

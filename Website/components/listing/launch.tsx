@@ -404,9 +404,6 @@ const CreateListing = () => {
 
     return (
         <Center
-            style={{
-                background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)",
-            }}
             width="100%"
         >
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>

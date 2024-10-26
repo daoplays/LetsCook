@@ -21,6 +21,7 @@ import convertImageURLToFile from "../../utils/convertImageToBlob";
 import * as NProgress from "nprogress";
 import formatPrice from "../../utils/formatPrice";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 interface Header {
     text: string;
     field: string | null;
@@ -45,46 +46,27 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
     ];
 
     return (
-        <TableContainer w="100%">
-            <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "50px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                    >
-                        {tableHeaders.map((i) => (
-                            <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
-                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                        {i.text}
-                                    </Text>
-                                    {i.text === "LOGO" ? <></> : <FaSort />}
-                                </HStack>
-                            </th>
-                        ))}
-
-                        <th>
-                            <Box mt={1} as="button">
-                                <TfiReload size={sm ? 18 : 20} />
-                            </Box>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {collectionList.map((launch) => (
-                        <LaunchCard key={launch.page_name} launch={launch} />
-                    ))}
-                </tbody>
-            </table>
-        </TableContainer>
+        <Table className="rounded-lg xl:w-[90%]">
+            <TableHeader>
+                {tableHeaders.map((header) => (
+                    <TableHead className="min-w-[140px] border-b" key={header.text}>
+                        {header.field ? (
+                            <div onClick={() => header.field} className="flex justify-center font-semibold cursor-pointer">
+                                {header.text}
+                                <FaSort className="w-4 h-4 ml-2" />
+                            </div>
+                        ) : (
+                            header.text
+                        )}
+                    </TableHead>
+                ))}
+            </TableHeader>
+            <TableBody>
+                {collectionList.map((launch, i) => (
+                    <LaunchCard key={launch.page_name} launch={launch} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };
 
@@ -124,12 +106,13 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         return <></>;
     }
     return (
-        <tr
+        <TableRow
             style={{
                 cursor: "pointer",
                 height: "60px",
                 transition: "background-color 0.3s",
             }}
+            className="border-b"
             onMouseOver={(e) => {
                 e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
             }}
@@ -141,7 +124,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 router.push(`/collection/` + launch.page_name);
             }}
         >
-            <td style={{ minWidth: "160px" }}>
+            <TableCell style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10} style={{ minWidth: "45px" }}>
                         <Image
@@ -156,8 +139,8 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                         {launch.collection_name}
                     </Text>
                 </HStack>
-            </td>
-            <td style={{ minWidth: "160px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
@@ -168,12 +151,12 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                             style={{ borderRadius: "8px", backgroundSize: "cover" }}
                         />
                     </Box>
-                    <Text fontSize={"large"} m={0}>
+                    <Text fontSize={"large"} m={0} wordBreak={"break-all"}>
                         {launch.token_symbol}
                     </Text>
                 </HStack>
-            </td>
-            <td style={{ minWidth: "150px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={1}
                     launch_id={launch.launch_id}
@@ -183,23 +166,23 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     isTradePage={false}
                     listing={null}
                 />
-            </td>
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: sm ? "170px" : "200px" }}>
                 <Text fontSize={"large"} m={0}>
                     {formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3)}
                 </Text>
-            </td>
-            <td style={{ minWidth: "150px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {plugin_data.mintOnly ? "--" : launch.swap_fee / 100}{" "}
                 </Text>
-            </td>
-            <td style={{ minWidth: "170px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "170px" }}>
                 <Text fontSize={"large"} m={0}>
                     {launch.total_supply}
                 </Text>
-            </td>
-            <td style={{ minWidth: "100px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "100px" }}>
                 {launch.description !== "" ? (
                     <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>
                         View
@@ -209,8 +192,8 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                         Edit
                     </Button>
                 )}
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 

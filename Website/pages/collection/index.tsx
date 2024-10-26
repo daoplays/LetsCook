@@ -10,7 +10,7 @@ import CollectionPage from "../../components/collection/collectionPage";
 const CollectionLaunch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
-    const [screen, setScreen] = useState("step 1");
+    const [screen, setScreen] = useState("step 4");
 
     return (
         <>
@@ -19,7 +19,6 @@ const CollectionLaunch = () => {
             </Head>
             <main
                 style={{
-                    background: "linear-gradient(180deg, #292929 20%, #0B0B0B 100%)",
                     height: "100%",
                     paddingTop: lg ? "25px" : "50px",
                 }}

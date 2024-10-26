@@ -2,7 +2,6 @@ import Head from "next/head";
 import MarketMakingTable from "../components/tables/marketMakingTable";
 import QuickLaunchBanner from "../components/quickLaunchBanner";
 import Image from "next/image";
-
 const Home = () => {
     return (
         <>
@@ -10,9 +9,9 @@ const Home = () => {
                 <title>Let&apos;s Cook</title>
             </Head>
 
-            <main className="bg-background-index">
+            <main>
                 <QuickLaunchBanner />
-                <MarketMakingTable/>
+                <MarketMakingTable />
             </main>
         </>
     );

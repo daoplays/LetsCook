@@ -28,6 +28,7 @@ import WoodenButton from "../components/Buttons/woodenButton";
 import UseWalletConnection from "../hooks/useWallet";
 import Image from "next/image";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 interface Header {
     text: string;
     field: string | null;
@@ -104,45 +105,30 @@ const LeaderboardPage = () => {
 
         return (
             <>
-                <TableContainer>
-                    <table
-                        width="100%"
-                        className="custom-centered-table font-face-rk"
-                        style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 120%)" }}
-                    >
-                        <thead>
-                            <tr
-                                style={{
-                                    height: "50px",
-                                    borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                                    borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                                }}
-                            >
-                                {tableHeaders.map((i) => (
-                                    <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                        <HStack
-                                            gap={sm ? 1 : 2}
-                                            justify="center"
-                                            style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
-                                            onClick={() => handleHeaderClick(i.field)}
-                                        >
-                                            <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                                {i.text}
-                                            </Text>
-                                            {i.text === "RANK" ? <></> : <FaSort />}
-                                        </HStack>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {sortedUsers.map((user, i) => {
-                                return <UserCard key={user.user_key.toString()} rank_sorted={rank_sorted} user={user} index={i} />;
-                            })}
-                        </tbody>
-                    </table>
-                </TableContainer>
+                <Table className="rounded-lg xl:w-[90%]">
+                    <TableHeader>
+                        {tableHeaders.map((i) => (
+                            <TableHead key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
+                                <HStack
+                                    gap={sm ? 1 : 2}
+                                    justify="center"
+                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
+                                    onClick={() => handleHeaderClick(i.field)}
+                                >
+                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
+                                        {i.text}
+                                    </Text>
+                                    {i.text === "RANK" ? <></> : <FaSort />}
+                                </HStack>
+                            </TableHead>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                        {sortedUsers.map((user, i) => {
+                            return <UserCard key={user.user_key.toString()} rank_sorted={rank_sorted} user={user} index={i} />;
+                        })}
+                    </TableBody>
+                </Table>
             </>
         );
     };
@@ -154,20 +140,20 @@ const LeaderboardPage = () => {
         const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
 
         return (
-            <tr style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
-                <td>
+            <TableRow style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
+                <TableCell>
                     <Text fontSize={"large"} m={0} color={isUser ? "yellow" : "white"}>
                         {rank}
                     </Text>
-                </td>
-                <td>
+                </TableCell>
+                <TableCell>
                     <Text fontSize={"large"} my={6} color={isUser ? "yellow" : "white"}>
                         {user.user_name !== "" ? user.user_name : user.user_key.toString()}
                     </Text>
-                </td>
+                </TableCell>
 
-                <td style={{ minWidth: "160px" }}>
-                    <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
+                <TableCell style={{ minWidth: "160px" }}>
+                    <HStack m="0 auto" w={160} px={3} spacing={3} justify="center">
                         <Box w={35} h={35} borderRadius={10} style={{ minWidth: "35px" }}>
                             <Image
                                 alt="Sauce icon"
@@ -181,8 +167,8 @@ const LeaderboardPage = () => {
                             {user.total_points.toString()}
                         </Text>
                     </HStack>
-                </td>
-            </tr>
+                </TableCell>
+            </TableRow>
         );
     };
 
@@ -273,7 +259,7 @@ const LeaderboardPage = () => {
                                     }}
                                     onClick={onClose}
                                 >
-                                    Go Back
+                                    GO BACK
                                 </Text>
                                 <button
                                     type="button"

@@ -58,7 +58,7 @@ const tabs = {
 
     profile: [
         {
-            icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
+            icon: (size: number) => <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} />,
             tab: "My Tickets",
             url: "/bags",
         },
@@ -112,34 +112,34 @@ const SideNav = () => {
             pt={50}
             overflowY="auto"
             hidden={sm}
-            color="#FE6A00"
+            color="#fa771a"
         >
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Create
                     </Text>
                     {tabs.create.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Trade
                     </Text>
                     {tabs.trade.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Info
                     </Text>
                     {tabs.info.map(({ tab, icon, url }, i) => (

@@ -248,12 +248,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+        <Center width="100%" h="100%">
             <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }} className="bg-[#303030] mt-4 rounded-md py-4">
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (

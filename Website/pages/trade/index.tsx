@@ -1,5 +1,5 @@
 import { Text, Box, HStack, Flex } from "@chakra-ui/react";
-import { useState } from "react";
+import {useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import MarketMakingTable from "../../components/tables/marketMakingTable";

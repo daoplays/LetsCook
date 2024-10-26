@@ -226,12 +226,12 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const { isOpen: isEndOpen, onToggle: onToggleEnd, onClose: OnCloseEnd } = useDisclosure();
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+        <Center width="100%">
             <VStack pb={150} w="100%">
-                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text mb={8} align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
                     Book Token Raffle
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }}  className="bg-[#303030] rounded-md pb-4">
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
                         <HStack spacing={15} w="100%" className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
@@ -440,7 +440,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     }}
                                     className={`${styles.nextBtn} font-face-kg `}
                                 >
-                                    Go Back
+                                    GO BACK
                                 </button>
                                 <button
                                     type="button"

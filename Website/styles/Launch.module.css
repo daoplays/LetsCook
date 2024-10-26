@@ -1,17 +1,21 @@
 .imgFrame {
     width: 250px;
 }
+
 label.label input[type="file"] {
     display: none;
 }
+
 .inputBox {
     width: 100%;
     font-size: 20px;
-    font-family: "ChalkBoard";
+    font-family: "Kufam", sans-serif;
 }
+
 .browse {
-    font-family: "KGSummerSunshineBlackout";
+    font-family: "Kufam", sans-serif;
 }
+
 .pieChartColumn {
     display: flex;
     justify-content: space-between;
@@ -19,9 +23,12 @@ label.label input[type="file"] {
     flex-direction: row;
     width: 100%;
 }
+
 .inputBox::placeholder {
-    color: #a8a7a7; /* Change this to your desired color */
-    opacity: 1; /* Optional: change opacity */
+    color: #a8a7a7;
+    /* Change this to your desired color */
+    opacity: 1;
+    /* Optional: change opacity */
 }
 
 .inputBox::file-selector-button {
@@ -33,9 +40,11 @@ label.label input[type="file"] {
     border-radius: 5px;
     font-family: "KGSummerSunshineBlackout";
 }
+
 .inputBox::file-selector-button::after {
     opacity: 0 !important;
 }
+
 .launchBody {
     display: flex;
     justify-content: center;
@@ -45,11 +54,13 @@ label.label input[type="file"] {
     gap: 20px;
     z-index: 0;
 }
+
 .pieChart {
     width: 400px;
     margin-top: 40px;
     /* margin-left: 100px; */
 }
+
 .launchBodyUpper {
     display: flex;
     justify-content: flex-start;
@@ -58,6 +69,7 @@ label.label input[type="file"] {
     width: 100%;
     gap: 50px;
 }
+
 .launchBodyUpperFields {
     display: flex;
     justify-content: flex-start;
@@ -66,6 +78,7 @@ label.label input[type="file"] {
     gap: 40px;
     width: 100%;
 }
+
 .eachField {
     display: flex;
     justify-content: flex-start;
@@ -76,15 +89,18 @@ label.label input[type="file"] {
     text-transform: capitalize !important;
     width: 100%;
 }
+
 .textLabelInput {
     position: relative;
     width: 100%;
 }
-.textLabelInput input {
-}
+
+.textLabelInput input {}
+
 .textLabelInputamms {
     position: relative;
 }
+
 .textLabelInputamms input {
     position: relative;
     background-color: #494949;
@@ -94,6 +110,7 @@ label.label input[type="file"] {
     border-radius: 5px;
     color: white;
 }
+
 .textLabelInput input {
     position: relative;
     background-color: #494949;
@@ -104,14 +121,17 @@ label.label input[type="file"] {
     color: white;
     width: 100%;
 }
+
 .distributionField {
     position: relative;
     color: white;
 }
+
 .distributionField input {
     position: relative;
     color: white;
 }
+
 .sol {
     position: absolute;
     right: 5px;
@@ -120,6 +140,7 @@ label.label input[type="file"] {
     width: 30px;
     height: auto;
 }
+
 .percentage {
     position: absolute;
     right: 5px;
@@ -127,6 +148,7 @@ label.label input[type="file"] {
     transform: translateY(-50%);
     height: auto;
 }
+
 .launchBodyLower {
     display: flex;
     justify-content: flex-start;
@@ -135,6 +157,7 @@ label.label input[type="file"] {
     gap: 40px;
     width: 100%;
 }
+
 .launchBodyLowerHorizontal {
     display: flex;
     justify-content: flex-start;
@@ -143,6 +166,7 @@ label.label input[type="file"] {
     flex-direction: row;
     gap: 20px;
 }
+
 .distributionBox {
     display: flex;
     justify-content: space-between;
@@ -150,11 +174,13 @@ label.label input[type="file"] {
     flex-direction: row;
     width: 100%;
 }
+
 .textLabel2 {
     font-family: "ReemKufiRegular";
     font-size: 25px;
     color: white;
 }
+
 .distributionBoxFields {
     display: flex;
     justify-content: flex-start;
@@ -162,6 +188,7 @@ label.label input[type="file"] {
     flex-direction: column;
     gap: 20px;
 }
+
 .distributionBoxEachFields {
     display: flex;
     justify-content: flex-start;
@@ -169,6 +196,7 @@ label.label input[type="file"] {
     flex-direction: row;
     gap: 10px;
 }
+
 .help {
     position: fixed;
     top: 70px;
@@ -176,6 +204,7 @@ label.label input[type="file"] {
     width: 40px;
     z-index: 100;
 }
+
 .distributionField input {
     background-color: #494949;
     box-shadow: none;
@@ -184,45 +213,53 @@ label.label input[type="file"] {
     border-radius: 5px;
     color: white;
 }
+
 .colorBox1 {
     background-color: #ff5151;
     width: 50px;
     height: 30px;
 }
+
 .colorBox2 {
     background-color: #489cff;
     width: 50px;
     height: 30px;
 }
+
 .colorBox3 {
     background-color: #74dd5a;
     width: 50px;
     height: 30px;
 }
+
 .colorBox4 {
     background-color: #ffef5e;
     width: 50px;
     height: 30px;
 }
+
 .colorBox5 {
     background-color: #b96cf6;
     width: 50px;
     height: 30px;
 }
+
 .colorBox6 {
     background-color: #ff994e;
     width: 50px;
     height: 30px;
 }
+
 .browse {
-    color: #683309;
-    background-image: url(../public/images/Wood\ Panel.png);
+    color: white;
+    background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
     background-size: cover;
     border-radius: 5px;
 }
+
 .nextBtn {
-    color: #683309;
-    background-image: url(../public/images/Wood\ Panel.png);
+    color: white;
+    background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
     background-size: cover;
     padding: 10px 20px;
     font-size: 20px;
@@ -233,9 +270,11 @@ label.label input[type="file"] {
     .imgFrame {
         width: 250px;
     }
+
     .inputBox {
         width: 100%;
     }
+
     .launchBody {
         display: flex;
         justify-content: center;
@@ -246,6 +285,7 @@ label.label input[type="file"] {
         margin-top: 20px;
         margin-bottom: 50px;
     }
+
     .launchBodyUpper {
         display: flex;
         justify-content: flex-start;
@@ -254,6 +294,7 @@ label.label input[type="file"] {
         width: 100%;
         gap: 50px;
     }
+
     .launchBodyUpperFields {
         display: flex;
         justify-content: flex-start;
@@ -262,6 +303,7 @@ label.label input[type="file"] {
         gap: 40px;
         width: 100%;
     }
+
     .eachField {
         display: flex;
         justify-content: flex-start;
@@ -269,6 +311,7 @@ label.label input[type="file"] {
         gap: 20px;
         width: 100%;
     }
+
     .textLabel {
         font-size: 12px;
         color: white;
@@ -276,10 +319,12 @@ label.label input[type="file"] {
         text-transform: capitalize !important;
         color: white !important;
     }
+
     .textLabelInput {
         position: relative;
         width: 100%;
     }
+
     .textLabelInput input {
         position: relative;
         background-color: #494949;
@@ -290,12 +335,15 @@ label.label input[type="file"] {
         color: white;
         width: 100%;
     }
+
     .distributionField {
         position: relative;
     }
+
     .distributionField input {
         position: relative;
     }
+
     .sol {
         position: absolute;
         right: 5px;
@@ -304,6 +352,7 @@ label.label input[type="file"] {
         width: 30px;
         height: auto;
     }
+
     .percentage {
         position: absolute;
         right: 5px;
@@ -311,6 +360,7 @@ label.label input[type="file"] {
         transform: translateY(-50%);
         height: auto;
     }
+
     .launchBodyLower {
         display: flex;
         justify-content: flex-start;
@@ -319,6 +369,7 @@ label.label input[type="file"] {
         gap: 40px;
         width: 100%;
     }
+
     .launchBodyLowerHorizontal {
         display: flex;
         justify-content: flex-start;
@@ -327,6 +378,7 @@ label.label input[type="file"] {
         flex-direction: column;
         gap: 20px;
     }
+
     .distributionBox {
         display: flex;
         justify-content: center;
@@ -334,6 +386,7 @@ label.label input[type="file"] {
         flex-direction: column;
         width: 100%;
     }
+
     .distributionBoxFields {
         display: flex;
         justify-content: flex-start;
@@ -350,6 +403,7 @@ label.label input[type="file"] {
         gap: 10px;
         font-family: "ReemKufiRegular" !important;
     }
+
     .distributionField input {
         background-color: #494949;
         box-shadow: none;
@@ -359,44 +413,52 @@ label.label input[type="file"] {
         color: white;
         width: 100px;
     }
+
     .colorBox1 {
         background-color: #ff5151;
         width: 50px;
         height: 30px;
     }
+
     .colorBox2 {
         background-color: #489cff;
         width: 50px;
         height: 30px;
     }
+
     .colorBox3 {
         background-color: #74dd5a;
         width: 50px;
         height: 30px;
     }
+
     .colorBox4 {
         background-color: #ffef5e;
         width: 50px;
         height: 30px;
     }
+
     .colorBox5 {
         background-color: #b96cf6;
         width: 50px;
         height: 30px;
     }
+
     .colorBox6 {
         background-color: #ff994e;
         width: 50px;
         height: 30px;
     }
+
     .browse {
-        color: #683309;
-        background-image: url(../public/images/Wood\ Panel.png);
+        color: white;
+        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
         background-size: cover;
         padding: 10px;
         font-size: 20px;
         border-radius: 5px;
     }
+
     .nextBtn {
         color: #683309;
         background-image: url(../public/images/Wood\ Panel.png);
@@ -405,6 +467,7 @@ label.label input[type="file"] {
         font-size: 20px;
         border-radius: 5px;
     }
+
     .piechart {
         display: flex;
         justify-content: center;
@@ -412,6 +475,7 @@ label.label input[type="file"] {
         width: 100%;
         margin-top: 20px;
     }
+
     .help {
         position: fixed;
         top: 120px;
@@ -419,10 +483,12 @@ label.label input[type="file"] {
         width: 40px;
         z-index: 100;
     }
+
     .textLabel2 {
         font-family: "ReemKufiRegular";
         font-size: 20px;
     }
+
     .pieChartColumn {
         display: flex;
         justify-content: center;
@@ -430,6 +496,7 @@ label.label input[type="file"] {
         flex-direction: column;
         width: 100%;
     }
+
     .pieChart {
         width: 100%;
         margin-top: 40px;
