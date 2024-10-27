@@ -108,18 +108,18 @@ const LeaderboardPage = () => {
                 <Table className="rounded-lg xl:w-[90%]">
                     <TableHeader>
                         {tableHeaders.map((i) => (
-                            <TableHead key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack
-                                    gap={sm ? 1 : 2}
-                                    justify="center"
-                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
-                                    onClick={() => handleHeaderClick(i.field)}
-                                >
-                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
+                            <TableHead className="min-w-[140px] border-b" key={i.text}>
+                                {i.field ? (
+                                    <div
+                                        onClick={() => handleHeaderClick(i.field)}
+                                        className="flex justify-center font-semibold cursor-pointer"
+                                    >
                                         {i.text}
-                                    </Text>
-                                    {i.text === "RANK" ? <></> : <FaSort />}
-                                </HStack>
+                                        {i.text === "RANK" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
+                                    </div>
+                                ) : (
+                                    i.text
+                                )}
                             </TableHead>
                         ))}
                     </TableHeader>
@@ -141,32 +141,16 @@ const LeaderboardPage = () => {
 
         return (
             <TableRow style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
-                <TableCell>
-                    <Text fontSize={"large"} m={0} color={isUser ? "yellow" : "white"}>
-                        {rank}
-                    </Text>
-                </TableCell>
-                <TableCell>
-                    <Text fontSize={"large"} my={6} color={isUser ? "yellow" : "white"}>
-                        {user.user_name !== "" ? user.user_name : user.user_key.toString()}
-                    </Text>
-                </TableCell>
+                <TableCell>{rank}</TableCell>
+                <TableCell>{user.user_name !== "" ? user.user_name : user.user_key.toString()}</TableCell>
 
                 <TableCell style={{ minWidth: "160px" }}>
-                    <HStack m="0 auto" w={160} px={3} spacing={3} justify="center">
-                        <Box w={35} h={35} borderRadius={10} style={{ minWidth: "35px" }}>
-                            <Image
-                                alt="Sauce icon"
-                                src={"/images/sauce.png"}
-                                width={35}
-                                height={35}
-                                style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                            />
-                        </Box>
-                        <Text fontSize={"large"} m={0} color={isUser ? "yellow" : "white"}>
-                            {user.total_points.toString()}
-                        </Text>
-                    </HStack>
+                    <div className="flex items-center justify-center gap-3 px-4">
+                        <div className="w-10 h-10 overflow-hidden rounded-lg">
+                            <Image alt="Sauce icon" src={"/images/sauce.png"} width={48} height={48} className="object-cover" />
+                        </div>
+                        <span className="font-semibold">{user.total_points.toString()}</span>
+                    </div>
                 </TableCell>
             </TableRow>
         );

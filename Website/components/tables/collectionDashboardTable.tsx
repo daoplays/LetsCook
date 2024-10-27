@@ -125,36 +125,20 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             }}
         >
             <TableCell style={{ minWidth: "160px" }}>
-                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
-                    <Box w={45} h={45} borderRadius={10} style={{ minWidth: "45px" }}>
-                        <Image
-                            alt="Launch icon"
-                            src={launch.collection_icon_url}
-                            width={45}
-                            height={45}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                    <Text fontSize={"large"} m={0}>
-                        {launch.collection_name}
-                    </Text>
-                </HStack>
+                <div className="flex items-center gap-3 px-4">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
+                        <Image alt={"Launch icon"} src={launch.collection_icon_url} width={48} height={48} className="object-cover" />
+                    </div>
+                    <span className="font-semibold">{launch.collection_name}</span>
+                </div>
             </TableCell>
             <TableCell style={{ minWidth: "160px" }}>
-                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
-                    <Box w={45} h={45} borderRadius={10}>
-                        <Image
-                            alt="Launch icon"
-                            src={token_mint.icon}
-                            width={45}
-                            height={45}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                    <Text fontSize={"large"} m={0} wordBreak={"break-all"}>
-                        {launch.token_symbol}
-                    </Text>
-                </HStack>
+                <div className="flex items-center gap-3 px-4">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
+                        <Image alt="Launch icon" src={token_mint.icon} width={48} height={48} className="object-cover" />
+                    </div>
+                    <span className="font-semibold">{launch.token_symbol}</span>
+                </div>
             </TableCell>
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
@@ -168,20 +152,10 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                 />
             </TableCell>
             <TableCell style={{ minWidth: sm ? "170px" : "200px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3)}
-                </Text>
+                {formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3)}
             </TableCell>
-            <TableCell style={{ minWidth: "150px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {plugin_data.mintOnly ? "--" : launch.swap_fee / 100}{" "}
-                </Text>
-            </TableCell>
-            <TableCell style={{ minWidth: "170px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {launch.total_supply}
-                </Text>
-            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>{plugin_data.mintOnly ? "--" : launch.swap_fee / 100} </TableCell>
+            <TableCell style={{ minWidth: "170px" }}>{launch.total_supply}</TableCell>
             <TableCell style={{ minWidth: "100px" }}>
                 {launch.description !== "" ? (
                     <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>

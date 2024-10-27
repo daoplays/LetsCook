@@ -251,9 +251,9 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         <Center width="100%" h="100%">
             <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
                 <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
-                    Collection Info:
+                    New Collection:
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="bg-[#303030] mt-4 rounded-md py-4">
+                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pb-4 pt-5">
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
@@ -403,7 +403,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                         </div>
 
                         <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
+                            <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
                             <button

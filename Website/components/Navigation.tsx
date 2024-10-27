@@ -70,7 +70,7 @@ function Navigation() {
             >
                 <HStack>
                     <div
-                        style={{ cursor: "pointer", marginRight: sidePanelCollapsed ? "120px" : "0px"}}
+                        style={{ cursor: "pointer", marginRight: sidePanelCollapsed ? "120px" : "20px"}}
                         className="flex items-center gap-2 ml-2"
                         onClick={() => setSidePanelCollapsed(!sidePanelCollapsed)}
                         hidden={sm}

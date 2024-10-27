@@ -109,7 +109,7 @@ const SideNav = () => {
             position="sticky"
             top="0px"
             bottom="0px"
-            pt={50}
+            mt={"100px"}
             overflowY="auto"
             hidden={sm}
             color="#fa771a"

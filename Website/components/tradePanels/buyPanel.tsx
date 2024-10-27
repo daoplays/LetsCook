@@ -70,11 +70,14 @@ const BuyPanel = ({
         }
     }
 
+    console.log("liquidity factor", liquidity_factor);
+
     let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
     let amm_quote_fee = Math.ceil((quote_raw * amm.fee) / 100 / 100);
-    let quote_input_amount = quote_raw - amm_quote_fee;
+    let quote_input_amount = liquidity_factor * (quote_raw - amm_quote_fee);
+
     let base_output =
-        (liquidity_factor * (quote_input_amount * amm_base_balance)) /
+      ((quote_input_amount * amm_base_balance)) /
         (amm_quote_balance + quote_input_amount) /
         Math.pow(10, base_mint.mint.decimals);
     let base_output_string = formatPrice(base_output, base_mint.mint.decimals);

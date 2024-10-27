@@ -68,18 +68,15 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
                 {tableHeaders.map((i) => (
-                    <TableHead key={i.text} className="min-w-[140px] border-b" style={{ minWidth: sm ? "90px" : "120px" }}>
-                        <HStack
-                            gap={sm ? 1 : 2}
-                            justify="center"
-                            style={{ cursor: i.text === "TOKEN" ? "" : "pointer" }}
-                            onClick={() => handleHeaderClick(i.field)}
-                        >
-                            <Text fontSize={sm ? "medium" : "large"} m={0}>
+                    <TableHead className="min-w-[140px] border-b" key={i.text}>
+                        {i.field ? (
+                            <div onClick={() => handleHeaderClick(i.field)} className="flex justify-center font-semibold cursor-pointer">
                                 {i.text}
-                            </Text>
-                            {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort />}
-                        </HStack>
+                                {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
+                            </div>
+                        ) : (
+                            i.text
+                        )}
                     </TableHead>
                 ))}
 

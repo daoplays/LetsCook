@@ -114,16 +114,17 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
             <TableHeader>
                 {tableHeaders.map((i) => (
                     <TableHead key={i.text} className="min-w-[140px] border-b">
-                        <HStack justify="center" style={{ cursor: i.text === "LOGO" || i.text === "SOCIALS" ? "" : "pointer" }}>
-                            <Text
-                                fontSize={sm ? "medium" : "large"}
-                                m={0}
+                        {i.field ? (
+                            <div
                                 onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                className="flex justify-center font-semibold cursor-pointer"
                             >
                                 {i.text}
-                            </Text>
-                            {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
-                        </HStack>
+                                {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
+                            </div>
+                        ) : (
+                            i.text
+                        )}
                     </TableHead>
                 ))}
                 <TableHead>
@@ -138,51 +139,6 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
                 ))}
             </TableBody>
         </Table>
-
-        // <TableContainer>
-        //     <table
-        //         width="100%"
-        //         className="custom-centered-table font-face-rk"
-        //         style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
-        //     >
-        //         <thead>
-        //             <tr
-        //                 style={{
-        //                     height: "50px",
-        //                     borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-        //                     borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-        //                 }}
-        //             >
-        //                 {tableHeaders.map((i) => (
-        //                     <th key={i.text}>
-        //                         <HStack justify="center" style={{ cursor: i.text === "LOGO" || i.text === "SOCIALS" ? "" : "pointer" }}>
-        //                             <Text
-        //                                 fontSize={sm ? "medium" : "large"}
-        //                                 m={0}
-        //                                 onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-        //                             >
-        //                                 {i.text}
-        //                             </Text>
-        //                             {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
-        //                         </HStack>
-        //                     </th>
-        //                 ))}
-
-        //                 <th>
-        //                     <Box as="button">
-        //                         <TfiReload size={20} onClick={checkProgramData} />
-        //                     </Box>
-        //                 </th>
-        //             </tr>
-        //         </thead>
-
-        //         <tbody>
-        //             {filtered.sort().map((item: LaunchData, index) => (
-        //                 <LaunchCard key={index} launch={item} />
-        //             ))}
-        //         </tbody>
-        //     </table>
-        // </TableContainer>
     );
 };
 
@@ -223,30 +179,14 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             onClick={() => router.push(`/launch/${launch.page_name}`)}
         >
             <TableCell style={{ minWidth: "160px" }}>
-                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
-                    <Box w={45} h={45} borderRadius={10}>
-                        <Image
-                            alt="Launch icon"
-                            src={listing.icon}
-                            width={45}
-                            height={45}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                    <Text fontSize={"large"} m={0}>
-                        {listing.symbol}
-                    </Text>
-                </HStack>
+                <div className="flex items-center gap-3 px-4">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
+                        <Image alt="Launch icon" src={listing.icon} width={48} height={48} className="object-cover" />
+                    </div>
+                    <span className="font-semibold">{listing.symbol}</span>
+                </div>
             </TableCell>
-            <TableCell style={{ minWidth: "180px" }}>
-                {socialsExist ? (
-                    <Links socials={listing.socials} />
-                ) : (
-                    <Text fontSize={"large"} m={0}>
-                        No Socials
-                    </Text>
-                )}
-            </TableCell>
+            <TableCell style={{ minWidth: "180px" }}>{socialsExist ? <Links socials={listing.socials} /> : <>No Socials</>}</TableCell>
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={0}
@@ -259,15 +199,9 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                 />
             </TableCell>
             <TableCell style={{ minWidth: "170px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
-                </Text>
+                {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
             </TableCell>
-            <TableCell style={{ minWidth: "150px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {date}
-                </Text>
-            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>{date}</TableCell>
             <TableCell style={{ minWidth: "100px" }}>
                 <Button onClick={() => router.push(`/launch/` + launch.page_name)} style={{ textDecoration: "none" }}>
                     View

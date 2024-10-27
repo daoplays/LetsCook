@@ -260,7 +260,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                 <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4">
+                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4 pt-5">
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">

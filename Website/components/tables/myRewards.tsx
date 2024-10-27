@@ -130,14 +130,17 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
                 {tableHeaders.map((i) => (
-                    <TableHead key={i.text} className="min-w-[140px] border-b" style={{ minWidth: "120px" }}>
-                        <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
-                            <Text fontSize={sm ? "medium" : "large"} m={0}>
+                    <TableHead className="min-w-[140px] border-b" key={i.text}>
+                        {i.field ? (
+                            <div
+                                className="flex justify-center font-semibold cursor-pointer"
+                            >
                                 {i.text}
-                            </Text>
-                            <FaSort className="w-4 h-4 ml-2" />
-                            {/* {i.text === "LOGO" || i.text === "ORDER" ? <></> : <FaSort />} */}
-                        </HStack>
+                                <FaSort className="w-4 h-4 ml-2" />
+                            </div>
+                        ) : (
+                            i.text
+                        )}
                     </TableHead>
                 ))}
                 <TableHead>

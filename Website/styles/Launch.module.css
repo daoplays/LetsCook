@@ -460,8 +460,8 @@ label.label input[type="file"] {
     }
 
     .nextBtn {
-        color: #683309;
-        background-image: url(../public/images/Wood\ Panel.png);
+        color: white;
+        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
         background-size: cover;
         padding: 10px 20px;
         font-size: 20px;

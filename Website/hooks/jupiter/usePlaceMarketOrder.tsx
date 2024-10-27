@@ -219,6 +219,8 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+            { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
+
         ];
 
         if (transfer_hook_program_account !== null) {
