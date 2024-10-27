@@ -7,6 +7,8 @@ import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
 import useSwapRaydiumClassic from "../../hooks/raydium/useSwapRaydiumClassic";
 import { Config } from "../Solana/constants";
+import { AMMPluginData, getAMMPlugins } from "../Solana/jupiter_state";
+import { bignum_to_num } from "../Solana/state";
 
 const SellPanel = ({
     amm,
@@ -26,6 +28,17 @@ const SellPanel = ({
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
+    let plugins : AMMPluginData = getAMMPlugins(amm);
+
+    let liquidity_scalar = 1.0;
+    if (plugins.liquidity_active  === 1) {
+        let threshold = bignum_to_num(plugins.liquidity_threshold);
+        if (amm_quote_balance < threshold) {
+            liquidity_scalar = Math.min(1, ((plugins.liquidity_scalar / 10) * amm_quote_balance) / threshold);
+        }
+    }   
+
+    console.log("liquidity_scalar", liquidity_scalar);
     let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.mint.decimals));
     let total_base_fee = 0;
     let base_transfer_fee_config = getTransferFeeConfig(base_mint.mint);
@@ -35,13 +48,15 @@ const SellPanel = ({
 
     total_base_fee += Math.ceil(((base_raw - total_base_fee) * amm.fee) / 100 / 100);
 
-    let base_input_amount = base_raw - total_base_fee;
-    let quote_output = (base_input_amount * amm_quote_balance) / (base_input_amount + amm_base_balance) / Math.pow(10, 9);
+    let base_input_amount = (base_raw - total_base_fee)/liquidity_scalar;
+    let quote_output = ((base_input_amount * amm_quote_balance) / (base_input_amount + amm_base_balance) / Math.pow(10, 9));
     let quote_output_string = formatPrice(quote_output, 5);
 
     let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
     let quote_no_slip = token_amount * price;
-    let slippage = quote_no_slip / quote_output - 1;
+    let slippage = quote_no_slip / (quote_output * liquidity_scalar) - 1;
+
+    console.log("slippage", slippage);
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
