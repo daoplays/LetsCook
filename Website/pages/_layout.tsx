@@ -13,10 +13,10 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
             <HStack gap={0} h="100%" w="100%" style={{ overflow: "hidden" }}>
                 {<SideNav />}
                 <VStack
-                    pt={50}
+                    pt={{base: 50, md: 100}}
                     h="100%"
                     w="100%"
-                    sx={{ flex: 1, overflowY: "auto", paddingTop: "100px"}}
+                    sx={{ flex: 1, overflowY: "auto"}}
                     style={{
                         
                     }}

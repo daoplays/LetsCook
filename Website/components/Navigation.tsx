@@ -179,6 +179,7 @@ function Navigation() {
                         height={0}
                         className="lg:ml-[90px] h-auto w-[50px] md:w-[150px]"
                         alt="Let's Cook Logo"
+                        onClick={() => router.push("/")}
                     />
                 </HStack>
                 <HStack gap={3}>

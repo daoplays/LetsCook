@@ -59,12 +59,12 @@ const CalenderPage = () => {
             </Head>
             <main>
                 <Flex
-                    px={4}
                     py={18}
                     gap={2}
                     alignItems="center"
                     justifyContent="end"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
+                    className="xl:w-[95%]"
                 >
                     <Text
                         fontSize={sm ? 25 : 35}
