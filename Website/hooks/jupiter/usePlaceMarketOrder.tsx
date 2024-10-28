@@ -257,7 +257,7 @@ const usePlaceMarketOrder = (amm: AMMData) => {
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: Config.skipPreflight });
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
