@@ -75,7 +75,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
     const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
-    console.log("launch type", getLaunchType(newLaunchData.current.launch_type))
+    console.log("launch type", getLaunchType(newLaunchData.current.launch_type));
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
@@ -375,12 +375,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} height="100%" width="100%">
+        <Center height="100%" width="100%">
             <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Token Information
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pb-4 pt-4">
                     <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
@@ -1091,7 +1091,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         </VStack>
 
                         <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={() => router.push("/dashboard")}>
+                            <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </button>
 

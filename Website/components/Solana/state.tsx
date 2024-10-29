@@ -716,6 +716,7 @@ export const enum LaunchInstruction {
     swap_raydium_classic = 26,
     init_cook_external = 27,
     create_instant_launch = 28,
+    add_trade_rewards = 29,
 }
 
 export interface LaunchDataUserInput {

@@ -14,6 +14,7 @@ import { useRouter } from "next/router";
 import { ButtonString } from "../user_status";
 import { Config, LaunchKeys } from "../Solana/constants";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 export interface LaunchTableFilters {
     start_date: Date | null;
     end_date: Date | null;
@@ -109,50 +110,35 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
     });
 
     return (
-        <TableContainer>
-            <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "50px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                    >
-                        {tableHeaders.map((i) => (
-                            <th key={i.text}>
-                                <HStack justify="center" style={{ cursor: i.text === "LOGO" || i.text === "SOCIALS" ? "" : "pointer" }}>
-                                    <Text
-                                        fontSize={sm ? "medium" : "large"}
-                                        m={0}
-                                        onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                    >
-                                        {i.text}
-                                    </Text>
-                                    {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
-                                </HStack>
-                            </th>
-                        ))}
-
-                        <th>
-                            <Box as="button">
-                                <TfiReload size={20} onClick={checkProgramData} />
-                            </Box>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {filtered.sort().map((item: LaunchData, index) => (
-                        <LaunchCard key={index} launch={item} />
-                    ))}
-                </tbody>
-            </table>
-        </TableContainer>
+        <Table className="rounded-lg xl:w-[90%]">
+            <TableHeader>
+                {tableHeaders.map((i) => (
+                    <TableHead key={i.text} className="min-w-[140px] border-b">
+                        {i.field ? (
+                            <div
+                                onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                className="flex cursor-pointer justify-center font-semibold"
+                            >
+                                {i.text}
+                                {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
+                            </div>
+                        ) : (
+                            i.text
+                        )}
+                    </TableHead>
+                ))}
+                <TableHead>
+                    <Box as="button">
+                        <TfiReload size={20} onClick={checkProgramData} />
+                    </Box>
+                </TableHead>
+            </TableHeader>
+            <TableBody>
+                {filtered.sort().map((item: LaunchData, index) => (
+                    <LaunchCard key={index} launch={item} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };
 
@@ -177,7 +163,8 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString());
 
     return (
-        <tr
+        <TableRow
+            className="border-b"
             style={{
                 cursor: "pointer",
                 height: "60px",
@@ -191,32 +178,16 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             }}
             onClick={() => router.push(`/launch/${launch.page_name}`)}
         >
-            <td style={{ minWidth: "160px" }}>
-                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
-                    <Box w={45} h={45} borderRadius={10}>
-                        <Image
-                            alt="Launch icon"
-                            src={listing.icon}
-                            width={45}
-                            height={45}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                        />
-                    </Box>
-                    <Text fontSize={"large"} m={0}>
-                        {listing.symbol}
-                    </Text>
-                </HStack>
-            </td>
-            <td style={{ minWidth: "180px" }}>
-                {socialsExist ? (
-                    <Links socials={listing.socials} />
-                ) : (
-                    <Text fontSize={"large"} m={0}>
-                        No Socials
-                    </Text>
-                )}
-            </td>
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "160px" }}>
+                <div className="flex items-center gap-3 px-4">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <Image alt="Launch icon" src={listing.icon} width={48} height={48} className="object-cover" />
+                    </div>
+                    <span className="font-semibold">{listing.symbol}</span>
+                </div>
+            </TableCell>
+            <TableCell style={{ minWidth: "180px" }}>{socialsExist ? <Links socials={listing.socials} /> : <>No Socials</>}</TableCell>
+            <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={0}
                     launch_id={listing.id}
@@ -226,23 +197,17 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                     isTradePage={false}
                     listing={listing}
                 />
-            </td>
-            <td style={{ minWidth: "170px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
-                </Text>
-            </td>
-            <td style={{ minWidth: "150px" }}>
-                <Text fontSize={"large"} m={0}>
-                    {date}
-                </Text>
-            </td>
-            <td style={{ minWidth: "100px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "170px" }}>
+                {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
+            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>{date}</TableCell>
+            <TableCell style={{ minWidth: "100px" }}>
                 <Button onClick={() => router.push(`/launch/` + launch.page_name)} style={{ textDecoration: "none" }}>
                     View
                 </Button>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 

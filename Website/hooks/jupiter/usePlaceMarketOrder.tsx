@@ -13,7 +13,7 @@ import {
     ExtraAccountMeta,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { AMMData, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
+import { AMMData, AMMPluginData, getAMMPlugins, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
 import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -134,7 +134,8 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             TOKEN_PROGRAM_ID,
         );
 
-        let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
+        let amm_plugins: AMMPluginData = getAMMPlugins(amm);
+        let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - amm_plugins.trade_reward_first_date;
         let date_bytes = uInt32ToLEBytes(current_date);
 
         let launch_date_account = PublicKey.findProgramAddressSync(
@@ -218,6 +219,7 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             { pubkey: mint_account.token_program, isSigner: false, isWritable: false },
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+            { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
         ];
 
         if (transfer_hook_program_account !== null) {

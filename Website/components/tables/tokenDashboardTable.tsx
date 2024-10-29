@@ -36,6 +36,7 @@ import { toast } from "react-toastify";
 import useCreateCP from "../../hooks/raydium/useCreateCP";
 import * as NProgress from "nprogress";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 interface Header {
     text: string;
     field: string | null;
@@ -215,51 +216,36 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     );
 
     return (
-        <TableContainer w="100%">
-            <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "50px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                    >
-                        {tableHeaders.map((i) => (
-                            <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack
-                                    gap={sm ? 1 : 2}
-                                    justify="center"
-                                    style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
-                                    onClick={() => handleHeaderClick(i.field)}
-                                >
-                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                        {i.text}
-                                    </Text>
-                                    {i.text === "LOGO" ? <></> : <FaSort />}
-                                </HStack>
-                            </th>
-                        ))}
+        <Table className="rounded-lg xl:w-[90%]">
+            <TableHeader>
+                {tableHeaders.map((i) => (
+                    <TableHead key={i.text} className="min-w-[140px] border-b" style={{ minWidth: sm ? "90px" : "120px" }}>
+                        <HStack
+                            gap={sm ? 1 : 2}
+                            justify="center"
+                            style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
+                            onClick={() => handleHeaderClick(i.field)}
+                        >
+                            <Text fontSize={sm ? "medium" : "large"} m={0}>
+                                {i.text}
+                            </Text>
+                            {i.text === "LOGO" ? <></> : <FaSort />}
+                        </HStack>
+                    </TableHead>
+                ))}
 
-                        <th>
-                            <Box mt={1} as="button" onClick={checkProgramData}>
-                                <TfiReload size={sm ? 18 : 20} />
-                            </Box>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {sortedLaunches.map((launch) => (
-                        <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees} />
-                    ))}
-                </tbody>
-            </table>
-        </TableContainer>
+                <TableHead>
+                    <Box mt={1} as="button" onClick={checkProgramData}>
+                        <TfiReload size={sm ? 18 : 20} />
+                    </Box>
+                </TableHead>
+            </TableHeader>
+            <TableBody>
+                {sortedLaunches.map((launch) => (
+                    <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };
 
@@ -329,12 +315,13 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     };
 
     return (
-        <tr
+        <TableRow
             style={{
                 cursor: "pointer",
                 height: "60px",
                 transition: "background-color 0.3s",
             }}
+            className="border-b"
             onMouseOver={(e) => {
                 e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
             }}
@@ -346,7 +333,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
                 router.push(`/launch/${launch.page_name}`);
             }}
         >
-            <td style={{ minWidth: "160px" }}>
+            <TableCell style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
@@ -361,8 +348,8 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
                         {listing.symbol}
                     </Text>
                 </HStack>
-            </td>
-            <td style={{ minWidth: "120px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "120px" }}>
                 <Badge
                     borderRadius="12px"
                     px={3}
@@ -389,22 +376,22 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
                               ? "Cook Failed"
                               : "Unknown"}
                 </Badge>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: sm ? "170px" : "200px" }}>
+            <TableCell style={{ minWidth: sm ? "170px" : "200px" }}>
                 <VStack>
                     <Text fontSize={"large"} m={0}>
                         {(Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL}/
                         {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>
-            </td>
-            <td style={{ minWidth: sm ? "150px" : "200px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: sm ? "150px" : "200px" }}>
                 <Text fontSize={"large"} m={0}>
                     {date}
                 </Text>
-            </td>
-            <td style={{ minWidth: md ? "230px" : "" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: md ? "230px" : "" }}>
                 <HStack justify="center" style={{ minWidth: "80px" }}>
                     {MINTED_OUT && launch.flags[LaunchFlags.LPState] < 2 && (
                         <Button onClick={(e) => LaunchLPClicked(e)} isLoading={isInitMMLoading}>
@@ -425,8 +412,8 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
                             <Button onClick={(e) => GetFeesClicked(e)}>Collect Fees</Button>
                         )}
                 </HStack>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 

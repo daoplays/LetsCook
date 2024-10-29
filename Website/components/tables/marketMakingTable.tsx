@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, Button, Center, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
+import { Box, Flex, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -20,12 +20,15 @@ import formatPrice from "../../utils/formatPrice";
 import { FaSort } from "react-icons/fa";
 import Loader from "../loader";
 
-interface Header {
-    text: string;
-    field: string | null;
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface AMMLaunch {
+    amm_data: AMMData;
+    mint: MintData;
+    listing: ListingData;
 }
 
-function nFormatter(num, digits) {
+function nFormatter(num: number, digits: number) {
     if (num < 1) {
         return formatPrice(num, digits);
     }
@@ -43,386 +46,210 @@ function nFormatter(num, digits) {
     return item ? (num / item.value).toFixed(digits).replace(regexp, "").concat(item.symbol) : "0";
 }
 
-interface AMMLaunch {
-    amm_data: AMMData;
-    mint: MintData;
-    listing: ListingData;
-}
-
 const MarketMakingTable = () => {
     const wallet = useWallet();
-    const { sm } = useResponsive();
-
     const { ammData, SOLPrice, mintData, listingData, jupPrices } = useAppRoot();
-
-    const [sortedField, setSortedField] = useState<string>("fdmc");
+    const [sortedField, setSortedField] = useState<string>("liquidity");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
 
-    const tableHeaders: Header[] = [
-        { text: "TOKEN", field: "symbol" },
-        { text: "PRICE", field: "price" },
-        { text: "MARKET CAP", field: "fdmc" },
-        { text: "REWARDS (24H)", field: "rewards" },
-        { text: "SOCIALS", field: null },
-        { text: "HYPE", field: "hype" },
-        { text: "TRADE", field: null },
+    const tableHeaders = [
+        { text: "Token", field: "symbol" },
+        { text: "Price", field: "price" },
+        { text: "Liquidity", field: "liquidity" },
+        { text: "Market Cap", field: "fdmc" },
+        { text: "Rewards (24h)", field: "rewards" },
+        { text: "Socials", field: null },
+        { text: "Hype", field: "hype" },
     ];
 
-    const handleHeaderClick = (e) => {
-        console.log("click header,", e, sortedField);
-        if (e == sortedField) {
+    const handleSort = (field: string) => {
+        if (field === sortedField) {
             setReverseSort(!reverseSort);
         } else {
-            setSortedField(e);
+            setSortedField(field);
             setReverseSort(false);
         }
     };
 
     useEffect(() => {
-        if (!mintData || !listingData || !ammData) {
-            return;
-        }
+        if (!mintData || !listingData || !ammData) return;
 
-        let amm_launches: AMMLaunch[] = [];
-        ammData.forEach((amm, i) => {
-            //console.log("CHECK AMM IN TABLE", amm.base_mint.toString());
-            if (bignum_to_num(amm.start_time) === 0) {
-                return;
-            }
+        const amm_launches: AMMLaunch[] = [];
+        ammData.forEach((amm) => {
+            if (bignum_to_num(amm.start_time) === 0) return;
 
-            let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-            let listing = listingData.get(listing_key.toString());
-            let mint = mintData.get(amm.base_mint.toString());
+            const listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            const listing = listingData.get(listing_key.toString());
+            const mint = mintData.get(amm.base_mint.toString());
+
             if (listing && mint) {
-                //console.log("mint data", mint_data);
-                let amm_launch: AMMLaunch = {
-                    amm_data: amm,
-                    mint: mint,
-                    listing: listing,
-                };
-                amm_launches.push(amm_launch);
+                amm_launches.push({ amm_data: amm, mint, listing });
             }
         });
 
         setRows([...amm_launches]);
     }, [mintData, listingData, ammData]);
 
-    const sorted_rows = [...rows];
+    const sortedRows = [...rows].sort((a, b) => {
+        const sortValue = (row: AMMLaunch): string | number => {
+            switch (sortedField) {
+                case "symbol":
+                    return row.listing.symbol;
+                case "price":
+                    return row.amm_data.provider === 0
+                        ? Buffer.from(row.amm_data.last_price).readFloatLE(0)
+                        : jupPrices.get(row.amm_data.base_mint.toString()) || 0;
+                case "liquidity":
+                    return row.amm_data.amm_quote_amount / Math.pow(10, 9);
+                case "fdmc": {
+                    const supply = Number(row.mint.mint.supply) / Math.pow(10, row.mint.mint.decimals);
+                    const price =
+                        row.amm_data.provider === 0
+                            ? Buffer.from(row.amm_data.last_price).readFloatLE(0)
+                            : jupPrices.get(row.amm_data.base_mint.toString()) || 0;
+                    return supply * price;
+                }
+                case "rewards": {
+                    const current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(row.amm_data.start_time)) / 24 / 60 / 60);
+                    return reward_schedule(current_date, row.amm_data, row.mint);
+                }
+                case "hype":
+                    return row.listing.positive_votes - row.listing.negative_votes;
+                default:
+                    return 0;
+            }
+        };
 
-    sorted_rows.sort((a, b) => {
-        if (sortedField === "symbol") {
-            if (a.listing.symbol < b.listing.symbol) {
-                return reverseSort ? 1 : -1;
-            }
-            if (a.listing.symbol > b.listing.symbol) {
-                return reverseSort ? -1 : 1;
-            }
-            return 0;
+        const aVal = sortValue(a);
+        const bVal = sortValue(b);
+
+        // Type guard to check if both values are strings
+        function isString(value: string | number): value is string {
+            return typeof value === "string";
         }
 
-        if (sortedField === "price") {
-            let price_a =
-                a.amm_data.provider === 0
-                    ? Buffer.from(a.amm_data.last_price).readFloatLE(0)
-                    : jupPrices.get(a.amm_data.base_mint.toString());
-            let price_b =
-                b.amm_data.provider === 0
-                    ? Buffer.from(b.amm_data.last_price).readFloatLE(0)
-                    : jupPrices.get(b.amm_data.base_mint.toString());
-            if (price_a < price_b) {
-                return reverseSort ? 1 : -1;
-            }
-            if (price_a > price_b) {
-                return reverseSort ? -1 : 1;
-            }
-            return 0;
+        // If both values are strings, use string comparison
+        if (isString(aVal) && isString(bVal)) {
+            return reverseSort ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
         }
 
-        if (sortedField === "fdmc") {
-            let total_supply_a = Number(a.mint.mint.supply) / Math.pow(10, a.listing.decimals);
-            let total_supply_b = Number(b.mint.mint.supply) / Math.pow(10, b.listing.decimals);
-            let price_a =
-                a.amm_data.provider === 0
-                    ? Buffer.from(a.amm_data.last_price).readFloatLE(0)
-                    : jupPrices.get(a.amm_data.base_mint.toString());
-            let price_b =
-                b.amm_data.provider === 0
-                    ? Buffer.from(b.amm_data.last_price).readFloatLE(0)
-                    : jupPrices.get(b.amm_data.base_mint.toString());
-            let market_cap_a = total_supply_a * price_a * SOLPrice;
-            let market_cap_b = total_supply_b * price_b * SOLPrice;
-            if (market_cap_a < market_cap_b) {
-                return reverseSort ? 1 : -1;
-            }
-            if (market_cap_a > market_cap_b) {
-                return reverseSort ? -1 : 1;
-            }
-            return 0;
+        // If both values are numbers or can be converted to numbers, use numeric comparison
+        const numA = Number(aVal);
+        const numB = Number(bVal);
+
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return reverseSort ? numB - numA : numA - numB;
         }
 
-        if (sortedField === "rewards") {
-            let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(a.amm_data.start_time)) / 24 / 60 / 60);
-            let mm_rewards_a = reward_schedule(current_date, a.amm_data);
-            let mm_rewards_b = reward_schedule(current_date, b.amm_data);
-            if (mm_rewards_a < mm_rewards_b) {
-                return reverseSort ? 1 : -1;
-            }
-            if (mm_rewards_a > mm_rewards_b) {
-                return reverseSort ? -1 : 1;
-            }
-            return 0;
-        }
-
-        if (sortedField === "hype") {
-            let hype_a = a.listing.positive_votes - a.listing.negative_votes;
-            let hype_b = b.listing.positive_votes - b.listing.negative_votes;
-            if (hype_a < hype_b) {
-                return reverseSort ? 1 : -1;
-            }
-            if (hype_a > hype_b) {
-                return reverseSort ? -1 : 1;
-            }
-            return 0;
-        }
-
+        // Fallback comparison if types don't match or conversion fails
         return 0;
     });
 
     if (!mintData || !listingData || !ammData) {
-        return <Loader/>;
+        return <Loader />;
     }
 
     return (
-        <TableContainer>
-            <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 120%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "50px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                    >
-                        {tableHeaders.map((i) => (
-                            <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
-                                    <Text
-                                        fontSize={sm ? "medium" : "large"}
-                                        m={0}
-                                        onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                    >
-                                        {i.text}
-                                    </Text>
-                                    {!i.field ? <></> : <FaSort />}
-                                </HStack>
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {sorted_rows.map((launch, i) => (
-                        <LaunchCard key={i} amm_launch={launch} SOLPrice={SOLPrice} />
-                    ))}
-                </tbody>
-            </table>
-        </TableContainer>
+        <Table className="rounded-lg xl:w-[90%]">
+            <TableHeader>
+                {tableHeaders.map((header) => (
+                    <TableHead className="min-w-[140px] border-b" key={header.text}>
+                        {header.field ? (
+                            <div
+                                onClick={() => header.field && handleSort(header.field)}
+                                className="flex cursor-pointer justify-center font-semibold"
+                            >
+                                {header.text}
+                                <FaSort className="ml-2 h-4 w-4" />
+                            </div>
+                        ) : (
+                            header.text
+                        )}
+                    </TableHead>
+                ))}
+            </TableHeader>
+            <TableBody>
+                {sortedRows.map((launch, i) => (
+                    <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };
 
-const LaunchCard = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
+const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
     const router = useRouter();
-    const { sm, md, lg } = useResponsive();
     const { ammData, jupPrices } = useAppRoot();
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
-    let mm_rewards = reward_schedule(current_date, amm_launch.amm_data);
+    const current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
+    const mm_rewards = reward_schedule(current_date, amm_launch.amm_data, amm_launch.mint);
 
-    let last_price =
+    const last_price =
         amm_launch.amm_data.provider === 0
             ? Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0)
             : jupPrices.get(amm_launch.amm_data.base_mint.toString());
-    //console.log(amm_launch);
-    let total_supply =
-        amm_launch.mint !== null && amm_launch.mint !== undefined
-            ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.listing.decimals)
-            : 0;
-    let market_cap = total_supply * last_price * SOLPrice;
 
-    let cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
-    let raydium_cpmm_address = getAMMKeyFromMints(amm_launch.listing.mint, 1);
-    let raydium_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 2);
+    const total_supply = amm_launch.mint ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.mint.mint.decimals) : 0;
+    const market_cap = total_supply * last_price * SOLPrice;
+    const market_cap_string = "$" + nFormatter(market_cap, 2);
 
-    let cook_amm = ammData.get(cook_amm_address.toString());
-    let have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
+    const liquidity = Number(amm_launch.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
+    const liquidity_string = "$" + nFormatter(Math.min(market_cap, 2 * liquidity), 2);
 
-    if (!have_cook_amm) {
-        return <></>;
-    }
+    const cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
+    const cook_amm = ammData.get(cook_amm_address.toString());
+    const have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
 
-    let raydium_cpmm = ammData.get(raydium_cpmm_address.toString());
-    let have_raydium_cpmm = raydium_cpmm && bignum_to_num(raydium_cpmm.start_time) > 0;
-
-    let raydium_amm = ammData.get(raydium_amm_address.toString());
-    let have_raydium_amm = raydium_amm && bignum_to_num(raydium_amm.start_time) > 0;
-
-    let show_birdeye = !have_raydium_amm && !have_raydium_cpmm && !have_cook_amm;
+    if (!have_cook_amm) return null;
 
     return (
-        <tr
-            style={{
-                cursor: "pointer",
-                height: "60px",
-                transition: "background-color 0.3s",
-            }}
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-            }}
-            onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-            }}
-            onClick={() => {
-                if (have_cook_amm) {
-                    router.push("/trade/" + cook_amm_address);
-                } else if (show_birdeye) {
-                    router.push("https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana");
-                } else if (have_raydium_amm) {
-                    router.push("/trade/" + raydium_amm_address.toString());
-                } else if (have_raydium_cpmm) {
-                    router.push("/trade/" + raydium_cpmm_address.toString());
-                }
-            }}
-        >
-            <td style={{ minWidth: "160px" }}>
-                <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
-                    <Box w={45} h={45} borderRadius={10}>
+        <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
+            <TableCell className="w-[150px]">
+                <div className="flex items-center gap-3 px-4">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
                         <Image
-                            alt="Launch icon"
+                            alt={`${amm_launch.listing.symbol} icon`}
                             src={amm_launch.mint.icon}
-                            width={45}
-                            height={45}
-                            style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                            width={48}
+                            height={48}
+                            className="object-cover"
                         />
-                    </Box>
-                    <Text fontSize={"large"} m={0}>
-                        {amm_launch.listing.symbol}
-                    </Text>
-                </HStack>
-            </td>
-
-            <td style={{ minWidth: "150px" }}>
-                <HStack justify="center">
-                    <Text fontSize={"large"} m={0}>
-                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.listing.decimals, 3))}
-                    </Text>
-                    <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} />
-                </HStack>
-            </td>
-
-            <td style={{ minWidth: "150px" }}>
-                <HStack justify="center">
-                    <Text fontSize={"large"} m={0}>
-                        ${nFormatter(market_cap, 2)}
-                    </Text>
-                    {/* <Image src="/images/usdc.png" width={30} height={30} alt="SOL Icon" style={{ marginLeft: -3 }} /> */}
-                </HStack>
-            </td>
-
-            <td style={{ minWidth: "200px" }}>
-                <HStack justify="center" gap={2}>
-                    <Text fontSize={"large"} m={0}>
-                        {nFormatter(mm_rewards, 2)}
-                    </Text>
-                    <Image
-                        src={amm_launch.listing.icon}
-                        width={30}
-                        height={30}
-                        alt="SOL Icon"
-                        style={{ marginLeft: -3, borderRadius: "5px" }}
-                    />
-                </HStack>
-            </td>
-
-            <td style={{ minWidth: "140px" }}>
+                    </div>
+                    <span className="font-semibold">${amm_launch.listing.symbol}</span>
+                </div>
+            </TableCell>
+            <TableCell className="min-w-[120px]">
+                <div className="flex items-center justify-center gap-2">
+                    <span>
+                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.mint.mint.decimals, 3))}
+                    </span>
+                    <Image src={Config.token_image} width={28} height={28} alt="SOL Icon" />
+                </div>
+            </TableCell>
+            <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : liquidity_string}</TableCell>
+            <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : market_cap_string}</TableCell>
+            <TableCell>
+                <div className="flex items-center justify-center gap-2">
+                    <span>{nFormatter(mm_rewards, 2)}</span>
+                    <Image src={amm_launch.listing.icon} width={28} height={28} alt="Token Icon" className="rounded" />
+                </div>
+            </TableCell>
+            <TableCell className="min-w-[160px]">
                 <Links socials={amm_launch.listing.socials} />
-            </td>
-            <td style={{ minWidth: "150px" }}>
+            </TableCell>
+            <TableCell>
                 <HypeVote
                     launch_type={0}
                     launch_id={amm_launch.listing.id}
-                    page_name={""}
+                    page_name=""
                     positive_votes={amm_launch.listing.positive_votes}
                     negative_votes={amm_launch.listing.negative_votes}
                     isTradePage={false}
                     listing={amm_launch.listing}
                 />
-            </td>
-            <td style={{ minWidth: "150px" }}>
-                <HStack justify="center" gap={3}>
-                    {show_birdeye && (
-                        <Tooltip label="Trade on Birdeye" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={"https://birdeye.so/token/" + amm_launch.listing.mint.toString() + "?chain=solana"} target="_blank">
-                                <Image
-                                    src="/images/birdeye.png"
-                                    alt="Birdeye Icon"
-                                    width={lg ? 30 : 40}
-                                    height={lg ? 30 : 40}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            </Link>
-                        </Tooltip>
-                    )}
-                    {have_cook_amm && (
-                        <Tooltip label="Trade on Let's Cook" hasArrow fontSize="large" offset={[0, 15]}>
-                            <Link href={"/trade/" + cook_amm_address} target="_blank">
-                                <Image
-                                    src="/favicon.ico"
-                                    alt="Cook Icon"
-                                    width={lg ? 30 : 35}
-                                    height={lg ? 30 : 35}
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            </Link>
-                        </Tooltip>
-                    )}
-                    {have_raydium_amm && (
-                        <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
-                            {have_raydium_amm && (
-                                <Link href={"/trade/" + raydium_amm_address.toString()} target="_blank">
-                                    <Image
-                                        src="/images/raydium.png"
-                                        alt="Raydium Icon"
-                                        width={lg ? 30 : 40}
-                                        height={lg ? 30 : 40}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </Link>
-                            )}
-                        </Tooltip>
-                    )}
-                    {have_raydium_cpmm && (
-                        <Tooltip label="Trade on Raydium" hasArrow fontSize="large" offset={[0, 15]}>
-                            {have_raydium_amm && (
-                                <Link href={"/trade/" + raydium_cpmm_address.toString()} target="_blank">
-                                    <Image
-                                        src="/images/raydium.png"
-                                        alt="Raydium Icon"
-                                        width={lg ? 30 : 40}
-                                        height={lg ? 30 : 40}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </Link>
-                            )}
-                        </Tooltip>
-                    )}
-                </HStack>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 

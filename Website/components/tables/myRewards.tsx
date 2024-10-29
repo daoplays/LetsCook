@@ -6,11 +6,12 @@ import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import { JoinedLaunch, LaunchData, MintData, bignum_to_num } from "../Solana/state";
-import { AMMData, MMLaunchData, MMUserData, getAMMKey } from "../Solana/jupiter_state";
+import { AMMData, AMMPluginData, MMLaunchData, MMUserData, getAMMKey, getAMMPlugins } from "../Solana/jupiter_state";
 import { LaunchKeys, LaunchFlags, PROGRAM } from "../Solana/constants";
 import useGetMMRewards from "../../hooks/jupiter/useGetMMRewards";
 import { PublicKey } from "@solana/web3.js";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 interface Header {
     text: string;
     field: string | null;
@@ -126,46 +127,32 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     }
 
     return (
-        <TableContainer w={"100%"}>
-            <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 120%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "60px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                    >
-                        {tableHeaders.map((i) => (
-                            <th key={i.text} style={{ minWidth: "120px" }}>
-                                <HStack gap={sm ? 1 : 2} justify="center" style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}>
-                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                        {i.text}
-                                    </Text>
-                                    {/* {i.text === "LOGO" || i.text === "ORDER" ? <></> : <FaSort />} */}
-                                </HStack>
-                            </th>
-                        ))}
-
-                        <th>
-                            <Box mt={1} as="button">
-                                <TfiReload size={sm ? 18 : 20} />
-                            </Box>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {mapped_rewards.map((r, i) => (
-                        <RewardCard key={i} reward={r} show_icon={amm === null} />
-                    ))}
-                </tbody>
-            </table>
-        </TableContainer>
+        <Table className="rounded-lg xl:w-[90%]">
+            <TableHeader>
+                {tableHeaders.map((i) => (
+                    <TableHead className="min-w-[140px] border-b" key={i.text}>
+                        {i.field ? (
+                            <div className="flex cursor-pointer justify-center font-semibold">
+                                {i.text}
+                                <FaSort className="ml-2 h-4 w-4" />
+                            </div>
+                        ) : (
+                            i.text
+                        )}
+                    </TableHead>
+                ))}
+                <TableHead>
+                    <Box mt={1} as="button">
+                        <TfiReload size={sm ? 18 : 20} />
+                    </Box>
+                </TableHead>
+            </TableHeader>
+            <TableBody>
+                {mapped_rewards.map((r, i) => (
+                    <RewardCard key={i} reward={r} show_icon={amm === null} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };
 
@@ -173,6 +160,8 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
     const router = useRouter();
     const { sm, md, lg } = useResponsive();
     const { GetMMRewards, isLoading: isMMRewardsLoading } = useGetMMRewards(reward.amm, reward.amm_provider);
+
+    let amm_plugins: AMMPluginData = getAMMPlugins(reward.amm);
 
     let days_rewards = bignum_to_num(reward.launch_reward.token_rewards);
     days_rewards /= Math.pow(10, reward.base_mint.mint.decimals);
@@ -186,19 +175,21 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
     let user_percent = (100 * user_traded) / total_traded;
     let user_amount = (days_rewards * user_percent) / 100;
 
-    let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(reward.amm.start_time)) / 24 / 60 / 60);
-    let time_left = (new Date().getTime() / 1000 - bignum_to_num(reward.amm.start_time)) / 24 / 60 / 60 - current_date;
+    let today = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+    let current_date = today - amm_plugins.trade_reward_first_date;
+    let time_left = new Date().getTime() / 1000 / 24 / 60 / 60 - amm_plugins.trade_reward_first_date - current_date;
     time_left *= 24;
     time_left = 24 - time_left;
     //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
 
     return (
-        <tr
+        <TableRow
             style={{
                 cursor: "pointer",
                 height: "60px",
                 transition: "background-color 0.3s",
             }}
+            className="border-b"
             onMouseOver={(e) => {
                 e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
             }}
@@ -207,7 +198,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
             }}
         >
             {show_icon && (
-                <td style={{ minWidth: "160px" }}>
+                <TableCell style={{ minWidth: "160px" }}>
                     <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                         <Box w={45} h={45} borderRadius={10}>
                             <Image
@@ -222,44 +213,44 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                             {reward.base_mint.symbol}
                         </Text>
                     </HStack>
-                </td>
+                </TableCell>
             )}
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {reward.launch_reward.date.toLocaleString()}
                 </Text>
-            </td>
-            <td style={{ minWidth: "150px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {days_rewards.toLocaleString()}
                 </Text>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {total_traded.toLocaleString()}
                 </Text>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {user_traded.toLocaleString()}
                 </Text>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {user_percent.toFixed(2)}%
                 </Text>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {user_amount.toLocaleString()}
                 </Text>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: md ? "120px" : "" }}>
+            <TableCell style={{ minWidth: md ? "120px" : "" }}>
                 {current_date === reward.launch_reward.date && (
                     <Text fontSize={"large"} m={0}>
                         Claim in {time_left.toFixed(1)}h
@@ -270,8 +261,8 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                         Claim
                     </Button>
                 )}
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 

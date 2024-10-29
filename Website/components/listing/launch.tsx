@@ -34,7 +34,6 @@ import {
 } from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig, PROGRAM, Socials } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
-import useInitAMM from "../../hooks/cookAMM/useInitAMM";
 import { setMintData } from "../amm/launch";
 import { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -42,6 +41,7 @@ import useIrysUploader from "../../hooks/useIrysUploader";
 import bs58 from "bs58";
 import useCreateListing from "../../hooks/listings/useCreateListing";
 import useCreateUnverifiedListing from "../../hooks/listings/useCreateUnverifiedListing";
+import useEditListing from "../../hooks/listings/useEditListing";
 
 // Define the Tag type
 type Tag = {
@@ -100,6 +100,7 @@ const CreateListing = () => {
 
     const { CreateUnverifiedListing } = useCreateUnverifiedListing();
     const { CreateListing } = useCreateListing();
+    const { EditListing } = useEditListing();
 
     const { getIrysUploader } = useIrysUploader(wallet);
 
@@ -158,6 +159,16 @@ const CreateListing = () => {
         }
 
         setBaseToken(mint_data);
+
+        let listing_key = PublicKey.findProgramAddressSync([new PublicKey(base_address).toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+        let listing_account = await connection.getAccountInfo(listing_key);
+        if (!listing_account) return;
+
+        const [listing] = ListingData.struct.deserialize(listing_account.data);
+        setWeb(listing.socials[Socials.Website]);
+        setTelegram(listing.socials[Socials.Telegram]);
+        setTwitter(listing.socials[Socials.Twitter]);
+        setDiscord(listing.socials[Socials.Discord]);
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,7 +246,7 @@ const CreateListing = () => {
             discord: discord,
         };
 
-        await CreateListing(new_listing, accept);
+        await EditListing(new_listing);
     }
 
     async function setRequestData(e): Promise<void> {
@@ -392,12 +403,7 @@ const CreateListing = () => {
     }
 
     return (
-        <Center
-            style={{
-                background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)",
-            }}
-            width="100%"
-        >
+        <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     New Listing:
@@ -701,7 +707,7 @@ const CreateListing = () => {
                             <HStack>
                                 <button
                                     type="button"
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                     onClick={(e) => {
                                         confirm(e, true);
                                     }}
@@ -710,7 +716,7 @@ const CreateListing = () => {
                                 </button>
                                 <button
                                     type="button"
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                     onClick={(e) => {
                                         confirm(e, false);
                                     }}
@@ -721,7 +727,7 @@ const CreateListing = () => {
                         ) : (
                             <button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                                 onClick={(e) => {
                                     confirm(e, true);
                                 }}
