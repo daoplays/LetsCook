@@ -178,12 +178,12 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     }
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+        <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text mb={8} align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
                     Page Information:
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }} className="bg-[#303030] rounded-md pb-4 pt-4">
                     <VStack px={lg ? 4 : 12}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
@@ -340,7 +340,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     }}
                                     className={`${styles.nextBtn} font-face-kg `}
                                 >
-                                    Go Back
+                                    GO BACK
                                 </button>
                                 <button
                                     type="button"

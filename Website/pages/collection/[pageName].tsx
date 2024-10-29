@@ -161,7 +161,7 @@ const CollectionSwapPage = () => {
             <Head>
                 <title>Let&apos;s Cook | {pageName}</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }}>
+            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)" }} className="sm:h-auto xl:h-[100vh]">
                 <CollectionFeaturedBanner featuredLaunch={collection} isHomePage={false} />
                 <div style={{ padding: "16px" }}>
                     <VStack

@@ -719,12 +719,12 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed, getIrysUploader]);
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+        <Center width="100%" h="100%">
             <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text mb={8} align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
                     Page Information:
                 </Text>
-                <form onSubmit={nextPage} style={{ width: xl ? "100%" : "1200px" }}>
+                <form onSubmit={nextPage} style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] py-4">
                     <VStack px={lg ? 4 : 12}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
@@ -866,9 +866,9 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                                 onClick={(e) => {
                                     setScreen("step 3");
                                 }}
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                             >
-                                Go Back
+                                GO BACK
                             </button>
                             <button
                                 type="button"
@@ -877,7 +877,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                                         Launch(e);
                                     }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                             >
                                 {isLoading ? <Spinner /> : "CONFIRM (4/4)"}
                             </button>

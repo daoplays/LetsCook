@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html,
 body {
     padding: 0;
@@ -15,6 +19,7 @@ body {
         Droid Sans,
         Helvetica Neue,
         sans-serif;
+    background: linear-gradient(180deg, rgba(22, 22, 22, 1) 0%, rgba(236, 35, 0, 1) 100%);
 }
 
 *::-webkit-scrollbar {
@@ -76,8 +81,17 @@ input[type="file"] {
     /* Adjust font weight */
     text-shadow:
         -2px -2px 0 #fff,
-        /* Top-left */ 2px -2px 0 #fff,
-        /* Top-right */ -2px 2px 0 #fff,
-        /* Bottom-left */ 2px 2px 0 #fff;
+        /* Top-left */
+        2px -2px 0 #fff,
+        /* Top-right */
+        -2px 2px 0 #fff,
+        /* Bottom-left */
+        2px 2px 0 #fff;
     /* Bottom-right */
+}
+
+@layer base {
+    :root {
+        --radius: 0.5rem;
+    }
 }
