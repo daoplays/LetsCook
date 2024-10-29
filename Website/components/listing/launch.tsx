@@ -403,12 +403,7 @@ const CreateListing = () => {
     }
 
     return (
-        <Center
-            style={{
-                background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)",
-            }}
-            width="100%"
-        >
+        <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
                 <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
                     New Listing:
@@ -712,7 +707,7 @@ const CreateListing = () => {
                             <HStack>
                                 <button
                                     type="button"
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                     onClick={(e) => {
                                         confirm(e, true);
                                     }}
@@ -721,7 +716,7 @@ const CreateListing = () => {
                                 </button>
                                 <button
                                     type="button"
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                     onClick={(e) => {
                                         confirm(e, false);
                                     }}
@@ -732,7 +727,7 @@ const CreateListing = () => {
                         ) : (
                             <button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                                 onClick={(e) => {
                                     confirm(e, true);
                                 }}

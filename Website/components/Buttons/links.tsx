@@ -1,13 +1,11 @@
-import { HStack, Link, Text } from "@chakra-ui/react";
-import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
-
+import Link from "next/link";
+import useResponsive from "../../hooks/useResponsive";
 import twitter from "../../public/socialIcons/new/XIcon.png";
 import telegram from "../../public/socialIcons/new/telegramIcon.png";
 import discord from "../../public/socialIcons/new/discordIcon.png";
 import website from "../../public/socialIcons/new/websiteIcon.png";
 import { Socials } from "../Solana/constants";
-import { LaunchData } from "../Solana/state";
 import addHttpsIfMissing from "../../utils/addHttpsIfMissing";
 
 interface LinksProps {
@@ -17,43 +15,36 @@ interface LinksProps {
 
 const Links = ({ socials, isTradePage }: LinksProps) => {
     const { lg } = useResponsive();
+    const iconSize = lg || isTradePage ? 24 : 28;
 
     if (!socials || Object.values(Socials).every((key) => !socials[key])) {
-        return (
-            <Text fontSize="large" opacity="25%">
-                No Socials
-            </Text>
-        );
+        return <p className="text-md opacity-25">No Socials</p>;
     }
 
     return (
-        <HStack justify="center" gap={3} onClick={(e) => e.stopPropagation()}>
-            {socials[Socials.Twitter] !== "" && (
-                <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Twitter]) : "#"} target="_blank">
-                    <Image src={twitter.src} alt="Twitter Icon" width={lg || isTradePage ? 30 : 35} height={lg || isTradePage ? 30 : 35} />
+        <div className="flex justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+            {socials[Socials.Twitter] && (
+                <Link target="_blank" href={socials ? addHttpsIfMissing(socials[Socials.Twitter]) : "#"} passHref>
+                    <Image src={twitter.src} alt="Twitter Icon" width={iconSize} height={iconSize} />
                 </Link>
             )}
-            {socials[Socials.Telegram] !== "" && (
-                <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Telegram]) : "#"} target="_blank">
-                    <Image
-                        src={telegram.src}
-                        alt="Telegram Icon"
-                        width={lg || isTradePage ? 30 : 35}
-                        height={lg || isTradePage ? 30 : 35}
-                    />
+            {socials[Socials.Telegram] && (
+                <Link target="_blank" href={socials ? addHttpsIfMissing(socials[Socials.Telegram]) : "#"} passHref>
+                    <Image src={telegram.src} alt="Telegram Icon" width={iconSize} height={iconSize} />
                 </Link>
             )}
-            {socials[Socials.Discord] !== "" && (
-                <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Discord]) : "#"} target="_blank">
-                    <Image src={discord.src} alt="Discord Icon" width={lg || isTradePage ? 30 : 35} height={lg || isTradePage ? 30 : 35} />
+            {socials[Socials.Discord] && (
+                <Link target="_blank" href={socials ? addHttpsIfMissing(socials[Socials.Discord]) : "#"} passHref>
+                    <Image src={discord.src} alt="Discord Icon" width={iconSize} height={iconSize} />
                 </Link>
             )}
-            {socials[Socials.Website] !== "" && (
-                <Link href={socials !== null ? addHttpsIfMissing(socials[Socials.Website]) : "#"} target="_blank">
-                    <Image src={website.src} alt="Website Icon" width={lg || isTradePage ? 30 : 35} height={lg || isTradePage ? 30 : 35} />
+            {socials[Socials.Website] && (
+                <Link target="_blank" href={socials ? addHttpsIfMissing(socials[Socials.Website]) : "#"} passHref>
+                    <Image src={website.src} alt="Website Icon" width={iconSize} height={iconSize} />
                 </Link>
             )}
-        </HStack>
+        </div>
     );
 };
+
 export default Links;

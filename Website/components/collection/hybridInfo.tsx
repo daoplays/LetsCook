@@ -255,12 +255,12 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     }
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+        <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
-                <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4 pt-5">
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
@@ -533,14 +533,14 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                         <HStack mt={md ? 0 : 30}>
                             <button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                                 onClick={() => {
                                     setScreen("step 2");
                                 }}
                             >
-                                Go Back
+                                GO BACK
                             </button>
-                            <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
+                            <button type="submit" className={`${styles.nextBtn} font-face-kg`}>
                                 NEXT (3/4)
                             </button>
                         </HStack>

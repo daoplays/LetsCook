@@ -233,12 +233,12 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     );
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%" h="100%">
+        <Center width="100%" h="100%">
             <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
-                <Text align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Individual NFT info:
                 </Text>
-                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }}>
+                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4">
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
@@ -332,14 +332,14 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                         <HStack mt={md ? 0 : 30}>
                             <button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                                 onClick={() => {
                                     setScreen("step 1");
                                 }}
                             >
-                                Go Back
+                                GO BACK
                             </button>
-                            <button type="submit" className={`${styles.nextBtn} font-face-kg `}>
+                            <button type="submit" className={`${styles.nextBtn} font-face-kg`}>
                                 NEXT (2/4)
                             </button>
                         </HStack>

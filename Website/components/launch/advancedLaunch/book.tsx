@@ -226,12 +226,12 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const { isOpen: isEndOpen, onToggle: onToggleEnd, onClose: OnCloseEnd } = useDisclosure();
 
     return (
-        <Center style={{ background: "linear-gradient(180deg, #292929 0%, #0B0B0B 100%)" }} width="100%">
+        <Center width="100%">
             <VStack pb={150} w="100%">
-                <Text mb={8} align="start" className="font-face-kg" color={"white"} fontSize="x-large">
+                <Text mb={8} align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Book Token Raffle
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}>
+                <form style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] pb-4">
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
                         <HStack spacing={15} w="100%" className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
@@ -428,7 +428,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
                             <HStack>
-                                <button type="button" className={`${styles.nextBtn} font-face-kg `} onClick={onOpen}>
+                                <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={onOpen}>
                                     PREVIEW
                                 </button>
                             </HStack>
@@ -438,9 +438,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                     onClick={(e) => {
                                         prevPage(e);
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
-                                    Go Back
+                                    GO BACK
                                 </button>
                                 <button
                                     type="button"
@@ -449,7 +449,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                             Launch(e);
                                         }
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
                                     {isLoading ? <Spinner /> : "CONFIRM"}
                                 </button>
