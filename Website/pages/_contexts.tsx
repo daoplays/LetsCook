@@ -72,78 +72,105 @@ export const update_listings_blob = async (type: number, value: string) => {
     }
 };
 
-const GetTokenPrices = async (mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>) => {
-    let price_map: Map<string, number> = new Map();
+function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+}
 
-    // don't bother doing this on devnet
-    if (!Config.PROD) {
-        for (let i = 0; i < mints.length; i++) {
-            price_map.set(mints[i], 0);
-        }
-        setPriceMap(price_map);
+async function getTokenPrices(mints: string[], setPriceMap: Dispatch<SetStateAction<Map<string, number>>>): Promise<void> {
+    const priceMap = new Map<string, number>();
 
+    // Don't bother doing this is not solana mainnet
+    if (!(Config.NETWORK == "mainnet")) {
+        mints.forEach((mint) => priceMap.set(mint, 0));
+        setPriceMap(priceMap);
         return;
     }
-    // Default options are marked with *
-    const options = { method: "GET" };
-
-    const mint_strings = mints.join(","); // More concise way to join strings
-    const url = `https://price.jup.ag/v6/price?ids=${mint_strings}&vsToken=SOL`;
 
     try {
-        // Fetch the price data from the API
-        const response = await fetch(url, options);
-        const result = await response.json();
+        // Split mints into chunks of 100 (Jupiter API limit)
+        const mintChunks = chunkArray(mints, 100);
 
-        // console.log("Price result: ", result);
+        // Process each chunk
+        await Promise.all(
+            mintChunks.map(async (chunk) => {
+                const mintString = chunk.join(",");
+                const url = `https://price.jup.ag/v6/price?ids=${mintString}&vsToken=SOL`;
 
-        // Initialize a Map to store the prices
-        const price_map: Map<string, number> = new Map();
-        const result_data = result.data; // Access the data directly
+                try {
+                    const response = await fetch(url, { method: "GET" });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
 
-        // Iterate through the mint addresses to populate the price map
-        for (const mint of mints) {
-            const mintData = result_data[mint]; // Get the data for the specific mint
-            if (mintData && mintData.price !== undefined) {
-                price_map.set(mint, mintData.price); // Set the price if it exists
-            } else {
-                // console.warn(`Price data not found for mint: ${mint}`); // Log a warning if price data is missing
-                price_map.set(mint, 0); // Optionally set a default value (e.g., 0)
-            }
-        }
+                    const result = await response.json();
+                    const resultData = result.data;
 
-        // Update the state with the price map
-        setPriceMap(price_map);
+                    // Process results for this chunk
+                    chunk.forEach((mint) => {
+                        const mintData = resultData[mint];
+                        priceMap.set(mint, mintData?.price ?? 0);
+                    });
+                } catch (error) {
+                    console.error(`Error fetching prices for chunk:`, error);
+                    // Set default values for failed chunk
+                    chunk.forEach((mint) => priceMap.set(mint, 0));
+                }
+            }),
+        );
+
+        setPriceMap(priceMap);
     } catch (error) {
-        console.error("Error fetching token prices: ", error);
+        console.error("Error in getTokenPrices:", error);
+        // Set default values on error
+        mints.forEach((mint) => priceMap.set(mint, 0));
+        setPriceMap(priceMap);
     }
-};
+
+}
+
+const BATCH_SIZE = 100; // Solana's maximum batch size for getMultipleAccountsInfo
 
 const GetTradeMintData = async (trade_keys: String[], setMintMap) => {
-    //console.log("GETTING MINT DATA");
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-    let pubkeys: PublicKey[] = [];
-    for (let i = 0; i < trade_keys.length; i++) {
-        pubkeys.push(new PublicKey(trade_keys[i]));
-    }
-    let result = await connection.getMultipleAccountsInfo(pubkeys, "confirmed");
-    //console.log(result);
     let mint_map = new Map<String, MintData>();
-    for (let i = 0; i < result.length; i++) {
-        try {
-            let mint = unpackMint(pubkeys[i], result[i], result[i].owner);
-            let mint_data = await getMintData(connection, mint, result[i].owner);
 
-            mint_map.set(pubkeys[i].toString(), mint_data);
-            //console.log("mint; ", mint.address.toString());
+    // Convert all trade_keys to PublicKey objects
+    const pubkeys: PublicKey[] = trade_keys.map((key) => new PublicKey(key));
+
+    // Process in batches of 100
+    for (let i = 0; i < pubkeys.length; i += BATCH_SIZE) {
+        const batch = pubkeys.slice(i, i + BATCH_SIZE);
+        try {
+            const batchResults = await connection.getMultipleAccountsInfo(batch, "confirmed");
+
+            // Process each result in the batch
+            for (let j = 0; j < batchResults.length; j++) {
+                const result = batchResults[j];
+                const pubkey = batch[j];
+
+                if (result) {
+                    try {
+                        const mint = unpackMint(pubkey, result, result.owner);
+                        const mint_data = await getMintData(connection, mint, result.owner);
+                        mint_map.set(pubkey.toString(), mint_data);
+                    } catch (error) {
+                        console.log("Failed to process mint:", pubkey.toString());
+                        console.log(error);
+                    }
+                } else {
+                    console.log("No data found for mint:", pubkey.toString());
+                }
+            }
         } catch (error) {
-            console.log("bad mint", pubkeys[i].toString());
+            console.log("Failed to fetch batch starting at index", i);
             console.log(error);
         }
     }
 
-    //console.log("SET MINT MAP", mint_map);
     setMintMap(mint_map);
 };
 
@@ -497,7 +524,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                     amm_data.set(amm_key.toString(), amm);
                     //console.log("AMM", amm.provider, amm.base_mint.toString());
                 } catch (error) {
-                    console.log(error);
+                    console.log("bad amm data", program_data[i].pubkey.toString());
+                    //console.log(error);
                     //closeAccounts.push(program_data[i].pubkey)
                 }
 
@@ -640,7 +668,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
 
         GetTradeMintData(trade_mints, setMintData);
-        GetTokenPrices(price_mints, setJupPrices);
+        getTokenPrices(price_mints, setJupPrices);
     }, [program_data, wallet]);
 
     const ReGetProgramData = useCallback(async () => {

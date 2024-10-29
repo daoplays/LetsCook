@@ -13,6 +13,7 @@ export interface NetworkConfig {
     token: string;
     token_image: string;
     platform_fee: string;
+    skipPreflight: boolean;
 }
 
 const EclipseDevNetConfig: NetworkConfig = {
@@ -26,6 +27,7 @@ const EclipseDevNetConfig: NetworkConfig = {
     token: "ETH",
     token_image: "/images/eth.png",
     platform_fee: "0.0001",
+    skipPreflight: true
 };
 
 const EclipseMainNetConfig: NetworkConfig = {
@@ -39,6 +41,7 @@ const EclipseMainNetConfig: NetworkConfig = {
     token: "ETH",
     token_image: "/images/eth.png",
     platform_fee: "0.0001",
+    skipPreflight: true
 };
 
 const DevNetConfig: NetworkConfig = {
@@ -52,6 +55,7 @@ const DevNetConfig: NetworkConfig = {
     token: "SOL",
     token_image: "/images/sol.png",
     platform_fee: "0.002",
+    skipPreflight: true
 };
 
 const MainNetConfig: NetworkConfig = {
@@ -65,6 +69,8 @@ const MainNetConfig: NetworkConfig = {
     token: "SOL",
     token_image: "/images/sol.png",
     platform_fee: "0.002",
+    skipPreflight: true
+
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
