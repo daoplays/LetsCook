@@ -10,46 +10,53 @@ import { Config } from "../Solana/constants";
 import { AMMPluginData, getAMMPlugins } from "../Solana/jupiter_state";
 import { bignum_to_num } from "../Solana/state";
 
-function getQuoteOutput(base_input_amount: number, amm_base_balance: number, amm_quote_balance: number, fee: number, quoteDecimals: number, baseDecimals: number) : number[] {
+function getQuoteOutput(
+    base_input_amount: number,
+    amm_base_balance: number,
+    amm_quote_balance: number,
+    fee: number,
+    quoteDecimals: number,
+    baseDecimals: number,
+): number[] {
     let amm_base_fee = Math.ceil((base_input_amount * fee) / 100 / 100);
-    let input_ex_fees = (base_input_amount - amm_base_fee);
+    let input_ex_fees = base_input_amount - amm_base_fee;
 
-    let quote_output =
-      ((input_ex_fees * amm_quote_balance)) /
-        (amm_base_balance + input_ex_fees) /
-        Math.pow(10, quoteDecimals);
+    let quote_output = (input_ex_fees * amm_quote_balance) / (amm_base_balance + input_ex_fees) / Math.pow(10, quoteDecimals);
 
     let price = amm_quote_balance / Math.pow(10, quoteDecimals) / (amm_base_balance / Math.pow(10, baseDecimals));
     let quoteNoSlip = (input_ex_fees / Math.pow(10, baseDecimals)) * price;
-    
+
     return [quote_output, quoteNoSlip];
 }
 
-function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData) : number {
-
+function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData): number {
     let threshold = bignum_to_num(pluginData.liquidity_threshold);
     if (quoteAmount > threshold) {
         return 1.0;
     }
 
     let scaling = Math.min(1, ((pluginData.liquidity_scalar / 10) * quoteAmount) / threshold);
-    if (scaling > 1)
-        return 1;
+    if (scaling > 1) return 1;
 
-    if (scaling < 0.0002)
-        return 0.0002;
+    if (scaling < 0.0002) return 0.0002;
 
     return scaling;
 }
 
-function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAmount: number, fee: number, pluginData:AMMPluginData, quoteDecimals: number, baseDecimals: number) : number[] {
-
+function CalculateChunkedOutput(
+    inputAmount: number,
+    quoteAmount: number,
+    baseAmount: number,
+    fee: number,
+    pluginData: AMMPluginData,
+    quoteDecimals: number,
+    baseDecimals: number,
+): number[] {
     let maxChunks = 50;
     let min_chunk_size = 100000;
-    let chunks = Math.min(maxChunks, Math.floor(inputAmount/min_chunk_size) + 1);
+    let chunks = Math.min(maxChunks, Math.floor(inputAmount / min_chunk_size) + 1);
 
-    if (chunks === 0) 
-        return [0, 0];
+    if (chunks === 0) return [0, 0];
 
     let chunkSize = inputAmount / chunks;
     let currentQuote = quoteAmount;
@@ -62,8 +69,7 @@ function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAm
         let amm_fee = Math.ceil((chunkSize * fee) / 100 / 100);
         let input_ex_fees = chunkSize - amm_fee;
         let scaledInput = input_ex_fees / scaling;
-        let output = ((scaledInput * currentQuote)) /
-        (currentBase + scaledInput)
+        let output = (scaledInput * currentQuote) / (currentBase + scaledInput);
 
         let price = currentQuote / Math.pow(10, quoteDecimals) / (currentBase / Math.pow(10, baseDecimals));
         let quoteNoSlip = (scaledInput / Math.pow(10, baseDecimals)) * price;
@@ -99,15 +105,14 @@ const SellPanel = ({
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
-  
     let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.mint.decimals));
-    let plugins : AMMPluginData = getAMMPlugins(amm);
-    let quote_output = plugins.liquidity_active ? CalculateChunkedOutput(base_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, 9, base_mint.mint.decimals) : getQuoteOutput(base_raw, amm_base_balance, amm_quote_balance, amm.fee, 9, base_mint.mint.decimals)
+    let plugins: AMMPluginData = getAMMPlugins(amm);
+    let quote_output = plugins.liquidity_active
+        ? CalculateChunkedOutput(base_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, 9, base_mint.mint.decimals)
+        : getQuoteOutput(base_raw, amm_base_balance, amm_quote_balance, amm.fee, 9, base_mint.mint.decimals);
 
-   
     let quote_output_string = formatPrice(quote_output[0], 5);
 
-    
     let slippage = quote_output[1] / quote_output[0] - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);

@@ -95,7 +95,8 @@ label.label input[type="file"] {
     width: 100%;
 }
 
-.textLabelInput input {}
+.textLabelInput input {
+}
 
 .textLabelInputamms {
     position: relative;
@@ -259,7 +260,7 @@ label.label input[type="file"] {
 
 .nextBtn {
     color: white;
-    background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
+    background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
     background-size: cover;
     padding: 10px 20px;
     font-size: 20px;
@@ -452,7 +453,7 @@ label.label input[type="file"] {
 
     .browse {
         color: white;
-        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
+        background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
         background-size: cover;
         padding: 10px;
         font-size: 20px;
@@ -461,7 +462,7 @@ label.label input[type="file"] {
 
     .nextBtn {
         color: white;
-        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
+        background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
         background-size: cover;
         padding: 10px 20px;
         font-size: 20px;

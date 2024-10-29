@@ -721,7 +721,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     return (
         <Center width="100%" h="100%">
             <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text mb={8} align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
+                <Text mb={8} align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Page Information:
                 </Text>
                 <form onSubmit={nextPage} style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] py-4">

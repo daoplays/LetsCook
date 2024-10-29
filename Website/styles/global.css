@@ -81,12 +81,9 @@ input[type="file"] {
     /* Adjust font weight */
     text-shadow:
         -2px -2px 0 #fff,
-        /* Top-left */
-        2px -2px 0 #fff,
-        /* Top-right */
-        -2px 2px 0 #fff,
-        /* Bottom-left */
-        2px 2px 0 #fff;
+        /* Top-left */ 2px -2px 0 #fff,
+        /* Top-right */ -2px 2px 0 #fff,
+        /* Bottom-left */ 2px 2px 0 #fff;
     /* Bottom-right */
 }
 

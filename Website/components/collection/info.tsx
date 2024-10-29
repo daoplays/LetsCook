@@ -250,7 +250,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     return (
         <Center width="100%" h="100%">
             <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     New Collection:
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pb-4 pt-5">

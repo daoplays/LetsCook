@@ -70,9 +70,9 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                 {tableHeaders.map((i) => (
                     <TableHead className="min-w-[140px] border-b" key={i.text}>
                         {i.field ? (
-                            <div onClick={() => handleHeaderClick(i.field)} className="flex justify-center font-semibold cursor-pointer">
+                            <div onClick={() => handleHeaderClick(i.field)} className="flex cursor-pointer justify-center font-semibold">
                                 {i.text}
-                                {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
+                                {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
                             </div>
                         ) : (
                             i.text

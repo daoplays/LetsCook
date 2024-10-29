@@ -16,8 +16,15 @@ const QuickLaunchBanner = () => {
         <Box w="100%" h={lg ? 350 : "auto"} className={"mb-5"} bgSize="cover" mt={"50px"}>
             <Box w="100%" h="100%">
                 <VStack px={4} justify="center" w="100%" h={"100%"} spacing={5}>
-                    
-                    <Text m={0} fontSize={sm ? 24 : md ? 45 : 60} color="white" className="font-face-kg2" align={"center"} fontWeight="extrabold" lineHeight="30px">
+                    <Text
+                        m={0}
+                        fontSize={sm ? 24 : md ? 45 : 60}
+                        color="white"
+                        className="font-face-kg2"
+                        align={"center"}
+                        fontWeight="extrabold"
+                        lineHeight="30px"
+                    >
                         CREATE A TOKEN IN SECONDS
                     </Text>
                     <Text

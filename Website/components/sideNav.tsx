@@ -163,7 +163,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
             w="100%"
             boxShadow="0px 0px 14.9px 0px rgba(255, 255, 255, 0.4)inset"
             color={isActive ? "white" : "white"}
-            className={isActive? "bg-custom-gradient" : "none"}
+            className={isActive ? "bg-custom-gradient" : "none"}
             cursor={"pointer"}
             borderRadius={8}
             spacing={4}

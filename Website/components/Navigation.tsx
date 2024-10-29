@@ -70,13 +70,19 @@ function Navigation() {
             >
                 <HStack>
                     <div
-                        style={{ cursor: "pointer", marginRight: sidePanelCollapsed ? "120px" : "20px"}}
-                        className="flex items-center gap-2 ml-2"
+                        style={{ cursor: "pointer", marginRight: sidePanelCollapsed ? "120px" : "20px" }}
+                        className="ml-2 flex items-center gap-2"
                         onClick={() => setSidePanelCollapsed(!sidePanelCollapsed)}
                         hidden={sm}
                     >
                         {sidePanelCollapsed ? <PiHamburgerFill size={35} color="#FE6A00" /> : <PiHamburgerFill size={35} color="#fff" />}
-                        {sidePanelCollapsed ? <Text className="mt-1 text-2xl font-extrabold text-white" style={{fontFamily: "kufam", lineHeight: "20px" }}>MENU</Text> : ""}
+                        {sidePanelCollapsed ? (
+                            <Text className="mt-1 text-2xl font-extrabold text-white" style={{ fontFamily: "kufam", lineHeight: "20px" }}>
+                                MENU
+                            </Text>
+                        ) : (
+                            ""
+                        )}
                     </div>
                     <Menu>
                         <MenuButton>
@@ -177,7 +183,7 @@ function Navigation() {
                         src="/images/letscooknewlogo.png"
                         width={100}
                         height={0}
-                        className="lg:ml-[90px] h-auto w-[50px] md:w-[150px]"
+                        className="h-auto w-[50px] md:w-[150px] lg:ml-[90px]"
                         alt="Let's Cook Logo"
                         onClick={() => router.push("/")}
                     />

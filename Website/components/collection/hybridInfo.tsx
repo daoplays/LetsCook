@@ -257,7 +257,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     return (
         <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
-                <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Collection Info:
                 </Text>
                 <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4 pt-5">

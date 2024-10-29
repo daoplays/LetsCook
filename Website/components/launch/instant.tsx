@@ -167,7 +167,7 @@ const LaunchPage = () => {
     return (
         <Center height="100%" width="100%">
             <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     QUICK LAUNCH
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pt-4">

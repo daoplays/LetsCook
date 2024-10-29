@@ -266,7 +266,7 @@ const Pepemon = () => {
                                 }}
                                 onClick={() => handleConnectWallet()}
                             >
-                                <Text m={0} fontWeight={500} fontSize={40} className="font-face-pk    ">
+                                <Text m={0} fontWeight={500} fontSize={40} className="font-face-pk">
                                     Start
                                 </Text>
                             </div>

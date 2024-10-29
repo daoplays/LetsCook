@@ -215,7 +215,7 @@
 }
 .nextBtn {
     color: white;
-    background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
+    background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
     background-size: cover;
     padding: 10px 20px;
     font-size: 20px;
@@ -415,7 +415,7 @@
     }
     .nextBtn {
         color: white;
-        background-image: linear-gradient(0deg, rgba(254,106,0,1) 0%, rgba(236,35,0,1) 100%);
+        background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
         background-size: cover;
         padding: 10px 20px;
         font-size: 20px;

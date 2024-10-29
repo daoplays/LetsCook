@@ -180,10 +180,10 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     return (
         <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text mb={8} align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
+                <Text mb={8} align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     Page Information:
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="bg-[#303030] rounded-md pb-4 pt-4">
+                <form style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] pb-4 pt-4">
                     <VStack px={lg ? 4 : 12}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
@@ -338,7 +338,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     onClick={(e) => {
                                         prevPage(e);
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
                                     GO BACK
                                 </button>
@@ -347,7 +347,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     onClick={(e) => {
                                         nextPage(e);
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg `}
+                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
                                     NEXT (2/3)
                                 </button>

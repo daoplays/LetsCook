@@ -248,14 +248,12 @@ const LaunchAMM = () => {
     }, [sm, md, lg, xl]);
 
     return (
-        <Center
-            width="100%"
-        >
+        <Center width="100%">
             <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
-                <Text align="start" className="font-extrabold font-face-kg" color={"white"} fontSize="x-large">
+                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
                     AMM Info:
                 </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }}  className="bg-[#303030] mt-4 rounded-md py-4">
+                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4">
                     <VStack px={xs || sm || md ? 4 : 42} spacing={25}>
                         <HStack w="100%" spacing={xs || sm || md ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
@@ -723,7 +721,7 @@ const LaunchAMM = () => {
                         <HStack mt={md ? 0 : 30}>
                             <button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg `}
+                                className={`${styles.nextBtn} font-face-kg`}
                                 onClick={() => {
                                     InitExternalAMM(
                                         base_token,

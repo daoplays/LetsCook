@@ -134,8 +134,8 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             TOKEN_PROGRAM_ID,
         );
 
-        let amm_plugins : AMMPluginData = getAMMPlugins(amm);
-        let current_date = Math.floor((new Date().getTime() / 1000) / 24 / 60 / 60) - amm_plugins.trade_reward_first_date;
+        let amm_plugins: AMMPluginData = getAMMPlugins(amm);
+        let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - amm_plugins.trade_reward_first_date;
         let date_bytes = uInt32ToLEBytes(current_date);
 
         let launch_date_account = PublicKey.findProgramAddressSync(
@@ -220,7 +220,6 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
-
         ];
 
         if (transfer_hook_program_account !== null) {
