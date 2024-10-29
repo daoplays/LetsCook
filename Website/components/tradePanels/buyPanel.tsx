@@ -28,21 +28,26 @@ import { Config } from "../Solana/constants";
 import { bignum_to_num } from "../Solana/state";
 import { AMMPluginData, getAMMPlugins } from "../Solana/jupiter_state";
 
-function getBaseOutput(quote_input_amount: number, amm_base_balance: number, amm_quote_balance: number, fee: number, base_decimals: number) : number {
+function getBaseOutput(quote_input_amount: number, amm_base_balance: number, amm_quote_balance: number, fee: number, baseDecimals: number) : number[] {
     let amm_quote_fee = Math.ceil((quote_input_amount * fee) / 100 / 100);
     let input_ex_fees = (quote_input_amount - amm_quote_fee);
 
     let base_output =
       ((input_ex_fees * amm_base_balance)) /
         (amm_quote_balance + input_ex_fees) /
-        Math.pow(10, base_decimals);
+        Math.pow(10, baseDecimals);
 
-    return base_output
+    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, baseDecimals));
+    let base_no_slip = (input_ex_fees / Math.pow(10,9)) / price;
+    
+
+    return [base_output, base_no_slip];
 }
 
 function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData) : number {
 
     let threshold = bignum_to_num(pluginData.liquidity_threshold);
+    //console.log("Scaling factor", quoteAmount, threshold,  Math.min(1, ((pluginData.liquidity_scalar / 10) * quoteAmount) / threshold));
     if (quoteAmount > threshold) {
         return 1.0;
     }
@@ -57,33 +62,44 @@ function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData) : numb
     return scaling;
 }
 
-function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAmount: number, fee: number, pluginData:AMMPluginData, baseDecimals: number) : number {
+function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAmount: number, fee: number, pluginData:AMMPluginData, baseDecimals: number) : number[] {
 
     let maxChunks = 50;
-    let chunks = Math.min(maxChunks, inputAmount);
+    let min_chunk_size = 100;
+    let chunks = Math.min(maxChunks, Math.floor(inputAmount/min_chunk_size) + 1);
 
     if (chunks === 0) 
-        return 0;
+        return [0,0];
 
     let chunkSize = inputAmount / chunks;
     let currentQuote = quoteAmount;
     let currentBase = baseAmount;
     let totalOutput = 0;
+    let noSlipOutput = 0;
 
     for (let i = 0; i < chunks; i++) {
         let scaling = getScalingFactor(currentQuote, pluginData);
-        let amm_quote_fee = Math.ceil((chunkSize * fee) / 100 / 100);
+        let amm_quote_fee = ((chunkSize * fee) / 100 / 100);
         let input_ex_fees = chunkSize - amm_quote_fee;
         let scaledInput = input_ex_fees * scaling;
+        //console.log("chunk", i, "input", chunkSize, "fee", amm_quote_fee, "ex", input_ex_fees);
         let output = ((scaledInput * currentBase)) /
         (currentQuote + scaledInput)
+
+        let price = currentQuote / Math.pow(10, 9) / (currentBase / Math.pow(10, baseDecimals));
+        let base_no_slip = (scaledInput / Math.pow(10, 9)) / price;
+
+        //console.log("chunk", i, "input", chunkSize, "output", output / Math.pow(10, baseDecimals), "NoSlip", base_no_slip, "slippage", 100 * (base_no_slip / (output / Math.pow(10, baseDecimals)) - 1));
+
+
+        noSlipOutput += base_no_slip;
 
         totalOutput += output;
         currentQuote += chunkSize;
         currentBase -= output;
     }
 
-    return totalOutput / Math.pow(10, baseDecimals);
+    return [totalOutput / Math.pow(10, baseDecimals), noSlipOutput];
 }
 
 const BuyPanel = ({
@@ -112,16 +128,15 @@ const BuyPanel = ({
 
 
     let plugins : AMMPluginData = getAMMPlugins(amm);
+    //console.log(plugins)
+
     let base_output = plugins.liquidity_active ? CalculateChunkedOutput(quote_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, base_mint.mint.decimals) : getBaseOutput(quote_raw, amm_base_balance, amm_quote_balance, amm.fee, base_mint.mint.decimals);
-
-    
    
-    let base_output_string = formatPrice(base_output, base_mint.mint.decimals);
+    let base_output_string = formatPrice(base_output[0], base_mint.mint.decimals);
 
-    console.log(amm_base_balance, amm_quote_balance);
-    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
-    let base_no_slip = sol_amount / price;
-    let slippage = base_no_slip / (base_output) - 1;
+    //console.log(amm_base_balance, amm_quote_balance);
+
+    let slippage = base_output[1] / base_output[0] - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
@@ -274,8 +289,8 @@ const BuyPanel = ({
                         : amm.provider === 0
                           ? PlaceMarketOrder(token_amount, sol_amount, 0)
                           : amm.provider === 1
-                            ? SwapRaydium(base_output * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0)
-                            : SwapRaydiumClassic(base_output * Math.pow(10, base_mint.mint.decimals), sol_amount * Math.pow(10, 9), 0);
+                            ? SwapRaydium(base_output[0] * Math.pow(10, base_mint.mint.decimals), 2 * sol_amount * Math.pow(10, 9), 0)
+                            : SwapRaydiumClassic(base_output[0] * Math.pow(10, base_mint.mint.decimals), sol_amount * Math.pow(10, 9), 0);
                 }}
             >
                 <Text m={"0 auto"} fontSize="large" fontWeight="semibold">

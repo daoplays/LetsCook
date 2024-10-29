@@ -10,16 +10,19 @@ import { Config } from "../Solana/constants";
 import { AMMPluginData, getAMMPlugins } from "../Solana/jupiter_state";
 import { bignum_to_num } from "../Solana/state";
 
-function getQuoteOutput(base_input_amount: number, amm_base_balance: number, amm_quote_balance: number, fee: number, quote_decimals: number) : number {
+function getQuoteOutput(base_input_amount: number, amm_base_balance: number, amm_quote_balance: number, fee: number, quoteDecimals: number, baseDecimals: number) : number[] {
     let amm_base_fee = Math.ceil((base_input_amount * fee) / 100 / 100);
     let input_ex_fees = (base_input_amount - amm_base_fee);
 
     let quote_output =
       ((input_ex_fees * amm_quote_balance)) /
         (amm_base_balance + input_ex_fees) /
-        Math.pow(10, quote_decimals);
+        Math.pow(10, quoteDecimals);
 
-    return quote_output
+    let price = amm_quote_balance / Math.pow(10, quoteDecimals) / (amm_base_balance / Math.pow(10, baseDecimals));
+    let quoteNoSlip = (input_ex_fees / Math.pow(10, baseDecimals)) * price;
+    
+    return [quote_output, quoteNoSlip];
 }
 
 function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData) : number {
@@ -39,18 +42,20 @@ function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData) : numb
     return scaling;
 }
 
-function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAmount: number, fee: number, pluginData:AMMPluginData, quoteDecimals: number) : number {
+function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAmount: number, fee: number, pluginData:AMMPluginData, quoteDecimals: number, baseDecimals: number) : number[] {
 
     let maxChunks = 50;
-    let chunks = Math.min(maxChunks, inputAmount);
+    let min_chunk_size = 100000;
+    let chunks = Math.min(maxChunks, Math.floor(inputAmount/min_chunk_size) + 1);
 
     if (chunks === 0) 
-        return 0;
+        return [0, 0];
 
     let chunkSize = inputAmount / chunks;
     let currentQuote = quoteAmount;
     let currentBase = baseAmount;
     let totalOutput = 0;
+    let noSlipOutput = 0;
 
     for (let i = 0; i < chunks; i++) {
         let scaling = getScalingFactor(currentQuote, pluginData);
@@ -60,12 +65,20 @@ function CalculateChunkedOutput(inputAmount: number, quoteAmount: number, baseAm
         let output = ((scaledInput * currentQuote)) /
         (currentBase + scaledInput)
 
+        let price = currentQuote / Math.pow(10, quoteDecimals) / (currentBase / Math.pow(10, baseDecimals));
+        let quoteNoSlip = (scaledInput / Math.pow(10, baseDecimals)) * price;
+
+        //console.log("chunk", i, "input", chunkSize, "output", output / Math.pow(10, quoteDecimals), "quoteNoSlip", quoteNoSlip, "slippage", 100 * (quoteNoSlip / (output / Math.pow(10, 9)) - 1));
+
+        noSlipOutput += quoteNoSlip;
         totalOutput += output;
         currentQuote -= output;
         currentBase += chunkSize;
     }
 
-    return totalOutput / Math.pow(10, quoteDecimals);
+    //console.log("Final", totalOutput / Math.pow(10, quoteDecimals), noSlipOutput);
+
+    return [totalOutput / Math.pow(10, quoteDecimals), noSlipOutput];
 }
 
 const SellPanel = ({
@@ -89,16 +102,13 @@ const SellPanel = ({
   
     let base_raw = Math.floor(token_amount * Math.pow(10, base_mint.mint.decimals));
     let plugins : AMMPluginData = getAMMPlugins(amm);
-    let quote_output = plugins.liquidity_active ? CalculateChunkedOutput(base_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, 9) : getQuoteOutput(base_raw, amm_base_balance, amm_quote_balance, amm.fee, 9);
+    let quote_output = plugins.liquidity_active ? CalculateChunkedOutput(base_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, 9, base_mint.mint.decimals) : getQuoteOutput(base_raw, amm_base_balance, amm_quote_balance, amm.fee, 9, base_mint.mint.decimals)
 
    
-    let quote_output_string = formatPrice(quote_output, 5);
+    let quote_output_string = formatPrice(quote_output[0], 5);
 
-    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, base_mint.mint.decimals));
-    let quote_no_slip = token_amount * price;
-    let slippage = quote_no_slip / (quote_output) - 1;
-
-    console.log("slippage", slippage);
+    
+    let slippage = quote_output[1] / quote_output[0] - 1;
 
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     quote_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
