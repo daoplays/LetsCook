@@ -33,6 +33,15 @@
 }
 
 @font-face {
+    font-family: "Kufam";
+    src:
+        local("Kufam"),
+        url(/fonts/Kufam.ttf) format("truetype");
+    /* other formats include: 'woff2', 'truetype, 'opentype',
+                              'embedded-opentype', and 'svg' */
+}
+
+@font-face {
     font-family: "KGSummerSunshineBlackout";
     src:
         local("KGSummerSunshineBlackout"),
@@ -55,7 +64,11 @@
 }
 
 .font-face-kg {
-    font-family: "KGSummerSunshineBlackout";
+    font-family: "Kufam", sans-serif;
+}
+
+.font-face-kg2 {
+    font-family: "Kufam", sans-serif;
 }
 
 .font-face-cb {

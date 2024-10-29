@@ -15,9 +15,8 @@ const WoodenButton = ({ action, label, size, width, isLoading }: WoodenButtonPro
     const { lg } = useResponsive();
     return (
         <Box
-            bg="url(/images/Wood\ Panel.png)"
+            className="rounded-full bg-custom-gradient"
             backgroundSize="cover"
-            borderRadius={10}
             px={5}
             onClick={action}
             style={{
@@ -34,7 +33,7 @@ const WoodenButton = ({ action, label, size, width, isLoading }: WoodenButtonPro
                         align={"center"}
                         my={lg ? 2 : 4}
                         fontSize={lg ? "medium" : size}
-                        color="#683309"
+                        color="white"
                         className="font-face-kg"
                     >
                         {label}

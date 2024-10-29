@@ -15,6 +15,7 @@ import useClaimTokens from "../../hooks/launch/useClaimTokens";
 import { LaunchFlags, LaunchKeys } from "../Solana/constants";
 import { WinLoss, ButtonString } from "../user_status";
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 interface Header {
     text: string;
     field: string | null;
@@ -64,51 +65,33 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     });
 
     return (
-        <TableContainer>
-            <table
-                width="100%"
-                className="custom-centered-table font-face-rk"
-                style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 120%)" }}
-            >
-                <thead>
-                    <tr
-                        style={{
-                            height: "50px",
-                            borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                            borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
-                        }}
-                    >
-                        {tableHeaders.map((i) => (
-                            <th key={i.text} style={{ minWidth: sm ? "90px" : "120px" }}>
-                                <HStack
-                                    gap={sm ? 1 : 2}
-                                    justify="center"
-                                    style={{ cursor: i.text === "TOKEN" ? "" : "pointer" }}
-                                    onClick={() => handleHeaderClick(i.field)}
-                                >
-                                    <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                        {i.text}
-                                    </Text>
-                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort />}
-                                </HStack>
-                            </th>
-                        ))}
+        <Table className="rounded-lg xl:w-[90%]">
+            <TableHeader>
+                {tableHeaders.map((i) => (
+                    <TableHead className="min-w-[140px] border-b" key={i.text}>
+                        {i.field ? (
+                            <div onClick={() => handleHeaderClick(i.field)} className="flex justify-center font-semibold cursor-pointer">
+                                {i.text}
+                                {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
+                            </div>
+                        ) : (
+                            i.text
+                        )}
+                    </TableHead>
+                ))}
 
-                        <th>
-                            <Box mt={1} as="button" onClick={checkProgramData}>
-                                <TfiReload size={sm ? 18 : 20} />
-                            </Box>
-                        </th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {sortedLaunches.map((launch, i) => (
-                        <LaunchCard key={i} launch={launch} />
-                    ))}
-                </tbody>
-            </table>
-        </TableContainer>
+                <TableHead>
+                    <Box mt={1} as="button" onClick={checkProgramData}>
+                        <TfiReload size={sm ? 18 : 20} />
+                    </Box>
+                </TableHead>
+            </TableHeader>
+            <TableBody>
+                {sortedLaunches.map((launch, i) => (
+                    <LaunchCard key={i} launch={launch} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };
 
@@ -166,12 +149,13 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
     const formattedWinRate = parseFloat(winRate.toFixed(2));
 
     return (
-        <tr
+        <TableRow
             style={{
                 cursor: "pointer",
                 height: "60px",
                 transition: "background-color 0.3s",
             }}
+            className="border-b"
             onMouseOver={(e) => {
                 e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
             }}
@@ -180,7 +164,7 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
             }}
             onClick={() => router.push(`/launch/${launch.launch_data.page_name}`)}
         >
-            <td style={{ minWidth: "160px" }}>
+            <TableCell style={{ minWidth: "160px" }}>
                 <HStack m="0 auto" w={160} px={3} spacing={3} justify="start">
                     <Box w={45} h={45} borderRadius={10}>
                         <Image
@@ -195,8 +179,8 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                         {listing.symbol}
                     </Text>
                 </HStack>
-            </td>
-            <td style={{ minWidth: "120px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "120px" }}>
                 <Badge
                     borderRadius="12px"
                     px={3}
@@ -223,9 +207,9 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                               ? "Cook Failed"
                               : "Unknown"}
                 </Badge>
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: "150px" }}>
+            <TableCell style={{ minWidth: "150px" }}>
                 {MINT_FAILED && (
                     <Text fontSize={"large"} m={0}>
                         {launch.join_data.num_tickets}
@@ -237,21 +221,21 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                 {!MINT_FAILED && launch.join_data.num_tickets === launch.join_data.num_claimed_tickets && (
                     <WinLoss join_data={launch.join_data} />
                 )}
-            </td>
+            </TableCell>
 
-            <td style={{ minWidth: "50px" }}>
+            <TableCell style={{ minWidth: "50px" }}>
                 <VStack>
                     <Text fontSize={"large"} m={0}>
                         {ACTIVE || MINT_FAILED || cook_state === CookState.MINT_SUCCEDED_TICKETS_TO_CHECK ? "--" : `${formattedWinRate}%`}
                     </Text>
                 </VStack>
-            </td>
-            <td style={{ minWidth: "150px" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
                     {date}
                 </Text>
-            </td>
-            <td style={{ minWidth: md ? "150px" : "" }}>
+            </TableCell>
+            <TableCell style={{ minWidth: md ? "150px" : "" }}>
                 <HStack spacing={3} justify="center" style={{ minWidth: "65px" }}>
                     {MINTED_OUT || MINT_FAILED ? (
                         <Button
@@ -267,8 +251,8 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
                         <Button>View</Button>
                     )}
                 </HStack>
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 };
 
