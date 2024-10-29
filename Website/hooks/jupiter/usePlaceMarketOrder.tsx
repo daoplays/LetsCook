@@ -134,8 +134,8 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             TOKEN_PROGRAM_ID,
         );
 
-        let amm_plugins : AMMPluginData = getAMMPlugins(amm);
-        let current_date = Math.floor((new Date().getTime() / 1000) / 24 / 60 / 60) - amm_plugins.trade_reward_first_date;
+        let amm_plugins: AMMPluginData = getAMMPlugins(amm);
+        let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - amm_plugins.trade_reward_first_date;
         let date_bytes = uInt32ToLEBytes(current_date);
 
         let launch_date_account = PublicKey.findProgramAddressSync(
@@ -220,7 +220,6 @@ const usePlaceMarketOrder = (amm: AMMData) => {
             { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
             { pubkey: Config.COOK_FEES, isSigner: false, isWritable: true },
-
         ];
 
         if (transfer_hook_program_account !== null) {
@@ -257,7 +256,7 @@ const usePlaceMarketOrder = (amm: AMMData) => {
 
         try {
             let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
+            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: Config.skipPreflight });
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);

@@ -53,13 +53,12 @@ const DashboardPage = () => {
     return (
         <VStack>
             <Flex
-                px={4}
                 py={18}
                 gap={4}
                 alignItems="center"
                 justifyContent={!sm ? "space-between" : "end"}
                 style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-                w={"100%"}
+                className="xl:w-[90%]"
             >
                 <Text
                     fontSize={sm ? 25 : 35}

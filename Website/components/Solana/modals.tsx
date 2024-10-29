@@ -432,7 +432,7 @@ export function ReceivedAssetModal({
                                                 MintRandom();
                                             }
                                         }}
-                                        className={`${styles.nextBtn} font-face-kg `}
+                                        className={`${styles.nextBtn} font-face-kg`}
                                     >
                                         {globalLoading ? <Spinner /> : "Check"}
                                     </button>

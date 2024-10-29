@@ -131,10 +131,10 @@ function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
     if (list === null || list === undefined) return null;
     if (amm === null || amm === undefined) return null;
 
-    let plugins : AMMPluginData = getAMMPlugins(amm);
+    let plugins: AMMPluginData = getAMMPlugins(amm);
     if (plugins.trade_reward_first_date === 0) return null;
 
-    let current_date = Math.floor((new Date().getTime() / 1000) / 24 / 60 / 60) - plugins.trade_reward_first_date;
+    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - plugins.trade_reward_first_date;
     let key = getAMMKey(amm, amm.provider);
     return list.get(key.toString() + "_" + current_date);
 }
@@ -962,7 +962,7 @@ const AddRewardModal = ({ amm, isOpen, onClose }: { amm: AMMData; isOpen: boolea
                                     }}
                                     onClick={onClose}
                                 >
-                                    Go Back
+                                    GO BACK
                                 </Text>
                                 <button
                                     type="button"

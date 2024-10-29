@@ -58,7 +58,7 @@ const tabs = {
 
     profile: [
         {
-            icon: (size: number) => <Image src="/images/moneybag.svg" width={size} height={size} alt={"Money Bag"} />,
+            icon: (size: number) => <Image src="/images/moneybag-white.svg" width={24} height={24} alt={"Money Bag"} />,
             tab: "My Tickets",
             url: "/bags",
         },
@@ -102,43 +102,44 @@ const SideNav = () => {
 
     return (
         <VStack
-            bg="url(/images/rough-white.png)"
+            bg="#161616"
             backgroundSize="cover"
             width={sidePanelCollapsed ? "260px" : "fit-content"}
             h="calc(100%)"
             position="sticky"
             top="0px"
             bottom="0px"
-            pt={50}
+            mt={"100px"}
             overflowY="auto"
             hidden={sm}
+            color="#fa771a"
         >
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Create
                     </Text>
                     {tabs.create.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Trade
                     </Text>
                     {tabs.trade.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
-                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={0.75}>
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Info
                     </Text>
                     {tabs.info.map(({ tab, icon, url }, i) => (
@@ -160,9 +161,9 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
         <HStack
             justify={sidePanelCollapsed ? "start" : "center"}
             w="100%"
-            boxShadow="0px 8px 12px 5px rgba(0, 0, 0, 0.15)inset"
-            bg={isActive ? "#683309" : "transparent"}
-            color={isActive ? "white" : "#683309"}
+            boxShadow="0px 0px 14.9px 0px rgba(255, 255, 255, 0.4)inset"
+            color={isActive ? "white" : "white"}
+            className={isActive ? "bg-custom-gradient" : "none"}
             cursor={"pointer"}
             borderRadius={8}
             spacing={4}
