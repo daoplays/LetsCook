@@ -164,7 +164,7 @@ export function HypeVote({
     if (has_voted) {
         return (
             <>
-                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                <Text m="0" fontSize={"large"} color={vote_color}>
                     {vote_ratio}
                 </Text>
             </>
@@ -183,12 +183,12 @@ export function HypeVote({
                             }
                         }}
                         src="/images/thumbs-up.svg"
-                        width={isTradePage ? 30 : 35}
-                        height={isTradePage ? 30 : 35}
+                        width={28}
+                        height={28}
                         alt="Thumbs Up"
                     />
                 </Tooltip>
-                <Text m="0" fontSize={lg ? "large" : "x-large"} color={vote_color}>
+                <Text m="0" fontSize={"large"} color={vote_color}>
                     {vote_ratio}
                 </Text>
                 <Tooltip label="Not Hype" hasArrow fontSize="large" offset={[0, 15]}>
@@ -201,8 +201,8 @@ export function HypeVote({
                             }
                         }}
                         src="/images/thumbs-down.svg"
-                        width={isTradePage ? 30 : 35}
-                        height={isTradePage ? 30 : 35}
+                        width={28}
+                        height={28}
                         alt="Thumbs Down"
                     />
                 </Tooltip>
