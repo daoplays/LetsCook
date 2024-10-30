@@ -1,8 +1,7 @@
-import {  ListingData, RunGPA, GPAccount } from "../../components/Solana/state";
+import {  ListingData, RunGPA, GPAccount, MintData } from "../../components/Solana/state";
 import { Config } from "../../components/Solana/constants";
-import { getTradeMintData } from "../../utils/getTokenMintData";
+import { getTradeMintData, serializeMintData } from "../../utils/getTokenMintData";
 import admin from "firebase-admin";
-
 
 // Initialize Firebase Admin SDK
 let firebaseApp = null;
@@ -78,12 +77,18 @@ exports.handler = async function (event, context) {
         }
     }
 
-    let mint_map = await getTradeMintData(mintKeys);
-
+    let mintMap = await getTradeMintData(mintKeys);
+    let mintVector: MintData[] = [];
+    mintMap.forEach((mint) => {
+        mintVector.push(mint);
+    });
+    
     // Initialize Firebase and get database reference
     const app = getFirebaseApp();
     const db = app.database();
-    const database = db.ref(Config.NETWORK + "/accounts/");
+    const accountsDatabase = db.ref(Config.NETWORK + "/accounts/");
+    const tokensDatabase = db.ref(Config.NETWORK + "/tokens/");
+
     let now = new Date().getTime();
 
     try {
@@ -96,7 +101,15 @@ exports.handler = async function (event, context) {
                 ammData: ammData.map(account => serializeGPAccount(account))
             };
           
-            await database.set(data);
+            await accountsDatabase.set(data);
+
+            // Create the data structure
+            const tokenData = {
+                timestamp: now,
+                mintData: mintVector.map(mint => serializeMintData(mint))
+            };
+            
+            await tokensDatabase.set(tokenData);
 
         } catch (error) {
             console.log("ERROR: ", error);

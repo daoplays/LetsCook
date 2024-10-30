@@ -15,7 +15,6 @@ label.label input[type="file"] {
 }
 .inputBox::file-selector-button {
     color: #683309;
-    background-image: url(../public/images/Wood\ Panel.png);
     background-size: cover;
     padding: 10px;
     font-size: 20px;
@@ -373,7 +372,6 @@ label.label input[type="file"] {
     }
     .nextBtn {
         color: #683309;
-        background-image: url(../public/images/Wood\ Panel.png);
         background-size: cover;
         padding: 10px 20px;
         font-size: 20px;
@@ -563,7 +561,6 @@ label.label input[type="file"] {
     }
     .nextBtn {
         color: #683309;
-        background-image: url(../public/images/Wood\ Panel.png);
         background-size: cover;
         padding: 10px 20px;
         font-size: 20px;

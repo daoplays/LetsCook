@@ -37,7 +37,7 @@ import { useSOLPrice } from "../hooks/data/useSOLPrice";
 import { getDatabase, ref, get, Database } from "firebase/database";
 import { firebaseConfig } from "../components/Solana/constants";
 import { initializeApp } from "firebase/app";
-import { getTradeMintData } from "@/utils/getTokenMintData";
+import { deserializeMintData, getTradeMintData } from "../utils/getTokenMintData";
 
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = [];
@@ -419,8 +419,13 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if (!accounts) {
             return;
         }
+
+        const tokensDB = await get(ref(database,Config.NETWORK + "/tokens/"));
+        let tokens = tokensDB.val();
+        if (!tokens) {
+            return;
+        }
     
-        console.log(accounts);
         lastDBUpdate.current = accounts.timestamp;
 
         // Deserialize each account in the accounts array
@@ -433,9 +438,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             deserializeGPAccount(account)
         );
 
+        const tokenAccounts: MintData[] = tokens.mintData.map((mint: any) => 
+            deserializeMintData(mint)
+        );
+
 
         let ammData: Map<string, AMMData> = new Map<string, AMMData>();
         let listingData: Map<string, ListingData> = new Map<string, ListingData>();
+        let tokenData: Map<string, MintData> = new Map<string, MintData>();
 
         for (let i = 0; i < ammAccounts.length; i++) {
             let data = ammAccounts[i].data;
@@ -458,9 +468,15 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
+        for (let i = 0; i < tokenAccounts.length; i++) {
+            let token = tokenAccounts[i];
+            tokenData.set(token.mint.address.toString(), token);
+        }
+
         console.log("Setting initial data from DB")
         setAMMData(ammData);
         setListingData(listingData);
+        setMintData(tokenData);
     }, []);
 
 
