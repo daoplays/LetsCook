@@ -218,7 +218,7 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
                             className="object-cover"
                         />
                     </div>
-                    <span className="font-semibold">${amm_launch.listing.symbol}</span>
+                    <span className="font-semibold">{amm_launch.listing.symbol}</span>
                 </div>
             </TableCell>
             <TableCell className="min-w-[120px]">

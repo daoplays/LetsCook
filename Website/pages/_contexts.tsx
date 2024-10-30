@@ -510,8 +510,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
-                    // console.log("data ", i, launch.page_name);
-
                     launch_data.set(launch.page_name, launch);
                 } catch (error) {
                     //console.log("bad launch data", data);
@@ -660,6 +658,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         launch_data.forEach((launch, key) => {
             // check if we have a whitelist token
+            
             for (let p = 0; p < launch.plugins.length; p++) {
                 if (launch.plugins[p]["__kind"] === "Whitelist") {
                     if (!trade_mints.includes(launch.plugins[p]["key"].toString())) trade_mints.push(launch.plugins[p]["key"]);
