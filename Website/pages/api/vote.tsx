@@ -3,7 +3,6 @@ import { Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import { getRecentPrioritizationFees, get_current_blockhash, serialise_HypeVote_instruction } from "../../components/Solana/state";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
-import { update_listings_blob } from "../_contexts";
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object

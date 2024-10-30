@@ -11,7 +11,6 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
-import { update_listings_blob } from "../pages/_contexts";
 
 export function HypeVote({
     launch_type,
@@ -58,10 +57,6 @@ export function HypeVote({
                 isLoading: false,
                 autoClose: 3000,
             });
-
-            if (launch_type === 0) {
-                update_listings_blob(0, listing.mint.toString());
-            }
         },
         [listing, launch_type],
     );

@@ -463,6 +463,18 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setListingData(listingData);
     }, []);
 
+
+    const UpdateDatabase = useCallback(async () => {
+       
+        await fetch("/.netlify/functions/updateProgramData", {
+            method: "POST",
+            body: JSON.stringify({ }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    }, []);
+
     useEffect(() => {
         if (program_data === null) return;
 
@@ -670,18 +682,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         if ((new Date()).getTime() - lastDBUpdate.current > 60 * 60 * 1000) {
             UpdateDatabase();
         }
-    }, [program_data, wallet]);
+    }, [program_data, wallet, UpdateDatabase]);
 
-    const UpdateDatabase = useCallback(async () => {
-       
-        await fetch("/.netlify/functions/updateProgramData", {
-            method: "POST",
-            body: JSON.stringify({ }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-    }, []);
 
     const ReGetProgramData = useCallback(async () => {
         check_program_data.current = true;
@@ -698,7 +700,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
         
-    }, []);
+    }, [fetchInitialData]);
 
     return (
         <AppRootContextProvider
