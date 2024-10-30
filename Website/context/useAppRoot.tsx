@@ -5,8 +5,6 @@ import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData, MintData, ListingData } from "../components/Solana/state";
 import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
-import { PublicKey } from "@solana/web3.js";
-import { Mint } from "@solana/spl-token";
 interface AppRootTypes {
     sidePanelCollapsed: boolean;
     setSidePanelCollapsed: Dispatch<SetStateAction<boolean>>;
@@ -63,7 +61,7 @@ export const AppRootContextProvider = ({
     listingData,
     setListingData,
     setMintData,
-    jupPrices,
+    jupPrices
 }: PropsWithChildren<AppRootTypes>) => {
     return (
         <AppRootContext.Provider
@@ -92,7 +90,7 @@ export const AppRootContextProvider = ({
                 listingData,
                 setListingData,
                 setMintData,
-                jupPrices,
+                jupPrices
             }}
         >
             {children}

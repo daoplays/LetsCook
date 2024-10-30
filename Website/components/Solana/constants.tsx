@@ -67,6 +67,11 @@ const MainNetConfig: NetworkConfig = {
     platform_fee: "0.002",
 };
 
+
+export const firebaseConfig = {
+    databaseURL: "https://letscooklistings-default-rtdb.firebaseio.com/",
+};
+
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");
 export const PROGRAM = new PublicKey("Cook7kyoaKaiG57VBDUjE2KuPXrWdLEu7d3FdDgsijHU");
 export const SYSTEM_KEY = new PublicKey("11111111111111111111111111111111");
