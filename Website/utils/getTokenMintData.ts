@@ -7,7 +7,7 @@ import { unpackMint } from "@solana/spl-token";
 const BATCH_SIZE = 100; // Solana's maximum batch size for getMultipleAccountsInfo
 
 export const getTradeMintData = async (trade_keys: String[]) => {
-    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
+    const connection = new Connection(Config.RPC_NODE);
     let mint_map = new Map<String, MintData>();
 
     // Convert all trade_keys to PublicKey objects
@@ -15,7 +15,9 @@ export const getTradeMintData = async (trade_keys: String[]) => {
 
     // Process in batches of 100
     for (let i = 0; i < pubkeys.length; i += BATCH_SIZE) {
-        const batch = pubkeys.slice(i, i + BATCH_SIZE);
+        let start_idx = i;
+        let end_idx = Math.min(i + BATCH_SIZE, pubkeys.length);
+        const batch = pubkeys.slice(start_idx, end_idx);
         try {
             const batchResults = await connection.getMultipleAccountsInfo(batch, "confirmed");
 
