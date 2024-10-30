@@ -2,7 +2,6 @@ import { ListingData, RunGPA, GPAccount, MintData } from "../../components/Solan
 import { Config } from "../../components/Solana/constants";
 import { getTradeMintData, serializeMintData } from "../../utils/getTokenMintData";
 import admin from "firebase-admin";
-import { getTradeMintData } from "@/utils/getTokenMintData";
 
 // Initialize Firebase Admin SDK
 let firebaseApp = null;
