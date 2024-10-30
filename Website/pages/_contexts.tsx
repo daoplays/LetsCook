@@ -154,7 +154,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
-    const databaseLoaded = useRef<boolean>(false);
+    const [databaseLoaded, setDatabaseLoaded] = useState<boolean>(false);
 
     const user_balance_ws_id = useRef<number | null>(null);
     const program_ws_id = useRef<number | null>(null);
@@ -465,6 +465,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         setAMMData(ammData);
         setListingData(listingData);
         setMintData(tokenData);
+        setDatabaseLoaded(true);
     }, []);
 
     const UpdateDatabase = useCallback(async () => {
@@ -693,13 +694,19 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     useEffect(() => {
         fetchInitialData();
+    }, [fetchInitialData]);
+
+    useEffect(() => {
+        
+        if (!databaseLoaded) return;
+
         let current_time = new Date().getTime();
         if (current_time - last_program_data_update.current < 1000) return;
 
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-    }, [fetchInitialData]);
+    }, [databaseLoaded]);
 
     return (
         <AppRootContextProvider
