@@ -1276,7 +1276,7 @@ const InfoContent = ({
                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                             SESSION REWARDS:
                         </Text>
-                        {reward === 0 && (
+                        {reward === -1 && (
                             <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                                 <FaPlusCircle onClick={() => onRewardsOpen()} />
                             </Text>

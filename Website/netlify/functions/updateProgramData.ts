@@ -2,6 +2,7 @@ import { request_raw_account_data, LaunchData, bignum_to_num, ListingData, RunGP
 import { PROGRAM, LaunchKeys, LaunchFlags, Config } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import admin from "firebase-admin";
+import { getTradeMintData } from "@/utils/getTokenMintData";
 
 
 // Initialize Firebase Admin SDK
@@ -55,6 +56,7 @@ exports.handler = async function (event, context) {
 
     let ammData: GPAccount[] = [];
     let listingData: GPAccount[] = [];
+    let trade_mints: string[] = [];
 
 
     for (let i = 0; i < programData.length; i++) {
@@ -67,10 +69,21 @@ exports.handler = async function (event, context) {
        
         if (data[0] === 11) {
             listingData.push(programData[i]);
+            try {
+                const [listing] = ListingData.struct.deserialize(data);
+                trade_mints.push(listing.mint.toString());
+            }
+            catch (e) {
+                console.log("Error deserializing listing data: ", e);
+                continue;
+            }
             continue
         }
     }
 
+    let mintMap = await getTradeMintData(trade_mints);
+
+    
     // Initialize Firebase and get database reference
     const app = getFirebaseApp();
     const db = app.database();
