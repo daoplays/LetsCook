@@ -218,27 +218,29 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     return (
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
-                {tableHeaders.map((i) => (
-                    <TableHead key={i.text} className="min-w-[140px] border-b" style={{ minWidth: sm ? "90px" : "120px" }}>
-                        <HStack
-                            gap={sm ? 1 : 2}
-                            justify="center"
-                            style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
-                            onClick={() => handleHeaderClick(i.field)}
-                        >
-                            <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                {i.text}
-                            </Text>
-                            {i.text === "LOGO" ? <></> : <FaSort />}
-                        </HStack>
-                    </TableHead>
-                ))}
+                <TableRow>
+                    {tableHeaders.map((i) => (
+                        <TableHead key={i.text} className="min-w-[140px] border-b" style={{ minWidth: sm ? "90px" : "120px" }}>
+                            <HStack
+                                gap={sm ? 1 : 2}
+                                justify="center"
+                                style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
+                                onClick={() => handleHeaderClick(i.field)}
+                            >
+                                <Text fontSize={sm ? "medium" : "large"} m={0}>
+                                    {i.text}
+                                </Text>
+                                {i.text === "LOGO" ? <></> : <FaSort />}
+                            </HStack>
+                        </TableHead>
+                    ))}
 
-                <TableHead>
-                    <Box mt={1} as="button" onClick={checkProgramData}>
-                        <TfiReload size={sm ? 18 : 20} />
-                    </Box>
-                </TableHead>
+                    <TableHead>
+                        <Box mt={1} as="button" onClick={checkProgramData}>
+                            <TfiReload size={sm ? 18 : 20} />
+                        </Box>
+                    </TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
                 {sortedLaunches.map((launch) => (
