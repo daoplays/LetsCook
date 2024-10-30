@@ -12,6 +12,7 @@ export const useSOLPrice = () => {
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const have_price = useRef<boolean>(false);
     const lastDBUpdate = useRef<number>(0);
+    const [databaseLoaded, setDatabaseLoaded] = useState<boolean>(false);
 
     const fetchInitialPrice = useCallback(async () => {
         // if for some reason this is called after the price has been set from the jupiter api then just return
@@ -31,6 +32,7 @@ export const useSOLPrice = () => {
         console.log("Setting Price From DB:", entry.price, entry.timestamp);
         lastDBUpdate.current = entry.timestamp;
         setPrice(entry.price);
+        setDatabaseLoaded(true);
     }, []);
 
     const fetchPrice = useCallback(async () => {
@@ -95,6 +97,13 @@ export const useSOLPrice = () => {
         // first try and get from the database
         fetchInitialPrice();
 
+    }, []);
+
+
+    useEffect(() => {
+
+        if (!databaseLoaded) return;
+
         // then start fetching the price from jupiter
         startFetchingPrice();
 
@@ -104,7 +113,7 @@ export const useSOLPrice = () => {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [startFetchingPrice]);
+    }, [databaseLoaded]);
 
     return { SOLPrice, loading, error };
 };
