@@ -37,7 +37,7 @@ import { useSOLPrice } from "../hooks/data/useSOLPrice";
 import { getDatabase, ref, get, Database } from "firebase/database";
 import { firebaseConfig } from "../components/Solana/constants";
 import { initializeApp } from "firebase/app";
-import { getTradeMintData } from "@/utils/getTokenMintData";
+import { deserializeMintData, getTradeMintData } from "../utils/getTokenMintData";
 
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = [];
@@ -96,11 +96,10 @@ async function getTokenPrices(mints: string[], setPriceMap: Dispatch<SetStateAct
         mints.forEach((mint) => priceMap.set(mint, 0));
         setPriceMap(priceMap);
     }
-
 }
 
 const GetTradeMintData = async (trade_keys: String[], setMintMap) => {
-    let mint_map = getTradeMintData(trade_keys)
+    let mint_map = await getTradeMintData(trade_keys);
     setMintMap(mint_map);
 };
 
@@ -398,43 +397,43 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     function deserializeGPAccount(serializedAccount: any): GPAccount {
         return {
             pubkey: new PublicKey(serializedAccount.pubkey),
-            data: Buffer.from(serializedAccount.data, 'base64')
+            data: Buffer.from(serializedAccount.data, "base64"),
         };
     }
 
-
     const fetchInitialData = useCallback(async () => {
-
-        if (lastDBUpdate.current > 0)
-            return;
+        if (lastDBUpdate.current > 0) return;
 
         const app = initializeApp(firebaseConfig);
 
         // Initialize Realtime Database and get a reference to the service
         const database = getDatabase(app);
 
-        const accountsDB = await get(ref(database,Config.NETWORK + "/accounts/"));
+        const accountsDB = await get(ref(database, Config.NETWORK + "/accounts/"));
         let accounts = accountsDB.val();
         if (!accounts) {
             return;
         }
-    
-        console.log(accounts);
+
+        const tokensDB = await get(ref(database, Config.NETWORK + "/tokens/"));
+        let tokens = tokensDB.val();
+        if (!tokens) {
+            return;
+        }
+
         lastDBUpdate.current = accounts.timestamp;
 
         // Deserialize each account in the accounts array
-        const listingAccounts: GPAccount[] = accounts.listingData.map((account: any) => 
-            deserializeGPAccount(account)
-        );
+        const listingAccounts: GPAccount[] = accounts.listingData.map((account: any) => deserializeGPAccount(account));
 
         // Deserialize each account in the accounts array
-        const ammAccounts: GPAccount[] = accounts.ammData.map((account: any) => 
-            deserializeGPAccount(account)
-        );
+        const ammAccounts: GPAccount[] = accounts.ammData.map((account: any) => deserializeGPAccount(account));
 
+        const tokenAccounts: MintData[] = tokens.mintData.map((mint: any) => deserializeMintData(mint));
 
         let ammData: Map<string, AMMData> = new Map<string, AMMData>();
         let listingData: Map<string, ListingData> = new Map<string, ListingData>();
+        let tokenData: Map<string, MintData> = new Map<string, MintData>();
 
         for (let i = 0; i < ammAccounts.length; i++) {
             let data = ammAccounts[i].data;
@@ -457,9 +456,25 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             }
         }
 
-        console.log("Setting initial data from DB")
+        for (let i = 0; i < tokenAccounts.length; i++) {
+            let token = tokenAccounts[i];
+            tokenData.set(token.mint.address.toString(), token);
+        }
+
+        console.log("Setting initial data from DB");
         setAMMData(ammData);
         setListingData(listingData);
+        setMintData(tokenData);
+    }, []);
+
+    const UpdateDatabase = useCallback(async () => {
+        await fetch("/.netlify/functions/updateProgramData", {
+            method: "POST",
+            body: JSON.stringify({}),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
     }, []);
 
     useEffect(() => {
@@ -666,22 +681,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         GetTradeMintData(trade_mints, setMintData);
         getTokenPrices(price_mints, setJupPrices);
-
-        if ((new Date()).getTime() - lastDBUpdate.current > 60 * 60 * 1000) {
+        if (new Date().getTime() - lastDBUpdate.current > 60 * 60 * 1000) {
             UpdateDatabase();
         }
-    }, [program_data, wallet]);
-
-    const UpdateDatabase = useCallback(async () => {
-       
-        await fetch("/.netlify/functions/updateProgramData", {
-            method: "POST",
-            body: JSON.stringify({ }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-    }, []);
+    }, [program_data, wallet, UpdateDatabase]);
 
     const ReGetProgramData = useCallback(async () => {
         check_program_data.current = true;
@@ -689,7 +692,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, []);
 
     useEffect(() => {
-
         fetchInitialData();
         let current_time = new Date().getTime();
         if (current_time - last_program_data_update.current < 1000) return;
@@ -697,8 +699,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-        
-    }, []);
+    }, [fetchInitialData]);
 
     return (
         <AppRootContextProvider

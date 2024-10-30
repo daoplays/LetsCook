@@ -118,7 +118,7 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
                             {i.field ? (
                                 <div
                                     onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                    className="flex justify-center font-semibold cursor-pointer"
+                                    className="flex cursor-pointer justify-center font-semibold"
                                 >
                                     {i.text}
                                     {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
@@ -182,7 +182,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         >
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="w-10 h-10 overflow-hidden rounded-lg">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
                         <Image alt="Launch icon" src={listing.icon} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{listing.symbol}</span>

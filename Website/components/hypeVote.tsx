@@ -11,7 +11,6 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
-import { update_listings_blob } from "../pages/_contexts";
 
 export function HypeVote({
     launch_type,
@@ -39,32 +38,25 @@ export function HypeVote({
 
     const signature_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(
-        async (result: any) => {
-            console.log(result);
-            signature_ws_id.current = null;
-            setIsLoading(false);
-            // if we have a subscription field check against ws_id
-            if (result.err !== null) {
-                toast.error("Transaction failed, please try again", {
-                    isLoading: false,
-                    autoClose: 3000,
-                });
-                return;
-            }
-
-            toast.success("Voted!", {
-                type: "success",
+    const check_signature_update = useCallback(async (result: any) => {
+        console.log(result);
+        signature_ws_id.current = null;
+        setIsLoading(false);
+        // if we have a subscription field check against ws_id
+        if (result.err !== null) {
+            toast.error("Transaction failed, please try again", {
                 isLoading: false,
                 autoClose: 3000,
             });
+            return;
+        }
 
-            if (launch_type === 0) {
-                update_listings_blob(0, listing.mint.toString());
-            }
-        },
-        [listing, launch_type],
-    );
+        toast.success("Voted!", {
+            type: "success",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }, []);
 
     const transaction_failed = useCallback(async () => {
         if (signature_ws_id.current == null) return;
