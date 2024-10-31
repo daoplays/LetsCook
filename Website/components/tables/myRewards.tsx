@@ -182,7 +182,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
     let time_left = new Date().getTime() / 1000 / 24 / 60 / 60 - amm_plugins.trade_reward_first_date - current_date;
     time_left *= 24;
     time_left = 24 - time_left;
-    //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
+    //console.log("rewards table", reward.launch_reward.date + 1, days_rewards, total_traded, user_traded, user_percent, user_amount);
 
     return (
         <TableRow
@@ -219,7 +219,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
             )}
             <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {reward.launch_reward.date.toLocaleString()}
+                    {(reward.launch_reward.date + 1).toLocaleString()}
                 </Text>
             </TableCell>
             <TableCell style={{ minWidth: "150px" }}>
