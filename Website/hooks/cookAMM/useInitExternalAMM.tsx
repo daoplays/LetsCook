@@ -57,6 +57,7 @@ class CreateExternalAMM_Instruction {
         readonly quoteAmount: bignum,
         readonly wrap: number,
         readonly burnLP: number,
+        readonly lowLiquidity : number
     ) {}
 
     static readonly struct = new FixableBeetStruct<CreateExternalAMM_Instruction>(
@@ -74,6 +75,7 @@ class CreateExternalAMM_Instruction {
             ["quoteAmount", u64],
             ["wrap", u8],
             ["burnLP", u8],
+            ["lowLiquidity", u8]    
         ],
         (args) =>
             new CreateExternalAMM_Instruction(
@@ -90,6 +92,7 @@ class CreateExternalAMM_Instruction {
                 args.quoteAmount!,
                 args.wrap!,
                 args.burnLP!,
+                args.lowLiquidity!
             ),
         "CreateExternalAMM_Instruction",
     );
@@ -105,6 +108,7 @@ function serialise_CreateExternalAMM_instruction(
     quoteAmount: number,
     wrap: number,
     burn: number,
+    lowLiquidity: number
 ): Buffer {
     const data = new CreateExternalAMM_Instruction(
         LaunchInstruction.init_cook_external,
@@ -120,6 +124,7 @@ function serialise_CreateExternalAMM_instruction(
         quoteAmount,
         wrap,
         burn,
+        lowLiquidity
     );
     const [buf] = CreateExternalAMM_Instruction.struct.serialize(data);
 
@@ -181,6 +186,7 @@ const useInitExternalAMM = () => {
         quoteAmount: number,
         wrap: number,
         burn: number,
+        lowLiquidity: number
     ) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
@@ -246,7 +252,7 @@ const useInitExternalAMM = () => {
             cook_lp_mint_account, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            quoteMint.token_program,
+            baseMint.token_program,
         );
 
         let index_buffer = uInt32ToLEBytes(0);
@@ -267,6 +273,7 @@ const useInitExternalAMM = () => {
             quoteAmount * Math.pow(10, quoteMint.mint.decimals),
             wrap,
             burn,
+            lowLiquidity
         );
 
         var account_vector = [

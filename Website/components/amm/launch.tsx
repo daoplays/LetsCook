@@ -208,6 +208,7 @@ const LaunchAMM = () => {
 
     const [burnLP, setBurnLP] = useState<number>(0);
     const [wrapETH, setWrapETH] = useState<number>(0);
+    const [lowLiquidity, setLowLiquidity] = useState<number>(1);
 
     const { InitExternalAMM, isLoading } = useInitExternalAMM();
 
@@ -717,6 +718,29 @@ const LaunchAMM = () => {
                                     </Tooltip>
                                 </HStack>
                             </HStack>
+                            <HStack spacing={15} w="100%" className={styles.eachField}>
+                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
+                                    BONDING CURVE:
+                                </div>
+                                <HStack>
+                                    <Switch
+                                        ml={2}
+                                        py={2}
+                                        size={lg ? "md" : "lg"}
+                                        isChecked={lowLiquidity === 1}
+                                        onChange={() => setLowLiquidity(lowLiquidity === 0 ? 1 : 0)}
+                                    />
+                                    <Tooltip
+                                        label={"AMM has two phases, one at low liquidity, where the pool behaves like a bonding curve.  There is reduced price impact and price acceleration.  At high liquidity it transition to a standard constant product AMM."}
+                                        hasArrow
+                                        w={270}
+                                        fontSize="large"
+                                        offset={[0, 10]}
+                                    >
+                                        <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                    </Tooltip>
+                                </HStack>
+                            </HStack>
                         </VStack>
                         <HStack mt={md ? 0 : 30}>
                             <button
@@ -734,6 +758,7 @@ const LaunchAMM = () => {
                                         parseFloat(quote_amount),
                                         wrapETH,
                                         burnLP,
+                                        lowLiquidity
                                     );
                                 }}
                             >

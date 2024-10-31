@@ -430,17 +430,8 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        //let hash_string = "global:request";
-        //const msgBuffer = new TextEncoder().encode(hash_string);
 
-        // hash the message
-        //const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-
-        // convert ArrayBuffer to Array
-        //const hashArray = Array.from(new Uint8Array(hashBuffer));
-        //console.log(hashArray.slice(0, 8));
-        //("check market data");
-        if (!amm) return;
+        if (!amm || !base_mint) return;
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
@@ -623,7 +614,7 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (listing === null || amm === null || base_mint === null || mmLaunchData === null) {
+    if (listing === null || amm === null || !base_mint || mmLaunchData === null) {
         return <Loader />;
     }
 
