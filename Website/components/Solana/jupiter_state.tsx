@@ -85,6 +85,24 @@ function calculateReward(days: number, mm_amount : number) {
     return 0.0;
 }
 
+export function reward_date(amm) {
+    if (amm.plugins.length === 0) {
+        return 0.0;
+    }
+
+    let plugins: AMMPluginData = getAMMPlugins(amm);
+    //console.log(plugins)
+    if (plugins.trade_reward_tokens === 0) {
+        return 0.0;
+    }
+
+    let first_date = plugins.trade_reward_first_date;
+
+    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+
+    return current_date - first_date;
+}
+
 export function reward_schedule(date: number, amm: AMMData, mint: MintData): number {
     if (amm.plugins.length === 0) {
         return 0.0;
