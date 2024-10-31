@@ -111,7 +111,7 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
     for (let i = last_date; i <= current_days; i++) {
         let this_reward = calculateReward(i, mm_amount);
         total_reward += this_reward;
-        console.log("calculating total reward ", i, this_reward, total_reward);
+        //console.log("calculating total reward ", i, this_reward, total_reward);
     }
 
     return total_reward;
