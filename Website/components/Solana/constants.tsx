@@ -27,7 +27,7 @@ const EclipseDevNetConfig: NetworkConfig = {
     token: "ETH",
     token_image: "/images/eth.png",
     platform_fee: "0.0001",
-    skipPreflight: true
+    skipPreflight: true,
 };
 
 const EclipseMainNetConfig: NetworkConfig = {
@@ -41,7 +41,7 @@ const EclipseMainNetConfig: NetworkConfig = {
     token: "ETH",
     token_image: "/images/eth.png",
     platform_fee: "0.0001",
-    skipPreflight: true
+    skipPreflight: true,
 };
 
 const DevNetConfig: NetworkConfig = {
@@ -55,7 +55,7 @@ const DevNetConfig: NetworkConfig = {
     token: "SOL",
     token_image: "/images/sol.png",
     platform_fee: "0.002",
-    skipPreflight: true
+    skipPreflight: true,
 };
 
 const MainNetConfig: NetworkConfig = {
@@ -69,8 +69,11 @@ const MainNetConfig: NetworkConfig = {
     token: "SOL",
     token_image: "/images/sol.png",
     platform_fee: "0.002",
-    skipPreflight: true
+    skipPreflight: true,
+};
 
+export const firebaseConfig = {
+    databaseURL: "https://letscooklistings-default-rtdb.firebaseio.com/",
 };
 
 export const METAPLEX_META = new PublicKey("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s");

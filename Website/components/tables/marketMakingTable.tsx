@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, ListingData, MintData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
-import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, reward_schedule } from "../Solana/jupiter_state";
+import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, reward_schedule, reward_date } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
@@ -153,21 +153,23 @@ const MarketMakingTable = () => {
     return (
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
-                {tableHeaders.map((header) => (
-                    <TableHead className="min-w-[140px] border-b" key={header.text}>
-                        {header.field ? (
-                            <div
-                                onClick={() => header.field && handleSort(header.field)}
-                                className="flex cursor-pointer justify-center font-semibold"
-                            >
-                                {header.text}
-                                <FaSort className="ml-2 h-4 w-4" />
-                            </div>
-                        ) : (
-                            header.text
-                        )}
-                    </TableHead>
-                ))}
+                <TableRow>
+                    {tableHeaders.map((header) => (
+                        <TableHead className="min-w-[140px] border-b" key={header.text}>
+                            {header.field ? (
+                                <div
+                                    onClick={() => header.field && handleSort(header.field)}
+                                    className="flex cursor-pointer justify-center font-semibold"
+                                >
+                                    {header.text}
+                                    <FaSort className="ml-2 h-4 w-4" />
+                                </div>
+                            ) : (
+                                header.text
+                            )}
+                        </TableHead>
+                    ))}
+                </TableRow>
             </TableHeader>
             <TableBody>
                 {sortedRows.map((launch, i) => (
@@ -180,10 +182,14 @@ const MarketMakingTable = () => {
 
 const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
     const router = useRouter();
-    const { ammData, jupPrices } = useAppRoot();
+    const { mmLaunchData, ammData, jupPrices } = useAppRoot();
 
-    const current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm_launch.amm_data.start_time)) / 24 / 60 / 60);
-    const mm_rewards = reward_schedule(current_date, amm_launch.amm_data, amm_launch.mint);
+    if (!mmLaunchData || !ammData || !jupPrices) return (<></>);
+
+    let current_reward_date = reward_date(amm_launch.amm_data);
+    let mm_data : MMLaunchData = mmLaunchData.get(amm_launch.amm_data.pool.toString() + "_" + current_reward_date.toString());
+
+    const mm_rewards = mm_data ? bignum_to_num(mm_data.token_rewards)/Math.pow(10, amm_launch.mint.mint.decimals) : reward_schedule(0, amm_launch.amm_data, amm_launch.mint);
 
     const last_price =
         amm_launch.amm_data.provider === 0
@@ -216,7 +222,7 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
                             className="object-cover"
                         />
                     </div>
-                    <span className="font-semibold">${amm_launch.listing.symbol}</span>
+                    <span className="font-semibold">{amm_launch.listing.symbol}</span>
                 </div>
             </TableCell>
             <TableCell className="min-w-[120px]">

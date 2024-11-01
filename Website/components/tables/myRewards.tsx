@@ -129,23 +129,25 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     return (
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
-                {tableHeaders.map((i) => (
-                    <TableHead className="min-w-[140px] border-b" key={i.text}>
-                        {i.field ? (
-                            <div className="flex cursor-pointer justify-center font-semibold">
-                                {i.text}
-                                <FaSort className="ml-2 h-4 w-4" />
-                            </div>
-                        ) : (
-                            i.text
-                        )}
+                <TableRow>
+                    {tableHeaders.map((i) => (
+                        <TableHead className="min-w-[140px] border-b" key={i.text}>
+                            {i.field ? (
+                                <div className="flex cursor-pointer justify-center font-semibold">
+                                    {i.text}
+                                    <FaSort className="ml-2 h-4 w-4" />
+                                </div>
+                            ) : (
+                                i.text
+                            )}
+                        </TableHead>
+                    ))}
+                    <TableHead>
+                        <Box mt={1} as="button">
+                            <TfiReload size={sm ? 18 : 20} />
+                        </Box>
                     </TableHead>
-                ))}
-                <TableHead>
-                    <Box mt={1} as="button">
-                        <TfiReload size={sm ? 18 : 20} />
-                    </Box>
-                </TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
                 {mapped_rewards.map((r, i) => (
@@ -180,7 +182,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
     let time_left = new Date().getTime() / 1000 / 24 / 60 / 60 - amm_plugins.trade_reward_first_date - current_date;
     time_left *= 24;
     time_left = 24 - time_left;
-    //console.log(current_date, time_left, days_rewards, total_traded, user_traded);
+    //console.log("rewards table", reward.launch_reward.date + 1, days_rewards, total_traded, user_traded, user_percent, user_amount);
 
     return (
         <TableRow
@@ -217,7 +219,7 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
             )}
             <TableCell style={{ minWidth: "150px" }}>
                 <Text fontSize={"large"} m={0}>
-                    {reward.launch_reward.date.toLocaleString()}
+                    {(reward.launch_reward.date + 1).toLocaleString()}
                 </Text>
             </TableCell>
             <TableCell style={{ minWidth: "150px" }}>

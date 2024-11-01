@@ -3,7 +3,7 @@ import Head from "next/head";
 import { Card, CardBody, Flex, Stack, Text, Box, Button, Image, Progress, useDisclosure, HStack, Tooltip } from "@chakra-ui/react";
 import { IoSettingsSharp, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
 import Links from "../../components/Buttons/links";
-import { CollectionKeys, SYSTEM_KEY } from "../../components/Solana/constants";
+import { CollectionKeys, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import Loader from "../../components/loader";
 import { stockSoldPercentage } from "../../utils/stockSoldPercentage";
 import { useWallet } from "@solana/wallet-adapter-react";
@@ -25,7 +25,7 @@ const Badgers = () => {
     const { audioRef, isMusicPlaying, isMuted, showControls, togglePlayPause, toggleControls, toggleControlsOff, handleVolumeChange } =
         useAudioPlayer();
     const wallet = useWallet();
-    const collection_name = "testingtest";
+    const collection_name = Config.NETWORK === "mainnet" ? "badger" : "testingtest";
     const { handleConnectWallet } = UseWalletConnection();
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
     const { collection, tokenMint, error: collectionError } = useCollection({ pageName: collection_name as string | null });

@@ -107,21 +107,23 @@ const LeaderboardPage = () => {
             <>
                 <Table className="rounded-lg xl:w-[90%]">
                     <TableHeader>
-                        {tableHeaders.map((i) => (
-                            <TableHead className="min-w-[140px] border-b" key={i.text}>
-                                {i.field ? (
-                                    <div
-                                        onClick={() => handleHeaderClick(i.field)}
-                                        className="flex cursor-pointer justify-center font-semibold"
-                                    >
-                                        {i.text}
-                                        {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
-                                    </div>
-                                ) : (
-                                    i.text
-                                )}
-                            </TableHead>
-                        ))}
+                        <TableRow>
+                            {tableHeaders.map((i) => (
+                                <TableHead className="min-w-[140px] border-b" key={i.text}>
+                                    {i.field ? (
+                                        <div
+                                            onClick={() => handleHeaderClick(i.field)}
+                                            className="flex cursor-pointer justify-center font-semibold"
+                                        >
+                                            {i.text}
+                                            {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                        </div>
+                                    ) : (
+                                        i.text
+                                    )}
+                                </TableHead>
+                            ))}
+                        </TableRow>
                     </TableHeader>
                     <TableBody>
                         {sortedUsers.map((user, i) => {

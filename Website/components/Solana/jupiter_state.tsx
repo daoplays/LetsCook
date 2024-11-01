@@ -72,30 +72,67 @@ export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
     return amm_data_account;
 }
 
+function calculateReward(days: number, mm_amount : number) {
+    if (days < 10) {
+        return 0.05 * mm_amount;
+    }
+    if (days >= 10 && days < 20) {
+        return 0.03 * mm_amount;
+    }
+    if (days >= 20 && days < 30) {
+        return 0.02 * mm_amount;
+    }
+    return 0.0;
+}
+
+export function reward_date(amm) {
+    if (amm.plugins.length === 0) {
+        return 0.0;
+    }
+
+    let plugins: AMMPluginData = getAMMPlugins(amm);
+    //console.log(plugins)
+    if (plugins.trade_reward_tokens === 0) {
+        return 0.0;
+    }
+
+    let first_date = plugins.trade_reward_first_date;
+
+    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
+
+    return current_date - first_date;
+}
+
 export function reward_schedule(date: number, amm: AMMData, mint: MintData): number {
     if (amm.plugins.length === 0) {
         return 0.0;
     }
 
     let plugins: AMMPluginData = getAMMPlugins(amm);
+    //console.log(plugins)
     if (plugins.trade_reward_tokens === 0) {
         return 0.0;
     }
 
     let mm_amount = Number(plugins.trade_reward_tokens / Math.pow(10, mint.mint.decimals));
     let first_date = plugins.trade_reward_first_date;
+    let last_date = plugins.trade_reward_last_date;
+
     let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60);
-    let date_delta = current_date - first_date;
-    if (date_delta < 10) {
-        return 0.05 * mm_amount;
+    let current_days = current_date - first_date;
+
+    //console.log("rewards: current date ", current_date, " first date ", first_date, " date delta ", current_days, " last date ", last_date);
+    let total_reward = 0;
+    if (last_date > 0)
+        last_date++;
+
+    for (let i = last_date; i <= current_days; i++) {
+        let this_reward = calculateReward(i, mm_amount);
+        total_reward += this_reward;
+        //console.log("calculating total reward ", i, this_reward, total_reward);
     }
-    if (date_delta >= 10 && date_delta < 20) {
-        return 0.03 * mm_amount;
-    }
-    if (date_delta >= 20 && date_delta < 30) {
-        return 0.02 * mm_amount;
-    }
-    return 0.0;
+
+    return total_reward;
 }
 
 export class OHLCV {

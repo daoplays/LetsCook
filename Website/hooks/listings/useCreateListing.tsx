@@ -38,7 +38,6 @@ import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAc
 import { FixableBeetStruct, array, u8, utf8String } from "@metaplex-foundation/beet";
 import { NewListing } from "../../components/listing/launch";
 import { RaydiumAMM } from "../../components/Solana/jupiter_state";
-import { update_listings_blob } from "../../pages/_contexts";
 
 class CreateListing_Instruction {
     constructor(

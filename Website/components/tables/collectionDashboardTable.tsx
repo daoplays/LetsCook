@@ -48,18 +48,20 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
     return (
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
-                {tableHeaders.map((header) => (
-                    <TableHead className="min-w-[140px] border-b" key={header.text}>
-                        {header.field ? (
-                            <div onClick={() => header.field} className="flex cursor-pointer justify-center font-semibold">
-                                {header.text}
-                                <FaSort className="ml-2 h-4 w-4" />
-                            </div>
-                        ) : (
-                            header.text
-                        )}
-                    </TableHead>
-                ))}
+                <TableRow>
+                    {tableHeaders.map((header) => (
+                        <TableHead className="min-w-[140px] border-b" key={header.text}>
+                            {header.field ? (
+                                <div onClick={() => header.field} className="flex cursor-pointer justify-center font-semibold">
+                                    {header.text}
+                                    <FaSort className="ml-2 h-4 w-4" />
+                                </div>
+                            ) : (
+                                header.text
+                            )}
+                        </TableHead>
+                    ))}
+                </TableRow>
             </TableHeader>
             <TableBody>
                 {collectionList.map((launch, i) => (

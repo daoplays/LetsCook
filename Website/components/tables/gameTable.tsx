@@ -112,26 +112,28 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
     return (
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
-                {tableHeaders.map((i) => (
-                    <TableHead key={i.text} className="min-w-[140px] border-b">
-                        {i.field ? (
-                            <div
-                                onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                className="flex cursor-pointer justify-center font-semibold"
-                            >
-                                {i.text}
-                                {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
-                            </div>
-                        ) : (
-                            i.text
-                        )}
+                <TableRow>
+                    {tableHeaders.map((i) => (
+                        <TableHead key={i.text} className="min-w-[140px] border-b">
+                            {i.field ? (
+                                <div
+                                    onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                    className="flex cursor-pointer justify-center font-semibold"
+                                >
+                                    {i.text}
+                                    {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
+                                </div>
+                            ) : (
+                                i.text
+                            )}
+                        </TableHead>
+                    ))}
+                    <TableHead>
+                        <Box as="button">
+                            <TfiReload size={20} onClick={checkProgramData} />
+                        </Box>
                     </TableHead>
-                ))}
-                <TableHead>
-                    <Box as="button">
-                        <TfiReload size={20} onClick={checkProgramData} />
-                    </Box>
-                </TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
                 {filtered.sort().map((item: LaunchData, index) => (

@@ -34,43 +34,10 @@ import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
 import { getMintData } from "../components/amm/launch";
 import { useSOLPrice } from "../hooks/data/useSOLPrice";
-
-export const update_listings_blob = async (type: number, value: string) => {
-    if (!Config.PROD) {
-        return;
-    }
-
-    if (type == 0) {
-        const response = await fetch("/.netlify/functions/update_listings", {
-            method: "POST",
-            body: JSON.stringify({
-                address: value,
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        const result = await response.json();
-        console.log(result);
-        return result.body;
-    }
-    if (type == 1) {
-        const response = await fetch("/.netlify/functions/update_collection", {
-            method: "POST",
-            body: JSON.stringify({
-                name: value,
-            }),
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
-
-        const result = await response.json();
-        console.log(result);
-        return result.body;
-    }
-};
+import { getDatabase, ref, get, Database } from "firebase/database";
+import { firebaseConfig } from "../components/Solana/constants";
+import { initializeApp } from "firebase/app";
+import { deserializeMintData, getTradeMintData } from "../utils/getTokenMintData";
 
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = [];
@@ -129,48 +96,10 @@ async function getTokenPrices(mints: string[], setPriceMap: Dispatch<SetStateAct
         mints.forEach((mint) => priceMap.set(mint, 0));
         setPriceMap(priceMap);
     }
-
 }
 
-const BATCH_SIZE = 100; // Solana's maximum batch size for getMultipleAccountsInfo
-
 const GetTradeMintData = async (trade_keys: String[], setMintMap) => {
-    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-    let mint_map = new Map<String, MintData>();
-
-    // Convert all trade_keys to PublicKey objects
-    const pubkeys: PublicKey[] = trade_keys.map((key) => new PublicKey(key));
-
-    // Process in batches of 100
-    for (let i = 0; i < pubkeys.length; i += BATCH_SIZE) {
-        const batch = pubkeys.slice(i, i + BATCH_SIZE);
-        try {
-            const batchResults = await connection.getMultipleAccountsInfo(batch, "confirmed");
-
-            // Process each result in the batch
-            for (let j = 0; j < batchResults.length; j++) {
-                const result = batchResults[j];
-                const pubkey = batch[j];
-
-                if (result) {
-                    try {
-                        const mint = unpackMint(pubkey, result, result.owner);
-                        const mint_data = await getMintData(connection, mint, result.owner);
-                        mint_map.set(pubkey.toString(), mint_data);
-                    } catch (error) {
-                        console.log("Failed to process mint:", pubkey.toString());
-                        console.log(error);
-                    }
-                } else {
-                    console.log("No data found for mint:", pubkey.toString());
-                }
-            }
-        } catch (error) {
-            console.log("Failed to fetch batch starting at index", i);
-            console.log(error);
-        }
-    }
-
+    let mint_map = await getTradeMintData(trade_keys);
     setMintMap(mint_map);
 };
 
@@ -196,6 +125,7 @@ const GetProgramData = async (check_program_data, setProgramData, setIsLaunchDat
 
 const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
+
     const [selectedNetwork, setSelectedNetwork] = useState(Config.NETWORK);
     const [sidePanelCollapsed, setSidePanelCollapsed] = useState(false);
 
@@ -224,12 +154,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
+    const [databaseLoaded, setDatabaseLoaded] = useState<boolean>(false);
 
     const user_balance_ws_id = useRef<number | null>(null);
     const program_ws_id = useRef<number | null>(null);
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
     const newCollectionData = useRef<CollectionDataUserInput>({ ...defaultCollectionInput });
+    const lastDBUpdate = useRef<number>(0);
 
     const { SOLPrice } = useSOLPrice();
 
@@ -461,6 +393,91 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         [wallet],
     );
 
+    // Helper function to deserialize account data
+    function deserializeGPAccount(serializedAccount: any): GPAccount {
+        return {
+            pubkey: new PublicKey(serializedAccount.pubkey),
+            data: Buffer.from(serializedAccount.data, "base64"),
+        };
+    }
+
+    const fetchInitialData = useCallback(async () => {
+        if (lastDBUpdate.current > 0) return;
+
+        const app = initializeApp(firebaseConfig);
+
+        // Initialize Realtime Database and get a reference to the service
+        const database = getDatabase(app);
+
+        const accountsDB = await get(ref(database, Config.NETWORK + "/accounts/"));
+        let accounts = accountsDB.val();
+        if (!accounts) {
+            return;
+        }
+
+        const tokensDB = await get(ref(database, Config.NETWORK + "/tokens/"));
+        let tokens = tokensDB.val();
+        if (!tokens) {
+            return;
+        }
+
+        lastDBUpdate.current = accounts.timestamp;
+
+        // Deserialize each account in the accounts array
+        const listingAccounts: GPAccount[] = accounts.listingData.map((account: any) => deserializeGPAccount(account));
+
+        // Deserialize each account in the accounts array
+        const ammAccounts: GPAccount[] = accounts.ammData.map((account: any) => deserializeGPAccount(account));
+
+        const tokenAccounts: MintData[] = tokens.mintData.map((mint: any) => deserializeMintData(mint));
+
+        let ammData: Map<string, AMMData> = new Map<string, AMMData>();
+        let listingData: Map<string, ListingData> = new Map<string, ListingData>();
+        let tokenData: Map<string, MintData> = new Map<string, MintData>();
+
+        for (let i = 0; i < ammAccounts.length; i++) {
+            let data = ammAccounts[i].data;
+            try {
+                const [amm] = AMMData.struct.deserialize(data);
+                let amm_key = getAMMKey(amm, amm.provider);
+                ammData.set(amm_key.toString(), amm);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        for (let i = 0; i < listingAccounts.length; i++) {
+            let data = listingAccounts[i].data;
+            try {
+                const [listing] = ListingData.struct.deserialize(data);
+                listingData.set(listingAccounts[i].pubkey.toString(), listing);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        for (let i = 0; i < tokenAccounts.length; i++) {
+            let token = tokenAccounts[i];
+            tokenData.set(token.mint.address.toString(), token);
+        }
+
+        console.log("Setting initial data from DB");
+        setAMMData(ammData);
+        setListingData(listingData);
+        setMintData(tokenData);
+        setDatabaseLoaded(true);
+    }, []);
+
+    const UpdateDatabase = useCallback(async () => {
+        await fetch("/.netlify/functions/updateProgramData", {
+            method: "POST",
+            body: JSON.stringify({}),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+    }, []);
+
     useEffect(() => {
         if (program_data === null) return;
 
@@ -493,8 +510,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (data[0] === 0) {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
-                    // console.log("data ", i, launch.page_name);
-
                     launch_data.set(launch.page_name, launch);
                 } catch (error) {
                     //console.log("bad launch data", data);
@@ -540,11 +555,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (data[0] === 11) {
                 const [listing] = ListingData.struct.deserialize(data);
-                //if (listing.mint.toString() !== "3S8qX1MsMqRbiwKg2cQyx7nis1oHMgaCuc9c4VfvVdPN" && listing.mint.toString() !== "5jiJ7c4TqKgLyWhTwgmEiDu9UboQNMNYH1kZXd6kpump"){
-                //closeAccounts.push(program_data[i].pubkey)
-                //continue;
-                //}
-                //update_listings_blob(listing.mint.toString());
+
                 listings.set(program_data[i].pubkey.toString(), listing);
                 continue;
             }
@@ -647,6 +658,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         launch_data.forEach((launch, key) => {
             // check if we have a whitelist token
+            
             for (let p = 0; p < launch.plugins.length; p++) {
                 if (launch.plugins[p]["__kind"] === "Whitelist") {
                     if (!trade_mints.includes(launch.plugins[p]["key"].toString())) trade_mints.push(launch.plugins[p]["key"]);
@@ -669,7 +681,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         GetTradeMintData(trade_mints, setMintData);
         getTokenPrices(price_mints, setJupPrices);
-    }, [program_data, wallet]);
+        if (new Date().getTime() - lastDBUpdate.current > 60 * 60 * 1000) {
+            UpdateDatabase();
+        }
+    }, [program_data, wallet, UpdateDatabase]);
 
     const ReGetProgramData = useCallback(async () => {
         check_program_data.current = true;
@@ -677,13 +692,20 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, []);
 
     useEffect(() => {
+        fetchInitialData();
+    }, [fetchInitialData]);
+
+    useEffect(() => {
+        
+        if (!databaseLoaded) return;
+
         let current_time = new Date().getTime();
         if (current_time - last_program_data_update.current < 1000) return;
 
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-    }, []);
+    }, [databaseLoaded]);
 
     return (
         <AppRootContextProvider
