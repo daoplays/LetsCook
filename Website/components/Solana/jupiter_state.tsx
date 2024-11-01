@@ -123,7 +123,7 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
 
     //console.log("rewards: current date ", current_date, " first date ", first_date, " date delta ", current_days, " last date ", last_date);
     let total_reward = 0;
-    if (last_date > 0)
+    if (last_date > 0 || (last_date === 0 && current_days > 0))
         last_date++;
 
     for (let i = last_date; i <= current_days; i++) {
