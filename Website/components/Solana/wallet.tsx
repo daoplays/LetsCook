@@ -21,18 +21,9 @@ export function DisconnectWalletButton() {
                     handleDisconnectWallet();
                 }}
             >
-                <HStack
-                    align="center"
-                    color="white"
-                    className="font-face-rk bg-white text-black"
-                    style={{ borderRadius: 20 }}
-                    py={1}
-                    px={3}
-                >
+                <HStack align="center" color="white" className="bg-white text-black" style={{ borderRadius: 20 }} py={1} px={3}>
                     <FaSignOutAlt size={18} />
-                    <Text m={0} className={styles.connect} style={{}}>
-                        {trimAddress(wallet.publicKey.toString())}
-                    </Text>
+                    <Text m={0}>{trimAddress(wallet.publicKey.toString())}</Text>
                 </HStack>
             </Box>
         </>
@@ -43,24 +34,18 @@ export function ConnectWalletButton() {
     const { handleConnectWallet } = UseWalletConnection();
 
     return (
-        <>
-            <Box as="button" onClick={handleConnectWallet}>
-                <div className="font-face-rk">
-                    <Text
-                        className={styles.connect}
-                        style={{
-                            backgroundColor: "white",
-                            borderRadius: 20,
-                            padding: "5px 10px 2px 10px",
-                            color: "black",
-                            position: "relative",
-                            top: 2,
-                        }}
-                    >
-                        CONNECT WALLET
-                    </Text>
-                </div>
-            </Box>
-        </>
+        <Box
+            as="button"
+            onClick={handleConnectWallet}
+            style={{
+                backgroundColor: "white",
+                borderRadius: 20,
+                padding: "5px 10px 2px 10px",
+                color: "black",
+                position: "relative",
+            }}
+        >
+            <Text fontSize="large">Connect Wallet</Text>
+        </Box>
     );
 }
