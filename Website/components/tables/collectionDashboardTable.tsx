@@ -52,9 +52,9 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
                     {tableHeaders.map((header) => (
                         <TableHead className="min-w-[140px] border-b" key={header.text}>
                             {header.field ? (
-                                <div onClick={() => header.field} className="flex cursor-pointer justify-center font-semibold">
+                                <div onClick={() => header.field} className="flex justify-center font-semibold cursor-pointer">
                                     {header.text}
-                                    <FaSort className="ml-2 h-4 w-4" />
+                                    <FaSort className="w-4 h-4 ml-2" />
                                 </div>
                             ) : (
                                 header.text
@@ -63,10 +63,30 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
                     ))}
                 </TableRow>
             </TableHeader>
+
             <TableBody>
-                {collectionList.map((launch, i) => (
-                    <LaunchCard key={launch.page_name} launch={launch} />
-                ))}
+                {collectionList.length > 0 ? (
+                    collectionList.map((launch, i) => <LaunchCard key={launch.page_name} launch={launch} />)
+                ) : (
+                    <TableRow
+                        style={{
+                            cursor: "pointer",
+                            height: "60px",
+                            transition: "background-color 0.3s",
+                        }}
+                        className="border-b"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                        }}
+                    >
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            There are no collections launched yet
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );
@@ -128,7 +148,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         >
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image alt={"Launch icon"} src={launch.collection_icon_url} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{launch.collection_name}</span>
@@ -136,7 +156,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             </TableCell>
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image alt="Launch icon" src={token_mint.icon} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{launch.token_symbol}</span>

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LaunchData, UserData, bignum_to_num } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Box, Button, Center, Flex, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "../hypeVote";
 import useResponsive from "../../hooks/useResponsive";
@@ -109,6 +109,10 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
         return 0;
     });
 
+    useEffect(() => {
+        console.log("filterTable()", launch_list);
+    });
+
     return (
         <Table className="rounded-lg xl:w-[90%]">
             <TableHeader>
@@ -118,7 +122,7 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
                             {i.field ? (
                                 <div
                                     onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                    className="flex cursor-pointer justify-center font-semibold"
+                                    className="flex justify-center font-semibold cursor-pointer"
                                 >
                                     {i.text}
                                     {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
@@ -136,9 +140,28 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {filtered.sort().map((item: LaunchData, index) => (
-                    <LaunchCard key={index} launch={item} />
-                ))}
+                {filtered.length > 0 ? (
+                    filtered.sort().map((item: LaunchData, index) => <LaunchCard key={index} launch={item} />)
+                ) : (
+                    <TableRow
+                        style={{
+                            cursor: "pointer",
+                            height: "60px",
+                            transition: "background-color 0.3s",
+                        }}
+                        className="border-b"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                        }}
+                    >
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            No launches yet
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );
@@ -182,7 +205,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         >
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image alt="Launch icon" src={listing.icon} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{listing.symbol}</span>

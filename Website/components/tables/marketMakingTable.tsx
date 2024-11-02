@@ -159,10 +159,10 @@ const MarketMakingTable = () => {
                             {header.field ? (
                                 <div
                                     onClick={() => header.field && handleSort(header.field)}
-                                    className="flex cursor-pointer justify-center font-semibold"
+                                    className="flex justify-center font-semibold cursor-pointer"
                                 >
                                     {header.text}
-                                    <FaSort className="ml-2 h-4 w-4" />
+                                    <FaSort className="w-4 h-4 ml-2" />
                                 </div>
                             ) : (
                                 header.text
@@ -172,9 +172,28 @@ const MarketMakingTable = () => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {sortedRows.map((launch, i) => (
-                    <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
-                ))}
+                {sortedRows.length > 0 ? (
+                    sortedRows.map((launch, i) => <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />)
+                ) : (
+                    <TableRow
+                        style={{
+                            cursor: "pointer",
+                            height: "60px",
+                            transition: "background-color 0.3s",
+                        }}
+                        className="border-b"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                        }}
+                    >
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            No Tokens yet
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );
@@ -184,12 +203,14 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     const router = useRouter();
     const { mmLaunchData, ammData, jupPrices } = useAppRoot();
 
-    if (!mmLaunchData || !ammData || !jupPrices) return (<></>);
+    if (!mmLaunchData || !ammData || !jupPrices) return <></>;
 
     let current_reward_date = reward_date(amm_launch.amm_data);
-    let mm_data : MMLaunchData = mmLaunchData.get(amm_launch.amm_data.pool.toString() + "_" + current_reward_date.toString());
+    let mm_data: MMLaunchData = mmLaunchData.get(amm_launch.amm_data.pool.toString() + "_" + current_reward_date.toString());
 
-    const mm_rewards = mm_data ? bignum_to_num(mm_data.token_rewards)/Math.pow(10, amm_launch.mint.mint.decimals) : reward_schedule(0, amm_launch.amm_data, amm_launch.mint);
+    const mm_rewards = mm_data
+        ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, amm_launch.mint.mint.decimals)
+        : reward_schedule(0, amm_launch.amm_data, amm_launch.mint);
 
     const last_price =
         amm_launch.amm_data.provider === 0
@@ -210,10 +231,10 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     if (!have_cook_amm) return null;
 
     return (
-        <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
+        <TableRow className="transition-colors border-b cursor-pointer" onClick={() => router.push("/trade/" + cook_amm_address)}>
             <TableCell className="w-[150px]">
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image
                             alt={`${amm_launch.listing.symbol} icon`}
                             src={amm_launch.mint.icon}

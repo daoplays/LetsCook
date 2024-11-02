@@ -113,10 +113,10 @@ const LeaderboardPage = () => {
                                     {i.field ? (
                                         <div
                                             onClick={() => handleHeaderClick(i.field)}
-                                            className="flex cursor-pointer justify-center font-semibold"
+                                            className="flex justify-center font-semibold cursor-pointer"
                                         >
                                             {i.text}
-                                            {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                            {i.text === "RANK" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
                                         </div>
                                     ) : (
                                         i.text
@@ -126,9 +126,30 @@ const LeaderboardPage = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedUsers.map((user, i) => {
-                            return <UserCard key={user.user_key.toString()} rank_sorted={rank_sorted} user={user} index={i} />;
-                        })}
+                        {sortedUsers.length > 0 ? (
+                            sortedUsers.map((user, i) => {
+                                return <UserCard key={user.user_key.toString()} rank_sorted={rank_sorted} user={user} index={i} />;
+                            })
+                        ) : (
+                            <TableRow
+                                style={{
+                                    cursor: "pointer",
+                                    height: "60px",
+                                    transition: "background-color 0.3s",
+                                }}
+                                className="border-b"
+                                onMouseOver={(e) => {
+                                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                                }}
+                                onMouseOut={(e) => {
+                                    e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                                }}
+                            >
+                                <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                                    No Leaderboard yet
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </>
@@ -148,7 +169,7 @@ const LeaderboardPage = () => {
 
                 <TableCell style={{ minWidth: "160px" }}>
                     <div className="flex items-center justify-center gap-3 px-4">
-                        <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <div className="w-10 h-10 overflow-hidden rounded-lg">
                             <Image alt="Sauce icon" src={"/images/sauce.png"} width={48} height={48} className="object-cover" />
                         </div>
                         <span className="font-semibold">{user.total_points.toString()}</span>
