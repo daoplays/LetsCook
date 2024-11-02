@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, ListingData, MintData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
-import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, reward_schedule } from "../Solana/jupiter_state";
+import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, getAMMPlugins, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
@@ -57,7 +57,6 @@ const MarketMakingTable = () => {
         { text: "Token", field: "symbol" },
         { text: "Price", field: "price" },
         { text: "Liquidity", field: "liquidity" },
-        { text: "Market Cap", field: "fdmc" },
         { text: "Rewards (24h)", field: "rewards" },
         { text: "Socials", field: null },
         { text: "Hype", field: "hype" },
@@ -205,6 +204,7 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
 
     if (!have_cook_amm) return null;
 
+
     return (
         <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
             <TableCell className="w-[150px]">
@@ -230,7 +230,6 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
                 </div>
             </TableCell>
             <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : liquidity_string}</TableCell>
-            <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : market_cap_string}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-center gap-2">
                     <span>{nFormatter(mm_rewards, 2)}</span>
