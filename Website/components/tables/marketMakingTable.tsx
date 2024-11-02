@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Flex, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
@@ -21,6 +21,7 @@ import { FaSort } from "react-icons/fa";
 import Loader from "../loader";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "../ui/input";
 
 interface AMMLaunch {
     amm_data: AMMData;
@@ -52,6 +53,7 @@ const MarketMakingTable = () => {
     const [sortedField, setSortedField] = useState<string>("liquidity");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const tableHeaders = [
         { text: "Token", field: "symbol" },
@@ -91,8 +93,9 @@ const MarketMakingTable = () => {
         setRows([...amm_launches]);
     }, [mintData, listingData, ammData]);
 
-    const sortedRows = [...rows].sort((a, b) => {
-        const sortValue = (row: AMMLaunch): string | number => {
+    const sortedAndFilteredRows = useMemo(() => {
+        // Helper function to get the sort value based on sortedField
+        const getSortValue = (row) => {
             switch (sortedField) {
                 case "symbol":
                     return row.listing.symbol;
@@ -111,8 +114,8 @@ const MarketMakingTable = () => {
                     return supply * price;
                 }
                 case "rewards": {
-                    const current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(row.amm_data.start_time)) / 24 / 60 / 60);
-                    return reward_schedule(current_date, row.amm_data, row.mint);
+                    const currentDate = Math.floor((Date.now() / 1000 - bignum_to_num(row.amm_data.start_time)) / 86400);
+                    return reward_schedule(currentDate, row.amm_data, row.mint);
                 }
                 case "hype":
                     return row.listing.positive_votes - row.listing.negative_votes;
@@ -121,62 +124,68 @@ const MarketMakingTable = () => {
             }
         };
 
-        const aVal = sortValue(a);
-        const bVal = sortValue(b);
+        // Sort the rows based on the calculated value
+        const sortedRows = [...rows].sort((a, b) => {
+            const aVal = getSortValue(a);
+            const bVal = getSortValue(b);
 
-        // Type guard to check if both values are strings
-        function isString(value: string | number): value is string {
-            return typeof value === "string";
-        }
+            if (typeof aVal === "string" && typeof bVal === "string") {
+                return reverseSort ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+            }
 
-        // If both values are strings, use string comparison
-        if (isString(aVal) && isString(bVal)) {
-            return reverseSort ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-        }
+            if (!isNaN(aVal) && !isNaN(bVal)) {
+                return reverseSort ? bVal - aVal : aVal - bVal;
+            }
 
-        // If both values are numbers or can be converted to numbers, use numeric comparison
-        const numA = Number(aVal);
-        const numB = Number(bVal);
+            return 0;
+        });
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-            return reverseSort ? numB - numA : numA - numB;
-        }
-
-        // Fallback comparison if types don't match or conversion fails
-        return 0;
-    });
+        // Filter the sorted rows based on the search term
+        return sortedRows.filter((row) => row.listing.symbol.toLowerCase().includes(searchTerm.toLowerCase()));
+    }, [rows, searchTerm, sortedField, reverseSort, jupPrices, reward_schedule, bignum_to_num]);
 
     if (!mintData || !listingData || !ammData) {
         return <Loader />;
     }
-
     return (
-        <Table className="rounded-lg xl:w-[90%]">
-            <TableHeader>
-                <TableRow>
-                    {tableHeaders.map((header) => (
-                        <TableHead className="min-w-[140px] border-b" key={header.text}>
-                            {header.field ? (
-                                <div
-                                    onClick={() => header.field && handleSort(header.field)}
-                                    className="flex cursor-pointer justify-center font-semibold"
-                                >
-                                    {header.text}
-                                    <FaSort className="ml-2 h-4 w-4" />
-                                </div>
-                            ) : (
-                                header.text
-                            )}
-                        </TableHead>
-                    ))}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {sortedRows.map((launch, i) => (
-                    <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
-                ))}
-            </TableBody>
-        </Table>
+        <>
+            <div className="flex w-full xl:justify-center">
+                <div className="flex flex-col gap-2 xl:w-[90%]">
+                    <Input
+                        type="text"
+                        placeholder="Search token"
+                        className="ml-3 w-[250px] xl:ml-auto xl:w-[300px]"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <Table className="rounded-lg">
+                        <TableHeader>
+                            <TableRow>
+                                {tableHeaders.map((header) => (
+                                    <TableHead className="min-w-[140px] border-b" key={header.text}>
+                                        {header.field ? (
+                                            <div
+                                                onClick={() => header.field && handleSort(header.field)}
+                                                className="flex justify-center font-semibold cursor-pointer"
+                                            >
+                                                {header.text}
+                                                <FaSort className="w-4 h-4 ml-2" />
+                                            </div>
+                                        ) : (
+                                            header.text
+                                        )}
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {sortedAndFilteredRows.map((launch, i) => (
+                                <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+        </>
     );
 };
 
@@ -184,12 +193,14 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     const router = useRouter();
     const { mmLaunchData, ammData, jupPrices } = useAppRoot();
 
-    if (!mmLaunchData || !ammData || !jupPrices) return (<></>);
+    if (!mmLaunchData || !ammData || !jupPrices) return <></>;
 
     let current_reward_date = reward_date(amm_launch.amm_data);
-    let mm_data : MMLaunchData = mmLaunchData.get(amm_launch.amm_data.pool.toString() + "_" + current_reward_date.toString());
+    let mm_data: MMLaunchData = mmLaunchData.get(amm_launch.amm_data.pool.toString() + "_" + current_reward_date.toString());
 
-    const mm_rewards = mm_data ? bignum_to_num(mm_data.token_rewards)/Math.pow(10, amm_launch.mint.mint.decimals) : reward_schedule(0, amm_launch.amm_data, amm_launch.mint);
+    const mm_rewards = mm_data
+        ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, amm_launch.mint.mint.decimals)
+        : reward_schedule(0, amm_launch.amm_data, amm_launch.mint);
 
     const last_price =
         amm_launch.amm_data.provider === 0
@@ -210,10 +221,10 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     if (!have_cook_amm) return null;
 
     return (
-        <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
+        <TableRow className="transition-colors border-b cursor-pointer" onClick={() => router.push("/trade/" + cook_amm_address)}>
             <TableCell className="w-[150px]">
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image
                             alt={`${amm_launch.listing.symbol} icon`}
                             src={amm_launch.mint.icon}
