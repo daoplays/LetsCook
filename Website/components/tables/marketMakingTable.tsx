@@ -59,7 +59,6 @@ const MarketMakingTable = () => {
         { text: "Token", field: "symbol" },
         { text: "Price", field: "price" },
         { text: "Liquidity", field: "liquidity" },
-        { text: "Market Cap", field: "fdmc" },
         { text: "Rewards (24h)", field: "rewards" },
         { text: "Socials", field: null },
         { text: "Hype", field: "hype" },
@@ -241,7 +240,6 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
                 </div>
             </TableCell>
             <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : liquidity_string}</TableCell>
-            <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : market_cap_string}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-center gap-2">
                     <span>{nFormatter(mm_rewards, 2)}</span>

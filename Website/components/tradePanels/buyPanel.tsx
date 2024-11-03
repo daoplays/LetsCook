@@ -150,7 +150,7 @@ const BuyPanel = ({
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
-    const AMMfee = (amm.fee * 0.001).toFixed(2);
+    const AMMfee = (amm.fee * 0.001).toFixed(3);
 
     let transfer_fee = 0;
     let max_transfer_fee = 0;
@@ -257,6 +257,8 @@ const BuyPanel = ({
                             <p> {slippage_string}%</p>
                         </HStack>
 
+                        {max_transfer_fee > 0 && 
+                        <>
                         <div className="h-1 w-full border-b border-gray-600/50"></div>
 
                         <HStack w="100%" justify="space-between">
@@ -271,7 +273,11 @@ const BuyPanel = ({
                                 {max_transfer_fee} {base_mint.symbol}
                             </p>
                         </HStack>
+                        </>
+                        }
                     </div>
+                    
+                    
                 )}
             </div>
 
