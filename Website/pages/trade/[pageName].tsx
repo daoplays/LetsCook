@@ -1308,14 +1308,14 @@ const InfoContent = ({
                     </Text>
                 </HStack>
 
-                <HStack px={5} justify="space-between" w="100%">
+                {/*<HStack px={5} justify="space-between" w="100%">
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
                         MARKET CAP:
                     </Text>
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                         ${market_cap_string}
                     </Text>
-                </HStack>
+                </HStack>*/}
 
                 <HStack px={5} justify="space-between" w="100%">
                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
