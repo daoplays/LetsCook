@@ -32,7 +32,7 @@ import twitter from "../public/images/Twitter.png";
 import discord from "../public/images/discord.png";
 import { TbLayoutSidebarLeftExpandFilled, TbLayoutSidebarRightExpandFilled } from "react-icons/tb";
 import { PiHamburgerFill } from "react-icons/pi";
-import { useEffect, useState } from "react";
+import { BsDiscord, BsTwitter } from "react-icons/bs";
 
 function Navigation() {
     const router = useRouter();
@@ -41,60 +41,43 @@ function Navigation() {
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
     const { currentUserData, selectedNetwork, sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
-    const [scrollY, setScrollY] = useState(0);
 
-    const handleScroll = () => {
-        const scrollY = window.scrollY; // Get the vertical scroll position
-        console.log(`Scroll Position: ${scrollY}px`); // Log it to the console
-    };
-
-    // Add scroll event listener
-    window.addEventListener("scroll", handleScroll);
-
-    // Optional: Log the initial scroll position on page load
-    window.addEventListener("load", handleScroll);
     return (
         <>
             <HStack
-                height={{ xl: "60px" }}
+                backgroundSize="cover"
+                py={3}
                 px={4}
-                pt={3}
-                alignItems="flex-start"
+                alignItems="center"
                 justify="space-between"
                 position="fixed"
                 top={0}
                 left={0}
                 right={0}
                 zIndex={1000}
-                onClick={handleScroll}
+                className="relative flex w-full items-center border-b border-b-gray-600/50 bg-[#161616] bg-opacity-75 bg-clip-padding backdrop-blur-md backdrop-filter"
             >
                 <HStack>
-                    <div
-                        style={{ cursor: "pointer", marginRight: sidePanelCollapsed ? "120px" : "20px" }}
-                        className="ml-2 flex items-center gap-2"
-                        onClick={() => setSidePanelCollapsed(!sidePanelCollapsed)}
-                        hidden={sm}
-                    >
+                    <div style={{ cursor: "pointer" }} onClick={() => setSidePanelCollapsed(!sidePanelCollapsed)} hidden={sm}>
                         {sidePanelCollapsed ? <PiHamburgerFill size={35} color="#FE6A00" /> : <PiHamburgerFill size={35} color="#fff" />}
-                        {sidePanelCollapsed ? (
-                            <Text className="mt-1 text-2xl font-extrabold text-white" style={{ fontFamily: "kufam", lineHeight: "20px" }}>
-                                MENU
-                            </Text>
-                        ) : (
-                            ""
-                        )}
                     </div>
+                    <Text
+                        fontSize={md ? "medium" : "x-large"}
+                        className="font-face-kg"
+                        onClick={() => router.push("/")}
+                        color="white"
+                        style={{
+                            fontFamily: "KGSummerSunshineBlackout",
+                            cursor: "pointer",
+                        }}
+                    >
+                        LET&apos;S COOK
+                    </Text>
+
                     <Menu>
                         <MenuButton>
-                            <Badge px={2} py={1} borderRadius={20} color="Black" bg="white">
+                            <Badge px={2} py={1} borderRadius={20}>
                                 <HStack spacing={1} alignItems="center">
-                                    {selectedNetwork === "mainnet" ? (
-                                        <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
-                                    ) : selectedNetwork === "devnet" ? (
-                                        <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
-                                    ) : (
-                                        <Image src="/images/eclipse.png" alt="solana logo" width={20} height={20} />
-                                    )}
                                     <Text m={0}>
                                         {selectedNetwork === "mainnet"
                                             ? "Mainnet Beta"
@@ -107,6 +90,19 @@ function Navigation() {
                             </Badge>
                         </MenuButton>
                         <MenuList p={1} style={{ minWidth: "fit-content" }}>
+                            <MenuItem
+                                borderRadius={5}
+                                onClick={async () => {
+                                    await router.push("https://eclipse.letscook.wtf");
+                                }}
+                            >
+                                <HStack alignItems="start">
+                                    <Image src="/images/eclipse.png" alt="solana logo" width={20} height={20} />
+                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"large"} align="center">
+                                        Eclipse Mainnet
+                                    </Text>
+                                </HStack>
+                            </MenuItem>
                             <MenuItem borderRadius={5}>
                                 <HStack
                                     alignItems="start"
@@ -115,8 +111,8 @@ function Navigation() {
                                     }}
                                 >
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
-                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
-                                        Mainnet Beta
+                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"large"} align="center">
+                                        Solana Mainnet
                                     </Text>
                                 </HStack>
                             </MenuItem>
@@ -128,75 +124,40 @@ function Navigation() {
                             >
                                 <HStack alignItems="start">
                                     <Image src="/images/solana-sol-logo.png" alt="solana logo" width={20} height={20} />
-                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
-                                        Devnet
-                                    </Text>
-                                </HStack>
-                            </MenuItem>
-                            <MenuItem
-                                borderRadius={5}
-                                onClick={async () => {
-                                    await router.push("https://eclipse.letscook.wtf");
-                                }}
-                            >
-                                <HStack alignItems="start">
-                                    <Image src="/images/eclipse.png" alt="solana logo" width={20} height={20} />
-                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"medium"} align="center">
-                                        Eclipse
+                                    <Text m={0} fontFamily="ReemKufiRegular" fontSize={"large"} align="center">
+                                        Solana Devnet
                                     </Text>
                                 </HStack>
                             </MenuItem>
                         </MenuList>
                     </Menu>
-                    <Show breakpoint="(min-width: 1024px)">
-                        <HStack>
-                            <Link href="https://twitter.com/letscook_sol" target="_blank">
-                                <Image
-                                    src={twitter.src}
-                                    width={30}
-                                    height={30}
-                                    alt={"Twitter"}
-                                    style={{
-                                        borderRadius: "50%",
-                                        padding: 5,
-                                    }}
-                                />
-                            </Link>
+                </HStack>
 
-                            <Link href="https://discord.com/invite/Q5PXHEjYRU" target="_blank">
-                                <Image
-                                    src={discord}
-                                    width={30}
-                                    height={30}
-                                    alt={"Discord"}
-                                    style={{
-                                        borderRadius: "50%",
-                                        padding: 5,
-                                    }}
-                                />
-                            </Link>
-                        </HStack>
-                    </Show>
-                </HStack>
-                <HStack>
-                    <Image
-                        src="/images/letscooknewlogo.png"
-                        width={100}
-                        height={0}
-                        className="h-auto w-[50px] md:w-[150px] lg:ml-[90px]"
-                        alt="Let's Cook Logo"
-                        onClick={() => router.push("/")}
-                    />
-                </HStack>
                 <HStack gap={3}>
                     <Tooltip label="Sauce" hasArrow fontSize="large" offset={[0, 15]}>
-                        <div className={styles.sauce} style={{ background: "white", color: "black" }}>
-                            <Image height={sm ? 15 : 20} width={sm ? 15 : 20} src="/images/sauce.png" alt="Sauce" />
+                        <Link
+                            href="https://docs.letscook.wtf/features/sauce#spending-sauce-wip"
+                            target="_blank"
+                            className="flex justify-center gap-2 rounded-full bg-white px-[10px] py-1"
+                        >
+                            <Image height={sm ? 15 : 20} width={sm ? 15 : 25} src="/images/sauce.png" alt="Sauce" />
                             <Text m={0} fontSize={sm ? "small" : "medium"}>
                                 {currentUserData === null ? 0 : currentUserData.total_points}
                             </Text>
-                        </div>
+                        </Link>
                     </Tooltip>
+
+                    <Show breakpoint="(min-width: 1024px)">
+                        <HStack>
+                            <Link href="https://twitter.com/letscook_sol" target="_blank">
+                                <BsTwitter size={28} color="white" />
+                            </Link>
+
+                            <Link href="https://discord.com/invite/Q5PXHEjYRU" target="_blank">
+                                <BsDiscord color="white" size={28} />
+                            </Link>
+                        </HStack>
+                    </Show>
 
                     <Show breakpoint="(max-width: 1024px)">
                         <Image

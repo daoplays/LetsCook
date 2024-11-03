@@ -18,7 +18,7 @@ const Links = ({ socials, isTradePage }: LinksProps) => {
     const iconSize = lg || isTradePage ? 24 : 28;
 
     if (!socials || Object.values(Socials).every((key) => !socials[key])) {
-        return <p className="text-md opacity-25">No Socials</p>;
+        return <p className="text-md text-white opacity-25">No Socials</p>;
     }
 
     return (

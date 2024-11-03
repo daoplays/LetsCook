@@ -33,43 +33,31 @@ const RemoveLiquidityPanel = ({
     let base_output_string = formatPrice(lp_base_output, base_mint.mint.decimals);
 
     return (
-        <>
+        <div className="flex w-full flex-col gap-2 px-4 pb-6">
             <VStack align="start" w="100%">
                 <HStack w="100%" justify="space-between">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Remove:
-                    </Text>
+                    <p className="text-md text-white text-opacity-50">Withdraw Amount</p>
 
                     <HStack spacing={2}>
-                        <Text
-                            m={0}
-                            color={"white"}
-                            fontFamily="ReemKufiRegular"
-                            fontSize={"medium"}
-                            opacity={0.5}
-                            style={{ cursor: "pointer" }}
+                        <p
+                            className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
                                 setTokenAmount(user_lp_balance / 2 / Math.pow(10, 9));
                             }}
                         >
                             Half
-                        </Text>
+                        </p>
                         <Center height="15px">
                             <Divider orientation="vertical" opacity={0.25} />
                         </Center>
-                        <Text
-                            m={0}
-                            color={"white"}
-                            fontFamily="ReemKufiRegular"
-                            fontSize={"medium"}
-                            opacity={0.5}
-                            style={{ cursor: "pointer" }}
+                        <p
+                            className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
                                 setTokenAmount(user_lp_balance / Math.pow(10, 9));
                             }}
                         >
                             Max
-                        </Text>
+                        </p>
                     </HStack>
                 </HStack>
 
@@ -95,11 +83,8 @@ const RemoveLiquidityPanel = ({
                 </InputGroup>
             </VStack>
 
-            <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    For:
-                </Text>
-
+            <VStack align="start" w="100%" className="py-2">
+                <p className="text-md text-white text-opacity-50">You&apos;ll Receive</p>
                 <InputGroup size="md">
                     <Input
                         readOnly={true}
@@ -117,10 +102,6 @@ const RemoveLiquidityPanel = ({
 
             <>
                 <VStack align="start" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        And:
-                    </Text>
-
                     <InputGroup size="md">
                         <Input
                             readOnly={true}
@@ -159,7 +140,7 @@ const RemoveLiquidityPanel = ({
                     {!connected ? "Connect Wallet" : "Remove Liquidity"}
                 </Text>
             </Button>
-        </>
+        </div>
     );
 };
 

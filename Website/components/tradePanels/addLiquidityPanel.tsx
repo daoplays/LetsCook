@@ -46,12 +46,10 @@ const AddLiquidityPanel = ({
     console.log(base_input_amount, amm_quote_balance, amm_base_balance);
 
     return (
-        <>
+        <div className="flex w-full flex-col gap-2 px-4 pb-6">
             <VStack align="start" w="100%">
                 <HStack w="100%" justify="space-between">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Add:
-                    </Text>
+                    <p className="text-md text-white text-opacity-50">Deposit Amount</p>
                 </HStack>
 
                 <InputGroup size="md">
@@ -74,11 +72,7 @@ const AddLiquidityPanel = ({
                 </InputGroup>
             </VStack>
 
-            <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    And:
-                </Text>
-
+            <VStack align="start" w="100%" className="py-2">
                 <InputGroup size="md">
                     <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={quote_string} disabled />
                     <InputRightElement h="100%" w={50}>
@@ -89,9 +83,7 @@ const AddLiquidityPanel = ({
 
             <>
                 <VStack align="start" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        For:
-                    </Text>
+                    <p className="text-md text-white text-opacity-50">You&apos;ll Receive</p>
 
                     <InputGroup size="md">
                         <Input readOnly={true} color="white" size="lg" borderColor="rgba(134, 142, 150, 0.5)" value={lp_string} disabled />
@@ -130,7 +122,7 @@ const AddLiquidityPanel = ({
                     {!connected ? "Connect Wallet" : "Add Liquidity"}
                 </Text>
             </Button>
-        </>
+        </div>
     );
 };
 

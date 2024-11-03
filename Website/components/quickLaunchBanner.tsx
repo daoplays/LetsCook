@@ -4,7 +4,7 @@ import WoodenButton from "../components/Buttons/woodenButton";
 import { useRouter } from "next/router";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
-import Image from "next/image";
+import { Button } from "./ui/button";
 
 const QuickLaunchBanner = () => {
     const wallet = useWallet();
@@ -13,44 +13,32 @@ const QuickLaunchBanner = () => {
     const { sm, md, lg, xl, xxl } = useResponsive();
 
     return (
-        <Box w="100%" h={lg ? 350 : "auto"} className={"mb-5"} bgSize="cover" mt={"50px"}>
-            <Box w="100%" h="100%">
-                <VStack px={4} justify="center" w="100%" h={"100%"} spacing={5}>
-                    <Text
-                        m={0}
-                        fontSize={sm ? 24 : md ? 45 : 60}
-                        color="white"
-                        className="font-face-kg2"
-                        align={"center"}
-                        fontWeight="extrabold"
-                        lineHeight="30px"
-                    >
-                        CREATE A TOKEN IN SECONDS
-                    </Text>
-                    <Text
-                        m="0"
-                        className="font-face-kg2"
-                        fontSize={sm ? "small" : lg ? "large" : "xx-large"}
-                        color="white"
-                        align={"center"}
-                        fontWeight="bold"
-                    >
-                        Skip the Bonding Curve. Trade Instantly.
-                    </Text>
-                    <div
-                        onClick={() => {
-                            if (!wallet.connected) {
-                                handleConnectWallet();
-                            } else {
-                                router.push("/launch");
-                            }
-                        }}
-                    >
-                        <WoodenButton label="QUICK LAUNCH" size={32} />
-                    </div>
-                </VStack>
-            </Box>
-        </Box>
+        <VStack justify="center " gap={4}>
+            <Text
+                // fontSize={sm ? 24 : md ? 45 : 60}
+                color="white"
+                className="font-face-kg2 md:4xl text-3xl lg:text-5xl"
+                align={"center"}
+                fontWeight="extrabold"
+            >
+                CREATE A TOKEN IN SECONDS
+            </Text>
+            <Text className="font-face-kg2 md:text-xl lg:text-2xl" color="white" align={"center"}>
+                Skip the Bonding Curve. Trade Instantly.
+            </Text>
+            <Button
+                onClick={() => {
+                    if (!wallet.connected) {
+                        handleConnectWallet();
+                    } else {
+                        router.push("/launch");
+                    }
+                }}
+                className="px-4 py-4 text-xl transition-all hover:opacity-90 lg:px-10 lg:py-8 lg:text-2xl"
+            >
+                Quick Launch
+            </Button>
+        </VStack>
     );
 };
 

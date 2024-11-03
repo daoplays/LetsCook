@@ -12,6 +12,7 @@ import { Config } from "../Solana/constants";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import useInstantLaunch from "../../hooks/launch/useInstantLaunch";
 import stylesDescription from "../../styles/LaunchDetails.module.css";
+import { Button } from "../ui/button";
 
 const LaunchPage = () => {
     const { sm, md, lg, xl } = useResponsive();
@@ -142,229 +143,198 @@ const LaunchPage = () => {
 
     const Browse = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                IMAGE:
-            </div>
+            <p className="min-w-[100px] text-lg text-white">Image:</p>
             <div>
                 <label className={styles.label}>
                     <input id="file" type="file" onChange={handleFileChange} />
                     <span
-                        className={styles.browse}
-                        style={{ cursor: instantLaunchData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
+                        style={{
+                            cursor: instantLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
+                        }}
                     >
-                        BROWSE
+                        Browse
                     </span>
                 </label>
             </div>
-            <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {instantLaunchData.current.icon_file !== null
-                    ? instantLaunchData.current.icon_file.name
-                    : "No File Selected (Size Limit: 1MB)"}
-            </Text>
+            <span className="text-md ml-4 opacity-50">
+                {instantLaunchData.current.icon_file !== null ? instantLaunchData.current.icon_file.name : "No File Selected "}
+            </span>
         </HStack>
     );
 
     return (
-        <Center height="100%" width="100%">
-            <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    QUICK LAUNCH
-                </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pt-4">
-                    <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
-                        <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
-                            {displayImg ? (
-                                <Image
-                                    src={displayImg}
-                                    width={lg ? 180 : 235}
-                                    height={lg ? 180 : 235}
-                                    alt="Image Frame"
-                                    style={{ backgroundSize: "cover", borderRadius: 12 }}
-                                />
-                            ) : (
-                                <VStack
-                                    justify="center"
-                                    align="center"
-                                    style={{ minWidth: lg ? 180 : 235, minHeight: lg ? 180 : 235, cursor: "pointer" }}
-                                    borderRadius={12}
-                                    border="2px dashed rgba(134, 142, 150, 0.5)"
-                                    as={chakra.label}
-                                    htmlFor="file"
-                                >
-                                    <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
-                                        Icon Preview
-                                    </Text>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
+            <div className="mb-4 flex flex-col gap-2">
+                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Quick Launch</Text>
+                {/* <p className="cursor-pointer text-center text-white/50 transition-all hover:text-white">Switch to Advance Mode</p> */}
+            </div>
+            <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
+                {displayImg ? (
+                    <Image
+                        src={displayImg}
+                        width={lg ? 180 : 220}
+                        height={lg ? 180 : 220}
+                        alt="Image Frame"
+                        style={{ backgroundSize: "cover", borderRadius: 12 }}
+                    />
+                ) : (
+                    <VStack
+                        justify="center"
+                        align="center"
+                        style={{ minWidth: lg ? 180 : 220, minHeight: lg ? 180 : 220, cursor: "pointer" }}
+                        borderRadius={12}
+                        border="2px dashed rgba(134, 142, 150, 0.5)"
+                        as={chakra.label}
+                        htmlFor="file"
+                    >
+                        <Text mb={0} fontSize="x-large" color="white" opacity={0.25}>
+                            Icon Preview
+                        </Text>
 
-                                    <chakra.input
-                                        required
-                                        style={{ display: "none" }}
-                                        type="file"
-                                        id="file"
-                                        name="file"
-                                        onChange={handleFileChange}
-                                    />
-                                </VStack>
-                            )}
-
-                            <VStack spacing={8} flexGrow={1} align="start" width="100%">
-                                {lg && <Browse />}
-
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            placeholder="Enter Token Name. (Ex. Solana)"
-                                            disabled={instantLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            maxLength={25}
-                                            required
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={name}
-                                            onChange={handleNameChange}
-                                        />
-                                    </div>
-                                </HStack>
-
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        SYMBOL:
-                                    </div>
-
-                                    <div className={styles.textLabelInput}>
-                                        <Input
-                                            bg="#494949"
-                                            placeholder="Enter Token Ticker. (Ex. $SOL)"
-                                            disabled={instantLaunchData.current.edit_mode === true}
-                                            size={lg ? "md" : "lg"}
-                                            maxLength={8}
-                                            required
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={symbol}
-                                            onChange={handleSymbolChange}
-                                        />
-                                    </div>
-                                </HStack>
-
-                                {!lg && <Browse />}
-                            </VStack>
-                        </HStack>
-                        <VStack w="100%" spacing={30} my={18}>
-                            <div className={stylesDescription.launchBodyLowerVertical}>
-                                <div className={`${stylesDescription.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
-                                    DESCRIPTION:
-                                </div>
-                                <div>
-                                    <textarea
-                                        maxLength={250}
-                                        required
-                                        placeholder="Feel free to provide more details about your token, it will be displayed in your token metadata."
-                                        style={{ minHeight: 200, fontSize: lg ? "medium" : "large" }}
-                                        className={`${stylesDescription.inputBox} ${stylesDescription.inputTxtarea}`}
-                                        value={description}
-                                        onChange={(e) => {
-                                            setDescription(e.target.value);
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            placeholder="Enter your Website URL (optional)"
-                                            className={styles.inputBox}
-                                            style={{ fontSize: lg ? "medium" : "large" }}
-                                            type="text"
-                                            value={web}
-                                            onChange={(e) => {
-                                                setWeb(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
-
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            className={styles.inputBox}
-                                            placeholder="Enter your Telegram Invite URL (optional)"
-                                            style={{ fontSize: lg ? "medium" : "large" }}
-                                            type="text"
-                                            value={telegram}
-                                            onChange={(e) => {
-                                                setTelegram(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
-
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            required
-                                            className={styles.inputBox}
-                                            placeholder="Enter your Twitter URL (optional)"
-                                            style={{ fontSize: lg ? "medium" : "large" }}
-                                            type="text"
-                                            value={twitter}
-                                            onChange={(e) => {
-                                                setTwitter(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
-
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            className={styles.inputBox}
-                                            placeholder="Enter your Discord Invite URL (optional)"
-                                            style={{ fontSize: lg ? "medium" : "large" }}
-                                            type="text"
-                                            value={discord}
-                                            onChange={(e) => {
-                                                setDiscord(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </VStack>
-
-                        <HStack mb={30}>
-                            <button
-                                type="button"
-                                onClick={(e) => {
-                                    submit(e);
-                                }}
-                                className={`${styles.nextBtn} font-face-kg`}
-                                style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
-                            >
-                                {isLoading ? <Spinner /> : `LAUNCH`}
-                            </button>
-                        </HStack>
+                        <chakra.input required style={{ display: "none" }} type="file" id="file" name="file" onChange={handleFileChange} />
                     </VStack>
-                </form>
+                )}
+
+                <VStack spacing={8} flexGrow={1} align="start" width="100%">
+                    {lg && <Browse />}
+
+                    <HStack spacing={0} className={styles.eachField}>
+                        <p className="min-w-[100px] text-lg text-white">Name:</p>
+
+                        <div className={styles.textLabelInput}>
+                            <Input
+                                placeholder="Enter Token Name. (Ex. Solana)"
+                                disabled={instantLaunchData.current.edit_mode === true}
+                                size={lg ? "md" : "lg"}
+                                maxLength={25}
+                                required
+                                type="text"
+                                value={name}
+                                onChange={handleNameChange}
+                            />
+                        </div>
+                    </HStack>
+
+                    <HStack spacing={0} className={styles.eachField}>
+                        <p className="min-w-[100px] text-lg text-white">Symbol:</p>
+
+                        <div className={styles.textLabelInput}>
+                            <Input
+                                placeholder="Enter Token Ticker. (Ex. $SOL)"
+                                disabled={instantLaunchData.current.edit_mode === true}
+                                size={lg ? "md" : "lg"}
+                                maxLength={8}
+                                required
+                                type="text"
+                                value={symbol}
+                                onChange={handleSymbolChange}
+                            />
+                        </div>
+                    </HStack>
+
+                    {!lg && <Browse />}
+                </VStack>
+            </HStack>
+            <VStack w="100%" spacing={30} my={18}>
+                <div className={stylesDescription.launchBodyLowerVertical}>
+                    <p className="text-lg text-white">Description:</p>
+                    <div>
+                        <textarea
+                            maxLength={250}
+                            required
+                            placeholder="Feel free to provide more details about your token, it will be displayed in your token metadata."
+                            style={{ minHeight: 200, fontSize: lg ? "medium" : "large" }}
+                            className={`${stylesDescription.inputBox} ${stylesDescription.inputTxtarea} `}
+                            value={description}
+                            onChange={(e) => {
+                                setDescription(e.target.value);
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <div className={styles.launchBodyLowerHorizontal}>
+                    <div className={styles.eachField}>
+                        <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
+                        <div className={styles.textLabelInput}>
+                            <input
+                                placeholder="Enter your Website URL (optional)"
+                                type="text"
+                                value={web}
+                                onChange={(e) => {
+                                    setWeb(e.target.value);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.launchBodyLowerHorizontal}>
+                    <div className={styles.eachField}>
+                        <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
+
+                        <div className={styles.textLabelInput}>
+                            <input
+                                placeholder="Enter your Telegram Invite URL (optional)"
+                                type="text"
+                                value={telegram}
+                                onChange={(e) => {
+                                    setTelegram(e.target.value);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.launchBodyLowerHorizontal}>
+                    <div className={styles.eachField}>
+                        <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
+
+                        <div className={styles.textLabelInput}>
+                            <input
+                                required
+                                placeholder="Enter your Twitter URL (optional)"
+                                type="text"
+                                value={twitter}
+                                onChange={(e) => {
+                                    setTwitter(e.target.value);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.launchBodyLowerHorizontal}>
+                    <div className={styles.eachField}>
+                        <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
+
+                        <div className={styles.textLabelInput}>
+                            <input
+                                placeholder="Enter your Discord Invite URL (optional)"
+                                type="text"
+                                value={discord}
+                                onChange={(e) => {
+                                    setDiscord(e.target.value);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
             </VStack>
-        </Center>
+
+            <Button
+                type="button"
+                size="xl"
+                className="mt-2 text-2xl"
+                onClick={(e) => {
+                    submit(e);
+                }}
+                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
+            >
+                {isLoading ? <Spinner /> : `Launch`}
+            </Button>
+        </form>
     );
 };
 

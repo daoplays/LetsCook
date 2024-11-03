@@ -13,6 +13,7 @@ import { FaFire, FaHome, FaList, FaChartBar } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import * as NProgress from "nprogress";
+import { PiHamburgerFill } from "react-icons/pi";
 
 const tabs = {
     create: [
@@ -98,24 +99,23 @@ export interface TabProps {
 const SideNav = () => {
     const { sm } = useResponsive();
     const pathname = usePathname();
-    const { sidePanelCollapsed } = useAppRoot();
+    const { sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
 
     return (
         <VStack
-            bg="#161616"
             backgroundSize="cover"
             width={sidePanelCollapsed ? "260px" : "fit-content"}
-            h="calc(100%)"
+            h="100%"
             position="sticky"
             top="0px"
             bottom="0px"
-            mt={"100px"}
             overflowY="auto"
             hidden={sm}
             color="#fa771a"
+            className="border-r border-gray-600/50 bg-[#161616] bg-clip-padding backdrop-blur-sm backdrop-filter"
         >
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
-                <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" p={4}>
+                <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" px={4} py={5}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
 
                     <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
@@ -161,7 +161,7 @@ const Tab = ({ isActive, icon, tab, url }: TabProps) => {
         <HStack
             justify={sidePanelCollapsed ? "start" : "center"}
             w="100%"
-            boxShadow="0px 0px 14.9px 0px rgba(255, 255, 255, 0.4)inset"
+            boxShadow="0px 2px 6px 0px rgba(255, 255, 255, 0.2)inset"
             color={isActive ? "white" : "white"}
             className={isActive ? "bg-custom-gradient" : "none"}
             cursor={"pointer"}
