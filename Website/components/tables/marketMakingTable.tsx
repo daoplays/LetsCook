@@ -148,13 +148,15 @@ const MarketMakingTable = () => {
         return <Loader />;
     }
     return (
-        <div>
-            <Input
-                type="text"
-                placeholder="Search token"
-                className="ml-3 w-[250px] xl:ml-auto xl:w-[300px]"
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="flex flex-col gap-2">
+            <div className="flex w-full justify-end px-2 md:-mt-6">
+                <Input
+                    type="text"
+                    placeholder="Search token"
+                    className="w-full md:w-[300px]"
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
             <Table>
                 <TableHeader>
                     {tableHeaders.map((header) => (
