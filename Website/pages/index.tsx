@@ -9,7 +9,7 @@ const Home = () => {
                 <title>Let&apos;s Cook</title>
             </Head>
 
-            <main className="mb-8 mt-16 flex flex-col gap-8">
+            <main className="mt-8 flex flex-col gap-8 md:gap-10 md:p-8">
                 <QuickLaunchBanner />
                 <MarketMakingTable />
             </main>

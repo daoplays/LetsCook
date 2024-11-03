@@ -16,6 +16,9 @@ import {
     SliderThumb,
     Slider,
     Tooltip,
+    Collapse,
+    Box,
+    AbsoluteCenter,
 } from "@chakra-ui/react";
 import { PanelProps } from "./panelProps";
 import Image from "next/image";
@@ -27,6 +30,8 @@ import useSwapRaydiumClassic from "../../hooks/raydium/useSwapRaydiumClassic";
 import { Config } from "../Solana/constants";
 import { bignum_to_num } from "../Solana/state";
 import { AMMPluginData, getAMMPlugins } from "../Solana/jupiter_state";
+import { ChevronDown } from "lucide-react";
+import { getTransferFeeConfig } from "@solana/spl-token";
 
 function getBaseOutput(
     quote_input_amount: number,
@@ -119,6 +124,7 @@ const BuyPanel = ({
     const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
     const { SwapRaydiumClassic, isLoading: placingRaydiumClassicOrder } = useSwapRaydiumClassic(amm);
+    const [isOpen, setIsOpen] = useState(false);
 
     let isLoading = placingOrder || placingRaydiumOrder;
 
@@ -144,44 +150,42 @@ const BuyPanel = ({
     let slippage_string = isNaN(slippage) ? "0" : (slippage * 100).toFixed(2);
     base_output_string += slippage > 0 ? " (" + slippage_string + "%)" : "";
 
+    const AMMfee = (amm.fee * 0.001).toFixed(2);
+
+    let transfer_fee = 0;
+    let max_transfer_fee = 0;
+    let transfer_fee_config = getTransferFeeConfig(base_mint.mint);
+    if (transfer_fee_config !== null) {
+        transfer_fee = transfer_fee_config.newerTransferFee.transferFeeBasisPoints;
+        max_transfer_fee = Number(transfer_fee_config.newerTransferFee.maximumFee) / Math.pow(10, base_mint.mint.decimals);
+    }
+
     return (
-        <>
+        <div className="flex w-full flex-col gap-4 px-4 pb-6">
             <VStack align="start" w="100%">
                 <HStack w="100%" justify="space-between">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        Swap:
-                    </Text>
+                    <p className="text-md text-white text-opacity-50">You&apos;re paying</p>
 
                     <HStack spacing={2}>
-                        <Text
-                            m={0}
-                            color={"white"}
-                            fontFamily="ReemKufiRegular"
-                            fontSize={"medium"}
-                            opacity={0.5}
-                            style={{ cursor: "pointer" }}
+                        <p
+                            className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
                                 setSOLAmount(user_quote_balance / 2);
                             }}
                         >
                             Half
-                        </Text>
+                        </p>
                         <Center height="15px">
                             <Divider orientation="vertical" opacity={0.25} />
                         </Center>
-                        <Text
-                            m={0}
-                            color={"white"}
-                            fontFamily="ReemKufiRegular"
-                            fontSize={"medium"}
-                            opacity={0.5}
-                            style={{ cursor: "pointer" }}
+                        <p
+                            className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
                                 setSOLAmount(user_quote_balance);
                             }}
                         >
                             Max
-                        </Text>
+                        </p>
                     </HStack>
                 </HStack>
 
@@ -206,9 +210,7 @@ const BuyPanel = ({
             </VStack>
 
             <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    For:
-                </Text>
+                <p className="text-md text-white text-opacity-50">To Receive</p>
 
                 <InputGroup size="md">
                     <Input
@@ -224,62 +226,57 @@ const BuyPanel = ({
                     </InputRightElement>
                 </InputGroup>
             </VStack>
-            {/*
-            <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Leverage:
-                </Text>
-                <Slider
-                    id="slider"
-                    defaultValue={1}
-                    min={1}
-                    max={100}
-                    colorScheme="teal"
-                    onChange={(v) => setSliderValue(v)}
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
+
+            <div className="-mt-2 flex w-full max-w-md flex-col rounded-lg bg-white/5">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`flex w-full items-center justify-between rounded-md px-3 py-[0.6rem] text-white transition-colors hover:bg-white/10`}
                 >
-                    <SliderMark value={25} {...labelStyles}>
-                        25
-                    </SliderMark>
-                    <SliderMark value={50} {...labelStyles}>
-                        50
-                    </SliderMark>
-                    <SliderMark value={75} {...labelStyles}>
-                        75
-                    </SliderMark>
+                    <div className="flex items-center space-x-2">
+                        <span>Transaction Details</span>
+                    </div>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                </button>
 
-                    <SliderTrack>
-                        <SliderFilledTrack />
-                    </SliderTrack>
-                    <Tooltip hasArrow bg="teal.500" color="white" placement="top" isOpen={showTooltip} label={`${sliderValue}x`}>
-                        <SliderThumb />
-                    </Tooltip>
-                </Slider>
-            </VStack>
+                {isOpen && (
+                    <div className="flex flex-col gap-3 rounded-md px-3 py-3 text-white text-opacity-50">
+                        <HStack w="100%" justify="space-between">
+                            <p className="text-md text-opacity-50">Rate</p>
+                            <p className="text-right">
+                                1 {Config.token} = 0 {base_mint.symbol}
+                            </p>
+                        </HStack>
 
-            <VStack align="start" w="100%">
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Liquidation Price:
-                </Text>
+                        <HStack w="100%" justify="space-between">
+                            <p className="text-md">Liquidity Provider Fee</p>
+                            <p>{AMMfee}%</p>
+                        </HStack>
 
-                <InputGroup size="md">
-                    <Input
-                        readOnly={true}
-                        color="white"
-                        size="lg"
-                        borderColor="rgba(134, 142, 150, 0.5)"
-                        value={sliderValue === 1 ? "" : liquidation_price_string}
-                        disabled
-                    />
-                    <InputRightElement h="100%" w={50}>
-                        <Image src={Config.token_image} width={30} height={30} alt="" style={{ borderRadius: "100%" }} />
-                    </InputRightElement>
-                </InputGroup>
-            </VStack>
-*/}
+                        <HStack w="100%" justify="space-between">
+                            <p className="text-md text-opacity-50">Slippage</p>
+                            <p> {slippage_string}%</p>
+                        </HStack>
+
+                        <div className="h-1 w-full border-b border-gray-600/50"></div>
+
+                        <HStack w="100%" justify="space-between">
+                            <p className="text-md">Transfer Fee</p>
+                            <p>{transfer_fee / 100}%</p>
+                        </HStack>
+
+                        <HStack w="100%" justify="space-between">
+                            <p className="text-md text-opacity-50">Max Transfer Fee</p>
+                            <p>
+                                {" "}
+                                {max_transfer_fee} {base_mint.symbol}
+                            </p>
+                        </HStack>
+                    </div>
+                )}
+            </div>
+
             <Button
-                mt={2}
+                mt={-2}
                 size="lg"
                 w="100%"
                 px={4}
@@ -301,14 +298,10 @@ const BuyPanel = ({
                 </Text>
             </Button>
 
-            <Card bg="transparent">
-                <CardBody>
-                    <Text mb={0} color="white" align="center" fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        MM Rewards are only granted on Buys through Let&apos;s Cook.
-                    </Text>
-                </CardBody>
-            </Card>
-        </>
+            <Text mt={-1} color="white" align="center" fontSize={"medium"} opacity={0.5}>
+                MM Rewards are only granted on Buys through Let&apos;s Cook.
+            </Text>
+        </div>
     );
 };
 

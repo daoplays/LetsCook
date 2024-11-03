@@ -127,27 +127,25 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     }
 
     return (
-        <Table className="rounded-lg xl:w-[90%]">
+        <Table className="w-full rounded-xl">
             <TableHeader>
-                <TableRow>
-                    {tableHeaders.map((i) => (
-                        <TableHead className="min-w-[140px] border-b" key={i.text}>
-                            {i.field ? (
-                                <div className="flex cursor-pointer justify-center font-semibold">
-                                    {i.text}
-                                    <FaSort className="ml-2 h-4 w-4" />
-                                </div>
-                            ) : (
-                                i.text
-                            )}
-                        </TableHead>
-                    ))}
-                    <TableHead>
-                        <Box mt={1} as="button">
-                            <TfiReload size={sm ? 18 : 20} />
-                        </Box>
+                {tableHeaders.map((i) => (
+                    <TableHead className="min-w-[140px]" key={i.text}>
+                        {i.field ? (
+                            <div className="flex cursor-pointer justify-center font-semibold">
+                                {i.text}
+                                <FaSort className="ml-2 h-4 w-4" />
+                            </div>
+                        ) : (
+                            i.text
+                        )}
                     </TableHead>
-                </TableRow>
+                ))}
+                <TableHead>
+                    <Box mt={1} as="button">
+                        <TfiReload size={sm ? 18 : 20} />
+                    </Box>
+                </TableHead>
             </TableHeader>
             <TableBody>
                 {mapped_rewards.map((r, i) => (
@@ -190,13 +188,6 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                 cursor: "pointer",
                 height: "60px",
                 transition: "background-color 0.3s",
-            }}
-            className="border-b"
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-            }}
-            onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
         >
             {show_icon && (

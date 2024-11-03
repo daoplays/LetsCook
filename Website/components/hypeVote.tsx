@@ -178,6 +178,7 @@ export function HypeVote({
                         width={28}
                         height={28}
                         alt="Thumbs Up"
+                        className="cursor-pointer"
                     />
                 </Tooltip>
                 <Text m="0" fontSize={"large"} color={vote_color}>
@@ -196,6 +197,7 @@ export function HypeVote({
                         width={28}
                         height={28}
                         alt="Thumbs Down"
+                        className="cursor-pointer"
                     />
                 </Tooltip>
             </HStack>

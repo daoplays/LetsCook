@@ -1,6 +1,5 @@
 .inputBox {
     /* width: 100%; */
-    font-family: "Kufam", sans-serif;
 }
 label.label input[type="file"] {
     display: none;
@@ -83,7 +82,7 @@ label.label input[type="file"] {
     position: relative;
     background-color: #494949;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.761);
+    border: 0.5px solid rgba(255, 255, 255, 0.761);
     padding: 10px;
     border-radius: 5px;
     color: white;
@@ -93,7 +92,7 @@ label.label input[type="file"] {
     position: relative;
     background-color: #494949;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.761);
+    border: 0.5px solid rgba(255, 255, 255, 0.761);
     padding: 10px;
     border-radius: 5px;
     color: white;
@@ -101,9 +100,9 @@ label.label input[type="file"] {
 }
 .inputTxtarea {
     position: relative;
-    background-color: #494949;
+    background-color: #434343;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.761);
+    border: 0.5px solid rgba(255, 255, 255, 0.761);
     padding: 10px;
     border-radius: 5px;
     color: white;
@@ -179,7 +178,7 @@ label.label input[type="file"] {
 .distributionField input {
     background-color: #494949;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.761);
+    border: 0.5px solid rgba(255, 255, 255, 0.761);
     padding: 10px;
     border-radius: 5px;
     color: white;
@@ -260,7 +259,7 @@ label.label input[type="file"] {
         position: relative;
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -270,7 +269,7 @@ label.label input[type="file"] {
         position: relative;
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -280,7 +279,7 @@ label.label input[type="file"] {
         position: relative;
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -356,7 +355,7 @@ label.label input[type="file"] {
     .distributionField input {
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -449,7 +448,7 @@ label.label input[type="file"] {
         position: relative;
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -459,7 +458,7 @@ label.label input[type="file"] {
         position: relative;
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -469,7 +468,7 @@ label.label input[type="file"] {
         position: relative;
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;
@@ -545,7 +544,7 @@ label.label input[type="file"] {
     .distributionField input {
         background-color: #494949;
         box-shadow: none;
-        border: 1px solid rgba(255, 255, 255, 0.761);
+        border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;
         border-radius: 5px;
         color: white;

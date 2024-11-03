@@ -5,14 +5,12 @@ import SideNav from "../components/sideNav";
 
 const AppRootPage = ({ children }: PropsWithChildren) => {
     return (
-        <VStack h="100vh" gap={0} className="bg-background-image pt-14">
+        <VStack h="100vh" gap={0} className="bg-background-image">
             <Navigation />
 
-            <HStack gap={0} h="100%" w="100%" style={{ overflow: "hidden" }}>
+            <HStack className="h-full w-full gap-0 overflow-hidden pt-14">
                 <SideNav />
-                <VStack className="h-full flex-1 gap-0 overflow-y-auto bg-background-index">
-                    <div className="w-full overflow-y-scroll">{children}</div>
-                </VStack>
+                <div className="h-full w-full flex-1 overflow-y-scroll bg-background-index">{children}</div>
             </HStack>
         </VStack>
     );

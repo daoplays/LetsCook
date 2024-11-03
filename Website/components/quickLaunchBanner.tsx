@@ -15,16 +15,15 @@ const QuickLaunchBanner = () => {
     return (
         <VStack justify="center " gap={4}>
             <Text
-                fontSize={sm ? 24 : md ? 45 : 60}
+                // fontSize={sm ? 24 : md ? 45 : 60}
                 color="white"
-                className="font-face-kg2"
+                className="font-face-kg2 md:4xl text-3xl lg:text-5xl"
                 align={"center"}
                 fontWeight="extrabold"
-                lineHeight="30px"
             >
                 CREATE A TOKEN IN SECONDS
             </Text>
-            <Text className="font-face-kg2" mt={2} fontSize={sm ? "small" : lg ? "large" : "xx-large"} color="white" align={"center"}>
+            <Text className="font-face-kg2 md:text-xl lg:text-2xl" color="white" align={"center"}>
                 Skip the Bonding Curve. Trade Instantly.
             </Text>
             <Button
@@ -35,7 +34,7 @@ const QuickLaunchBanner = () => {
                         router.push("/launch");
                     }
                 }}
-                className="px-10 py-8 text-3xl transition-all hover:opacity-90"
+                className="px-4 py-4 text-xl transition-all hover:opacity-90 lg:px-10 lg:py-8 lg:text-2xl"
             >
                 Quick Launch
             </Button>

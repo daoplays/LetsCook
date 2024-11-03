@@ -13,7 +13,6 @@ label.label input[type="file"] {
 }
 
 .browse {
-    font-family: "Kufam", sans-serif;
 }
 
 .pieChartColumn {
@@ -113,9 +112,9 @@ label.label input[type="file"] {
 
 .textLabelInput input {
     position: relative;
-    background-color: #494949;
+    background-color: #454444;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.761);
+    border: 0.5px solid rgba(255, 255, 255, 0.761);
     padding: 10px;
     border-radius: 5px;
     color: white;
@@ -254,7 +253,7 @@ label.label input[type="file"] {
     color: white;
     background-image: linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%);
     background-size: cover;
-    border-radius: 5px;
+    border-radius: 20px;
 }
 
 .nextBtn {
