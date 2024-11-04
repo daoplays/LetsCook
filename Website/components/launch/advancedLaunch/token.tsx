@@ -52,6 +52,7 @@ import { distributionLabels } from "../../../constant/root";
 import trimAddress from "../../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Config } from "../../Solana/constants";
+import { Button } from "@/components/ui/button";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -381,27 +382,31 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                 <label className={styles.label}>
                     <input id="file" type="file" onChange={handleFileChange} />
                     <span
-                        className={styles.browse}
-                        style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
+                        style={{
+                            cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
+                        }}
                     >
                         BROWSE
                     </span>
                 </label>
             </div>
-            <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected (Size Limit: 1MB)"}
-            </Text>
+            <span className="ml-4 opacity-50 text-md">
+                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
+            </span>
         </HStack>
     );
 
     return (
-        <Center height="100%" width="100%">
-            <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Token Information
-                </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pb-4 pt-4">
-                    <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
+            <Center height="100%" width="100%">
+                <VStack height="100%" w="100%">
+                    <div className="flex flex-col gap-2 md:mb-4">
+                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Token Information</Text>
+                        {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
+                    </div>
+                    <VStack w={"100%"} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
                                 <Image
@@ -440,9 +445,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 {lg && <Browse />}
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white">Name:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -451,7 +454,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={name}
                                             onChange={handleNameChange}
@@ -472,7 +474,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={symbol}
                                             onChange={handleSymbolChange}
@@ -481,7 +482,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
                                         Token Prefix:
                                     </div>
 
@@ -490,7 +491,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             maxLength={3}
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
-                                            className={styles.inputBox}
                                             placeholder="Enter Token Prefix Grind (Max 3 Characters) - Optional"
                                             value={tokenStart}
                                             onChange={(e) => {
@@ -514,7 +514,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                         size={lg ? "md" : "lg"}
                                         required
-                                        className={styles.inputBox}
                                         placeholder="Enter Token Total Supply"
                                         value={totalSupply}
                                         onChange={(e) => {
@@ -534,7 +533,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                         size={lg ? "md" : "lg"}
                                         required
-                                        className={styles.inputBox}
                                         placeholder="1-9"
                                         value={decimal}
                                         onChange={(e) => {
@@ -619,7 +617,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <Input
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
                                                 placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
                                                 value={transferFee}
                                                 onChange={(e) => {
@@ -638,7 +635,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <Input
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
                                                 placeholder="Max number of tokens taxed in a single transaction"
                                                 value={maxTransferFee}
                                                 onChange={(e) => {
@@ -659,7 +655,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 <Input
                                                     disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
-                                                    className={styles.inputBox}
                                                     placeholder="Enter Permanent Delegate ID"
                                                     value={permanentDelegate}
                                                     onChange={(e) => {
@@ -689,7 +684,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 <Input
                                                     disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
-                                                    className={styles.inputBox}
                                                     placeholder="Enter Transfer Hook Program ID"
                                                     value={transferHookID}
                                                     onChange={(e) => {
@@ -727,7 +721,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 required
-                                                className={styles.inputBox}
                                                 value={mints}
                                                 onChange={(e) => {
                                                     setMints(e.target.value);
@@ -747,7 +740,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 required
-                                                className={styles.inputBox}
                                                 value={ticketPrice}
                                                 onChange={(e) => {
                                                     setTotalPrice(e.target.value);
@@ -767,7 +759,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <Input
                                             size={lg ? "md" : "lg"}
                                             required
-                                            className={styles.inputBox}
                                             value={
                                                 !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
                                                     ? parseFloat(mints) * parseFloat(ticketPrice)
@@ -787,7 +778,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     align={"center"}
                                     w="100%"
                                     style={{ flexDirection: md ? "column" : "row" }}
-                                    spacing={5}
+                                    spacing={15}
                                 >
                                     <VStack
                                         spacing={5}
@@ -1090,7 +1081,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
                                                 { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                                             ]}
-                                            style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
+                                            style={{ width: md ? "100%" : "380px", position: "absolute", zIndex: 2 }}
                                         />
 
                                         <PieChart
@@ -1117,37 +1108,44 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     color: distributionLabels.headers[2].color,
                                                 },
                                             ]}
-                                            style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
+                                            style={{ width: md ? "120%" : "440px", position: "relative", zIndex: 1 }}
                                         />
                                     </VStack>
                                 </HStack>
                             </VStack>
                         </VStack>
 
-                        <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={() => router.push("/dashboard")}>
-                                Cancel
-                            </button>
-
-                            <button
+                        <Stack mt={md ? 0 : 30}  direction={{ base: "column", md: "row" }}>
+                            <Button
                                 type="button"
+                                size="xl"
+                                className="mt-2 text-2xl"
+                                onClick={(e) => () => router.push("/dashboard")}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="button"
+                                size="xl"
+                                className="mt-2 text-2xl"
                                 onClick={(e) => {
                                     if (!isLoading) {
                                         nextPage(e);
                                     }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg`}
-                                style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
                                 {isLoading ? <Spinner /> : `NEXT (1/3)`}
-                            </button>
-                        </HStack>
+                            </Button>
+                        </Stack>
                     </VStack>
-                </form>
-            </VStack>
+                </VStack>
 
-            <TooltipModal isTooltipOpened={isTooltipOpened} closeTooltip={closeTooltip} />
-        </Center>
+                <TooltipModal isTooltipOpened={isTooltipOpened} closeTooltip={closeTooltip} />
+            </Center>
+        </form>
     );
 };
 

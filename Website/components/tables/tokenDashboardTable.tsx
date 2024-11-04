@@ -216,7 +216,7 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     );
 
     return (
-        <Table className="rounded-lg xl:w-[90%]">
+        <Table>
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((i) => (

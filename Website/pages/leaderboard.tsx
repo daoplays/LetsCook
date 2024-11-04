@@ -105,7 +105,7 @@ const LeaderboardPage = () => {
 
         return (
             <>
-                <Table className="rounded-lg xl:w-[90%]">
+                <Table>
                     <TableHeader>
                         <TableRow>
                             {tableHeaders.map((i) => (
@@ -113,10 +113,10 @@ const LeaderboardPage = () => {
                                     {i.field ? (
                                         <div
                                             onClick={() => handleHeaderClick(i.field)}
-                                            className="flex cursor-pointer justify-center font-semibold"
+                                            className="flex justify-center font-semibold cursor-pointer"
                                         >
                                             {i.text}
-                                            {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                            {i.text === "RANK" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
                                         </div>
                                     ) : (
                                         i.text
@@ -148,7 +148,7 @@ const LeaderboardPage = () => {
 
                 <TableCell style={{ minWidth: "160px" }}>
                     <div className="flex items-center justify-center gap-3 px-4">
-                        <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <div className="w-10 h-10 overflow-hidden rounded-lg">
                             <Image alt="Sauce icon" src={"/images/sauce.png"} width={48} height={48} className="object-cover" />
                         </div>
                         <span className="font-semibold">{user.total_points.toString()}</span>
@@ -179,7 +179,7 @@ const LeaderboardPage = () => {
             <Head>
                 <title>Let&apos;s Cook | Leaderboard</title>
             </Head>
-            <main>
+            <main className="md:p-8">
                 <Flex
                     py={wallet.connected ? 18 : sm ? 22 : 37}
                     gap={2}

@@ -34,7 +34,7 @@ const BagsPage = () => {
             <Head>
                 <title>Let&apos;s Cook | Collections</title>
             </Head>
-            <main>
+            <main className="md:p-8">
                 <Flex
                     px={4}
                     // py={18}

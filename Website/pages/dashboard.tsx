@@ -51,7 +51,7 @@ const DashboardPage = () => {
     if (!creatorLaunches) return <Loader />;
 
     return (
-        <VStack>
+        <VStack className="md:p-8">
             <Flex
                 py={18}
                 gap={4}

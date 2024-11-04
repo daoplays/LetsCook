@@ -27,7 +27,7 @@ const MarketMaker = () => {
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-            <main>
+            <main className="md:p-8">
                 <Flex
                     py={18}
                     gap={5}

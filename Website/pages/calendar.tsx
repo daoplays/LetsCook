@@ -57,7 +57,7 @@ const CalenderPage = () => {
             <Head>
                 <title>Let&apos;s Cook | Calendar</title>
             </Head>
-            <main>
+            <main className="md:p-8">
                 <Flex
                     py={18}
                     gap={2}
