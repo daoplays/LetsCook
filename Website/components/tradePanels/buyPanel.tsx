@@ -257,27 +257,25 @@ const BuyPanel = ({
                             <p> {slippage_string}%</p>
                         </HStack>
 
-                        {max_transfer_fee > 0 && 
-                        <>
-                        <div className="h-1 w-full border-b border-gray-600/50"></div>
+                        {max_transfer_fee > 0 && (
+                            <>
+                                <div className="h-1 w-full border-b border-gray-600/50"></div>
 
-                        <HStack w="100%" justify="space-between">
-                            <p className="text-md">Transfer Fee</p>
-                            <p>{transfer_fee / 100}%</p>
-                        </HStack>
+                                <HStack w="100%" justify="space-between">
+                                    <p className="text-md">Transfer Fee</p>
+                                    <p>{transfer_fee / 100}%</p>
+                                </HStack>
 
-                        <HStack w="100%" justify="space-between">
-                            <p className="text-md text-opacity-50">Max Transfer Fee</p>
-                            <p>
-                                {" "}
-                                {max_transfer_fee} {base_mint.symbol}
-                            </p>
-                        </HStack>
-                        </>
-                        }
+                                <HStack w="100%" justify="space-between">
+                                    <p className="text-md text-opacity-50">Max Transfer Fee</p>
+                                    <p>
+                                        {" "}
+                                        {max_transfer_fee} {base_mint.symbol}
+                                    </p>
+                                </HStack>
+                            </>
+                        )}
                     </div>
-                    
-                    
                 )}
             </div>
 

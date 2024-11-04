@@ -38,10 +38,10 @@ const useCollection = (props: useCollectionProps | null) => {
             return;
         }
 
-        console.log("get collection", pageName.toString())
+        console.log("get collection", pageName.toString());
         const data = collectionList.get(pageName.toString());
 
-        if (!data){
+        if (!data) {
             setCollection(null);
             setError("Collection is not available");
             return;

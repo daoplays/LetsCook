@@ -731,7 +731,9 @@ const LaunchAMM = () => {
                                         onChange={() => setLowLiquidity(lowLiquidity === 0 ? 1 : 0)}
                                     />
                                     <Tooltip
-                                        label={"AMM has two phases, one at low liquidity, where the pool behaves like a bonding curve.  There is reduced price impact and price acceleration.  At high liquidity it transition to a standard constant product AMM."}
+                                        label={
+                                            "AMM has two phases, one at low liquidity, where the pool behaves like a bonding curve.  There is reduced price impact and price acceleration.  At high liquidity it transition to a standard constant product AMM."
+                                        }
                                         hasArrow
                                         w={270}
                                         fontSize="large"
@@ -758,7 +760,7 @@ const LaunchAMM = () => {
                                         parseFloat(quote_amount),
                                         wrapETH,
                                         burnLP,
-                                        lowLiquidity
+                                        lowLiquidity,
                                     );
                                 }}
                             >

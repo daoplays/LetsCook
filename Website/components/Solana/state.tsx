@@ -786,7 +786,7 @@ export const defaultUserInput: LaunchDataUserInput = {
     closedate: new Date(new Date().setHours(0, 0, 0, 0)),
     team_wallet: "",
     token_keypair: null,
-    amm_fee: 0,
+    amm_fee: 25,
     amm_provider: 0,
     token_program: null,
     transfer_fee: 0,

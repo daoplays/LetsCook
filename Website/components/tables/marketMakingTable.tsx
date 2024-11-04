@@ -141,7 +141,7 @@ const MarketMakingTable = () => {
 
         // Filter the sorted rows based on the search term
         return sortedRows.filter((row) => row.listing.symbol.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [rows, searchTerm, sortedField, reverseSort, jupPrices, reward_schedule, bignum_to_num]);
+    }, [rows, searchTerm, sortedField, reverseSort, jupPrices]);
 
     if (!mintData || !listingData || !ammData) {
         return <Loader />;

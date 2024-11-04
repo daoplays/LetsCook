@@ -101,6 +101,26 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         setSymbol(e.target.value);
     };
 
+    useEffect(() => {
+        if (launch_type !== "Instant") {
+            return;
+        }
+        setTotalSupply("1000000000");
+        setDecimal("6");
+        setTotalPrice("0");
+        setMints("0");
+        setDistribution([50, 50, 0, 0, 0, 0, 0]);
+        setPermanentDelegate("");
+        setTransferHookID("");
+        setTransferFee("0");
+        setMaxTransferFee("0");
+
+        // we also set a bunch of other things
+        newLaunchData.current.amm_fee = 25;
+        newLaunchData.current.amm_provider = 0;
+        newLaunchData.current.team_wallet = Config.COOK_FEES.toString();
+    }, [launch_type, newLaunchData]);
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files && e.target.files[0];
 
@@ -255,7 +275,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return false;
         }
 
-        if (parseFloat(ticketPrice) < 0.00001) {
+        if (launch_type !== "Instant" && parseFloat(ticketPrice) < 0.00001) {
             toast.error("Minimum ticket price is 0.00001 SOL");
             return false;
         }
@@ -491,7 +511,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={newLaunchData.current.edit_mode === true}
+                                        disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                         size={lg ? "md" : "lg"}
                                         required
                                         className={styles.inputBox}
@@ -511,7 +531,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                 <div className={styles.textLabelInput}>
                                     <Input
-                                        disabled={newLaunchData.current.edit_mode === true}
+                                        disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                         size={lg ? "md" : "lg"}
                                         required
                                         className={styles.inputBox}
@@ -567,6 +587,18 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             </Text>
                                         </Tooltip>
                                     </Radio>
+                                    <Radio value="Instant">
+                                        <Tooltip
+                                            label="Token Launches instantly to trade with a bonding curve."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                Instant
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
                                 </Stack>
                             </RadioGroup>
                         </HStack>
@@ -585,7 +617,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <div className={styles.textLabelInput}>
                                             <Input
-                                                disabled={newLaunchData.current.edit_mode === true}
+                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 className={styles.inputBox}
                                                 placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
@@ -604,7 +636,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <div className={styles.textLabelInput}>
                                             <Input
-                                                disabled={newLaunchData.current.edit_mode === true}
+                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 className={styles.inputBox}
                                                 placeholder="Max number of tokens taxed in a single transaction"
@@ -625,7 +657,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <HStack spacing={0} style={{ flexGrow: 1 }}>
                                             <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                 <Input
-                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     placeholder="Enter Permanent Delegate ID"
@@ -655,7 +687,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <HStack spacing={0} style={{ flexGrow: 1 }}>
                                             <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                 <Input
-                                                    disabled={newLaunchData.current.edit_mode === true}
+                                                    disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
                                                     className={styles.inputBox}
                                                     placeholder="Enter Transfer Hook Program ID"
@@ -692,7 +724,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <div className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Total Number of Winning Tickets"}
-                                                disabled={newLaunchData.current.edit_mode === true}
+                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 required
                                                 className={styles.inputBox}
@@ -712,7 +744,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Price Per Ticket"}
-                                                disabled={newLaunchData.current.edit_mode === true}
+                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 required
                                                 className={styles.inputBox}
@@ -793,9 +825,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                             handleDistributionChange(e, Distribution.Raffle);
                                                         }}
                                                         disabled={
-                                                            totalPercentage === 100 && distribution[Distribution.Raffle] === 0
+                                                            launch_type === "Instant" ||
+                                                            (totalPercentage === 100 && distribution[Distribution.Raffle] === 0
                                                                 ? true
-                                                                : false
+                                                                : false)
                                                         }
                                                     />
                                                     <Image
@@ -824,7 +857,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                             handleDistributionChange(e, Distribution.LP);
                                                         }}
                                                         disabled={
-                                                            totalPercentage === 100 && distribution[Distribution.LP] === 0 ? true : false
+                                                            launch_type === "Instant" ||
+                                                            (totalPercentage === 100 && distribution[Distribution.LP] === 0 ? true : false)
                                                         }
                                                     />
                                                     <Image
