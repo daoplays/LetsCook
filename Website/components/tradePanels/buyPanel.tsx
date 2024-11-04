@@ -141,7 +141,12 @@ const BuyPanel = ({
         ? CalculateChunkedOutput(quote_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, base_mint.mint.decimals)
         : getBaseOutput(quote_raw, amm_base_balance, amm_quote_balance, amm.fee, base_mint.mint.decimals);
 
+    let base_rate = plugins.liquidity_active
+    ? CalculateChunkedOutput(1 * Math.pow(10, 9), amm_quote_balance, amm_base_balance, 0, plugins, base_mint.mint.decimals)
+    : getBaseOutput(1 * Math.pow(10, 9), amm_base_balance, amm_quote_balance, 0, base_mint.mint.decimals);
+
     let base_output_string = formatPrice(base_output[0], base_mint.mint.decimals);
+    let base_rate_string = formatPrice(base_rate[0], base_mint.mint.decimals);
 
     //console.log(amm_base_balance, amm_quote_balance);
 
@@ -243,7 +248,7 @@ const BuyPanel = ({
                         <HStack w="100%" justify="space-between">
                             <p className="text-md text-opacity-50">Rate</p>
                             <p className="text-right">
-                                1 {Config.token} = 0 {base_mint.symbol}
+                                1 {Config.token} = {base_rate_string} {base_mint.symbol}
                             </p>
                         </HStack>
 

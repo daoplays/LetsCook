@@ -114,7 +114,14 @@ const SellPanel = ({
         ? CalculateChunkedOutput(base_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, 9, base_mint.mint.decimals)
         : getQuoteOutput(base_raw, amm_base_balance, amm_quote_balance, amm.fee, 9, base_mint.mint.decimals);
 
+    let quote_rate = plugins.liquidity_active
+    ? CalculateChunkedOutput(1 * Math.pow(10, base_mint.mint.decimals), amm_quote_balance, amm_base_balance, 0, plugins, 9, base_mint.mint.decimals)
+    : getQuoteOutput(1 * Math.pow(10, base_mint.mint.decimals), amm_base_balance, amm_quote_balance, 0, 9, base_mint.mint.decimals);
+
+
+
     let quote_output_string = formatPrice(quote_output[0], 5);
+    let quote_rate_string = formatPrice(quote_rate[0], 5);
 
     let slippage = quote_output[1] / quote_output[0] - 1;
 
@@ -214,7 +221,7 @@ const SellPanel = ({
                         <HStack w="100%" justify="space-between">
                             <p className="text-md text-opacity-50">Rate</p>
                             <p className="text-right">
-                                1 {base_mint.symbol} = 1 {Config.token}
+                                1 {base_mint.symbol} = {quote_rate_string} {Config.token}
                             </p>
                         </HStack>
 
