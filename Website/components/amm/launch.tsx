@@ -208,7 +208,7 @@ const LaunchAMM = () => {
 
     const [burnLP, setBurnLP] = useState<number>(0);
     const [wrapETH, setWrapETH] = useState<number>(0);
-    const [lowLiquidity, setLowLiquidity] = useState<number>(1);
+    const [lowLiquidity, setLowLiquidity] = useState<number>(0);
 
     const { InitExternalAMM, isLoading } = useInitExternalAMM();
 
@@ -718,6 +718,7 @@ const LaunchAMM = () => {
                                     </Tooltip>
                                 </HStack>
                             </HStack>
+                            {/*
                             <HStack spacing={15} w="100%" className={styles.eachField}>
                                 <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
                                     BONDING CURVE:
@@ -743,6 +744,7 @@ const LaunchAMM = () => {
                                     </Tooltip>
                                 </HStack>
                             </HStack>
+                            */}
                         </VStack>
                         <HStack mt={md ? 0 : 30}>
                             <button
