@@ -65,6 +65,8 @@ import { useRouter } from "next/router";
 import React from "react";
 import { FaCalendarAlt } from "react-icons/fa";
 import useCreateLaunch from "../../../hooks/launch/useCreateLaunch";
+import useInstantLaunch from "../../../hooks/launch/useInstantLaunch";
+
 import { Config } from "../../Solana/constants";
 import Image from "next/image";
 
@@ -99,6 +101,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const [launchDateAndTime, setLaunchDateAndTime] = useState("-- --");
     const [closeDateAndTime, setCloseDateAndTime] = useState("-- --");
     const { CreateLaunch } = useCreateLaunch();
+    const { CreateInstantLaunch } = useInstantLaunch();
 
     const local_date = useMemo(() => new Date(), []);
     var zone = new Date().toLocaleTimeString("en-us", { timeZoneName: "short" }).split(" ")[2];
@@ -143,49 +146,52 @@ const BookPage = ({ setScreen }: BookPageProps) => {
 
     async function setData(e): Promise<boolean> {
         console.log("in set data");
-        let balance = 1;
-        try {
-            let teamPubKey = new PublicKey(teamWallet);
-            balance = await request_current_balance("", teamPubKey);
 
-            //console.log("check balance", teamPubKey.toString(), balance);
-
-            if (balance == 0) {
-                toast.error("Team wallet does not exist");
-                return false;
-            }
-        } catch (error) {
-            toast.error("Invalid team wallet");
-            return false;
-        }
-
-        if (whitelist_key !== "") {
+        if (newLaunchData.current.launch_type !== 3) {
+            let balance = 1;
             try {
-                let whitelist = new PublicKey(whitelist_key);
-                balance = await request_current_balance("", whitelist);
+                let teamPubKey = new PublicKey(teamWallet);
+                balance = await request_current_balance("", teamPubKey);
 
                 //console.log("check balance", teamPubKey.toString(), balance);
 
                 if (balance == 0) {
-                    toast.error("Whitelist token does not exist");
+                    toast.error("Team wallet does not exist");
                     return false;
                 }
             } catch (error) {
-                toast.error("Invalid Whitelist token");
+                toast.error("Invalid team wallet");
                 return false;
             }
 
-            newLaunchData.current.whitelist_key = whitelist_key;
-            newLaunchData.current.whitelist_amount = 1;
-        }
-        if (!newLaunchData.current.edit_mode && localCloseDate.getTime() <= localOpenDate.getTime()) {
-            toast.error("Close date must be set after launch date");
-            return false;
-        }
+            if (whitelist_key !== "") {
+                try {
+                    let whitelist = new PublicKey(whitelist_key);
+                    balance = await request_current_balance("", whitelist);
 
-        if (!newLaunchData.current.edit_mode && localOpenDate.getTime() > 0 && localOpenDate.getTime() < new Date().getTime()) {
-            toast.error("Open date must be set after now");
-            return false;
+                    //console.log("check balance", teamPubKey.toString(), balance);
+
+                    if (balance == 0) {
+                        toast.error("Whitelist token does not exist");
+                        return false;
+                    }
+                } catch (error) {
+                    toast.error("Invalid Whitelist token");
+                    return false;
+                }
+
+                newLaunchData.current.whitelist_key = whitelist_key;
+                newLaunchData.current.whitelist_amount = 1;
+            }
+            if (!newLaunchData.current.edit_mode && localCloseDate.getTime() <= localOpenDate.getTime()) {
+                toast.error("Close date must be set after launch date");
+                return false;
+            }
+
+            if (!newLaunchData.current.edit_mode && localOpenDate.getTime() > 0 && localOpenDate.getTime() < new Date().getTime()) {
+                toast.error("Open date must be set after now");
+                return false;
+            }
         }
 
         newLaunchData.current.opendate = localOpenDate;
@@ -217,7 +223,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     }
 
     async function Launch(e) {
-        if (await setData(e)) CreateLaunch();
+        if (await setData(e)) {
+            if (newLaunchData.current.launch_type !== 3) {
+                CreateLaunch();
+            } else {
+                CreateInstantLaunch();
+            }
+        }
     }
 
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -233,122 +245,131 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                 </Text>
                 <form style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] pb-4">
                     <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
-                        <HStack spacing={15} w="100%" className={styles.eachField}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
-                                OPEN DATE:
-                            </div>
-                            <HStack>
-                                <Switch
-                                    ml={2}
-                                    py={2}
-                                    size={lg ? "md" : "lg"}
-                                    isChecked={includeLaunchDate}
-                                    onChange={(e) => handleSetIncLaunchDate(e)}
-                                />
-                                {!includeLaunchDate && (
-                                    <Tooltip
-                                        label="This launch will start immediately if no open date is specified."
-                                        hasArrow
-                                        w={270}
-                                        fontSize="large"
-                                        offset={[0, 10]}
-                                    >
-                                        <Image width={25} height={25} src="/images/help.png" alt="Help" />
-                                    </Tooltip>
-                                )}
-                            </HStack>
-
-                            {includeLaunchDate && (
-                                <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                    <HStack spacing={5} ml={2}>
-                                        <Popover isOpen={isStartOpen} onClose={onCloseStart} placement="bottom" closeOnBlur={false}>
-                                            <PopoverTrigger>
-                                                <IconButton
-                                                    onClick={onToggleStart}
-                                                    aria-label="FaCalendarAlt"
-                                                    icon={<FaCalendarAlt size={22} />}
-                                                />
-                                            </PopoverTrigger>
-                                            <PopoverContent width="fit-content">
-                                                <PopoverArrow />
-                                                <PopoverCloseButton />
-                                                <PopoverHeader h={34} />
-                                                <PopoverBody>
-                                                    <DatePicker
-                                                        disabled={newLaunchData.current.edit_mode === true}
-                                                        showTimeSelect
-                                                        keepOpen
-                                                        timeFormat="HH:mm"
-                                                        timeIntervals={15}
-                                                        selected={localOpenDate}
-                                                        onChange={(date) => {
-                                                            setLocalOpenDate(date);
-                                                            //onCloseStart();
-                                                        }}
-                                                        onClickOutside={() => onCloseStart()}
-                                                        inline
-                                                    />
-                                                </PopoverBody>
-                                            </PopoverContent>
-                                        </Popover>
-
-                                        <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
-                                            {launchDateAndTime}
-                                        </Text>
+                        {newLaunchData.current.launch_type !== 3 && (
+                            <>
+                                <HStack spacing={15} w="100%" className={styles.eachField}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
+                                        OPEN DATE:
+                                    </div>
+                                    <HStack>
+                                        <Switch
+                                            ml={2}
+                                            py={2}
+                                            size={lg ? "md" : "lg"}
+                                            isChecked={includeLaunchDate}
+                                            onChange={(e) => handleSetIncLaunchDate(e)}
+                                        />
+                                        {!includeLaunchDate && (
+                                            <Tooltip
+                                                label="This launch will start immediately if no open date is specified."
+                                                hasArrow
+                                                w={270}
+                                                fontSize="large"
+                                                offset={[0, 10]}
+                                            >
+                                                <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                            </Tooltip>
+                                        )}
                                     </HStack>
-                                </div>
-                            )}
-                        </HStack>
 
-                        <HStack spacing={15}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
-                                CLOSE DATE:
-                            </div>
-                            <div className={`${styles.textLabelInputDate} font-face-kg`}>
-                                <HStack spacing={5}>
-                                    <Popover isOpen={isEndOpen} onClose={OnCloseEnd} placement="bottom" closeOnBlur={false}>
-                                        <PopoverTrigger>
-                                            <IconButton
-                                                onClick={onToggleEnd}
-                                                aria-label="FaCalendarAlt"
-                                                icon={<FaCalendarAlt size={22} />}
-                                            />
-                                        </PopoverTrigger>
-                                        <PopoverContent width="fit-content">
-                                            <PopoverArrow />
-                                            <PopoverCloseButton />
-                                            <PopoverHeader h={34} />
-                                            <PopoverBody>
-                                                <DatePicker
-                                                    disabled={newLaunchData.current.edit_mode === true}
-                                                    showTimeSelect
-                                                    keepOpen
-                                                    timeFormat="HH:mm"
-                                                    timeIntervals={15}
-                                                    selected={localCloseDate}
-                                                    onChange={(date) => {
-                                                        setLocalCloseDate(date);
-                                                        //OnCloseEnd();
-                                                    }}
-                                                    onClickOutside={() => OnCloseEnd()}
-                                                    inline
-                                                />
-                                            </PopoverBody>
-                                        </PopoverContent>
-                                    </Popover>
+                                    {includeLaunchDate && (
+                                        <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                            <HStack spacing={5} ml={2}>
+                                                <Popover isOpen={isStartOpen} onClose={onCloseStart} placement="bottom" closeOnBlur={false}>
+                                                    <PopoverTrigger>
+                                                        <IconButton
+                                                            onClick={onToggleStart}
+                                                            aria-label="FaCalendarAlt"
+                                                            icon={<FaCalendarAlt size={22} />}
+                                                        />
+                                                    </PopoverTrigger>
+                                                    <PopoverContent width="fit-content">
+                                                        <PopoverArrow />
+                                                        <PopoverCloseButton />
+                                                        <PopoverHeader h={34} />
+                                                        <PopoverBody>
+                                                            <DatePicker
+                                                                disabled={newLaunchData.current.edit_mode === true}
+                                                                showTimeSelect
+                                                                keepOpen
+                                                                timeFormat="HH:mm"
+                                                                timeIntervals={15}
+                                                                selected={localOpenDate}
+                                                                onChange={(date) => {
+                                                                    setLocalOpenDate(date);
+                                                                    //onCloseStart();
+                                                                }}
+                                                                onClickOutside={() => onCloseStart()}
+                                                                inline
+                                                            />
+                                                        </PopoverBody>
+                                                    </PopoverContent>
+                                                </Popover>
 
-                                    <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
-                                        {closeDateAndTime}
-                                    </Text>
+                                                <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
+                                                    {launchDateAndTime}
+                                                </Text>
+                                            </HStack>
+                                        </div>
+                                    )}
                                 </HStack>
-                            </div>
-                        </HStack>
+
+                                <HStack spacing={15}>
+                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                                        CLOSE DATE:
+                                    </div>
+                                    <div className={`${styles.textLabelInputDate} font-face-kg`}>
+                                        <HStack spacing={5}>
+                                            <Popover isOpen={isEndOpen} onClose={OnCloseEnd} placement="bottom" closeOnBlur={false}>
+                                                <PopoverTrigger>
+                                                    <IconButton
+                                                        onClick={onToggleEnd}
+                                                        aria-label="FaCalendarAlt"
+                                                        icon={<FaCalendarAlt size={22} />}
+                                                    />
+                                                </PopoverTrigger>
+                                                <PopoverContent width="fit-content">
+                                                    <PopoverArrow />
+                                                    <PopoverCloseButton />
+                                                    <PopoverHeader h={34} />
+                                                    <PopoverBody>
+                                                        <DatePicker
+                                                            disabled={newLaunchData.current.edit_mode === true}
+                                                            showTimeSelect
+                                                            keepOpen
+                                                            timeFormat="HH:mm"
+                                                            timeIntervals={15}
+                                                            selected={localCloseDate}
+                                                            onChange={(date) => {
+                                                                setLocalCloseDate(date);
+                                                                //OnCloseEnd();
+                                                            }}
+                                                            onClickOutside={() => OnCloseEnd()}
+                                                            inline
+                                                        />
+                                                    </PopoverBody>
+                                                </PopoverContent>
+                                            </Popover>
+
+                                            <Text m="0" color="white" className="font-face-kg" fontSize={sm ? "small" : "large"}>
+                                                {closeDateAndTime}
+                                            </Text>
+                                        </HStack>
+                                    </div>
+                                </HStack>
+                            </>
+                        )}
 
                         <HStack spacing={0} className={styles.eachField}>
                             <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
                                 AMM Provider:
                             </div>
-                            <RadioGroup ml={5} onChange={setAMMProvider} value={AMMProvider}>
+                            <RadioGroup
+                                ml={5}
+                                isDisabled={newLaunchData.current.launch_type === 3}
+                                onChange={setAMMProvider}
+                                value={AMMProvider}
+                            >
                                 <Stack direction="row" gap={5}>
                                     <Radio value="cook" color="white">
                                         <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
@@ -392,7 +413,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
-                                    disabled={newLaunchData.current.edit_mode === true}
+                                    disabled={newLaunchData.current.launch_type === 3 || newLaunchData.current.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
                                     placeholder="Enter Solana Wallet Address"
@@ -412,7 +433,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </div>
                             <div className={styles.textLabelInput}>
                                 <Input
-                                    disabled={newLaunchData.current.edit_mode === true}
+                                    disabled={newLaunchData.current.launch_type === 3 || newLaunchData.current.edit_mode === true}
                                     size={sm ? "medium" : "lg"}
                                     required
                                     placeholder="Enter Whitelist Token Address - Optional"
@@ -427,11 +448,13 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         </HStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
-                            <HStack>
-                                <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={onOpen}>
-                                    PREVIEW
-                                </button>
-                            </HStack>
+                            {newLaunchData.current.launch_type !== 3 && (
+                                <HStack>
+                                    <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={onOpen}>
+                                        PREVIEW
+                                    </button>
+                                </HStack>
+                            )}
                             <HStack spacing={3}>
                                 <button
                                     type="button"

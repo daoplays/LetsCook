@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Flex, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
@@ -21,6 +21,7 @@ import { FaSort } from "react-icons/fa";
 import Loader from "../loader";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "../ui/input";
 
 interface AMMLaunch {
     amm_data: AMMData;
@@ -52,12 +53,12 @@ const MarketMakingTable = () => {
     const [sortedField, setSortedField] = useState<string>("liquidity");
     const [reverseSort, setReverseSort] = useState<boolean>(true);
     const [rows, setRows] = useState<AMMLaunch[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
 
     const tableHeaders = [
         { text: "Token", field: "symbol" },
         { text: "Price", field: "price" },
         { text: "Liquidity", field: "liquidity" },
-        { text: "Market Cap", field: "fdmc" },
         { text: "Rewards (24h)", field: "rewards" },
         { text: "Socials", field: null },
         { text: "Hype", field: "hype" },
@@ -91,8 +92,9 @@ const MarketMakingTable = () => {
         setRows([...amm_launches]);
     }, [mintData, listingData, ammData]);
 
-    const sortedRows = [...rows].sort((a, b) => {
-        const sortValue = (row: AMMLaunch): string | number => {
+    const sortedAndFilteredRows = useMemo(() => {
+        // Helper function to get the sort value based on sortedField
+        const getSortValue = (row) => {
             switch (sortedField) {
                 case "symbol":
                     return row.listing.symbol;
@@ -111,8 +113,8 @@ const MarketMakingTable = () => {
                     return supply * price;
                 }
                 case "rewards": {
-                    const current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(row.amm_data.start_time)) / 24 / 60 / 60);
-                    return reward_schedule(current_date, row.amm_data, row.mint);
+                    const currentDate = Math.floor((Date.now() / 1000 - bignum_to_num(row.amm_data.start_time)) / 86400);
+                    return reward_schedule(currentDate, row.amm_data, row.mint);
                 }
                 case "hype":
                     return row.listing.positive_votes - row.listing.negative_votes;
@@ -121,81 +123,85 @@ const MarketMakingTable = () => {
             }
         };
 
-        const aVal = sortValue(a);
-        const bVal = sortValue(b);
+        // Sort the rows based on the calculated value
+        const sortedRows = [...rows].sort((a, b) => {
+            const aVal = getSortValue(a);
+            const bVal = getSortValue(b);
 
-        // Type guard to check if both values are strings
-        function isString(value: string | number): value is string {
-            return typeof value === "string";
-        }
+            if (typeof aVal === "string" && typeof bVal === "string") {
+                return reverseSort ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+            }
 
-        // If both values are strings, use string comparison
-        if (isString(aVal) && isString(bVal)) {
-            return reverseSort ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-        }
+            if (!isNaN(aVal) && !isNaN(bVal)) {
+                return reverseSort ? bVal - aVal : aVal - bVal;
+            }
 
-        // If both values are numbers or can be converted to numbers, use numeric comparison
-        const numA = Number(aVal);
-        const numB = Number(bVal);
+            return 0;
+        });
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-            return reverseSort ? numB - numA : numA - numB;
-        }
-
-        // Fallback comparison if types don't match or conversion fails
-        return 0;
-    });
+        // Filter the sorted rows based on the search term
+        return sortedRows.filter((row) => row.listing.symbol.toLowerCase().includes(searchTerm.toLowerCase()));
+    }, [rows, searchTerm, sortedField, reverseSort, jupPrices]);
 
     if (!mintData || !listingData || !ammData) {
         return <Loader />;
     }
-
     return (
-        <Table className="rounded-lg xl:w-[90%]">
-            <TableHeader>
-                <TableRow>
-                    {tableHeaders.map((header) => (
-                        <TableHead className="min-w-[140px] border-b" key={header.text}>
-                            {header.field ? (
-                                <div
-                                    onClick={() => header.field && handleSort(header.field)}
-                                    className="flex justify-center font-semibold cursor-pointer"
-                                >
-                                    {header.text}
-                                    <FaSort className="w-4 h-4 ml-2" />
-                                </div>
-                            ) : (
-                                header.text
-                            )}
-                        </TableHead>
-                    ))}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {sortedRows.length > 0 ? (
-                    sortedRows.map((launch, i) => <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />)
-                ) : (
-                    <TableRow
-                        style={{
-                            cursor: "pointer",
-                            height: "60px",
-                            transition: "background-color 0.3s",
-                        }}
-                        className="border-b"
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-                        }}
-                    >
-                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
-                            No Tokens yet
-                        </TableCell>
+        <div className="flex flex-col gap-2">
+            <div className="flex justify-end w-full px-2 md:-mt-6">
+                <Input
+                    type="text"
+                    placeholder="Search token"
+                    className="w-full md:w-[300px]"
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        {tableHeaders.map((header) => (
+                            <TableHead className="min-w-[140px] border-b" key={header.text}>
+                                {header.field ? (
+                                    <div
+                                        onClick={() => header.field && handleSort(header.field)}
+                                        className="flex justify-center font-semibold cursor-pointer"
+                                    >
+                                        {header.text}
+                                        <FaSort className="w-4 h-4 ml-2" />
+                                    </div>
+                                ) : (
+                                    header.text
+                                )}
+                            </TableHead>
+                        ))}
                     </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                </TableHeader>
+                <TableBody>
+                    {sortedAndFilteredRows.length > 0 ? (
+                        sortedAndFilteredRows.map((launch, i) => <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />)
+                    ) : (
+                        <TableRow
+                            style={{
+                                cursor: "pointer",
+                                height: "60px",
+                                transition: "background-color 0.3s",
+                            }}
+                            className="border-b"
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                            }}
+                        >
+                            <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                                No Tokens yet
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </div>
     );
 };
 
@@ -255,7 +261,6 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
                 </div>
             </TableCell>
             <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : liquidity_string}</TableCell>
-            <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : market_cap_string}</TableCell>
             <TableCell>
                 <div className="flex items-center justify-center gap-2">
                     <span>{nFormatter(mm_rewards, 2)}</span>

@@ -72,7 +72,7 @@ export function getAMMKeyFromMints(base_mint: PublicKey, amm_provider: number) {
     return amm_data_account;
 }
 
-function calculateReward(days: number, mm_amount : number) {
+function calculateReward(days: number, mm_amount: number) {
     if (days < 10) {
         return 0.05 * mm_amount;
     }
@@ -123,8 +123,7 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
 
     //console.log("rewards: current date ", current_date, " first date ", first_date, " date delta ", current_days, " last date ", last_date);
     let total_reward = 0;
-    if (last_date > 0 || (last_date === 0 && current_days > 0))
-        last_date++;
+    if (last_date > 0 || (last_date === 0 && current_days > 0)) last_date++;
 
     for (let i = last_date; i <= current_days; i++) {
         let this_reward = calculateReward(i, mm_amount);

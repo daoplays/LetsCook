@@ -17,7 +17,6 @@ export const useSOLPrice = () => {
     let MAX_RETRIES = 60;
     const currentTries = useRef<number>(0);
 
-
     const fetchInitialPrice = useCallback(async () => {
         // if for some reason this is called after the price has been set from the jupiter api then just return
         if (have_price.current || lastDBUpdate.current > 0) return;
@@ -105,12 +104,9 @@ export const useSOLPrice = () => {
     useEffect(() => {
         // first try and get from the database
         fetchInitialPrice();
-
     }, []);
 
-
     useEffect(() => {
-
         if (!databaseLoaded) return;
 
         // then start fetching the price from jupiter

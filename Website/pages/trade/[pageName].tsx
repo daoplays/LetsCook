@@ -27,7 +27,7 @@ import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders 
 import { Config, PROGRAM, WRAPPED_SOL } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig, calculateFee, unpackAccount } from "@solana/spl-token";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig } from "@solana/spl-token";
 
 import {
     HStack,
@@ -73,6 +73,7 @@ import formatPrice from "../../utils/formatPrice";
 import Loader from "../../components/loader";
 import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
 import { toast } from "react-toastify";
+import { Button } from "@/components/ui/button";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -430,7 +431,6 @@ const TradePage = () => {
     ]);
 
     const CheckMarketData = useCallback(async () => {
-
         if (!amm || !base_mint) return;
 
         const token_mint = amm.base_mint;
@@ -620,93 +620,80 @@ const TradePage = () => {
 
     let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
 
-    const Details = () => {
-        return (
-            <HStack spacing={5} w="100%" px={5} pb={sm ? 5 : 0} style={{ borderBottom: sm ? "0.5px solid rgba(134, 142, 150, 0.5)" : "" }}>
-                <Image
-                    alt="Launch icon"
-                    src={base_mint.icon}
-                    width={65}
-                    height={65}
-                    style={{ borderRadius: "8px", backgroundSize: "cover" }}
-                />
-                <VStack align="start" spacing={1}>
-                    <Text m={0} fontSize={20} color="white" className="font-face-kg" style={{ wordBreak: "break-all" }} align={"center"}>
-                        {base_mint.symbol}
-                    </Text>
-                    <HStack spacing={3} align="start" justify="start">
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {trimAddress(base_mint.mint.address.toString())}
-                        </Text>
-
-                        <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
-                            <div
-                                style={{ cursor: "pointer" }}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    navigator.clipboard.writeText(base_mint.mint.address.toString());
-                                }}
-                            >
-                                <MdOutlineContentCopy color="white" size={25} />
-                            </div>
-                        </Tooltip>
-
-                        <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
-                            <Link
-                                href={getSolscanLink(base_mint.mint.address, "Token")}
-                                target="_blank"
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
-                            </Link>
-                        </Tooltip>
-                    </HStack>
-                </VStack>
-            </HStack>
-        );
-    };
-
     return (
         <>
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-            <main
-                style={{
-                    background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)",
-                    height: sm ? "100vh" : "",
-                }}
-            >
-                <HStack spacing={0} align="start" pb={sm ? 14 : 0}>
+            <main className="md:p-8">
+                <HStack className="gap-2" align="start" pb={sm ? 14 : 0}>
                     {(!sm || (sm && (mobilePageContent === "Info" || mobilePageContent === "Trade"))) && (
                         <VStack
-                            py={5}
                             align="start"
                             w={sm ? "100%" : 320}
-                            minH="100vh"
-                            style={{
-                                minWidth: "350px",
-                                borderRight: "0.5px solid rgba(134, 142, 150, 0.5)",
-                            }}
-                            spacing={8}
+                            className="min-w-[375px] rounded-xl border-t-[3px] border-orange-700 bg-[#161616] bg-opacity-75 bg-clip-padding shadow-2xl backdrop-blur-sm backdrop-filter"
+                            gap={0}
                         >
-                            <Details />
+                            <HStack
+                                spacing={5}
+                                w="100%"
+                                px={5}
+                                pb={sm ? 5 : 0}
+                                style={{ borderBottom: sm ? "0.5px solid rgba(134, 142, 150, 0.5)" : "" }}
+                                className="py-4"
+                            >
+                                <Image
+                                    alt="Launch icon"
+                                    src={base_mint.icon}
+                                    width={65}
+                                    height={65}
+                                    style={{ borderRadius: "8px", backgroundSize: "cover" }}
+                                />
+                                <VStack align="start" spacing={1}>
+                                    <p className="text-xl text-white">{base_mint.symbol}</p>
+                                    <HStack spacing={3} align="start" justify="start">
+                                        <p className="text-lg text-white">{trimAddress(base_mint.mint.address.toString())}</p>
+
+                                        <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
+                                            <div
+                                                style={{ cursor: "pointer" }}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    navigator.clipboard.writeText(base_mint.mint.address.toString());
+                                                }}
+                                            >
+                                                <MdOutlineContentCopy color="white" size={25} />
+                                            </div>
+                                        </Tooltip>
+
+                                        <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
+                                            <Link
+                                                href={getSolscanLink(base_mint.mint.address, "Token")}
+                                                target="_blank"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <Image src="/images/solscan.png" width={25} height={25} alt="Solscan icon" />
+                                            </Link>
+                                        </Tooltip>
+                                    </HStack>
+                                </VStack>
+                            </HStack>
 
                             {!sm && (
-                                <Box px={5} mt={-2} pb={5} width="100%" style={{ borderBottom: "1px solid rgba(134, 142, 150, 0.5)" }}>
-                                    <WoodenButton
-                                        action={() => {
+                                <div className="w-full px-4 pb-4">
+                                    <Button
+                                        onClick={() => {
                                             leftPanel === "Info"
                                                 ? setLeftPanel("Trade")
                                                 : leftPanel === "Trade"
                                                   ? setLeftPanel("Info")
                                                   : setLeftPanel("Info");
                                         }}
-                                        label={leftPanel === "Info" ? "Place Order" : "Info"}
-                                        size={22}
-                                        width="100%"
-                                    />
-                                </Box>
+                                        className="w-full px-10 py-8 text-2xl transition-all hover:opacity-90"
+                                    >
+                                        {leftPanel === "Info" ? "Trade" : "Info"}
+                                    </Button>
+                                </div>
                             )}
 
                             {leftPanel === "Info" && (
@@ -742,18 +729,19 @@ const TradePage = () => {
                             align="start"
                             justify="start"
                             w="100%"
-                            spacing={0}
+                            spacing={1}
                             style={{
                                 minHeight: "100vh",
                                 overflow: "auto",
                             }}
                         >
+                            {/* <div className="w-full overflow-auto rounded-lg bg-[#161616] bg-opacity-75 bg-clip-padding p-3 shadow-2xl backdrop-blur-sm backdrop-filter"> */}
                             <ChartComponent data={market_data} additionalPixels={additionalPixels} />
-
+                            {/* </div> */}
                             <div
                                 style={{
                                     width: "100%",
-                                    height: "10px",
+                                    height: "0px",
                                     cursor: "ns-resize",
                                     position: "relative",
                                 }}
@@ -775,58 +763,7 @@ const TradePage = () => {
                                 />
                             </div>
 
-                            <HStack
-                                justify="space-between"
-                                align="center"
-                                w="100%"
-                                px={4}
-                                style={{
-                                    height: "55px",
-                                    borderTop: "1px solid rgba(134, 142, 150, 0.5)",
-                                }}
-                            >
-                                <HStack spacing={3}>
-                                    {["Rewards"].map((name, i) => {
-                                        const isActive = selectedTab === name;
-
-                                        const baseStyle = {
-                                            display: "flex",
-                                            alignItems: "center",
-                                            cursor: "pointer",
-                                        };
-
-                                        const activeStyle = {
-                                            color: "white",
-                                            borderBottom: isActive ? "2px solid white" : "",
-                                            opacity: isActive ? 1 : 0.5,
-                                        };
-
-                                        return (
-                                            <HStack
-                                                key={i}
-                                                style={{
-                                                    ...baseStyle,
-                                                    ...activeStyle,
-                                                }}
-                                                onClick={() => {
-                                                    handleClick(name);
-                                                }}
-                                                px={4}
-                                                py={2}
-                                                mt={-2}
-                                                w={"fit-content"}
-                                                justify="center"
-                                            >
-                                                <Text m={"0 auto"} fontSize="medium" fontWeight="semibold">
-                                                    {name}
-                                                </Text>
-                                            </HStack>
-                                        );
-                                    })}
-                                </HStack>
-                            </HStack>
-
-                            {selectedTab === "Rewards" && wallet.connected && <MyRewardsTable amm={amm} />}
+                            <MyRewardsTable amm={amm} />
 
                             {!wallet.connected && (
                                 <HStack w="100%" align="center" justify="center" mt={25}>
@@ -859,7 +796,7 @@ const TradePage = () => {
                             }}
                         >
                             <FaChartLine size={24} color={"#683309"} />
-                            <Text mb={0} color={"#683309"} fontSize="medium" fontFamily="ReemKufiRegular" fontWeight="bold">
+                            <Text mb={0} color={"#683309"} fontSize="medium" fontWeight="bold">
                                 Chart
                             </Text>
                         </VStack>
@@ -872,7 +809,7 @@ const TradePage = () => {
                             }}
                         >
                             <IoMdSwap size={28} color={"#683309"} />
-                            <Text mb={0} mt={-2} color={"#683309"} fontSize="medium" fontFamily="ReemKufiRegular" fontWeight="bold">
+                            <Text mb={0} color={"#683309"} fontSize="medium" fontWeight="bold">
                                 Buy/Sell
                             </Text>
                         </VStack>
@@ -885,7 +822,7 @@ const TradePage = () => {
                             }}
                         >
                             <FaInfo size={24} color={"#683309"} />
-                            <Text mb={0} color={"#683309"} fontSize="medium" fontFamily="ReemKufiRegular" fontWeight="bold">
+                            <Text mb={0} color={"#683309"} fontSize="medium" fontWeight="bold">
                                 Info
                             </Text>
                         </VStack>
@@ -1014,8 +951,8 @@ const BuyAndSell = ({
     }
 
     return (
-        <VStack align="start" px={5} w="100%" mt={-2} spacing={4}>
-            <HStack align="center" spacing={0} zIndex={99} w="100%">
+        <VStack align="start" w="100%" gap={0}>
+            <HStack align="center" spacing={0} zIndex={99} w="100%" className="px-4">
                 {["Buy", "Sell", "LP+", "LP-"].map((name, i) => {
                     const isActive = selected === name;
 
@@ -1053,12 +990,9 @@ const BuyAndSell = ({
                     );
                 })}
             </HStack>
-
-            <HStack justify="space-between" w="100%" mt={2}>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Available Balance:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
+            <div className="mt-1 flex w-full justify-between px-4 py-3">
+                <span className="text-md text-white text-opacity-50">Available Balance:</span>
+                <span className="text-md text-white/50">
                     {selected === "Buy"
                         ? userSOLBalance.toFixed(5)
                         : selected === "LP-"
@@ -1069,32 +1003,24 @@ const BuyAndSell = ({
                                 minimumFractionDigits: 2,
                             })}{" "}
                     {selected === "Buy" ? Config.token : selected === "LP-" ? "LP" : base_mint.symbol}
-                </Text>
-            </HStack>
-            <HStack justify="space-between" w="100%" mt={2}>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    AMM LP Fee:
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {amm.fee * 0.01}%
-                </Text>
-            </HStack>
-            <HStack justify="space-between" w="100%" mt={2}>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Transfer Fee (bps):
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {transfer_fee}
-                </Text>
-            </HStack>
-            <HStack justify="space-between" w="100%" mt={2}>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                    Max Transfer Fee ({base_mint.symbol}):
-                </Text>
-                <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                    {max_transfer_fee}
-                </Text>
-            </HStack>
+                </span>
+            </div>
+            {/* 
+
+            <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                <span className="text-md text- text-white text-opacity-50">AMM LP Fee:</span>
+                <span className="text-md text-white">{(amm.fee * 0.01).toFixed(2)}%</span>
+            </div>
+
+            <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                <span className="text-md text- text-white text-opacity-50">Transfer Fee (bps):</span>
+                <span className="text-md text-white">{transfer_fee}</span>
+            </div>
+
+            <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                <span className="text-md text- text-white text-opacity-50">Max Transfer Fee ({base_mint.symbol}):</span>
+                <span className="text-md text-white">{max_transfer_fee}</span>
+            </div> */}
 
             {selected === "Buy" && (
                 <BuyPanel
@@ -1112,7 +1038,6 @@ const BuyAndSell = ({
                     amm_quote_balance={quote_balance}
                 />
             )}
-
             {selected === "Sell" && (
                 <SellPanel
                     amm={amm}
@@ -1129,7 +1054,6 @@ const BuyAndSell = ({
                     amm_quote_balance={quote_balance}
                 />
             )}
-
             {selected === "LP+" && (
                 <AddLiquidityPanel
                     amm={amm}
@@ -1147,7 +1071,6 @@ const BuyAndSell = ({
                     amm_lp_balance={amm_lp_balance}
                 />
             )}
-
             {selected === "LP-" && (
                 <RemoveLiquidityPanel
                     amm={amm}
@@ -1191,7 +1114,6 @@ const InfoContent = ({
     total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
-    const { lg } = useResponsive();
     const { isOpen: isRewardsOpen, onOpen: onRewardsOpen, onClose: onRewardsClose } = useDisclosure();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
@@ -1219,108 +1141,73 @@ const InfoContent = ({
                   maximumFractionDigits: 2,
               });
 
-    //console.log(price, total_supply, sol_price, quote_amount)
     return (
         <>
-            <VStack spacing={8} w="100%" mb={3}>
-                <HStack mt={-2} px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        POOL:
-                    </Text>
-                    <HStack>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {amm.provider === 0 ? "Let's Cook" : "Raydium"}
-                        </Text>
-
+            <div className="-mt-2 flex w-full flex-col space-y-0">
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Pool:</span>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-md text-white">{amm.provider === 0 ? "Let's Cook" : "Raydium"}</span>
                         {amm.provider === 0 && <Image src="/favicon.ico" alt="Cook Icon" width={30} height={30} />}
-
                         {amm.provider === 1 && <Image src="/images/raydium.png" alt="Raydium Icon" width={30} height={30} />}
-                    </HStack>
-                </HStack>
+                    </div>
+                </div>
 
-                <HStack mt={-2} px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        PRICE:
-                    </Text>
-                    <HStack>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {formatPrice(price, 5)}
-                        </Text>
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Price:</span>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-md text-white">{formatPrice(price, 5)}</span>
                         <Image src={Config.token_image} width={30} height={30} alt="SOL Icon" />
-                    </HStack>
-                </HStack>
+                    </div>
+                </div>
 
-                <HStack mt={-2} px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        VOLUME (24h):
-                    </Text>
-                    <HStack>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {(volume * price).toLocaleString()}
-                        </Text>
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Volume (24h):</span>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-md text-white">{(volume * price).toLocaleString()}</span>
                         <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
-                    </HStack>
-                </HStack>
+                    </div>
+                </div>
 
-                <HStack px={5} justify="space-between" w="100%">
-                    <HStack>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            SESSION REWARDS:
-                        </Text>
-                        {reward === 0 && (
-                            <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                                <FaPlusCircle onClick={() => onRewardsOpen()} />
-                            </Text>
-                        )}
-                    </HStack>
-                    <HStack>
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                            {reward.toLocaleString()}
-                        </Text>
-                        <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
-                    </HStack>
-                </HStack>
-
-                <HStack px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        MM SESSION VOLUME:
-                    </Text>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Market Making Volume:</span>
+                    <span className="text-md text-white">
                         {mm_data ? (bignum_to_num(mm_data.buy_amount) / Math.pow(10, base_mint.mint.decimals)).toLocaleString() : 0}
-                    </Text>
-                </HStack>
+                    </span>
+                </div>
 
-                <HStack px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        SUPPLY:
-                    </Text>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        {total_supply.toLocaleString()}
-                    </Text>
-                </HStack>
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <div className="flex items-center space-x-2">
+                        <span className="text-md text- text-white text-opacity-50">Market Making Rewards:</span>
+                        {reward === 0 && (
+                            <span className="text-md text- text-white text-opacity-50">
+                                <FaPlusCircle onClick={() => onRewardsOpen()} />
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <span className="text-md text-white">{reward.toLocaleString()}</span>
+                        <Image src={base_mint.icon} width={30} height={30} alt="Token Icon" />
+                    </div>
+                </div>
 
-                <HStack px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        MARKET CAP:
-                    </Text>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        ${market_cap_string}
-                    </Text>
-                </HStack>
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Token Supply:</span>
+                    <span className="text-md text-white">{total_supply.toLocaleString()}</span>
+                </div>
 
-                <HStack px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        LIQUIDITY:
-                    </Text>
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                        ${liquidity_string}
-                    </Text>
-                </HStack>
+                {/*<div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Market Cap:</span>
+                    <span className="text-md text-white">${market_cap_string}</span>
+                </div>*/}
 
-                <HStack px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        HYPE:
-                    </Text>
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Liquidity:</span>
+                    <span className="text-md text-white">${liquidity_string}</span>
+                </div>
+
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Hype:</span>
                     <HypeVote
                         launch_type={0}
                         launch_id={listing.id}
@@ -1330,24 +1217,22 @@ const InfoContent = ({
                         isTradePage={true}
                         listing={listing}
                     />
-                </HStack>
+                </div>
 
-                <HStack px={5} justify="space-between" w="100%">
-                    <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                        SOCIALS:
-                    </Text>
+                {/* Socials */}
+                <div className="flex w-full justify-between px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">Socials:</span>
                     <Links socials={listing.socials} isTradePage={true} />
-                </HStack>
+                </div>
 
-                {base_mint.extensions && (
-                    <HStack px={5} justify="space-between" w="100%">
-                        <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"} opacity={0.5}>
-                            EXTENSIONS:
-                        </Text>
+                {/* Extensions */}
+                {base_mint.extensions !== 0 && (
+                    <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                        <span className="text-md text- text-white text-opacity-50">Extensions:</span>
                         <ShowExtensions extension_flag={base_mint.extensions} />
-                    </HStack>
+                    </div>
                 )}
-            </VStack>
+            </div>
             <AddRewardModal amm={amm} isOpen={isRewardsOpen} onClose={onRewardsClose} />
         </>
     );
@@ -1436,6 +1321,7 @@ const ChartComponent = (props) => {
     return (
         <HStack
             ref={chartContainerRef}
+            className="rounded-xl"
             justify="center"
             id="chartContainer"
             w="100%"
@@ -1443,8 +1329,8 @@ const ChartComponent = (props) => {
             style={{
                 overflow: "auto",
                 position: "relative",
-                borderBottom: "1px solid rgba(134, 142, 150, 0.5)",
             }}
+            spacing={0}
         />
     );
 };

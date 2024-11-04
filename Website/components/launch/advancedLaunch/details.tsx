@@ -107,7 +107,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        if (name === "") {
+        if (newLaunchData.current.launch_type !== 3 && name === "") {
             toast.error("Page name cannot be empty");
             return false;
         }
@@ -122,30 +122,32 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        if (newLaunchData.current.banner_file === null) {
+        if (newLaunchData.current.launch_type !== 3 && newLaunchData.current.banner_file === null) {
             toast.error("Please select a banner image.");
             return false;
         }
 
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
+        if (newLaunchData.current.launch_type !== 3) {
+            let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
 
-        let balance = 0;
+            let balance = 0;
 
-        if (newLaunchData.current.edit_mode === false) {
-            balance = await request_current_balance("", launch_data_account);
-        }
+            if (newLaunchData.current.edit_mode === false) {
+                balance = await request_current_balance("", launch_data_account);
+            }
 
-        console.log("check balance", name, launch_data_account.toString(), balance);
+            console.log("check balance", name, launch_data_account.toString(), balance);
 
-        if (balance > 0) {
-            let launch_data: LaunchData = await request_launch_data("", launch_data_account);
-            if (launch_data !== null) {
-                let listing_data = await request_raw_account_data("", launch_data.listing);
-                if (listing_data !== null) {
-                    const [listing] = ListingData.struct.deserialize(listing_data);
-                    if (listing.description !== "") {
-                        toast.error("Page name already exists");
-                        return false;
+            if (balance > 0) {
+                let launch_data: LaunchData = await request_launch_data("", launch_data_account);
+                if (launch_data !== null) {
+                    let listing_data = await request_raw_account_data("", launch_data.listing);
+                    if (listing_data !== null) {
+                        const [listing] = ListingData.struct.deserialize(listing_data);
+                        if (listing.description !== "") {
+                            toast.error("Page name already exists");
+                            return false;
+                        }
                     }
                 }
             }
@@ -187,55 +189,72 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                     <VStack px={lg ? 4 : 12}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
-                                <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "147px" }}>
-                                        Page Name:
-                                    </div>
-
-                                    <InputGroup style={{ width: lg ? "100%" : "50%", position: "relative" }}>
-                                        <InputLeftElement color="white">
-                                            <RxSlash size={22} style={{ opacity: 0.5, marginTop: lg ? 0 : 8 }} />
-                                        </InputLeftElement>
-
-                                        <Input
-                                            pl={8}
-                                            bg="#494949"
-                                            size={lg ? "md" : "lg"}
-                                            required
-                                            disabled={newLaunchData.current.edit_mode === true}
-                                            placeholder="Yourpagename"
-                                            className={styles.inputBox}
-                                            type="text"
-                                            value={name}
-                                            onChange={handleNameChange}
-                                        />
-                                    </InputGroup>
-                                </HStack>
-
-                                <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "175px" }}>
-                                        Banner:
-                                    </div>
-
-                                    <div>
-                                        <label className={styles.label}>
-                                            <input id="file" type="file" onChange={handleFileChange} />
-                                            <span
-                                                className={styles.browse}
-                                                style={{
-                                                    cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
-                                                    padding: "5px 10px",
-                                                }}
+                                {newLaunchData.current.launch_type !== 3 && (
+                                    <>
+                                        {" "}
+                                        <HStack spacing={0} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "110px" : "147px" }}
                                             >
-                                                BROWSE
-                                            </span>
-                                        </label>
-                                    </div>
+                                                Page Name:
+                                            </div>
 
-                                    <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                                        {newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
-                                    </Text>
-                                </HStack>
+                                            <InputGroup style={{ width: lg ? "100%" : "50%", position: "relative" }}>
+                                                <InputLeftElement color="white">
+                                                    <RxSlash size={22} style={{ opacity: 0.5, marginTop: lg ? 0 : 8 }} />
+                                                </InputLeftElement>
+
+                                                <Input
+                                                    pl={8}
+                                                    bg="#494949"
+                                                    size={lg ? "md" : "lg"}
+                                                    required
+                                                    disabled={
+                                                        newLaunchData.current.launch_type === 3 || newLaunchData.current.edit_mode === true
+                                                    }
+                                                    placeholder="Yourpagename"
+                                                    className={styles.inputBox}
+                                                    type="text"
+                                                    value={name}
+                                                    onChange={handleNameChange}
+                                                />
+                                            </InputGroup>
+                                        </HStack>
+                                        <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg`}
+                                                style={{ minWidth: lg ? "110px" : "175px" }}
+                                            >
+                                                Banner:
+                                            </div>
+
+                                            <div>
+                                                <label className={styles.label}>
+                                                    <input
+                                                        id="file"
+                                                        type="file"
+                                                        disabled={newLaunchData.current.launch_type === 3}
+                                                        onChange={handleFileChange}
+                                                    />
+                                                    <span
+                                                        className={styles.browse}
+                                                        style={{
+                                                            cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
+                                                            padding: "5px 10px",
+                                                        }}
+                                                    >
+                                                        BROWSE
+                                                    </span>
+                                                </label>
+                                            </div>
+
+                                            <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                {newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
+                                            </Text>
+                                        </HStack>
+                                    </>
+                                )}
                             </div>
                         </div>
 

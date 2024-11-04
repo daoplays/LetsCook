@@ -21,16 +21,20 @@ const TokenLaunch = () => {
             <Head>
                 <title>Let&apos;s Cook | Token</title>
             </Head>
-            <main
-                style={{
-                    height: simpleLaunch && "100%",
-                    paddingTop: lg ? "25px" : "50px",
-                    position: "relative",
-                }}
-            >
-                <FormControl display="flex" w="fit-content" alignItems="center" position="absolute" top={4} right={4}>
+            <main className="md:p-8">
+                <FormControl
+                    display="flex"
+                    w="fit-content"
+                    alignItems="center"
+                    position="absolute"
+                    top={20}
+                    right={8}
+                    p={4}
+                    py={2}
+                    className="z-50 rounded-xl bg-gray-800 bg-opacity-75 bg-clip-padding shadow-2xl backdrop-blur-sm backdrop-filter"
+                >
                     <FormLabel htmlFor="mode" mb="0" color="white" cursor="pointer">
-                        <Text m={0} ml={5} className="font-face-rk" fontSize={"lg"} color="white">
+                        <Text m={0} fontSize={"md"} color="white">
                             Advanced Mode
                         </Text>
                     </FormLabel>
@@ -42,7 +46,6 @@ const TokenLaunch = () => {
                         isDisabled={screen !== "token"}
                     />
                 </FormControl>
-
                 {simpleLaunch ? <LaunchPage /> : <AdvanceLaunch activeScreen={screen} />}
             </main>
         </>

@@ -127,7 +127,7 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     }
 
     return (
-        <Table className="rounded-lg xl:w-[90%]">
+        <Table className="w-full rounded-xl">
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((i) => (
@@ -209,13 +209,6 @@ const RewardCard = ({ reward, show_icon }: { reward: MappedReward; show_icon: bo
                 cursor: "pointer",
                 height: "60px",
                 transition: "background-color 0.3s",
-            }}
-            className="border-b"
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-            }}
-            onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
             }}
         >
             {show_icon && (
