@@ -127,14 +127,14 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     }
 
     return (
-        <Table className="w-full rounded-xl">
+        <Table className="w-full rounded-xl md:mt-4">
             <TableHeader>
                 {tableHeaders.map((i) => (
-                    <TableHead className="min-w-[140px]" key={i.text}>
+                    <TableHead className="min-w-[160px]" key={i.text}>
                         {i.field ? (
-                            <div className="flex cursor-pointer justify-center font-semibold">
+                            <div className="flex justify-center font-semibold cursor-pointer">
                                 {i.text}
-                                <FaSort className="ml-2 h-4 w-4" />
+                                <FaSort className="w-4 h-4 ml-2" />
                             </div>
                         ) : (
                             i.text

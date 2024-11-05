@@ -14,7 +14,7 @@ const TokenLaunch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
     const [screen, setScreen] = useState("token");
-    const [simpleLaunch, setSimpleLaunch] = useState(false);
+    const [simpleLaunch, setSimpleLaunch] = useState(true);
 
     return (
         <>

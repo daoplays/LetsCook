@@ -186,12 +186,9 @@ const LeaderboardPage = () => {
                     alignItems="center"
                     justifyContent="end"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-                    className="xl:w-[95%]"
                 >
                     <Text
-                        fontSize={sm ? 25 : 35}
-                        color="white"
-                        className="font-face-kg"
+                        className="text-3xl font-semibold text-center text-white lg:text-4xl"
                         style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >

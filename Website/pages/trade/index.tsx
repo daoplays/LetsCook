@@ -1,4 +1,4 @@
-import { Text, Box, HStack, Flex } from "@chakra-ui/react";
+import { Text, Box, HStack, Flex, AbsoluteCenter } from "@chakra-ui/react";
 import { useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
@@ -6,6 +6,7 @@ import MarketMakingTable from "../../components/tables/marketMakingTable";
 import useAppRoot from "../../context/useAppRoot";
 import MyRewardsTable from "../../components/tables/myRewards";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { absoluteAmount } from "@metaplex-foundation/umi";
 
 const MarketMaker = () => {
     const { xs, sm, lg } = useResponsive();
@@ -33,9 +34,9 @@ const MarketMaker = () => {
                     gap={5}
                     alignItems="center"
                     justifyContent={"start"}
-                    style={{ position: "relative", flexDirection: sm ? "column-reverse" : "row" }}
+                    style={{ position: "relative" }} className={"px-2 lg:absolute lg:top-[30px] flex-col-reverse lg:flex-row"}
                 >
-                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} ml={!lg && 20}>
+                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2}>
                         {/* add rewards  */}
                         {["Markets", "Rewards"].map((name, i) => {
                             const isActive = selected === name;
@@ -90,10 +91,8 @@ const MarketMaker = () => {
                         })}
                     </HStack>
                     <Text
-                        fontSize={sm ? 25 : 35}
-                        color="white"
-                        className="font-face-kg"
-                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        className="text-center text-3xl font-semibold text-white lg:text-4xl lg:pb-16 lg:!absolute lg:hidden"
+                        style={{ position:"static", left: 0, right: 0, margin: "auto" }}
                         align={"center"}
                     >
                         {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}

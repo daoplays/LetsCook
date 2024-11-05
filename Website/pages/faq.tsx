@@ -21,7 +21,7 @@ const FAQ = () => {
             <Head>
                 <title>Let&apos;s Cook | FAQs</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", padding: "50px 0" }}>
+            <main className="bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:px-12 md:py-8">
                 <Center>
                     <VStack
                         px={sm ? 6 : 12}

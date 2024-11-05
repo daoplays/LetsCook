@@ -238,7 +238,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const { isOpen: isEndOpen, onToggle: onToggleEnd, onClose: OnCloseEnd } = useDisclosure();
 
     return (
-        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
             <Center width="100%">
                 <VStack w="100%">
                     <div className="flex flex-col gap-2 md:mb-4">
@@ -451,33 +451,33 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         <VStack spacing={3} align="center" justify="center" w="100%">
                             {newLaunchData.current.launch_type !== 3 && (
                                 <HStack>
-                                    <Button type="button" size="xl" className="mt-2 text-2xl" onClick={onOpen}>
-                                        PREVIEW
+                                    <Button type="button" size="lg" className="mt-2" onClick={onOpen}>
+                                        Preview
                                     </Button>
                                 </HStack>
                             )}
                             <Stack spacing={3} direction={{ base: "column", md: "row" }}>
                                 <Button
                                     type="button"
-                                    size="xl"
-                                    className="mt-2 text-2xl"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         prevPage(e);
                                     }}
                                 >
-                                    GO BACK
+                                    Go Back
                                 </Button>
                                 <Button
                                     type="button"
-                                    size="xl"
-                                    className="mt-2 text-2xl"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         if (!isLoading) {
                                             Launch(e);
                                         }
                                     }}
                                 >
-                                    {isLoading ? <Spinner /> : "CONFIRM"}
+                                    {isLoading ? <Spinner /> : "Confirm"}
                                 </Button>
                             </Stack>
                         </VStack>

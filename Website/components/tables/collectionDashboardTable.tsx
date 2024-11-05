@@ -50,7 +50,7 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((header) => (
-                        <TableHead className="min-w-[140px] border-b" key={header.text}>
+                        <TableHead className="min-w-[160px] border-b" key={header.text}>
                             {header.field ? (
                                 <div onClick={() => header.field} className="flex justify-center font-semibold cursor-pointer">
                                     {header.text}

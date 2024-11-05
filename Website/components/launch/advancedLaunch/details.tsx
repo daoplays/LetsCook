@@ -181,7 +181,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     }
 
     return (
-        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
             <Center width="100%">
                 <VStack w="100%">
                     <div className="flex flex-col gap-2 md:mb-4">
@@ -195,12 +195,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     <>
                                         {" "}
                                         <HStack spacing={0} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "110px" : "147px" }}
-                                            >
-                                                Page Name:
-                                            </div>
+                                            <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Page Name:</p>
 
                                             <InputGroup style={{ width: lg ? "100%" : "50%", position: "relative" }}>
                                                 <InputLeftElement color="white">
@@ -224,12 +219,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                             </InputGroup>
                                         </HStack>
                                         <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "110px" : "147px" }}
-                                            >
-                                                Banner:
-                                            </div>
+                                            
+                                        <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Banner:</p>
 
                                             <div>
                                                 <label className={styles.label}>
@@ -263,9 +254,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                         <VStack w="100%" spacing={30} mt={42} mb={25}>
                             <div className={styles.launchBodyLowerVertical}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
-                                    DESCRIPTION:
-                                </div>
+                                
+                            <p className="min-w-[120px] text-lg text-white md:min-w-[175px]">Description:</p>
 
                                 <div className={styles.textLabelInput}>
                                     <textarea
@@ -354,23 +344,23 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                             <Stack spacing={3} direction={{ base: "column", md: "row" }}>
                                 <Button
                                     type="button"
-                                    size="xl"
-                                    className="mt-2 text-2xl"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         prevPage(e);
                                     }}
                                 >
-                                    GO BACK
+                                    Go Back
                                 </Button>
                                 <Button
                                     type="button"
-                                    size="xl"
-                                    className="mt-2 text-2xl"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         nextPage(e);
                                     }}
                                 >
-                                    NEXT (2/3)
+                                    Next (2/3)
                                 </Button>
                             </Stack>
                         </VStack>
