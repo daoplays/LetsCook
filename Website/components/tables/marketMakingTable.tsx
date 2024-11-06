@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import { Distribution, JoinedLaunch, LaunchData, ListingData, MintData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
-import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, getAMMPlugins, reward_schedule } from "../Solana/jupiter_state";
+import { AMMData, MMLaunchData, MMUserData, getAMMKey, getAMMKeyFromMints, getAMMPlugins, reward_date, reward_schedule } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
