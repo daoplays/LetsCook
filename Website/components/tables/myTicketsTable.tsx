@@ -65,11 +65,11 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     });
 
     return (
-        <Table className="rounded-lg xl:w-[90%]">
+        <Table>
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((i) => (
-                        <TableHead className="min-w-[140px] border-b" key={i.text}>
+                        <TableHead className="min-w-[140px]" key={i.text}>
                             {i.field ? (
                                 <div
                                     onClick={() => handleHeaderClick(i.field)}

@@ -148,11 +148,11 @@ const MarketMakingTable = () => {
     }
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex w-full justify-end px-2 md:-mt-6">
+            <div className="flex w-full justify-end px-2 lg:-mt-6">
                 <Input
                     type="text"
                     placeholder="Search token"
-                    className="w-full md:w-[300px]"
+                    className="w-full lg:w-[220px]"
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>

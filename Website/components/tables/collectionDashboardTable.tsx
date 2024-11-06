@@ -37,16 +37,16 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
     const wallet = useWallet();
 
     const tableHeaders: Header[] = [
-        { text: "COLLECTION", field: null },
-        { text: "TOKEN", field: null },
-        { text: "HYPE", field: "hype" },
-        { text: "TOKENS PER NFT", field: "tokens per nft" },
-        { text: "UNWRAP FEE (%)", field: "unwrap fee" },
-        { text: "TOTAL SUPPLY", field: "total supply" },
+        { text: "Collection", field: null },
+        { text: "Token", field: null },
+        { text: "Hype", field: "hype" },
+        { text: "Tokens Per NFT", field: "tokens per nft" },
+        { text: "Unwrap Fee (%)", field: "unwrap fee" },
+        { text: "Total Supply", field: "total supply" },
     ];
 
     return (
-        <Table className="rounded-lg xl:w-[90%]">
+        <Table>
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((header) => (

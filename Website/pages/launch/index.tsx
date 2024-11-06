@@ -31,7 +31,7 @@ const TokenLaunch = () => {
                     right={8}
                     p={4}
                     py={2}
-                    className="z-50 rounded-xl bg-gray-800 bg-opacity-75 bg-clip-padding shadow-2xl backdrop-blur-sm backdrop-filter"
+                    className="z-50 bg-gray-800 bg-opacity-75 shadow-2xl rounded-xl bg-clip-padding backdrop-blur-sm backdrop-filter"
                 >
                     <FormLabel htmlFor="mode" mb="0" color="white" cursor="pointer">
                         <Text m={0} fontSize={"md"} color="white">

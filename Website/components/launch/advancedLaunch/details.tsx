@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction, MutableRefObject, useState, useEffect } from "react";
 import styles from "../../../styles/LaunchDetails.module.css";
 
-import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useDisclosure } from "@chakra-ui/react";
+import { Center, VStack, Text, Input, HStack, InputGroup, InputLeftElement, useDisclosure, Stack } from "@chakra-ui/react";
 import { PublicKey } from "@solana/web3.js";
 
 import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../Solana/constants";
@@ -22,6 +22,7 @@ import { RxSlash } from "react-icons/rx";
 import Image from "next/image";
 import useCreateLaunch from "../../../hooks/launch/useCreateLaunch";
 import LaunchPreviewModal from "../../launchPreview/modal";
+import { Button } from "@/components/ui/button";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -180,25 +181,21 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     }
 
     return (
-        <Center width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text mb={8} align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Page Information:
-                </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] pb-4 pt-4">
-                    <VStack px={lg ? 4 : 12}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
+            <Center width="100%">
+                <VStack w="100%">
+                    <div className="flex flex-col gap-2 md:mb-4">
+                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Page Information:</Text>
+                        {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
+                    </div>
+                    <VStack width="100%" mt={4}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
                                 {newLaunchData.current.launch_type !== 3 && (
                                     <>
                                         {" "}
                                         <HStack spacing={0} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "110px" : "147px" }}
-                                            >
-                                                Page Name:
-                                            </div>
+                                            <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Page Name:</p>
 
                                             <InputGroup style={{ width: lg ? "100%" : "50%", position: "relative" }}>
                                                 <InputLeftElement color="white">
@@ -214,7 +211,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                                         newLaunchData.current.launch_type === 3 || newLaunchData.current.edit_mode === true
                                                     }
                                                     placeholder="Yourpagename"
-                                                    className={styles.inputBox}
+                                                    className={styles.textLabelInput}
                                                     type="text"
                                                     value={name}
                                                     onChange={handleNameChange}
@@ -222,12 +219,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                             </InputGroup>
                                         </HStack>
                                         <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "110px" : "175px" }}
-                                            >
-                                                Banner:
-                                            </div>
+                                            
+                                        <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Banner:</p>
 
                                             <div>
                                                 <label className={styles.label}>
@@ -238,10 +231,11 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                                         onChange={handleFileChange}
                                                     />
                                                     <span
-                                                        className={styles.browse}
+                                                        className="rounded-3xl px-8 py-[0.6rem] font-semibold text-white"
                                                         style={{
                                                             cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
-                                                            padding: "5px 10px",
+                                                            background:
+                                                                "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
                                                         }}
                                                     >
                                                         BROWSE
@@ -249,9 +243,9 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                                 </label>
                                             </div>
 
-                                            <Text m={0} ml={5} color="white" className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                            <span className="ml-4 text-white opacity-50 text-md">
                                                 {newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
-                                            </Text>
+                                            </span>
                                         </HStack>
                                     </>
                                 )}
@@ -260,10 +254,10 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                         <VStack w="100%" spacing={30} mt={42} mb={25}>
                             <div className={styles.launchBodyLowerVertical}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: "175px" }}>
-                                    DESCRIPTION:
-                                </div>
-                                <div>
+                                
+                            <p className="min-w-[120px] text-lg text-white md:min-w-[175px]">Description:</p>
+
+                                <div className={styles.textLabelInput}>
                                     <textarea
                                         maxLength={250}
                                         required
@@ -284,7 +278,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     <div className={styles.textLabelInput}>
                                         <input
                                             placeholder="Enter your Website URL"
-                                            className={styles.inputBox}
                                             type="text"
                                             value={web}
                                             onChange={(e) => {
@@ -301,7 +294,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <input
-                                            className={styles.inputBox}
                                             placeholder="Enter your Telegram Invite URL"
                                             type="text"
                                             value={telegram}
@@ -319,7 +311,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     <div className={styles.textLabelInput}>
                                         <input
                                             required
-                                            className={styles.inputBox}
                                             placeholder="Enter your Twitter URL"
                                             type="text"
                                             value={twitter}
@@ -337,7 +328,6 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                                     <div className={styles.textLabelInput}>
                                         <input
-                                            className={styles.inputBox}
                                             placeholder="Enter your Discord Invite URL"
                                             type="text"
                                             value={discord}
@@ -351,33 +341,35 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                         </VStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
-                            <HStack spacing={3}>
-                                <button
+                            <Stack spacing={3} direction={{ base: "column", md: "row" }}>
+                                <Button
                                     type="button"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         prevPage(e);
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
-                                    GO BACK
-                                </button>
-                                <button
+                                    Go Back
+                                </Button>
+                                <Button
                                     type="button"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         nextPage(e);
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
-                                    NEXT (2/3)
-                                </button>
-                            </HStack>
+                                    Next (2/3)
+                                </Button>
+                            </Stack>
                         </VStack>
                     </VStack>
-                </form>
-            </VStack>
+                </VStack>
 
-            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} data={create_LaunchData(newLaunchData.current)} />
-        </Center>
+                <LaunchPreviewModal isOpen={isOpen} onClose={onClose} data={create_LaunchData(newLaunchData.current)} />
+            </Center>
+        </form>
     );
 };
 

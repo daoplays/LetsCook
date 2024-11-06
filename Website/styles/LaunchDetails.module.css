@@ -257,7 +257,7 @@ label.label input[type="file"] {
     }
     .inputBox {
         position: relative;
-        background-color: #494949;
+        background-color: #454444;
         box-shadow: none;
         border: 0.5px solid rgba(255, 255, 255, 0.761);
         padding: 10px;

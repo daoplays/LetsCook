@@ -20,8 +20,8 @@ const CollectionLaunch = () => {
             <main
                 style={{
                     height: "100%",
-                    paddingTop: lg ? "25px" : "50px",
                 }}
+                className="md:mt-[35px]"
             >
                 {screen === "step 1" && <CollectionInfo setScreen={setScreen} />}
                 {screen === "step 2" && <NFTData setScreen={setScreen} />}

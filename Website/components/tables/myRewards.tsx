@@ -127,11 +127,11 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     }
 
     return (
-        <Table className="w-full rounded-xl">
+        <Table className="w-full rounded-xl md:mt-4">
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((i) => (
-                        <TableHead className="min-w-[140px] border-b" key={i.text}>
+                        <TableHead className="min-w-[160px]" key={i.text}>
                             {i.field ? (
                                 <div className="flex cursor-pointer justify-center font-semibold">
                                     {i.text}
@@ -142,11 +142,6 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
                             )}
                         </TableHead>
                     ))}
-                    <TableHead>
-                        <Box mt={1} as="button">
-                            <TfiReload size={sm ? 18 : 20} />
-                        </Box>
-                    </TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
