@@ -268,8 +268,8 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                 <AddOnChainAttributes />
 
                                 {attributes.map((attribute, index) => (
-                                    <div  className="!overflow-auto w-[100%]">
-                                        <VStack key={index} className="ml-2 md:mx-auto !w-[500px] md:w-auto">
+                                    <div key={index} className="!overflow-auto w-[100%]">
+                                        <VStack className="ml-2 md:mx-auto !w-[500px] md:w-auto">
                                             <HStack gap={2} alignItems="center" className="!w-full md:w-auto">
                                                 <Text mr={2} mb={0} color="white" fontSize={24} fontWeight={"bold"} w={120}>
                                                     #{index + 1}
