@@ -1,4 +1,4 @@
-import { Text, Box, HStack, Flex } from "@chakra-ui/react";
+import { Text, Box, HStack, Flex, AbsoluteCenter } from "@chakra-ui/react";
 import { useState } from "react";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
@@ -6,6 +6,7 @@ import MarketMakingTable from "../../components/tables/marketMakingTable";
 import useAppRoot from "../../context/useAppRoot";
 import MyRewardsTable from "../../components/tables/myRewards";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { absoluteAmount } from "@metaplex-foundation/umi";
 
 const MarketMaker = () => {
     const { xs, sm, lg } = useResponsive();
@@ -27,15 +28,30 @@ const MarketMaker = () => {
             <Head>
                 <title>Let&apos;s Cook | Trade</title>
             </Head>
-            <main>
+            <main className="md:p-8">
                 <Flex
-                    py={18}
-                    gap={5}
-                    alignItems="center"
-                    justifyContent={"start"}
-                    style={{ position: "relative", flexDirection: sm ? "column-reverse" : "row" }}
+                    gap={4}
+                    justifyContent={!sm ? "space-between" : "end"}
+                    style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
+                    className="mb-2 w-full px-2"
                 >
-                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} ml={!lg && 20}>
+                    <Text
+                        className="mt-3 block text-center text-3xl font-semibold text-white md:hidden lg:text-4xl"
+                        style={{ position: sm ? "static" : "absolute", left: 0, bottom: 5, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
+                    </Text>
+
+                    <Text
+                        className="mt-4 hidden text-center text-3xl font-semibold text-white lg:block lg:text-4xl"
+                        style={{ position: sm ? "static" : "absolute", left: 0, bottom: 5, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
+                    </Text>
+
+                    <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2}>
                         {/* add rewards  */}
                         {["Markets", "Rewards"].map((name, i) => {
                             const isActive = selected === name;
@@ -89,15 +105,6 @@ const MarketMaker = () => {
                             );
                         })}
                     </HStack>
-                    <Text
-                        fontSize={sm ? 25 : 35}
-                        color="white"
-                        className="font-face-kg"
-                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                        align={"center"}
-                    >
-                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
-                    </Text>
 
                     {selected === "Orders" && (
                         <HStack spacing={3}>
@@ -142,7 +149,11 @@ const MarketMaker = () => {
                     )}
                 </Flex>
 
-                {selected === "Markets" && <MarketMakingTable />}
+                {selected === "Markets" && (
+                    <div className="lg:-mt-3">
+                        <MarketMakingTable />
+                    </div>
+                )}
 
                 {!wallet.connected && selected === "Orders" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
@@ -152,7 +163,11 @@ const MarketMaker = () => {
                     </HStack>
                 )}
 
-                {selected === "Rewards" && <MyRewardsTable amm={null} />}
+                {selected === "Rewards" && (
+                    <div className="-mt-3">
+                        <MyRewardsTable amm={null} />
+                    </div>
+                )}
 
                 {!wallet.connected && selected === "Rewards" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>

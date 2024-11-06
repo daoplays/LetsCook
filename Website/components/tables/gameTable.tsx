@@ -34,11 +34,11 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
     //console.log(filters?.start_date?.toString(), filters?.end_date?.toString());
     const { sm } = useResponsive();
     const tableHeaders: Header[] = [
-        { text: "TOKEN", field: null },
-        { text: "SOCIALS", field: null },
-        { text: "HYPE", field: "hype" },
-        { text: "MIN. LIQUIDITY", field: "minimum_liquidity" },
-        { text: "ENDS", field: "end_date" },
+        { text: "Token", field: null },
+        { text: "Socials", field: null },
+        { text: "Hype", field: "hype" },
+        { text: "Minimum Liquidity", field: "minimum_liquidity" },
+        { text: "End Date", field: "end_date" },
     ];
 
     const { checkProgramData, listingData } = useAppRoot();
@@ -114,18 +114,18 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
     });
 
     return (
-        <Table className="rounded-lg xl:w-[90%]">
+        <Table>
             <TableHeader>
                 <TableRow>
                     {tableHeaders.map((i) => (
-                        <TableHead key={i.text} className="min-w-[140px] border-b">
+                        <TableHead key={i.text} className={`${i.text === "Minimum Liquidity" ? "min-w-[180px]" : "min-w-[140px]"}`}>
                             {i.field ? (
                                 <div
                                     onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
                                     className="flex cursor-pointer justify-center font-semibold"
                                 >
                                     {i.text}
-                                    {i.text === "LOGO" || i.text === "SOCIALS" ? <></> : <FaSort />}
+                                    {i.text === "Logo" || i.text === "Socials" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
                                 </div>
                             ) : (
                                 i.text

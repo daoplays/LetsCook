@@ -325,8 +325,8 @@ const LaunchPage = () => {
 
             <Button
                 type="button"
-                size="xl"
-                className="mt-2 text-2xl"
+                size="lg"
+                className="mt-2"
                 onClick={(e) => {
                     submit(e);
                 }}
