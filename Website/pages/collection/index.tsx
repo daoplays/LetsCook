@@ -10,7 +10,7 @@ import CollectionPage from "../../components/collection/collectionPage";
 const CollectionLaunch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
-    const [screen, setScreen] = useState("step 1");
+    const [screen, setScreen] = useState("step 4");
 
     return (
         <>
@@ -20,8 +20,8 @@ const CollectionLaunch = () => {
             <main
                 style={{
                     height: "100%",
-                    paddingTop: lg ? "25px" : "50px",
                 }}
+                className="md:mt-[35px]"
             >
                 {screen === "step 1" && <CollectionInfo setScreen={setScreen} />}
                 {screen === "step 2" && <NFTData setScreen={setScreen} />}

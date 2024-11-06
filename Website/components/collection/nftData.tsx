@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, Button, CloseButton } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, CloseButton } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -9,6 +9,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { IoMdClose } from "react-icons/io";
 import { OnChainAttributes } from "./collectionState";
+import { Button } from "../ui/button";
 
 interface NFTDataProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -153,17 +154,19 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const BrowseImages = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Images:
-            </div>
+            <p className="min-w-[100px] text-lg text-white md:min-w-[290px]">Images:</p>
             <div>
                 <label className={styles.label}>
                     <input id="file" type="file" multiple={true} onChange={handleImagesChange} />
+
                     <span
-                        className={styles.browse}
-                        style={{ cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
+                        style={{
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
+                            cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
+                        }}
                     >
-                        BROWSE
+                        Browse
                     </span>
                 </label>
             </div>
@@ -187,17 +190,19 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const BrowseMetaData = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                MetaData:
-            </div>
+            <p className="min-w-[100px] text-lg text-white md:min-w-[290px]">MetaData:</p>
             <div>
                 <label className={styles.label}>
                     <input id="file" type="file" multiple={true} onChange={handleMetaDataChange} />
+
                     <span
-                        className={styles.browse}
-                        style={{ cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
+                        style={{
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
+                            cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
+                        }}
                     >
-                        BROWSE
+                        Browse
                     </span>
                 </label>
             </div>
@@ -211,17 +216,14 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const AddOnChainAttributes = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Randomised On-Chain Attributes:
-            </div>
+            <p className="min-w-[100px] text-lg text-white md:min-w-[290px]">Randomised On-Chain Attributes:</p>
             <div>
                 <label className={styles.label}>
                     <span
-                        className={styles.browse}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
                         style={{
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
                             cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
-                            padding: "5px 10px",
-                            marginLeft: "20px",
                         }}
                         onClick={addRow}
                     >
@@ -233,19 +235,17 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     );
 
     return (
-        <Center width="100%" h="100%">
-            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "300px" }}>
-                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Individual NFT info:
-                </Text>
-                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4">
-                    <VStack px={lg ? 4 : 12} spacing={25}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:!w-[775px]">
+            <Center width="100%">
+                <VStack w="100%">
+                    <div className="mb-4 flex flex-col gap-2">
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Individual NFT info</Text>
+                    </div>
+                    <VStack spacing={25} className="w-full md:w-full">
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        NFT Name:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[290px]">NFT Name:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -268,85 +268,92 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                 <AddOnChainAttributes />
 
                                 {attributes.map((attribute, index) => (
-                                    <VStack key={index}>
-                                        <HStack gap={2} alignItems="center">
-                                            <Text mr={2} mb={0} color="white" fontSize={24} fontWeight={"bold"} w={120}>
-                                                #{index + 1}
-                                            </Text>
+                                    <div  className="!overflow-auto w-[100%]">
+                                        <VStack key={index} className="ml-2 md:mx-auto !w-[500px] md:w-auto">
+                                            <HStack gap={2} alignItems="center" className="!w-full md:w-auto">
+                                                <Text mr={2} mb={0} color="white" fontSize={24} fontWeight={"bold"} w={120}>
+                                                    #{index + 1}
+                                                </Text>
 
-                                            <HStack spacing={0} className={styles.eachField} gap={3}>
-                                                <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
-                                                <div className={styles.textLabelInput}>
-                                                    <Input
-                                                        size={lg ? "md" : "lg"}
-                                                        maxLength={25}
-                                                        required
-                                                        className={styles.inputBox}
-                                                        type="text"
-                                                        value={attribute.name}
-                                                        onChange={(e) => handleChange(index, "name", e.target.value)}
-                                                        disabled={!attribute.editMode && attribute.saved && attribute.name.trim() !== ""}
-                                                    />
-                                                </div>
-                                            </HStack>
+                                                <HStack spacing={0} className={styles.eachField} gap={3}>
+                                                    <div className={`${styles.textLabel} font-face-kg`}>Name:</div>
+                                                    <div className={styles.textLabelInput}>
+                                                        <Input
+                                                            size={lg ? "md" : "lg"}
+                                                            maxLength={25}
+                                                            required
+                                                            className={styles.inputBox}
+                                                            type="text"
+                                                            value={attribute.name}
+                                                            onChange={(e) => handleChange(index, "name", e.target.value)}
+                                                            disabled={
+                                                                !attribute.editMode && attribute.saved && attribute.name.trim() !== ""
+                                                            }
+                                                        />
+                                                    </div>
+                                                </HStack>
 
-                                            <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
-                                                <div className={`${styles.textLabel} font-face-kg`}>Min:</div>
-                                                <div className={styles.textLabelInput}>
-                                                    <Input
-                                                        size={lg ? "md" : "lg"}
-                                                        maxLength={25}
-                                                        required
-                                                        className={styles.inputBox}
-                                                        value={attribute.min}
-                                                        onChange={(e) => handleChange(index, "min", e.target.value)}
-                                                        disabled={!attribute.editMode && attribute.saved}
-                                                    />
-                                                </div>
-                                            </HStack>
+                                                <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
+                                                    <div className={`${styles.textLabel} font-face-kg`}>Min:</div>
+                                                    <div className={styles.textLabelInput}>
+                                                        <Input
+                                                            size={lg ? "md" : "lg"}
+                                                            maxLength={25}
+                                                            required
+                                                            className={styles.inputBox}
+                                                            value={attribute.min}
+                                                            onChange={(e) => handleChange(index, "min", e.target.value)}
+                                                            disabled={!attribute.editMode && attribute.saved}
+                                                        />
+                                                    </div>
+                                                </HStack>
 
-                                            <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
-                                                <div className={`${styles.textLabel} font-face-kg`}>Max:</div>
-                                                <div className={styles.textLabelInput}>
-                                                    <Input
-                                                        size={lg ? "md" : "lg"}
-                                                        maxLength={25}
-                                                        required
-                                                        className={styles.inputBox}
-                                                        value={attribute.max}
-                                                        onChange={(e) => handleChange(index, "max", e.target.value)}
-                                                        disabled={!attribute.editMode && attribute.saved}
-                                                    />
-                                                </div>
-                                            </HStack>
+                                                <HStack spacing={0} className={styles.eachField} ml={3} gap={4}>
+                                                    <div className={`${styles.textLabel} font-face-kg`}>Max:</div>
+                                                    <div className={styles.textLabelInput}>
+                                                        <Input
+                                                            size={lg ? "md" : "lg"}
+                                                            maxLength={25}
+                                                            required
+                                                            className={styles.inputBox}
+                                                            value={attribute.max}
+                                                            onChange={(e) => handleChange(index, "max", e.target.value)}
+                                                            disabled={!attribute.editMode && attribute.saved}
+                                                        />
+                                                    </div>
+                                                </HStack>
 
-                                            <HStack ml={3}>
-                                                <Button onClick={() => removeRow(index)}>Remove</Button>
+                                                <HStack ml={3}>
+                                                    <Button type="button" size="sm" onClick={() => removeRow(index)}>
+                                                        Remove
+                                                    </Button>
+                                                </HStack>
                                             </HStack>
-                                        </HStack>
-                                    </VStack>
+                                        </VStack>
+                                    </div>
                                 ))}
                             </VStack>
                         </HStack>
 
                         <HStack mt={md ? 0 : 30}>
-                            <button
+                            <Button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg`}
+                                size="lg"
                                 onClick={() => {
                                     setScreen("step 1");
                                 }}
                             >
-                                GO BACK
-                            </button>
-                            <button type="submit" className={`${styles.nextBtn} font-face-kg`}>
-                                NEXT (2/4)
-                            </button>
+                                Go Back
+                            </Button>
+
+                            <Button type="submit" size="lg">
+                                Next (2/4)
+                            </Button>
                         </HStack>
                     </VStack>
-                </form>
-            </VStack>
-        </Center>
+                </VStack>
+            </Center>
+        </form>
     );
 };
 

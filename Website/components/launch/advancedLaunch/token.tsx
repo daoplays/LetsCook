@@ -516,7 +516,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </HStack>
 
                             <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                <p className="min-w-[110px] md:min-w-[132px] text-lg text-white lg:min-w-fit">Decimals:</p>
+                                <p className="min-w-[110px] md:min-w-[132px] text-lg text-white xl:min-w-fit">Decimals:</p>
 
                                 <div className={styles.textLabelInput}>
                                     <Input
@@ -613,7 +613,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
 
                                     <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                        <p className="min-w-[110px] md:min-w-[186px] text-lg text-white lg:min-w-[75px]">Max Fee:</p>
+                                        <p className="min-w-[110px] md:min-w-[186px] text-lg text-white xl:min-w-[75px]">Max Fee:</p>
 
                                         <div className={styles.textLabelInput}>
                                             <Input
@@ -708,7 +708,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
 
                                     <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                        <p className="min-w-[110px] md:min-w-[180px] text-lg text-white lg:min-w-[95px]">Ticket Price:</p>
+                                        <p className="min-w-[110px] md:min-w-[180px] text-lg text-white xl:min-w-[95px]">Ticket Price:</p>
                                         <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Price Per Ticket"}
