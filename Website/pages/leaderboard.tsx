@@ -113,10 +113,10 @@ const LeaderboardPage = () => {
                                     {i.field ? (
                                         <div
                                             onClick={() => handleHeaderClick(i.field)}
-                                            className="flex justify-center font-semibold cursor-pointer"
+                                            className="flex cursor-pointer justify-center font-semibold"
                                         >
                                             {i.text}
-                                            {i.text === "RANK" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
+                                            {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
                                         </div>
                                     ) : (
                                         i.text
@@ -148,7 +148,7 @@ const LeaderboardPage = () => {
 
                 <TableCell style={{ minWidth: "160px" }}>
                     <div className="flex items-center justify-center gap-3 px-4">
-                        <div className="w-10 h-10 overflow-hidden rounded-lg">
+                        <div className="h-10 w-10 overflow-hidden rounded-lg">
                             <Image alt="Sauce icon" src={"/images/sauce.png"} width={48} height={48} className="object-cover" />
                         </div>
                         <span className="font-semibold">{user.total_points.toString()}</span>
@@ -181,22 +181,29 @@ const LeaderboardPage = () => {
             </Head>
             <main className="md:p-8">
                 <Flex
-                    py={wallet.connected ? 18 : sm ? 22 : 37}
                     gap={2}
                     alignItems="center"
                     justifyContent="end"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
+                    className="mb-3 w-full px-2"
                 >
                     <Text
-                        className="text-3xl font-semibold text-center text-white lg:text-4xl"
-                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        className="block text-center text-3xl font-semibold text-white lg:text-4xl"
+                        style={{
+                            position: sm ? "static" : "absolute",
+                            left: 0,
+                            bottom: 5,
+                            right: 0,
+                            margin: "auto",
+                            marginTop: sm ? 16 : 0,
+                        }}
                         align={"center"}
                     >
                         Leaderboard
                     </Text>
 
                     {wallet.connected && (
-                        <Button rightIcon={<MdEdit size={20} />} onClick={onOpen}>
+                        <Button className="w-full md:w-fit" rightIcon={<MdEdit size={20} />} onClick={onOpen}>
                             Username
                         </Button>
                     )}

@@ -1,4 +1,4 @@
-import {Flex, HStack, Link, Text, VStack } from "@chakra-ui/react";
+import { Flex, HStack, Link, Text, VStack } from "@chakra-ui/react";
 import React, { useEffect, useState, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 const DashboardPage = () => {
     const router = useRouter();
     const wallet = useWallet();
-    const { sm, lg } = useResponsive();
+    const { sm, xs, lg } = useResponsive();
     const { launchList, collectionList } = useAppRoot();
     const [creatorLaunches, setCreatorLaunches] = useState<LaunchData[] | null>(null);
     const [creatorCollections, setCreatorCollections] = useState<CollectionData[] | null>(null);
@@ -54,18 +54,24 @@ const DashboardPage = () => {
     return (
         <VStack className="md:p-8">
             <Flex
-                py={18}
                 gap={4}
                 alignItems="center"
                 justifyContent={!sm ? "space-between" : "end"}
                 style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-                className="w-full px-2"
+                className="mb-2 w-full px-2"
             >
                 <Text
-                    className="text-center text-3xl font-semibold text-white lg:!hidden lg:text-4xl"
-                    style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                    className="mt-3 block text-center text-3xl font-semibold text-white md:hidden lg:text-4xl"
+                    style={{ position: sm ? "static" : "absolute", left: 0, bottom: 5, right: 0, margin: "auto" }}
                     align={"center"}
-                    hidden={!sm}
+                >
+                    Dashboard
+                </Text>
+
+                <Text
+                    className="mt-4 hidden text-center text-3xl font-semibold text-white lg:block lg:text-4xl"
+                    style={{ position: sm ? "static" : "absolute", left: 0, bottom: 5, right: 0, margin: "auto" }}
+                    align={"center"}
                 >
                     Dashboard
                 </Text>
@@ -110,21 +116,12 @@ const DashboardPage = () => {
                     })}
                 </HStack>
 
-                <Text
-                    className="text-center text-3xl font-semibold text-white lg:!hidden lg:text-4xl"
-                    style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                    align={"center"}
-                    hidden={sm}
-                >
-                    Dashboard
-                </Text>
-
                 {/* <Link href="/launch" w={sm ? "100%" : "fit-content"}> */}
                 <HStack w={sm ? "100%" : ""}>
                     <Button
                         type="button"
                         size="lg"
-                        className="w-full mt-2 text-2xl"
+                        className="w-full text-xl"
                         onClick={() => {
                             newLaunchData.current = defaultUserInput;
                             router.push("/launch");
@@ -136,7 +133,7 @@ const DashboardPage = () => {
                     <Button
                         type="button"
                         size="lg"
-                        className="w-full mt-2 text-2xl"
+                        className="w-full text-xl"
                         onClick={() => {
                             router.push("/collection");
                         }}

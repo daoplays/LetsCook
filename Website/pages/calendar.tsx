@@ -59,19 +59,27 @@ const CalenderPage = () => {
             </Head>
             <main className="md:p-8">
                 <Flex
-                    py={18}
                     gap={2}
                     alignItems="center"
                     justifyContent="end"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
+                    className="mb-3 w-full px-2"
                 >
                     <Text
-                        className="text-3xl font-semibold text-center text-white lg:text-4xl"
-                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        className="block text-center text-3xl font-semibold text-white lg:text-4xl"
+                        style={{
+                            position: sm ? "static" : "absolute",
+                            left: 0,
+                            bottom: 5,
+                            right: 0,
+                            margin: "auto",
+                            marginTop: sm ? 16 : 0,
+                        }}
                         align={"center"}
                     >
                         Calendar
                     </Text>
+
                     <Popover initialFocusRef={initialFocusRef} placement="bottom" closeOnBlur={false}>
                         <PopoverTrigger>
                             <Button w={sm ? "100%" : "fit-content"}>Filter By Date</Button>
@@ -94,6 +102,7 @@ const CalenderPage = () => {
                         </PopoverContent>
                     </Popover>
                 </Flex>
+
                 <GameTable launch_list={launchList} filters={filters} />
 
                 {launchList.size <= 0 && (

@@ -253,8 +253,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[975px]">
             <Center width="100%" h="100%">
                 <VStack w="100%" h="100%">
-                    <div className="flex flex-col gap-2 md:mb-4">
-                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">New Collection:</Text>
+                    <div className="flex flex-col gap-2 md:mb-8">
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">New Collection</Text>
                     </div>
                     <VStack px={lg ? 4 : 12} spacing={25}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
@@ -394,13 +394,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                             </div>
                         </div>
 
-                        <HStack mt={md ? 0 : 30}>
-                            <Button
-                                type="button"
-                                size="lg"
-                                className="mt-2"
-                                onClick={() => router.push("/dashboard")}
-                            >
+                        <HStack>
+                            <Button type="button" size="lg" className="mt-2" onClick={() => router.push("/dashboard")}>
                                 Cancel
                             </Button>
                             <Button

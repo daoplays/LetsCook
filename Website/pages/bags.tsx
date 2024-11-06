@@ -48,8 +48,6 @@ const BagsPage = () => {
             <main className="md:p-8">
                 <Flex
                     px={4}
-                    // py={18}
-                    py={sm ? 22 : 37}
                     gap={2}
                     alignItems="center"
                     justifyContent={"start"}
@@ -93,8 +91,8 @@ const BagsPage = () => {
                     </HStack> */}
 
                     <Text
-                        className="text-3xl font-semibold text-center text-white lg:text-4xl"
-                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
+                        style={{ marginTop: sm ? 16 : 0 }}
+                        className="mx-auto mb-3 block text-center text-3xl font-semibold text-white lg:text-4xl"
                         align={"center"}
                     >
                         Tickets

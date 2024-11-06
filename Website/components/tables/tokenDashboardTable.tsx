@@ -56,10 +56,10 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     const [reverseSort, setReverseSort] = useState<boolean>(true);
 
     const tableHeaders: Header[] = [
-        { text: "TOKEN", field: null },
-        { text: "STATUS", field: null },
-        { text: "LIQUIDITY", field: "liquidity" },
-        { text: "DATE", field: "date" },
+        { text: "Token", field: null },
+        { text: "Status", field: null },
+        { text: "Liquidity", field: "liquidity" },
+        { text: "Date", field: "date" },
     ];
 
     const handleHeaderClick = (field: string | null) => {
@@ -218,29 +218,27 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
     return (
         <Table>
             <TableHeader>
-                <TableRow>
-                    {tableHeaders.map((i) => (
-                        <TableHead key={i.text} className="min-w-[140px] border-b" style={{ minWidth: sm ? "90px" : "120px" }}>
-                            <HStack
-                                gap={sm ? 1 : 2}
-                                justify="center"
-                                style={{ cursor: i.text === "LOGO" ? "" : "pointer" }}
-                                onClick={() => handleHeaderClick(i.field)}
+                {tableHeaders.map((header) => (
+                    <TableHead className="min-w-[140px]" key={header.text}>
+                        {header.field ? (
+                            <div
+                                onClick={() => header.field && handleHeaderClick(header.field)}
+                                className="flex cursor-pointer justify-center font-semibold"
                             >
-                                <Text fontSize={sm ? "medium" : "large"} m={0}>
-                                    {i.text}
-                                </Text>
-                                {i.text === "LOGO" ? <></> : <FaSort />}
-                            </HStack>
-                        </TableHead>
-                    ))}
-
-                    <TableHead>
-                        <Box mt={1} as="button" onClick={checkProgramData}>
-                            <TfiReload size={sm ? 18 : 20} />
-                        </Box>
+                                {header.text}
+                                <FaSort className="ml-2 h-4 w-4" />
+                            </div>
+                        ) : (
+                            header.text
+                        )}
                     </TableHead>
-                </TableRow>
+                ))}
+
+                <TableHead>
+                    <Box mt={1} as="button" onClick={checkProgramData}>
+                        <TfiReload size={sm ? 18 : 20} />
+                    </Box>
+                </TableHead>
             </TableHeader>
             <TableBody>
                 {sortedLaunches.map((launch) => (

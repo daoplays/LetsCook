@@ -67,29 +67,24 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
     return (
         <Table>
             <TableHeader>
-                <TableRow>
-                    {tableHeaders.map((i) => (
-                        <TableHead className="min-w-[140px] border-b" key={i.text}>
-                            {i.field ? (
-                                <div
-                                    onClick={() => handleHeaderClick(i.field)}
-                                    className="flex justify-center font-semibold cursor-pointer"
-                                >
-                                    {i.text}
-                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
-                                </div>
-                            ) : (
-                                i.text
-                            )}
-                        </TableHead>
-                    ))}
-
-                    <TableHead>
-                        <Box mt={1} as="button" onClick={checkProgramData}>
-                            <TfiReload size={sm ? 18 : 20} />
-                        </Box>
+                {tableHeaders.map((i) => (
+                    <TableHead className="min-w-[140px]" key={i.text}>
+                        {i.field ? (
+                            <div onClick={() => handleHeaderClick(i.field)} className="flex cursor-pointer justify-center font-semibold">
+                                {i.text}
+                                {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                            </div>
+                        ) : (
+                            i.text
+                        )}
                     </TableHead>
-                </TableRow>
+                ))}
+
+                <TableHead>
+                    <Box mt={1} as="button" onClick={checkProgramData}>
+                        <TfiReload size={sm ? 18 : 20} />
+                    </Box>
+                </TableHead>
             </TableHeader>
             <TableBody>
                 {sortedLaunches.map((launch, i) => (
