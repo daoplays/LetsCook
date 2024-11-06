@@ -30,12 +30,27 @@ const MarketMaker = () => {
             </Head>
             <main className="md:p-8">
                 <Flex
-                    py={18}
-                    gap={5}
-                    alignItems="center"
-                    justifyContent={"start"}
-                    style={{ position: "relative" }} className={"px-2 lg:absolute lg:top-[30px] flex-col-reverse lg:flex-row"}
+                    gap={4}
+                    justifyContent={!sm ? "space-between" : "end"}
+                    style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
+                    className="mb-2 w-full px-2"
                 >
+                    <Text
+                        className="mt-3 block text-center text-3xl font-semibold text-white md:hidden lg:text-4xl"
+                        style={{ position: sm ? "static" : "absolute", left: 0, bottom: 5, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
+                    </Text>
+
+                    <Text
+                        className="mt-4 hidden text-center text-3xl font-semibold text-white lg:block lg:text-4xl"
+                        style={{ position: sm ? "static" : "absolute", left: 0, bottom: 5, right: 0, margin: "auto" }}
+                        align={"center"}
+                    >
+                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
+                    </Text>
+
                     <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2}>
                         {/* add rewards  */}
                         {["Markets", "Rewards"].map((name, i) => {
@@ -90,13 +105,6 @@ const MarketMaker = () => {
                             );
                         })}
                     </HStack>
-                    <Text
-                        className="text-center text-3xl font-semibold text-white lg:text-4xl lg:pb-16 lg:!absolute lg:hidden"
-                        style={{ position:"static", left: 0, right: 0, margin: "auto" }}
-                        align={"center"}
-                    >
-                        {selected === "Markets" ? "Markets" : selected === "Rewards" ? "Rewards" : "My Orders"}
-                    </Text>
 
                     {selected === "Orders" && (
                         <HStack spacing={3}>
@@ -141,7 +149,11 @@ const MarketMaker = () => {
                     )}
                 </Flex>
 
-                {selected === "Markets" && <MarketMakingTable />}
+                {selected === "Markets" && (
+                    <div className="lg:-mt-3">
+                        <MarketMakingTable />
+                    </div>
+                )}
 
                 {!wallet.connected && selected === "Orders" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
@@ -151,7 +163,11 @@ const MarketMaker = () => {
                     </HStack>
                 )}
 
-                {selected === "Rewards" && <MyRewardsTable amm={null} />}
+                {selected === "Rewards" && (
+                    <div className="-mt-3">
+                        <MyRewardsTable amm={null} />
+                    </div>
+                )}
 
                 {!wallet.connected && selected === "Rewards" && (
                     <HStack w="100%" align="center" justify="center" mt={25}>
