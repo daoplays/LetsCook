@@ -10,6 +10,7 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import trimAddress from "../../utils/trimAddress";
+import { Button } from "../ui/button";
 interface CollectionInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -225,21 +226,22 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
     const Browse = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Icon:
-            </div>
+            <p className="min-w-[100px] text-lg text-white md:min-w-[132px]">Icon:</p>
             <div>
                 <label className={styles.label}>
                     <input id="file" type="file" onChange={handleFileChange} />
                     <span
-                        className={styles.browse}
-                        style={{ cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
+                        style={{
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
+                            cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
+                        }}
                     >
-                        BROWSE
+                        Browse
                     </span>
                 </label>
             </div>
-            <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+            <Text m={0} ml={5} className="font-face-rk overflow-auto text-nowrap" fontSize={lg ? "medium" : "lg"}>
                 {newCollectionData.current.icon_file !== null
                     ? newCollectionData.current.icon_file.name
                     : "No File Selected (Size Limit: 2MB)"}
@@ -248,13 +250,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     );
 
     return (
-        <Center width="100%" h="100%">
-            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    New Collection:
-                </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pb-4 pt-5">
-                    <VStack px={lg ? 4 : 12} spacing={25}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[975px]">
+            <Center width="100%" h="100%">
+                <VStack w="100%" h="100%">
+                    <div className="mb-4 flex flex-col gap-2">
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">New Collection</Text>
+                    </div>
+                    <VStack spacing={25} className="w-full md:w-auto">
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
                                 <Image
@@ -293,9 +295,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                 {lg && <Browse />}
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[132px]">Name:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -304,7 +304,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={name}
                                             onChange={handleNameChange}
@@ -314,16 +313,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
 
                                 <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
                                     <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                            Prefix:
-                                        </div>
+                                        <p className="min-w-[100px] text-lg text-white md:min-w-[130px]">Prefix:</p>
 
                                         <div className={styles.textLabelInput}>
                                             <Input
                                                 maxLength={3}
                                                 disabled={newCollectionData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
                                                 placeholder="Enter Collection Prefix (Max 3 Characters) - Optional"
                                                 value={tokenStart}
                                                 onChange={(e) => {
@@ -335,10 +331,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                 </Flex>
                                 <HStack flexDirection={lg ? "column" : "row"} className={styles.eachField}>
                                     <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                            Mode:
-                                        </div>
-                                        <RadioGroup onChange={setSupplyMode} value={supplyMode} w={"320px"}>
+                                        <p className="min-w-[100px] text-lg text-white md:min-w-[130px]">Mode:</p>
+                                        <RadioGroup
+                                            onChange={setSupplyMode}
+                                            value={supplyMode}
+                                            className="!w-fit overflow-auto md:!w-[320px]"
+                                        >
                                             <Stack direction="row" gap={5}>
                                                 <Radio value="fixed" color="white">
                                                     <Tooltip
@@ -347,7 +345,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                         fontSize="large"
                                                         offset={[0, 10]}
                                                     >
-                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        <Text
+                                                            color="white"
+                                                            m={0}
+                                                            className="font-face-rk text-nowrap"
+                                                            fontSize={lg ? "medium" : "lg"}
+                                                        >
                                                             Fixed Supply
                                                         </Text>
                                                     </Tooltip>
@@ -359,7 +362,12 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                         fontSize="large"
                                                         offset={[0, 10]}
                                                     >
-                                                        <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                        <Text
+                                                            color="white"
+                                                            m={0}
+                                                            className="font-face-rk text-nowrap"
+                                                            fontSize={lg ? "medium" : "lg"}
+                                                        >
                                                             Unlimited Supply
                                                         </Text>
                                                     </Tooltip>
@@ -369,7 +377,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                     </HStack>
 
                                     <HStack className={styles.eachField} mt={lg && 4}>
-                                        <div className={`${styles.textLabel} font-face-kg`}>Traditional Mint:</div>
+                                        <p className="min-w-[100px] text-lg text-white md:min-w-[130px]">Traditional Mint:</p>
                                         <Switch
                                             ml={2}
                                             py={2}
@@ -384,9 +392,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                         </HStack>
 
                         <div className={styles2.launchBodyLowerVertical}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: "175px", color: "white" }}>
-                                DESCRIPTION:
-                            </div>
+                            <p className="min-w-[100px] text-lg text-white md:min-w-[175px]">Description:</p>
                             <div>
                                 <textarea
                                     maxLength={250}
@@ -402,27 +408,28 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                             </div>
                         </div>
 
-                        <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={() => router.push("/dashboard")}>
+                        <HStack>
+                            <Button type="button" size="lg" className="mt-2" onClick={() => router.push("/dashboard")}>
                                 Cancel
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="button"
+                                size="lg"
+                                className="mt-2"
                                 onClick={(e) => {
                                     if (!isLoading) {
                                         nextPage(e);
                                     }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg`}
                                 style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
-                                {isLoading ? "Please Wait" : "NEXT (1/4)"}
-                            </button>
+                                {isLoading ? "Please Wait" : "Next (1/4)"}
+                            </Button>
                         </HStack>
                     </VStack>
-                </form>
-            </VStack>
-        </Center>
+                </VStack>
+            </Center>
+        </form>
     );
 };
 

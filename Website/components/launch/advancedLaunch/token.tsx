@@ -52,6 +52,7 @@ import { distributionLabels } from "../../../constant/root";
 import trimAddress from "../../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Config } from "../../Solana/constants";
+import { Button } from "@/components/ui/button";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -374,34 +375,36 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
     const Browse = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                Icon:
-            </div>
+            <p className="min-w-[110px] text-lg text-white md:min-w-[132px]">Icon:</p>
             <div>
                 <label className={styles.label}>
                     <input id="file" type="file" onChange={handleFileChange} />
                     <span
-                        className={styles.browse}
-                        style={{ cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer", padding: "5px 10px" }}
+                        className="rounded-3xl px-8 py-[0.6rem] font-semibold"
+                        style={{
+                            cursor: newLaunchData.current.edit_mode === true ? "not-allowed" : "pointer",
+                            background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
+                        }}
                     >
-                        BROWSE
+                        Browse
                     </span>
                 </label>
             </div>
-            <Text m={0} ml={5} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
-                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected (Size Limit: 1MB)"}
-            </Text>
+            <span className="ml-4 opacity-50 text-md">
+                {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
+            </span>
         </HStack>
     );
 
     return (
-        <Center height="100%" width="100%">
-            <VStack height="100%" w="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Token Information
-                </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] pb-4 pt-4">
-                    <VStack px={lg ? 4 : 12} spacing={25} mt={4}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
+            <Center height="100%" width="100%">
+                <VStack height="100%" w="100%">
+                    <div className="flex flex-col gap-2 md:mb-4">
+                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Token Information</Text>
+                        {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
+                    </div>
+                    <VStack w={"100%"} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
                                 <Image
@@ -440,9 +443,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 {lg && <Browse />}
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Name:
-                                    </div>
+                                    <p className="min-w-[110px] text-lg text-white md:min-w-[132px]">Name:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -451,7 +452,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             maxLength={25}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={name}
                                             onChange={handleNameChange}
@@ -460,9 +460,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "132px" }}>
-                                        Ticker:
-                                    </div>
+                                    <p className="min-w-[110px] text-lg text-white md:min-w-[132px]">Ticker:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -472,7 +470,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={symbol}
                                             onChange={handleSymbolChange}
@@ -481,16 +478,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
-                                        Token Prefix:
-                                    </div>
+                                    <p className="min-w-[110px] text-lg text-white md:min-w-[132px]">Token Prefix:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             maxLength={3}
                                             disabled={newLaunchData.current.edit_mode === true}
                                             size={lg ? "md" : "lg"}
-                                            className={styles.inputBox}
                                             placeholder="Enter Token Prefix Grind (Max 3 Characters) - Optional"
                                             value={tokenStart}
                                             onChange={(e) => {
@@ -505,16 +499,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         </HStack>
                         <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                             <HStack spacing={0} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                    Total Supply:
-                                </div>
+                                <p className="min-w-[110px] text-lg text-white md:min-w-[132px]">Total Supply:</p>
 
                                 <div className={styles.textLabelInput}>
                                     <Input
                                         disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                         size={lg ? "md" : "lg"}
                                         required
-                                        className={styles.inputBox}
                                         placeholder="Enter Token Total Supply"
                                         value={totalSupply}
                                         onChange={(e) => {
@@ -525,16 +516,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </HStack>
 
                             <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "135px" }}>
-                                    Decimals:
-                                </div>
+                                <p className="min-w-[110px] md:min-w-[132px] text-lg text-white xl:min-w-fit">Decimals:</p>
 
                                 <div className={styles.textLabelInput}>
                                     <Input
                                         disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                         size={lg ? "md" : "lg"}
                                         required
-                                        className={styles.inputBox}
                                         placeholder="1-9"
                                         value={decimal}
                                         onChange={(e) => {
@@ -546,10 +534,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         </HStack>
 
                         <HStack spacing={0} className={styles.eachField}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
-                                Launch Mode:
-                            </div>
-                            <RadioGroup ml="5" onChange={setLaunchType} value={launch_type}>
+                            <p className="min-w-[110px] text-lg text-white md:min-w-[130px]">Launch Mode:</p>
+                            <RadioGroup  onChange={setLaunchType} value={launch_type} className="overflow-auto md:ml-[0.3125rem]">
                                 <Stack direction="row" gap={5}>
                                     <Radio value="FCFS" color="white">
                                         <Tooltip
@@ -603,23 +589,20 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </RadioGroup>
                         </HStack>
 
+                        <Divider />
+                        <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
+                            Token Extensions:
+                        </Text>
                         <VStack w="100%">
-                            <Divider />
                             <VStack spacing={lg ? 8 : 10} w="100%">
-                                <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
-                                    Token Extensions:
-                                </Text>
                                 <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                                     <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "115px" : "185px" }}>
-                                            Transfer Fee:
-                                        </div>
+                                        <p className="min-w-[110px] text-lg text-white md:min-w-[185px]">Transfer Fee:</p>
 
                                         <div className={styles.textLabelInput}>
                                             <Input
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
                                                 placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
                                                 value={transferFee}
                                                 onChange={(e) => {
@@ -630,15 +613,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
 
                                     <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "115px" : "135px" }}>
-                                            Max Fee:
-                                        </div>
+                                        <p className="min-w-[110px] md:min-w-[186px] text-lg text-white xl:min-w-[75px]">Max Fee:</p>
 
                                         <div className={styles.textLabelInput}>
                                             <Input
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
-                                                className={styles.inputBox}
                                                 placeholder="Max number of tokens taxed in a single transaction"
                                                 value={maxTransferFee}
                                                 onChange={(e) => {
@@ -650,16 +630,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
                                 <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
                                     <HStack spacing={15} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "100px" : "172px" }}>
-                                            Permanent Delegate:
-                                        </div>
+                                        <p className="min-w-[110px] text-lg text-white md:min-w-[172px]">Permanent Delegate:</p>
 
                                         <HStack spacing={0} style={{ flexGrow: 1 }}>
                                             <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                 <Input
                                                     disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
-                                                    className={styles.inputBox}
                                                     placeholder="Enter Permanent Delegate ID"
                                                     value={permanentDelegate}
                                                     onChange={(e) => {
@@ -680,16 +657,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
                                 <HStack w="100%" spacing={8} style={{ flexDirection: lg ? "column" : "row" }}>
                                     <HStack spacing={15} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ width: lg ? "135px" : "174px" }}>
-                                            Transfer Hook Program ID:
-                                        </div>
+                                        <p className="w-[174px] text-lg text-white">Transfer Hook Program ID:</p>
 
                                         <HStack spacing={0} style={{ flexGrow: 1 }}>
                                             <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                 <Input
                                                     disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                     size={lg ? "md" : "lg"}
-                                                    className={styles.inputBox}
                                                     placeholder="Enter Transfer Hook Program ID"
                                                     value={transferHookID}
                                                     onChange={(e) => {
@@ -717,9 +691,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                 <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
                                     <HStack spacing={0} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "185px" }}>
-                                            WINNING TICKETS:
-                                        </div>
+                                        <p className="min-w-[110px] text-lg text-white md:min-w-[180px]">Winning Tickets:</p>
 
                                         <div className={styles.textLabelInput}>
                                             <Input
@@ -727,7 +699,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 required
-                                                className={styles.inputBox}
                                                 value={mints}
                                                 onChange={(e) => {
                                                     setMints(e.target.value);
@@ -737,17 +708,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
 
                                     <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "150px" }}>
-                                            Ticket Price:
-                                        </div>
-
+                                        <p className="min-w-[110px] md:min-w-[180px] text-lg text-white xl:min-w-[95px]">Ticket Price:</p>
                                         <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Price Per Ticket"}
                                                 disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
                                                 size={lg ? "md" : "lg"}
                                                 required
-                                                className={styles.inputBox}
                                                 value={ticketPrice}
                                                 onChange={(e) => {
                                                     setTotalPrice(e.target.value);
@@ -759,15 +726,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={lg ? 0 : 1} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "120px" }}>
-                                        Minimum Liquidity:
-                                    </div>
-
+                                    <p className="min-w-[110px] text-lg text-white md:min-w-[180px]">Minimum Liquidity:</p>
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             size={lg ? "md" : "lg"}
                                             required
-                                            className={styles.inputBox}
                                             value={
                                                 !isNaN(parseFloat(mints) * parseFloat(ticketPrice))
                                                     ? parseFloat(mints) * parseFloat(ticketPrice)
@@ -787,7 +750,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     align={"center"}
                                     w="100%"
                                     style={{ flexDirection: md ? "column" : "row" }}
-                                    spacing={5}
+                                    spacing={15}
                                 >
                                     <VStack
                                         spacing={5}
@@ -797,9 +760,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     >
                                         <HStack spacing={5} mt={md ? 0 : 5}>
                                             <Box w={35} h={30} bg={distributionLabels.headers[0].color} />
-                                            <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                {distributionLabels.headers[0].title}
-                                            </div>
+
+                                            <p className="text-lg text-white">{distributionLabels.headers[0].title}</p>
                                         </HStack>
 
                                         <VStack
@@ -812,9 +774,10 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
                                                     <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Raffle].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+
+                                                    <p className="text-lg text-white">
                                                         {distributionLabels.fields[Distribution.Raffle].title}
-                                                    </div>
+                                                    </p>
                                                 </HStack>
                                                 <div className={styles.distributionField}>
                                                     <Input
@@ -844,9 +807,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
                                                     <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LP].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                        {distributionLabels.fields[Distribution.LP].title}
-                                                    </div>
+
+                                                    <p className="text-lg text-white">{distributionLabels.fields[Distribution.LP].title}</p>
                                                 </HStack>
                                                 <div className={styles.distributionField}>
                                                     <Input
@@ -874,9 +836,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} mt={md ? 0 : 5}>
                                             <Box w={35} h={30} bg={distributionLabels.headers[1].color} />
-                                            <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                {distributionLabels.headers[1].title}
-                                            </div>
+
+                                            <p className="text-lg text-white">{distributionLabels.headers[1].title}</p>
                                         </HStack>
 
                                         <VStack
@@ -888,10 +849,16 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         >
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
-                                                    <Box w={35} h={30} bg={distributionLabels.fields[Distribution.MMRewards].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    <Box
+                                                        w={35}
+                                                        h={30}
+                                                        bg={distributionLabels.fields[Distribution.MMRewards].color}
+                                                        className="shrink-0"
+                                                    />
+
+                                                    <p className="text-lg text-white">
                                                         {distributionLabels.fields[Distribution.MMRewards].title}
-                                                    </div>
+                                                    </p>
                                                 </HStack>
                                                 <div className={styles.distributionField}>
                                                     <Input
@@ -920,9 +887,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <HStack spacing={5} mt={md ? 0 : 5}>
                                             <Box w={35} h={30} bg={distributionLabels.headers[2].color} />
-                                            <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                {distributionLabels.headers[2].title}
-                                            </div>
+                                            <p className="text-lg text-white">{distributionLabels.headers[2].title}</p>
                                         </HStack>
 
                                         <VStack
@@ -934,10 +899,15 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         >
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
-                                                    <Box w={35} h={30} bg={distributionLabels.fields[Distribution.LPRewards].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    <Box
+                                                        w={35}
+                                                        h={30}
+                                                        className="shrink-0"
+                                                        bg={distributionLabels.fields[Distribution.LPRewards].color}
+                                                    />
+                                                    <p className="text-lg text-white">
                                                         {distributionLabels.fields[Distribution.LPRewards].title}
-                                                    </div>
+                                                    </p>
                                                 </HStack>
                                                 <div className={styles.distributionField}>
                                                     <Input
@@ -964,10 +934,15 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
-                                                    <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Team].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    <Box
+                                                        w={35}
+                                                        h={30}
+                                                        className="shrink-0"
+                                                        bg={distributionLabels.fields[Distribution.Team].color}
+                                                    />
+                                                    <p className="text-lg text-white">
                                                         {distributionLabels.fields[Distribution.Team].title}
-                                                    </div>
+                                                    </p>
                                                 </HStack>
                                                 <div className={styles.distributionField}>
                                                     <Input
@@ -993,9 +968,9 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
                                                     <Box w={35} h={30} bg={distributionLabels.fields[Distribution.Airdrops].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
+                                                    <p className="text-lg text-white">
                                                         {distributionLabels.fields[Distribution.Airdrops].title}
-                                                    </div>
+                                                    </p>
                                                 </HStack>
                                                 <div className={styles.distributionField}>
                                                     <Input
@@ -1023,9 +998,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             <HStack spacing={5} align="center" justify="space-between" w="100%">
                                                 <HStack spacing={5}>
                                                     <Box w={35} h={30} bg={distributionLabels.fields[6].color} />
-                                                    <div className={`${styles.textLabel} ${styles.textLabel2} `}>
-                                                        {distributionLabels.fields[6].title}
-                                                    </div>
+                                                    <p className="text-lg text-white">{distributionLabels.fields[6].title}</p>
                                                 </HStack>
 
                                                 <div className={styles.distributionField} style={{ marginLeft: "15px" }}>
@@ -1090,7 +1063,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                 { title: "Others", value: distribution[Distribution.Other], color: "#FD98FE" },
                                                 { title: "Blank", value: 100 - totalPercentage, color: "transparent" },
                                             ]}
-                                            style={{ width: md ? "100%" : "380px", position: "relative", zIndex: 2 }}
+                                            style={{ width: md ? "100%" : "380px", position: "absolute", zIndex: 2 }}
                                         />
 
                                         <PieChart
@@ -1117,37 +1090,44 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                     color: distributionLabels.headers[2].color,
                                                 },
                                             ]}
-                                            style={{ width: md ? "120%" : "440px", position: "absolute", zIndex: 1 }}
+                                            style={{ width: md ? "120%" : "440px", position: "relative", zIndex: 1 }}
                                         />
                                     </VStack>
                                 </HStack>
                             </VStack>
                         </VStack>
 
-                        <HStack mt={md ? 0 : 30}>
-                            <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={() => router.push("/dashboard")}>
-                                Cancel
-                            </button>
-
-                            <button
+                        <Stack mt={md ? 0 : 30} direction={{ base: "column", md: "row" }}>
+                            <Button
                                 type="button"
+                                size="lg"
+                                className="mt-2"
+                                onClick={(e) => () => router.push("/dashboard")}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="button"
+                                size="lg"
+                                className="mt-2"
                                 onClick={(e) => {
                                     if (!isLoading) {
                                         nextPage(e);
                                     }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg`}
-                                style={{ cursor: isLoading ? "not-allowed" : "pointer", width: "175px" }}
+                                style={{ cursor: isLoading ? "not-allowed" : "pointer" }}
                             >
-                                {isLoading ? <Spinner /> : `NEXT (1/3)`}
-                            </button>
-                        </HStack>
+                                {isLoading ? <Spinner /> : `Next (1/3)`}
+                            </Button>
+                        </Stack>
                     </VStack>
-                </form>
-            </VStack>
+                </VStack>
 
-            <TooltipModal isTooltipOpened={isTooltipOpened} closeTooltip={closeTooltip} />
-        </Center>
+                <TooltipModal isTooltipOpened={isTooltipOpened} closeTooltip={closeTooltip} />
+            </Center>
+        </form>
     );
 };
 

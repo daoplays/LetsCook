@@ -48,6 +48,7 @@ import Image from "next/image";
 import useEditCollection from "../../hooks/collections/useEditCollection";
 import { TaggedFile } from "@irys/sdk/build/cjs/web/upload";
 import useIrysUploader from "../../hooks/useIrysUploader";
+import { Button } from "../ui/button";
 
 interface CollectionPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -719,19 +720,17 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     }, [wallet, newCollectionData, EditCollection, check_signature_update, transaction_failed, getIrysUploader]);
 
     return (
-        <Center width="100%" h="100%">
-            <VStack w="100%" h="100%" style={{ paddingBottom: md ? 35 : "75px" }}>
-                <Text mb={8} align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Page Information:
-                </Text>
-                <form onSubmit={nextPage} style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] py-4">
-                    <VStack px={lg ? 4 : 12}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:!w-[975px]">
+            <Center width="100%" h="100%">
+                <VStack w="100%" h="100%" >
+                    <div className="mb-4 flex flex-col gap-2">
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Page Information</Text>
+                    </div>
+                    <VStack className="w-full">
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
                                 <HStack spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "147px" }}>
-                                        Page Name:
-                                    </div>
+                                    <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Page Name:</p>
 
                                     <InputGroup style={{ width: lg ? "100%" : "50%", position: "relative" }}>
                                         <InputLeftElement color="white">
@@ -753,21 +752,19 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "110px" : "175px" }}>
-                                        Banner:
-                                    </div>
+                                    <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Banner:</p>
 
                                     <div>
                                         <label className={styles.label}>
                                             <input id="file" type="file" onChange={handleFileChange} />
                                             <span
-                                                className={styles.browse}
+                                                className="rounded-3xl px-8 py-[0.6rem] font-semibold text-white"
                                                 style={{
+                                                    background: "linear-gradient(0deg, rgba(254, 106, 0, 1) 0%, rgba(236, 35, 0, 1) 100%)",
                                                     cursor: newCollectionData.current.edit_mode === true ? "not-allowed" : "pointer",
-                                                    padding: "5px 10px",
                                                 }}
                                             >
-                                                BROWSE
+                                                Browse
                                             </span>
                                         </label>
                                     </div>
@@ -861,31 +858,31 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
                                 marginTop: -1,
                             }}
                         >
-                            <button
+                            <Button
                                 type="button"
+                                size="lg"
                                 onClick={(e) => {
                                     setScreen("step 3");
                                 }}
-                                className={`${styles.nextBtn} font-face-kg`}
                             >
-                                GO BACK
-                            </button>
-                            <button
+                                Go Back
+                            </Button>
+                            <Button
                                 type="button"
+                                size="lg"
                                 onClick={(e) => {
                                     if (!isLoading) {
                                         Launch(e);
                                     }
                                 }}
-                                className={`${styles.nextBtn} font-face-kg`}
                             >
-                                {isLoading ? <Spinner /> : "CONFIRM (4/4)"}
-                            </button>
+                                {isLoading ? <Spinner /> : "Confirm (4/4)"}
+                            </Button>
                         </div>
                     </VStack>
-                </form>
-            </VStack>
-        </Center>
+                </VStack>
+            </Center>
+        </form>
     );
 };
 
