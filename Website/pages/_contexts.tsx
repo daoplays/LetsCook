@@ -23,7 +23,7 @@ import {
     ListingData,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
-import { AMMData, getAMMKey, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
+import { AMMData, getAMMKey, getAMMPlugins, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
 import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
@@ -537,6 +537,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
+                    
                     //console.log("AMM", amm.provider, amm.base_mint.toString());
                 } catch (error) {
                     console.log("bad amm data", program_data[i].pubkey.toString());

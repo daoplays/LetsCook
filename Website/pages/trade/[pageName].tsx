@@ -1195,7 +1195,6 @@ const InfoContent = ({
                     <span className="text-md text- text-white text-opacity-50">Token Supply:</span>
                     <span className="text-md text-white">{total_supply.toLocaleString()}</span>
                 </div>
-
                 {/*<div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
                     <span className="text-md text- text-white text-opacity-50">Market Cap:</span>
                     <span className="text-md text-white">${market_cap_string}</span>
