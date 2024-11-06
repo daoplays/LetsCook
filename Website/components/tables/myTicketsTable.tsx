@@ -73,10 +73,10 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                             {i.field ? (
                                 <div
                                     onClick={() => handleHeaderClick(i.field)}
-                                    className="flex cursor-pointer justify-center font-semibold"
+                                    className="flex justify-center font-semibold cursor-pointer"
                                 >
                                     {i.text}
-                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
                                 </div>
                             ) : (
                                 i.text
@@ -92,9 +92,28 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {sortedLaunches.map((launch, i) => (
-                    <LaunchCard key={i} launch={launch} />
-                ))}
+                {sortedLaunches.length > 0 ? (
+                    sortedLaunches.map((launch, i) => <LaunchCard key={i} launch={launch} />)
+                ) : (
+                    <TableRow
+                        style={{
+                            cursor: "pointer",
+                            height: "60px",
+                            transition: "background-color 0.3s",
+                        }}
+                        className="border-b"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                        }}
+                    >
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            You have no tickets
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );

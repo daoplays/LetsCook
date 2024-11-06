@@ -56,14 +56,6 @@ const BagsPage = () => {
                 </Flex>
 
                 <CollectionDashboardTable collectionList={filterTable()} />
-
-                {collectionList.size <= 0 && (
-                    <HStack w="100%" align="center" justify="center" mt={25}>
-                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
-                            There are no collections launched yet
-                        </Text>
-                    </HStack>
-                )}
             </main>
         </>
     );

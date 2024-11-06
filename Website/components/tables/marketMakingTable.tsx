@@ -148,7 +148,7 @@ const MarketMakingTable = () => {
     }
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex w-full justify-end px-2 md:-mt-6">
+            <div className="flex justify-end w-full px-2 md:-mt-6">
                 <Input
                     type="text"
                     placeholder="Search token"
@@ -158,26 +158,47 @@ const MarketMakingTable = () => {
             </div>
             <Table>
                 <TableHeader>
-                    {tableHeaders.map((header) => (
-                        <TableHead className="min-w-[140px] border-b" key={header.text}>
-                            {header.field ? (
-                                <div
-                                    onClick={() => header.field && handleSort(header.field)}
-                                    className="flex cursor-pointer justify-center font-semibold"
-                                >
-                                    {header.text}
-                                    <FaSort className="ml-2 h-4 w-4" />
-                                </div>
-                            ) : (
-                                header.text
-                            )}
-                        </TableHead>
-                    ))}
+                    <TableRow>
+                        {tableHeaders.map((header) => (
+                            <TableHead className="min-w-[140px] border-b" key={header.text}>
+                                {header.field ? (
+                                    <div
+                                        onClick={() => header.field && handleSort(header.field)}
+                                        className="flex justify-center font-semibold cursor-pointer"
+                                    >
+                                        {header.text}
+                                        <FaSort className="w-4 h-4 ml-2" />
+                                    </div>
+                                ) : (
+                                    header.text
+                                )}
+                            </TableHead>
+                        ))}
+                    </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {sortedAndFilteredRows.map((launch, i) => (
-                        <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />
-                    ))}
+                    {sortedAndFilteredRows.length > 0 ? (
+                        sortedAndFilteredRows.map((launch, i) => <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />)
+                    ) : (
+                        <TableRow
+                            style={{
+                                cursor: "pointer",
+                                height: "60px",
+                                transition: "background-color 0.3s",
+                            }}
+                            className="border-b"
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                            }}
+                        >
+                            <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                                No Tokens yet
+                            </TableCell>
+                        </TableRow>
+                    )}
                 </TableBody>
             </Table>
         </div>
@@ -216,10 +237,10 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     if (!have_cook_amm) return null;
 
     return (
-        <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
+        <TableRow className="transition-colors border-b cursor-pointer" onClick={() => router.push("/trade/" + cook_amm_address)}>
             <TableCell className="w-[150px]">
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image
                             alt={`${amm_launch.listing.symbol} icon`}
                             src={amm_launch.mint.icon}
