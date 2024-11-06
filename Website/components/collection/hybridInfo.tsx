@@ -48,6 +48,7 @@ import ShowExtensions from "../Solana/extensions";
 import DatePicker from "react-datepicker";
 import { FaCalendarAlt } from "react-icons/fa";
 import { getMintData } from "../amm/launch";
+import { Button } from "../ui/button";
 
 interface HybridInfoProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -255,13 +256,13 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
     }
 
     return (
-        <Center width="100%">
-            <VStack w="100%" style={{ paddingBottom: md ? 35 : "200px" }}>
-                <Text align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Collection Info:
-                </Text>
-                <form onSubmit={setLaunchData} style={{ width: xl ? "100%" : "1200px" }} className="mt-4 rounded-md bg-[#303030] py-4 pt-5">
-                    <VStack px={lg ? 4 : 12} spacing={25}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:!w-[975px]">
+            <Center width="100%">
+                <VStack w="100%">
+                    <div className="mb-4 flex flex-col gap-2">
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Collection Info</Text>
+                    </div>
+                    <VStack spacing={25} className="w-full">
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                 <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
@@ -294,19 +295,13 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
                                     <VStack spacing={8} flexGrow={1} align="start" width="100%">
                                         <HStack spacing={0} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "100px" : "132px" }}
-                                            >
-                                                Token:
-                                            </div>
+                                            <p className="min-w-[100px] text-lg text-white md:min-w-[132px]">Token:</p>
 
                                             <div className={styles.textLabelInput}>
                                                 <Input
                                                     placeholder="Search Token"
                                                     size={lg ? "md" : "lg"}
                                                     required
-                                                    className={styles.inputBox}
                                                     type="text"
                                                     value={token_mint}
                                                     onChange={(e) => {
@@ -317,23 +312,14 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
                                             <div style={{ marginLeft: "12px" }}>
                                                 <label className={styles.label}>
-                                                    <button
-                                                        onClick={(e) => setMintData(e)}
-                                                        className={styles.browse}
-                                                        style={{ cursor: "pointer", padding: "5px 10px" }}
-                                                    >
+                                                    <Button type="button" size="sm" onClick={(e) => setMintData(e)}>
                                                         Search
-                                                    </button>
+                                                    </Button>
                                                 </label>
                                             </div>
                                         </HStack>
                                         <HStack spacing={0} className={styles.eachField}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg`}
-                                                style={{ minWidth: lg ? "100px" : "132px" }}
-                                            >
-                                                Name:
-                                            </div>
+                                            <p className="min-w-[100px] text-lg text-white md:min-w-[132px]">Name:</p>
 
                                             <div className={styles.textLabelInput}>
                                                 <Input
@@ -341,7 +327,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                                     readOnly={true}
                                                     disabled
                                                     size={lg ? "md" : "lg"}
-                                                    className={styles.inputBox}
                                                     type="text"
                                                     value={token_name}
                                                 />
@@ -350,12 +335,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
 
                                         <Flex gap={sm ? 8 : 5} w="100%" flexDirection={sm ? "column" : "row"}>
                                             <HStack spacing={0} className={styles.eachField}>
-                                                <div
-                                                    className={`${styles.textLabel} font-face-kg`}
-                                                    style={{ minWidth: lg ? "100px" : "132px" }}
-                                                >
-                                                    Symbol:
-                                                </div>
+                                                <p className="min-w-[100px] text-lg text-white md:min-w-[132px]">Symbol:</p>
                                                 <div className={styles.textLabelInput}>
                                                     <Input
                                                         // pl={9}
@@ -364,7 +344,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                                         readOnly={true}
                                                         disabled
                                                         size={lg ? "md" : "lg"}
-                                                        className={styles.inputBox}
                                                         type="text"
                                                         value={token_symbol}
                                                     />
@@ -375,9 +354,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
-                                        Swap Rate:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[160px]">Swap Rate:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -386,7 +363,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={swap_rate}
                                             onChange={(e) => {
@@ -397,9 +373,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
-                                        Swap Fee:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[160px]">Swap Fee:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -407,7 +381,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             placeholder="Enter Swap Fee (Bps - 100 = 1%)"
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
-                                            className={styles.inputBox}
                                             type="text"
                                             value={swap_fee}
                                             onChange={(e) => {
@@ -418,9 +391,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack spacing={0} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
-                                        Mint Chance:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[160px]">Mint Chance:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -428,7 +399,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             placeholder="Chance of getting nft on swap (default = 100%) - Optional"
                                             size={lg ? "md" : "lg"}
                                             maxLength={8}
-                                            className={styles.inputBox}
                                             type="text"
                                             value={mint_prob}
                                             onChange={(e) => {
@@ -439,9 +409,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
-                                        Fee Wallet:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[160px]">Fee Wallet:</p>
 
                                     <div className={styles.textLabelInput}>
                                         <Input
@@ -449,7 +417,6 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                             placeholder="Enter Solana Wallet Address"
                                             size={lg ? "md" : "lg"}
                                             required
-                                            className={styles.inputBox}
                                             type="text"
                                             value={team_wallet}
                                             onChange={(e) => {
@@ -460,14 +427,11 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                 </HStack>
 
                                 <HStack w={"100%"} spacing={0} className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "160px" }}>
-                                        Whitelist Token:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[160px]">Whitelist Token:</p>
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             size={sm ? "medium" : "lg"}
                                             placeholder="Enter Whitelist Token Address - Optional"
-                                            className={styles.inputBox}
                                             type="text"
                                             value={whitelist_key}
                                             onChange={(e) => {
@@ -477,9 +441,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                     </div>
                                 </HStack>
                                 <HStack spacing={15} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
-                                        WHITELIST END DATE:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white md:min-w-[160px]">Whitelist End Date:</p>
                                     <Switch
                                         ml={2}
                                         py={2}
@@ -531,23 +493,26 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                         </HStack>
 
                         <HStack mt={md ? 0 : 30}>
-                            <button
+                            <Button
                                 type="button"
-                                className={`${styles.nextBtn} font-face-kg`}
+                                size="lg"
                                 onClick={() => {
                                     setScreen("step 2");
                                 }}
                             >
-                                GO BACK
-                            </button>
-                            <button type="submit" className={`${styles.nextBtn} font-face-kg`}>
-                                NEXT (3/4)
-                            </button>
+                                Go Back
+                            </Button>
+                            <Button
+                                type="submit"
+                                size="lg"
+                            >
+                                Next (3/4)
+                            </Button>
                         </HStack>
                     </VStack>
-                </form>
-            </VStack>
-        </Center>
+                </VStack>
+            </Center>
+        </form>
     );
 };
 

@@ -21,7 +21,6 @@ import {
     Input,
     HStack,
     Popover,
-    Button,
     PopoverTrigger,
     PopoverContent,
     PopoverArrow,
@@ -69,6 +68,7 @@ import useInstantLaunch from "../../../hooks/launch/useInstantLaunch";
 
 import { Config } from "../../Solana/constants";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 // Define the Tag type
 type Tag = {
@@ -238,19 +238,20 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     const { isOpen: isEndOpen, onToggle: onToggleEnd, onClose: OnCloseEnd } = useDisclosure();
 
     return (
-        <Center width="100%">
-            <VStack pb={150} w="100%">
-                <Text mb={8} align="start" className="font-face-kg font-extrabold" color={"white"} fontSize="x-large">
-                    Book Token Raffle
-                </Text>
-                <form style={{ width: xl ? "100%" : "1200px" }} className="rounded-md bg-[#303030] pb-4">
-                    <VStack px={lg ? 4 : 12} spacing={sm ? 42 : 50} align="start" pt={5}>
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[875px]">
+            <Center width="100%">
+                <VStack w="100%">
+                    <div className="flex flex-col gap-2 md:mb-4">
+                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Book Token Raffle</Text>
+                        {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
+                    </div>
+                    <VStack w={"100%"} spacing={sm ? 42 : 50} align="start">
                         {newLaunchData.current.launch_type !== 3 && (
                             <>
                                 <HStack spacing={15} w="100%" className={styles.eachField}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "170px" }}>
-                                        OPEN DATE:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white" style={{ minWidth: sm ? "120px" : "180px" }}>
+                                        Open Date:
+                                    </p>
                                     <HStack>
                                         <Switch
                                             ml={2}
@@ -315,9 +316,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                                 </HStack>
 
                                 <HStack spacing={15}>
-                                    <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
-                                        CLOSE DATE:
-                                    </div>
+                                    <p className="min-w-[100px] text-lg text-white" style={{ minWidth: sm ? "120px" : "180px" }}>
+                                        Close Date:
+                                    </p>
                                     <div className={`${styles.textLabelInputDate} font-face-kg`}>
                                         <HStack spacing={5}>
                                             <Popover isOpen={isEndOpen} onClose={OnCloseEnd} placement="bottom" closeOnBlur={false}>
@@ -360,10 +361,10 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                             </>
                         )}
 
-                        <HStack spacing={0} className={styles.eachField}>
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: lg ? "100px" : "130px" }}>
+                        <HStack spacing={0} className={styles.eachField} style={{ width: "auto" }}>
+                            <p className="min-w-[100px] text-lg text-white" style={{ minWidth: sm ? "120px" : "180px" }}>
                                 AMM Provider:
-                            </div>
+                            </p>
                             <RadioGroup
                                 ml={5}
                                 isDisabled={newLaunchData.current.launch_type === 3}
@@ -388,9 +389,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         </HStack>
 
                         <HStack spacing={15} w="100%">
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
+                            <p className="min-w-[100px] text-lg text-white" style={{ minWidth: sm ? "120px" : "180px" }}>
                                 AMM LP Fee:
-                            </div>
+                            </p>
                             <div className={styles.textLabelInput}>
                                 <Input
                                     disabled={true}
@@ -408,9 +409,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         </HStack>
 
                         <HStack spacing={15} w="100%">
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
-                                TEAM WALLET:
-                            </div>
+                            <p className="min-w-[100px] text-lg text-white" style={{ minWidth: sm ? "120px" : "180px" }}>
+                                Team Wallet:
+                            </p>
                             <div className={styles.textLabelInput}>
                                 <Input
                                     disabled={newLaunchData.current.launch_type === 3 || newLaunchData.current.edit_mode === true}
@@ -428,9 +429,9 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         </HStack>
 
                         <HStack spacing={15} w="100%">
-                            <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "120px" : "180px" }}>
-                                WHITELIST TOKEN:
-                            </div>
+                            <p className="min-w-[100px] text-lg text-white" style={{ minWidth: sm ? "120px" : "180px" }}>
+                                Whitelist Token:
+                            </p>
                             <div className={styles.textLabelInput}>
                                 <Input
                                     disabled={newLaunchData.current.launch_type === 3 || newLaunchData.current.edit_mode === true}
@@ -450,40 +451,42 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         <VStack spacing={3} align="center" justify="center" w="100%">
                             {newLaunchData.current.launch_type !== 3 && (
                                 <HStack>
-                                    <button type="button" className={`${styles.nextBtn} font-face-kg`} onClick={onOpen}>
-                                        PREVIEW
-                                    </button>
+                                    <Button type="button" size="lg" className="mt-2" onClick={onOpen}>
+                                        Preview
+                                    </Button>
                                 </HStack>
                             )}
-                            <HStack spacing={3}>
-                                <button
+                            <Stack spacing={3} direction={{ base: "column", md: "row" }}>
+                                <Button
                                     type="button"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         prevPage(e);
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
-                                    GO BACK
-                                </button>
-                                <button
+                                    Go Back
+                                </Button>
+                                <Button
                                     type="button"
+                                    size="lg"
+                                    className="mt-2"
                                     onClick={(e) => {
                                         if (!isLoading) {
                                             Launch(e);
                                         }
                                     }}
-                                    className={`${styles.nextBtn} font-face-kg`}
                                 >
-                                    {isLoading ? <Spinner /> : "CONFIRM"}
-                                </button>
-                            </HStack>
+                                    {isLoading ? <Spinner /> : "Confirm"}
+                                </Button>
+                            </Stack>
                         </VStack>
                     </VStack>
-                </form>
-            </VStack>
+                </VStack>
 
-            <LaunchPreviewModal isOpen={isOpen} onClose={onClose} data={create_LaunchData(newLaunchData.current)} />
-        </Center>
+                <LaunchPreviewModal isOpen={isOpen} onClose={onClose} data={create_LaunchData(newLaunchData.current)} />
+            </Center>
+        </form>
     );
 };
 

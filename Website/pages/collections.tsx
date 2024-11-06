@@ -34,26 +34,12 @@ const BagsPage = () => {
             <Head>
                 <title>Let&apos;s Cook | Collections</title>
             </Head>
-            <main>
-                <Flex
-                    px={4}
-                    // py={18}
-                    py={sm ? 22 : 37}
-                    gap={2}
-                    alignItems="center"
-                    justifyContent={"start"}
-                    style={{ position: "relative", flexDirection: sm ? "column-reverse" : "row" }}
-                >
-                    <Text
-                        fontSize={sm ? 25 : 35}
-                        color="white"
-                        className="font-face-kg"
-                        style={{ position: sm ? "static" : "absolute", left: 0, right: 0, margin: "auto" }}
-                        align={"center"}
-                    >
+            <main className="md:p-8">
+                <div className="flex flex-col gap-4 lg:gap-0" style={{ marginTop: sm ? 16 : 0 }}>
+                    <Text className="block text-center text-3xl font-semibold text-white lg:text-4xl" align={"center"}>
                         Collections
                     </Text>
-                </Flex>
+                </div>
 
                 <CollectionDashboardTable collectionList={filterTable()} />
             </main>
