@@ -142,8 +142,8 @@ const BuyPanel = ({
         : getBaseOutput(quote_raw, amm_base_balance, amm_quote_balance, amm.fee, base_mint.mint.decimals);
 
     let base_rate = plugins.liquidity_active
-    ? CalculateChunkedOutput(1 * Math.pow(10, 9), amm_quote_balance, amm_base_balance, 0, plugins, base_mint.mint.decimals)
-    : getBaseOutput(1 * Math.pow(10, 9), amm_base_balance, amm_quote_balance, 0, base_mint.mint.decimals);
+        ? CalculateChunkedOutput(1 * Math.pow(10, 9), amm_quote_balance, amm_base_balance, 0, plugins, base_mint.mint.decimals)
+        : getBaseOutput(1 * Math.pow(10, 9), amm_base_balance, amm_quote_balance, 0, base_mint.mint.decimals);
 
     let base_output_string = formatPrice(base_output[0], base_mint.mint.decimals);
     let base_rate_string = formatPrice(base_rate[0], base_mint.mint.decimals);

@@ -105,7 +105,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
         if (launch_type !== "Instant") {
             return;
         }
-        setTotalSupply("1000000000");
+        setTotalSupply("100000000");
         setDecimal("6");
         setTotalPrice("0");
         setMints("0");

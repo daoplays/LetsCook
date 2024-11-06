@@ -103,6 +103,8 @@ export function reward_date(amm) {
     return current_date - first_date;
 }
 
+// this function is only relevant when users havn't traded for some number of days
+// once a given day has been traded the on chain data will provide the correct number
 export function reward_schedule(date: number, amm: AMMData, mint: MintData): number {
     if (amm.plugins.length === 0) {
         return 0.0;
@@ -123,7 +125,12 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
 
     //console.log("rewards: current date ", current_date, " first date ", first_date, " date delta ", current_days, " last date ", last_date);
     let total_reward = 0;
-    if (last_date > 0 || (last_date === 0 && current_days > 0)) last_date++;
+    // first check if rewards were allocated for day 0
+    if (last_date === 100) {
+        last_date = 0;
+    } else {
+        last_date++;
+    }
 
     for (let i = last_date; i <= current_days; i++) {
         let this_reward = calculateReward(i, mm_amount);

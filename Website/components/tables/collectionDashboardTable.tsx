@@ -52,9 +52,9 @@ const CollectionDashboardTable = ({ collectionList }: { collectionList: Collecti
                     {tableHeaders.map((header) => (
                         <TableHead className="min-w-[140px] border-b" key={header.text}>
                             {header.field ? (
-                                <div onClick={() => header.field} className="flex justify-center font-semibold cursor-pointer">
+                                <div onClick={() => header.field} className="flex cursor-pointer justify-center font-semibold">
                                     {header.text}
-                                    <FaSort className="w-4 h-4 ml-2" />
+                                    <FaSort className="ml-2 h-4 w-4" />
                                 </div>
                             ) : (
                                 header.text
@@ -148,7 +148,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         >
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="w-10 h-10 overflow-hidden rounded-lg">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
                         <Image alt={"Launch icon"} src={launch.collection_icon_url} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{launch.collection_name}</span>
@@ -156,7 +156,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             </TableCell>
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="w-10 h-10 overflow-hidden rounded-lg">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
                         <Image alt="Launch icon" src={token_mint.icon} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{launch.token_symbol}</span>

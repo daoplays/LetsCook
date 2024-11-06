@@ -73,10 +73,10 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
                             {i.field ? (
                                 <div
                                     onClick={() => handleHeaderClick(i.field)}
-                                    className="flex justify-center font-semibold cursor-pointer"
+                                    className="flex cursor-pointer justify-center font-semibold"
                                 >
                                     {i.text}
-                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
+                                    {i.text === "TOKEN" || i.text === "WIN RATE" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
                                 </div>
                             ) : (
                                 i.text
