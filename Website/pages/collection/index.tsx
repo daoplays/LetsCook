@@ -10,7 +10,7 @@ import CollectionPage from "../../components/collection/collectionPage";
 const CollectionLaunch = () => {
     const router = useRouter();
     const { lg } = useResponsive();
-    const [screen, setScreen] = useState("step 4");
+    const [screen, setScreen] = useState("step 1");
 
     return (
         <>

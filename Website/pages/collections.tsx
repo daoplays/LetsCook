@@ -39,16 +39,9 @@ const BagsPage = () => {
                     <Text className="block text-center text-3xl font-semibold text-white lg:text-4xl" align={"center"}>
                         Collections
                     </Text>
-
-                    <CollectionDashboardTable collectionList={filterTable()} />
                 </div>
-                {collectionList.size <= 0 && (
-                    <HStack w="100%" align="center" justify="center" mt={25}>
-                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
-                            There are no collections launched yet
-                        </Text>
-                    </HStack>
-                )}
+
+                <CollectionDashboardTable collectionList={filterTable()} />
             </main>
         </>
     );

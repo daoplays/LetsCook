@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LaunchData, UserData, bignum_to_num } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Box, Button, Center, Flex, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "../hypeVote";
 import useResponsive from "../../hooks/useResponsive";
@@ -109,34 +109,59 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
         return 0;
     });
 
+    useEffect(() => {
+        console.log("filterTable()", launch_list);
+    });
+
     return (
         <Table>
             <TableHeader>
-                {tableHeaders.map((i) => (
-                    <TableHead key={i.text} className={`${i.text === "Minimum Liquidity" ? "min-w-[180px]" : "min-w-[140px]"}`}>
-                        {i.field ? (
-                            <div
-                                onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                className="flex cursor-pointer justify-center font-semibold"
-                            >
-                                {i.text}
-                                {i.text === "Logo" || i.text === "Socials" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
-                            </div>
-                        ) : (
-                            i.text
-                        )}
+                <TableRow>
+                    {tableHeaders.map((i) => (
+                        <TableHead key={i.text} className={`${i.text === "Minimum Liquidity" ? "min-w-[180px]" : "min-w-[140px]"}`}>
+                            {i.field ? (
+                                <div
+                                    onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
+                                    className="flex cursor-pointer justify-center font-semibold"
+                                >
+                                    {i.text}
+                                    {i.text === "Logo" || i.text === "Socials" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                </div>
+                            ) : (
+                                i.text
+                            )}
+                        </TableHead>
+                    ))}
+                    <TableHead>
+                        <Box as="button">
+                            <TfiReload size={20} onClick={checkProgramData} />
+                        </Box>
                     </TableHead>
-                ))}
-                <TableHead>
-                    <Box as="button">
-                        <TfiReload size={20} onClick={checkProgramData} />
-                    </Box>
-                </TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody>
-                {filtered.sort().map((item: LaunchData, index) => (
-                    <LaunchCard key={index} launch={item} />
-                ))}
+                {filtered.length > 0 ? (
+                    filtered.sort().map((item: LaunchData, index) => <LaunchCard key={index} launch={item} />)
+                ) : (
+                    <TableRow
+                        style={{
+                            cursor: "pointer",
+                            height: "60px",
+                            transition: "background-color 0.3s",
+                        }}
+                        className="border-b"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                        }}
+                    >
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            No launches yet
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );

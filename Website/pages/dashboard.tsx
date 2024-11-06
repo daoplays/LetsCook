@@ -148,14 +148,6 @@ const DashboardPage = () => {
             {selected === "Tokens" && <TokenDashboardTable creatorLaunches={creatorLaunches} />}
 
             {selected === "Collections" && <CollectionDashboardTable collectionList={creatorCollections} />}
-
-            {creatorLaunches.length <= 0 && (
-                <HStack w="100%" align="center" justify="center" mt={25}>
-                    <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
-                        You don&apos;t have any launches yet
-                    </Text>
-                </HStack>
-            )}
         </VStack>
     );
 };

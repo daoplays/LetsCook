@@ -103,14 +103,6 @@ const BagsPage = () => {
                 {selected === "My Tickets" && <MyTicketsTable bags={joinedLaunches} />}
 
                 {/* {selected === "My Rewards" && <MyRewardsTable bags={joinedLaunches} />} */}
-
-                {joinedLaunches.length <= 0 && (
-                    <HStack w="100%" align="center" justify="center" mt={25}>
-                        <Text fontSize={lg ? "large" : "x-large"} m={0} color={"white"} style={{ cursor: "pointer" }}>
-                            You have no unchecked tickets
-                        </Text>
-                    </HStack>
-                )}
             </main>
         </>
     );

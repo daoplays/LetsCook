@@ -241,9 +241,28 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
                 </TableHead>
             </TableHeader>
             <TableBody>
-                {sortedLaunches.map((launch) => (
-                    <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees} />
-                ))}
+                {sortedLaunches.length > 0 ? (
+                    sortedLaunches.map((launch) => <LaunchCard key={launch.page_name} launch={launch} GetFees={GetFees} />)
+                ) : (
+                    <TableRow
+                        style={{
+                            cursor: "pointer",
+                            height: "60px",
+                            transition: "background-color 0.3s",
+                        }}
+                        className="border-b"
+                        onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+                        }}
+                        onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
+                        }}
+                    >
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            You don&apos;t have any launches yet
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );
