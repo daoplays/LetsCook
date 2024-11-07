@@ -83,7 +83,7 @@ const CollectionSwapPage = () => {
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
-    const {userSOLBalance} = useAppRoot();
+    const { userSOLBalance } = useAppRoot();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
@@ -151,7 +151,8 @@ const CollectionSwapPage = () => {
 
     if (!collection) return <PageNotFound />;
 
-    const enoughTokenBalance = (wrapSOL ? userSOLBalance : tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
+    const enoughTokenBalance =
+        (wrapSOL ? userSOLBalance : tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
     let progress_string = "";
     if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
@@ -177,7 +178,7 @@ const CollectionSwapPage = () => {
                         h="fit-content"
                         justifyContent="space-between"
                     >
-                        <Flex gap={lg ? 12 : 24} direction={lg ? "column" : "row"} alignItems={"center"}>
+                        <Flex gap={lg ? 12 : 24} direction={lg ? "column" : "row"} className="items-center xl:items-start">
                             <VStack minW={220}>
                                 <Image
                                     src={collection.collection_icon_url}
@@ -497,7 +498,7 @@ const CollectionSwapPage = () => {
                                 <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                     {collection.token_symbol}
                                 </Text>
-                                <HStack mb={1} spacing={2} align="start" justify="start">
+                                <HStack spacing={2} align="start" justify="start">
                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
                                         CA: {trimAddress(collection.keys[CollectionKeys.MintAddress].toString())}
                                     </Text>
@@ -550,17 +551,15 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
                                 </HStack>
                                 <ShowExtensions extension_flag={collection.token_extensions} />
-                                {collection.keys[CollectionKeys.MintAddress].equals(WRAPPED_SOL) && 
-                                (
-                                    <HStack spacing={15} w="100%" className={styles.eachField}>
-                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "80px" : "80px" }}>
-                                            WRAP {Config.token}:
+                                {collection.keys[CollectionKeys.MintAddress].equals(WRAPPED_SOL) && (
+                                    <HStack spacing={4} mt={-3} w="100%" className={styles.eachField} justify={"center"}>
+                                        <div className={`${styles.textLabel} font-face-kg mt-1`} style={{ minWidth: sm ? "80px" : "80px" }}>
+                                            Wrap {Config.token}:
                                         </div>
                                         <HStack>
                                             <Switch
-                                                ml={2}
                                                 py={2}
-                                                size={lg ? "md" : "lg"}
+                                                size={lg ? "md" : "md"}
                                                 isChecked={wrapSOL === 1}
                                                 onChange={() => setWrapSOL(wrapSOL === 0 ? 1 : 0)}
                                             />
