@@ -32,7 +32,7 @@ import { AppRootContextProvider } from "../context/useAppRoot";
 import bs58 from "bs58";
 import "bootstrap/dist/css/bootstrap.css";
 import { sleep } from "@irys/sdk/build/cjs/common/utils";
-import { getMintData } from "../components/amm/launch";
+import { getMintDataWithMint } from "../components/amm/launch";
 import { useSOLPrice } from "../hooks/data/useSOLPrice";
 import { getDatabase, ref, get, Database } from "firebase/database";
 import { firebaseConfig } from "../components/Solana/constants";

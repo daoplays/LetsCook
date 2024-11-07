@@ -34,7 +34,7 @@ import {
 } from "../Solana/state";
 import { Config, Extensions, METAPLEX_META, NetworkConfig, PROGRAM, Socials } from "../Solana/constants";
 import ShowExtensions from "../Solana/extensions";
-import { setMintData } from "../amm/launch";
+import { getMintData } from "../amm/launch";
 import { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import useIrysUploader from "../../hooks/useIrysUploader";
@@ -152,7 +152,7 @@ const CreateListing = () => {
     }
 
     async function handleSetBaseData() {
-        let mint_data = await setMintData(base_address);
+        let mint_data = await getMintData(base_address);
         if (mint_data === null) {
             toast.error("Token not found");
             return;

@@ -33,6 +33,7 @@ import discord from "../public/images/discord.png";
 import { TbLayoutSidebarLeftExpandFilled, TbLayoutSidebarRightExpandFilled } from "react-icons/tb";
 import { PiHamburgerFill } from "react-icons/pi";
 import { BsDiscord, BsTwitter } from "react-icons/bs";
+import useDomain from "../hooks/useDomain";
 
 function Navigation() {
     const router = useRouter();
@@ -41,6 +42,8 @@ function Navigation() {
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
     const { currentUserData, selectedNetwork, sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
+    const {userDomain} = useDomain();
+
 
     return (
         <>

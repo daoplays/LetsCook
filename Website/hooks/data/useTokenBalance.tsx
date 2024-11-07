@@ -4,7 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { MintData, TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
 import useAppRoot from "../../context/useAppRoot";
-import { setMintData } from "../../components/amm/launch";
+import { getMintData } from "../../components/amm/launch";
 
 interface UseTokenBalanceProps {
     mintAddress: PublicKey | null;
@@ -31,7 +31,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
     const mintAddress = props?.mintAddress || null;
 
     // Function to get mint data for the given mint address
-    const getMintData = useCallback(async () => {
+    const fetchMintData = useCallback(async () => {
         if (haveMintData.current) return;
 
         if (!mintData || !mintAddress) {
@@ -42,7 +42,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
         const mint = mintData.get(mintAddress.toString());
         if (!mint) {
             // if we dont have the mint data, we should fetch it
-            let newMintData = await setMintData(mintAddress.toString());
+            let newMintData = await getMintData(mintAddress.toString());
             if (newMintData) {
                 setTokenMint(newMintData);
                 haveMintData.current = true;
@@ -66,7 +66,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
         const userTokenAccount = getUserTokenAccount();
         if (!userTokenAccount) return;
 
-        await getMintData();
+        await fetchMintData();
         if (!tokenMint) return;
         try {
             const userAmount = await request_token_amount("", userTokenAccount);
@@ -97,7 +97,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
         }
 
         if (!tokenMint) {
-            getMintData();
+            fetchMintData();
             return;
         }
 

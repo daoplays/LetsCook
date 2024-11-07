@@ -47,7 +47,7 @@ import { MintData, request_current_balance, request_raw_account_data } from "../
 import ShowExtensions from "../Solana/extensions";
 import DatePicker from "react-datepicker";
 import { FaCalendarAlt } from "react-icons/fa";
-import { getMintData } from "../amm/launch";
+import { getMintData, getMintDataWithMint } from "../amm/launch";
 import { Button } from "../ui/button";
 
 interface HybridInfoProps {
@@ -167,7 +167,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             }
         }
 
-        let mint_data: MintData = await getMintData(connection, mint, result.owner);
+        let mint_data: MintData = await getMintDataWithMint(connection, mint, result.owner);
         console.log("getting mint data", mint, result.owner, mint_data);
 
         setTokenName(mint_data.name);
@@ -243,8 +243,14 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                 return false;
             }
 
+            let whitelist_mint = await getMintData(whitelist_key);
+            if (!whitelist_mint) {
+                toast.error("Invalid Whitelist token");
+                return false;
+            }
+
             newCollectionData.current.whitelist_key = whitelist_key;
-            newCollectionData.current.whitelist_amount = 1;
+            newCollectionData.current.whitelist_amount = Math.pow(10, whitelist_mint.mint.decimals);
             newCollectionData.current.whitelist_phase_end = whitelist_phase_end;
         }
 

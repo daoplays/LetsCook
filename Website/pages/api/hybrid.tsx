@@ -10,7 +10,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get } from "firebase/database";
 import { CollectionData } from "../../components/collection/collectionState";
 import useWrapNFT, { GetWrapInstructions } from "../../hooks/collections/useWrapNFT";
-import { getMintData, setMintData } from "../../components/amm/launch";
+import { getMintDataWithMint, getMintData } from "../../components/amm/launch";
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
             let collection_key = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Collection")], PROGRAM)[0];
             let collection_data = await request_raw_account_data("", collection_key);
             const [collection] = CollectionData.struct.deserialize(collection_data);
-            let mint_data = await setMintData(collection.keys[CollectionKeys.MintAddress].toString());
+            let mint_data = await getMintData(collection.keys[CollectionKeys.MintAddress].toString());
 
             let user = new PublicKey(account);
             let instructions = await GetWrapInstructions(collection, mint_data, user, null);
