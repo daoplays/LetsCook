@@ -15,28 +15,21 @@ const useDomain = () => {
     const [userDomain, setUserDomain] = useState<NameAccountAndDomain[] | null>(null);
 
     const fetchUserDomain = useCallback(async () => {
-        console.log("in get user domain", userDomain, haveDomain.current)
         if (!wallet || !wallet.publicKey) return false;
 
-        console.log("in get user domain 2", userDomain, haveDomain.current)
-
         if (haveDomain.current) return true;
-
-        console.log("in get user domain 3", userDomain, haveDomain.current)
 
         if (currentTries.current > MAX_RETRIES) {
             console.log("Max retries reached for Domain, giving up");
             return false;
         }
 
-        console.log("try getting domain")
         // initialize a Tld Parser
         try {
             const parser = new TldParser(connection);
 
             // get all owned domains from turbo
             let ownedDomainsFromTld = await parser.getParsedAllUserDomainsFromTldUnwrapped(wallet.publicKey, "turbo");
-            console.log("getting domains, ", ownedDomainsFromTld);
             setUserDomain(ownedDomainsFromTld);
 
         } catch (e) {

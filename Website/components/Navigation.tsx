@@ -42,8 +42,6 @@ function Navigation() {
     const { isOpen, onToggle } = useDisclosure();
     const { handleDisconnectWallet, handleConnectWallet } = UseWalletConnection();
     const { currentUserData, selectedNetwork, sidePanelCollapsed, setSidePanelCollapsed } = useAppRoot();
-    const {userDomain} = useDomain();
-
 
     return (
         <>

@@ -6,13 +6,16 @@ import styles from "../header.module.css";
 import UseWalletConnection from "../../hooks/useWallet";
 import trimAddress from "../../utils/trimAddress";
 import { FaSignOutAlt } from "react-icons/fa";
+import useDomain from "../../hooks/useDomain";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 export function DisconnectWalletButton() {
     const wallet = useWallet();
     const { handleDisconnectWallet } = UseWalletConnection();
+    const {userDomain} = useDomain();
 
+    let address = userDomain.length === 0 ? trimAddress(wallet.publicKey.toString()) : userDomain[0].domain.substring(0, userDomain[0].domain.lastIndexOf('.'));;
     return (
         <>
             <Box
@@ -23,7 +26,7 @@ export function DisconnectWalletButton() {
             >
                 <HStack align="center" color="white" className="bg-white text-black" style={{ borderRadius: 20 }} py={1} px={3}>
                     <FaSignOutAlt size={18} />
-                    <Text m={0}>{trimAddress(wallet.publicKey.toString())}</Text>
+                    <Text m={0}>{address}</Text>
                 </HStack>
             </Box>
         </>
