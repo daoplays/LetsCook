@@ -1,4 +1,4 @@
-import { getMintData } from "../components/amm/launch";
+import { getMintDataWithMint } from "../components/amm/launch";
 import { Config } from "../components/Solana/constants";
 import { MintData } from "../components/Solana/state";
 import { Connection, PublicKey } from "@solana/web3.js";
@@ -78,7 +78,7 @@ export const getTradeMintData = async (trade_keys: String[]) => {
                     try {
                         const mint = unpackMint(pubkey, result, result.owner);
 
-                        const mint_data = await getMintData(connection, mint, result.owner);
+                        const mint_data = await getMintDataWithMint(connection, mint, result.owner);
                         if (mint_data) mint_map.set(pubkey.toString(), mint_data);
                     } catch (error) {
                         console.log("Failed to process mint:", pubkey.toString());

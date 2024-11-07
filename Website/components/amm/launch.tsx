@@ -82,7 +82,7 @@ export async function getMint(connection: Connection, mint_string: string): Prom
     return [mint, result.owner];
 }
 
-export async function getMintData(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
+export async function getMintDataWithMint(connection: Connection, mint: Mint, token_program: PublicKey): Promise<MintData | null> {
     if (mint.address.equals(WRAPPED_SOL)) {
         let mint_data: MintData = {
             mint: mint,
@@ -169,7 +169,7 @@ export async function getMintData(connection: Connection, mint: Mint, token_prog
     return mint_data;
 }
 
-export async function setMintData(token_mint: string): Promise<MintData | null> {
+export async function getMintData(token_mint: string): Promise<MintData | null> {
     const connection = new Connection(Config.RPC_NODE, {
         wsEndpoint: Config.WSS_NODE,
     });
@@ -180,7 +180,7 @@ export async function setMintData(token_mint: string): Promise<MintData | null> 
         return null;
     }
 
-    let mint_data = await getMintData(connection, mint, token_program);
+    let mint_data = await getMintDataWithMint(connection, mint, token_program);
 
     return mint_data;
 }
@@ -225,15 +225,15 @@ const LaunchAMM = () => {
     const { tokenBalance: quoteBalance } = useTokenBalance(quoteMintAdress ? { mintAddress: quoteMintAdress } : null);
 
     async function handleSetBaseData() {
-        setBaseToken(await setMintData(base_address));
+        setBaseToken(await getMintData(base_address));
     }
     async function handleSetQuoteData() {
-        setQuoteToken(await setMintData(quote_address));
+        setQuoteToken(await getMintData(quote_address));
     }
 
     const getWSOL = useCallback(async () => {
         let [wsol_mint, token_program] = await getMint(connection, WRAPPED_SOL.toString());
-        let wsol = await getMintData(connection, wsol_mint, token_program);
+        let wsol = await getMintDataWithMint(connection, wsol_mint, token_program);
         setQuoteToken(wsol);
         setQuoteAddress(WRAPPED_SOL.toString());
     }, [connection]);
