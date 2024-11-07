@@ -1,5 +1,5 @@
 import { use, useCallback, useEffect, useRef, useState} from "react";
-import { TldParser, NameRecordHeader, NameAccountAndDomain } from "@onsol/tldparser";
+import { TldParser, NameRecordHeader, NameAccountAndDomain, findMainDomain } from "@onsol/tldparser";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 const useDomain = () => {
@@ -31,6 +31,9 @@ const useDomain = () => {
             // get all owned domains from turbo
             let ownedDomainsFromTld = await parser.getParsedAllUserDomainsFromTldUnwrapped(wallet.publicKey, "turbo");
             setUserDomain(ownedDomainsFromTld);
+
+            //const [mainDomainPubkey] = findMainDomain(wallet.publicKey);
+            //console.log("main", mainDomainPubkey);
 
         } catch (e) {
             console.log("error getting user domain", e);

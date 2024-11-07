@@ -15,7 +15,10 @@ export function DisconnectWalletButton() {
     const { handleDisconnectWallet } = UseWalletConnection();
     const {userDomain} = useDomain();
 
-    let address = userDomain.length === 0 ? trimAddress(wallet.publicKey.toString()) : userDomain[0].domain.substring(0, userDomain[0].domain.lastIndexOf('.'));;
+    let address = trimAddress(wallet.publicKey.toString())
+    
+    if (userDomain && userDomain.length > 0)
+        address = userDomain[0].domain.substring(0, userDomain[0].domain.lastIndexOf('.'));
     return (
         <>
             <Box
