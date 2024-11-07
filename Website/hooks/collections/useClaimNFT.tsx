@@ -8,6 +8,7 @@ import {
     uInt32ToLEBytes,
     request_raw_account_data,
     getRecentPrioritizationFees,
+    bignum_to_num,
 } from "../../components/Solana/state";
 import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import {
@@ -33,6 +34,8 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
+import useWrapSOL from "../useWrapSOL";
+import { wrap } from "module";
 
 class OraoTokenFeeConfig {
     constructor(
@@ -164,16 +167,17 @@ class ClaimNFT_Instruction {
     );
 }
 
-const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) => {
+const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => {
     const wallet = useWallet();
     const { connection } = useConnection();
 
-    const { checkProgramData, mintData } = useAppRoot();
+    const { mintData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
     const [OraoRandoms, setOraoRandoms] = useState<number[]>([]);
 
     const { MintNFT } = useMintNFT(launchData);
     const { MintRandom } = useMintRandom(launchData);
+    const {getWrapInstruction} = useWrapSOL();
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
@@ -435,6 +439,11 @@ const useClaimNFT = (launchData: CollectionData, updateData: boolean = false) =>
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+
+        if (wrapToken) {
+            let wrap_instruction = await getWrapInstruction(bignum_to_num(launchData.swap_price));
+            transaction.add(...wrap_instruction);
+        }
 
         transaction.add(list_instruction);
 

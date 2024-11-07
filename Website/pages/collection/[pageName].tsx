@@ -16,6 +16,7 @@ import {
     Divider,
     Spacer,
     useDisclosure,
+    Switch,
 } from "@chakra-ui/react";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { bignum_to_num } from "../../components/Solana/state";
@@ -32,7 +33,7 @@ import PageNotFound from "../../components/pageNotFound";
 import Loader from "../../components/loader";
 import CollectionFeaturedBanner from "../../components/collectionFeaturedBanner";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
-import { CollectionKeys, LaunchFlags, SYSTEM_KEY } from "../../components/Solana/constants";
+import { CollectionKeys, Config, LaunchFlags, SYSTEM_KEY, WRAPPED_SOL } from "../../components/Solana/constants";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import useMintRandom from "../../hooks/collections/useMintRandom";
@@ -46,6 +47,8 @@ import useTokenBalance from "../../hooks/data/useTokenBalance";
 import useCollection from "../../hooks/data/useCollection";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
+import styles from "../../styles/Launch.module.css";
+import useAppRoot from "@/context/useAppRoot";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -63,6 +66,7 @@ const CollectionSwapPage = () => {
     const [token_amount, setTokenAmount] = useState<number>(0);
 
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
+    const [wrapSOL, setWrapSOL] = useState<number>(0);
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
@@ -79,9 +83,10 @@ const CollectionSwapPage = () => {
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
+    const {userSOLBalance} = useAppRoot();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
-    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection);
+    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
 
     const mintAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.MintAddress] || null;
@@ -146,7 +151,7 @@ const CollectionSwapPage = () => {
 
     if (!collection) return <PageNotFound />;
 
-    const enoughTokenBalance = tokenBalance >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
+    const enoughTokenBalance = (wrapSOL ? userSOLBalance : tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
     let progress_string = "";
     if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
@@ -299,7 +304,7 @@ const CollectionSwapPage = () => {
                                                 <HStack gap={1} opacity={0.5}>
                                                     <FaWallet size={12} color="white" />
                                                     <Text pl={0.5} m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
-                                                        {tokenBalance.toLocaleString()}
+                                                        {(wrapSOL ? userSOLBalance : tokenBalance).toLocaleString()}
                                                     </Text>
                                                     <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                                         {collection.token_symbol}
@@ -545,6 +550,32 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
                                 </HStack>
                                 <ShowExtensions extension_flag={collection.token_extensions} />
+                                {collection.keys[CollectionKeys.MintAddress].equals(WRAPPED_SOL) && 
+                                (
+                                    <HStack spacing={15} w="100%" className={styles.eachField}>
+                                        <div className={`${styles.textLabel} font-face-kg`} style={{ minWidth: sm ? "80px" : "80px" }}>
+                                            WRAP {Config.token}:
+                                        </div>
+                                        <HStack>
+                                            <Switch
+                                                ml={2}
+                                                py={2}
+                                                size={lg ? "md" : "lg"}
+                                                isChecked={wrapSOL === 1}
+                                                onChange={() => setWrapSOL(wrapSOL === 0 ? 1 : 0)}
+                                            />
+                                            <Tooltip
+                                                label={"Program will wrap the W" + Config.token + " token for you"}
+                                                hasArrow
+                                                w={270}
+                                                fontSize="large"
+                                                offset={[0, 10]}
+                                            >
+                                                <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                            </Tooltip>
+                                        </HStack>
+                                    </HStack>
+                                )}
                             </VStack>
                         </Flex>
 

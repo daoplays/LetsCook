@@ -62,9 +62,7 @@ const useWrapSOL = () => {
         });
     }, []);
 
-    const WrapSOL = async (sol_amount: number) => {
-        // if we have already done this then just skip this step
-
+    const getWrapInstruction = async (sol_amount: number) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         const associatedTokenAccount = await getAssociatedTokenAddress(NATIVE_MINT, wallet.publicKey);
@@ -84,6 +82,26 @@ const useWrapSOL = () => {
 
         let sync_idx = createSyncNativeInstruction(associatedTokenAccount);
 
+                
+        let ata_balance = await connection.getBalance(associatedTokenAccount);
+
+        let instructions = []
+        if (ata_balance === 0) {
+            instructions.push(create_ata_idx);
+        }
+        instructions.push(transfer_idx);
+        instructions.push(sync_idx);
+
+        return instructions;
+    }
+
+    const WrapSOL = async (sol_amount: number) => {
+        // if we have already done this then just skip this step
+
+        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
+
+        let instructions = await getWrapInstruction(sol_amount);
+
         let list_txArgs = await get_current_blockhash("");
 
         let list_transaction = new Transaction(list_txArgs);
@@ -91,13 +109,7 @@ const useWrapSOL = () => {
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
         list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-        let ata_balance = await connection.getBalance(associatedTokenAccount);
-
-        if (ata_balance === 0) {
-            list_transaction.add(create_ata_idx);
-        }
-        list_transaction.add(transfer_idx);
-        list_transaction.add(sync_idx);
+        list_transaction.add(...instructions);
 
         try {
             let signed_transaction = await wallet.signTransaction(list_transaction);
@@ -115,7 +127,7 @@ const useWrapSOL = () => {
             return;
         }
     };
-    return { WrapSOL, isLoading };
+    return { WrapSOL, getWrapInstruction, isLoading };
 };
 
 export default useWrapSOL;
