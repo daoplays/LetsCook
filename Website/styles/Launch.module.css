@@ -94,6 +94,7 @@ label.label input[type="file"] {
 }
 
 .textLabelInput input {
+    font-size: 16px;
 }
 
 .textLabelInputamms {

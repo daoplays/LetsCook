@@ -502,10 +502,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                             >
                                 Go Back
                             </Button>
-                            <Button
-                                type="submit"
-                                size="lg"
-                            >
+                            <Button type="button" size="lg" onClick={(e) => setLaunchData(e)}>
                                 Next (3/4)
                             </Button>
                         </HStack>
