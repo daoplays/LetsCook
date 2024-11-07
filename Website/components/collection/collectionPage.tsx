@@ -722,7 +722,7 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
     return (
         <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:!w-[975px]">
             <Center width="100%" h="100%">
-                <VStack w="100%" h="100%" >
+                <VStack w="100%" h="100%">
                     <div className="mb-4 flex flex-col gap-2">
                         <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Page Information</Text>
                     </div>

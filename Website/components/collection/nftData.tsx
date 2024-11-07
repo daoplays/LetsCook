@@ -235,7 +235,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
     );
 
     return (
-        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:!w-[775px]">
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:!w-[975px]">
             <Center width="100%">
                 <VStack w="100%">
                     <div className="mb-4 flex flex-col gap-2">
@@ -268,8 +268,8 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                 <AddOnChainAttributes />
 
                                 {attributes.map((attribute, index) => (
-                                    <div key={index} className="!overflow-auto w-[100%]">
-                                        <VStack className="ml-2 md:mx-auto !w-[500px] md:w-auto">
+                                    <div key={index} className="w-[100%] !overflow-auto">
+                                        <VStack className="ml-2 !w-[500px] md:mx-auto md:w-auto">
                                             <HStack gap={2} alignItems="center" className="!w-full md:w-auto">
                                                 <Text mr={2} mb={0} color="white" fontSize={24} fontWeight={"bold"} w={120}>
                                                     #{index + 1}
@@ -346,7 +346,13 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
                                 Go Back
                             </Button>
 
-                            <Button type="submit" size="lg">
+                            <Button
+                                type="button"
+                                size="lg"
+                                onClick={(e) => {
+                                    setLaunchData(e);
+                                }}
+                            >
                                 Next (2/4)
                             </Button>
                         </HStack>
