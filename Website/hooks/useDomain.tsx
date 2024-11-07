@@ -15,7 +15,6 @@ const useDomain = () => {
     const [userDomain, setUserDomain] = useState<NameAccountAndDomain[] | null>(null);
 
     const fetchUserDomain = useCallback(async () => {
-        return true;
         console.log("in get user domain", userDomain, haveDomain.current)
         if (!wallet || !wallet.publicKey) return false;
 
@@ -36,7 +35,7 @@ const useDomain = () => {
             const parser = new TldParser(connection);
 
             // get all owned domains from turbo
-            let ownedDomainsFromTld = await parser.getParsedAllUserDomainsFromTld(wallet.publicKey, "turbo");
+            let ownedDomainsFromTld = await parser.getParsedAllUserDomainsFromTldUnwrapped(wallet.publicKey, "turbo");
             console.log("getting domains, ", ownedDomainsFromTld);
             setUserDomain(ownedDomainsFromTld);
 
