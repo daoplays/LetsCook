@@ -196,8 +196,8 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (event_data[0] === 0) {
                 try {
+                    const [launch] = LaunchData.struct.deserialize(event_data);
                     setLaunchData((currentData) => {
-                        const [launch] = LaunchData.struct.deserialize(event_data);
                         const newData = new Map(currentData);
                         newData.set(launch.page_name, launch);
                         return newData;
