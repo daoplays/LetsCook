@@ -27,24 +27,25 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
 
     const GridEntry = ({ asset, index }: { asset: AssetWithMetadata; index: number }) => {
         // let attributes = asset.asset.attributes.attributeList;
-
+        let asset_name = asset.metadata["name"] ? asset.metadata["name"] : asset.asset.name;
         return (
             <>
-                <Image src={asset.metadata["image"]} width={110} height={110} style={{ borderRadius: "8px" }} alt="Pepemander" />
-                {/* <VStack style={hoveredIndex === index ? overlayVisibleStyle : overlayStyle}>
+                <Image src={asset.metadata["image"]} width={110} height={110} style={{ borderRadius: "8px" }} alt="nftImage" />
+                 <VStack style={hoveredIndex === index ? overlayVisibleStyle : overlayStyle}>
                     <Text
                         m={0}
                         lineHeight={0.75}
                         align="center"
-                        fontSize="x-large"
+                        fontSize="large"
                         style={{
                             fontFamily: "pokemon",
                             color: "white",
                             fontWeight: "semibold",
                         }}
                     >
-                        LV: {attributes[1].value}
+                        {asset_name}
                     </Text>
+                    {/*
                     <Text
                         m={0}
                         lineHeight={0.75}
@@ -71,29 +72,10 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
                     >
                         IV: {attributes[3].value}
                     </Text>
-                </VStack> */}
+                    */}
+                </VStack> 
             </>
         );
-    };
-
-    const handleReleaseButtonClick = async (index: number) => {
-        setLoadingStates((prevStates) => {
-            const newState = [...prevStates];
-            newState[index] = true;
-            return newState;
-        });
-
-        try {
-            await WrapNFT(new PublicKey(assets[index].asset.publicKey.toString()));
-        } catch (error) {
-            console.error("Error:", error);
-        }
-
-        setLoadingStates((prevStates) => {
-            const newState = [...prevStates];
-            newState[index] = false;
-            return newState;
-        });
     };
 
     return (
@@ -109,23 +91,6 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
                         py={9}
                         pb={16}
                     >
-                        {/* <Text
-                            m={0}
-                            align="center"
-                            fontSize={28}
-                            style={{
-                                fontFamily: "pokemon",
-                                color: "black",
-                                fontWeight: "semibold",
-                                position: "absolute",
-                                bottom: 20,
-                                left: 0,
-                                right: 0,
-                                margin: "auto",
-                            }}
-                        >
-                            Release to Reclaim Pepeball
-                        </Text> */}
                         <VStack
                             h="100%"
                             position="relative"
@@ -148,21 +113,6 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
                                                 >
                                                     <GridEntry asset={asset} index={index} />
                                                 </Box>
-
-                                                {/* <Button
-                                                    onClick={() => handleReleaseButtonClick(index)}
-                                                    colorScheme="gray"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    w="100%"
-                                                    style={{
-                                                        fontFamily: "pokemon",
-                                                        fontSize: "x-large",
-                                                        fontWeight: "normal",
-                                                    }}
-                                                >
-                                                    {loadingStates[index] ? <Spinner /> : "Release"}
-                                                </Button> */}
                                             </VStack>
                                         </GridItem>
                                     ))}
