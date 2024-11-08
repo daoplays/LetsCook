@@ -49,6 +49,7 @@ import useAssignmentData from "../../hooks/data/useAssignmentData";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
 import styles from "../../styles/Launch.module.css";
 import useAppRoot from "@/context/useAppRoot";
+import CollectionReleaseModal from "./collectionReleaseModal";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -102,6 +103,7 @@ const CollectionSwapPage = () => {
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
+    const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
     const modalStyle: ReceivedAssetModalStyle = {
         check_image: "/images/cooks.jpeg",
         failed_image: "/images/cooks.jpeg",
@@ -227,6 +229,14 @@ const CollectionSwapPage = () => {
                                     </Tooltip>
                                 </HStack>
                                 <ShowExtensions extension_flag={collection.flags[LaunchFlags.Extensions]} />
+                                {wallet.connected && ownedAssets.length > 0 && (
+                                    <Button
+                                        cursor={"pointer"}
+                                        onClick={openReleaseModal}
+                                    >
+                                        My NFTs
+                                    </Button>
+                                )}
                             </VStack>
 
                             <VStack pb={whitelistMint && 6}>
@@ -620,6 +630,13 @@ const CollectionSwapPage = () => {
                     asset_image={assetMeta}
                     style={modalStyle}
                     isLoading={isLoading}
+                />
+
+                <CollectionReleaseModal
+                    isOpened={isReleaseModalOpen}
+                    onClose={closeReleaseModal}
+                    assets={ownedAssets}
+                    collection={collection}
                 />
             </main>
         </>
