@@ -7,20 +7,28 @@ import useResponsive from "@/hooks/useResponsive";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import ethImage from "@/public/images/eth.png";
+import useListNFT from "@/hooks/collections/useListNFT";
+import { Config } from "../Solana/constants";
+import { PublicKey } from "@solana/web3.js";
 interface RecievedAssetModalProps {
     actionType: string;
     action: boolean;
     isOpened: boolean;
     onClose: () => void;
     asset: AssetWithMetadata;
+    collection: CollectionData;
 }
-function NftCollectionTab({ isOpened, onClose, asset, action, actionType }: RecievedAssetModalProps) {
-    console.log("TNAOIGNAOINSOIAADJOAS", asset);
+function NftCollectionTab({ isOpened, onClose,collection,  asset, action, actionType }: RecievedAssetModalProps) {
     const { xs, sm } = useResponsive();
+    const { ListNFT } = useListNFT(collection);
+
+    console.log("FT collection, asset", collection);
     let asset_name, asset_Attribute;
+    let asset_key : PublicKey | null = null;
     if (asset !== undefined) {
         asset_name = asset.metadata["name"] ? asset.metadata["name"] : asset.asset.name;
         asset_Attribute = asset.metadata["attributes"] ? asset.metadata["attributes"] : null;
+        asset_key = asset ? new PublicKey(asset.asset.publicKey.toString()) : null;
     }
     return (
         <Modal size="lg" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
@@ -78,18 +86,18 @@ function NftCollectionTab({ isOpened, onClose, asset, action, actionType }: Reci
                                                             className="rounded-full"
                                                         />
                                                     </div>
-                                                    <span>ETH</span>
+                                                    <span>{Config.token}</span>
                                                 </button>
                                             </div>
                                             <input
                                                 type="number"
                                                 className="w-full text-xl text-right bg-transparent focus:outline-none"
                                                 placeholder="0"
-                                                step="0.000000000000000001" // Adjust this as needed for precision
+                                                step="0.0000000001" // Adjust this as needed for precision
                                                 min="0" // Optional: restrict to non-negative values
                                             />
                                         </div>
-                                        <Button className="mt-2 transition-all hover:opacity-90" size="lg">
+                                        <Button className="mt-2 transition-all hover:opacity-90" size="lg" onClick={ (e) => asset_key ? ListNFT(asset_key, 1) : {}}>
                                             List
                                         </Button>
                                     </>
@@ -108,7 +116,7 @@ function NftCollectionTab({ isOpened, onClose, asset, action, actionType }: Reci
                                                             className="rounded-full"
                                                         />
                                                     </div>
-                                                    <span>ETH</span>
+                                                    <span>{Config.token}</span>
                                                 </button>
                                             </div>
                                             <input

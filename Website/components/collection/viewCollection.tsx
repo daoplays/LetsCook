@@ -10,6 +10,8 @@ import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";
 import NftCollectionTab from "./nftCollectionTab";
+import { FaEye } from "react-icons/fa";
+import useListNFT from "@/hooks/collections/useListNFT";
 
 interface RecievedAssetModalProps {
     assets: AssetWithMetadata[];
@@ -24,7 +26,6 @@ function ViewCollection({ assets, collection, actionTypeData }: RecievedAssetMod
     const [hasAction, setHasAction] = useState(false);
     const [actionType, setActionType] = useState(actionTypeData);
     const [activeAsset, setActiveAsset] = useState();
-    const { WrapNFT } = useWrapNFT(collection);
 
     const userHasCollection = assets.length > 0;
 
@@ -62,6 +63,8 @@ function ViewCollection({ assets, collection, actionTypeData }: RecievedAssetMod
                     >
                         {asset_name}
                     </Text>
+                    <FaEye/>
+
                 </VStack>
             </>
         );
@@ -127,7 +130,7 @@ function ViewCollection({ assets, collection, actionTypeData }: RecievedAssetMod
                 )}
             </VStack>
             {activeAsset !== null && (
-                <NftCollectionTab isOpened={isReleaseModalOpen} onClose={closeReleaseModal} asset={activeAsset} action={hasAction} actionType={actionType} />
+                <NftCollectionTab isOpened={isReleaseModalOpen} onClose={closeReleaseModal} collection={collection} asset={activeAsset} action={hasAction} actionType={actionType} />
             )}
         </main>
     );

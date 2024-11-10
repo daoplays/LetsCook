@@ -49,7 +49,7 @@ const DevNetConfig: NetworkConfig = {
     NETWORK: "devnet",
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE: "https://api.devnet.solana.com",
+    RPC_NODE: "https://nickie-qn2k6r-fast-devnet.helius-rpc.com",
     WSS_NODE: "wss://api.devnet.solana.com",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "SOL",

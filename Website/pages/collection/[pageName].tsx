@@ -102,7 +102,9 @@ const CollectionSwapPage = () => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);
 
-    const { nftBalance, ownedAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(collectionAddress ? { collectionAddress } : null);
+    const { nftBalance, ownedAssets, collectionAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(collectionAddress ? { collectionAddress } : null);
+
+    const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
@@ -149,6 +151,28 @@ const CollectionSwapPage = () => {
     useEffect(() => {
         fetchNFTBalance();
     }, [collection, wallet, fetchNFTBalance]);
+
+    useEffect(() => {
+        checkNFTBalance.current = true;
+        fetchNFTBalance();
+
+    }, [collectionPlugins, checkNFTBalance, fetchNFTBalance]);
+
+    useEffect(() => {
+        
+        if (!collectionAssets || !collectionPlugins) return;
+
+        let new_listings = []
+        for (let i = 0; i < collectionPlugins.listings.length; i++)
+        {
+            const asset_key = collectionPlugins.listings[i].asset;
+            const asset = collectionAssets.get(asset_key.toString());
+            if (asset)
+                new_listings.push(asset);
+        }
+        console.log("new listings", new_listings);
+        setListedNFTs(new_listings);
+    }, [collectionPlugins, collectionAssets]);
 
     if (!pageName) return;
 
@@ -726,7 +750,7 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <ViewCollection assets={ownedAssets} collection={collection} actionTypeData={"Buy"} />
+                            <ViewCollection assets={listedNFTs} collection={collection} actionTypeData={"Buy"} />
                         </VStack>
                     </div>
                 )}

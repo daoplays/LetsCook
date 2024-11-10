@@ -16,6 +16,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     // State to store the token balance and any error messages
     const [nftBalance, setNFTBalance] = useState<number>(null);
     const [ownedAssets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
+    const [collectionAssets, setCollectionAssets] = useState<Map<string, AssetWithMetadata> | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const checkNFTBalance = useRef<boolean>(true);
@@ -45,15 +46,18 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
             .getDeserialized();
 
         let owned_assets: AssetWithMetadata[] = [];
+        let all_assets: Map<string, AssetWithMetadata> = new Map();
         for (let i = 0; i < assets.length; i++) {
+            let uri_json = await fetch(assets[i].uri).then((res) => res.json());
+            let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
+            all_assets.set(entry.asset.publicKey.toString(), entry);
             if (assets[i].owner.toString() === wallet.publicKey.toString()) {
-                let uri_json = await fetch(assets[i].uri).then((res) => res.json());
-                let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
                 owned_assets.push(entry);
             }
         }
 
         setOwnedAssets(owned_assets);
+        setCollectionAssets(all_assets);
         setNFTBalance(owned_assets.length);
 
         checkNFTBalance.current = false;
@@ -76,7 +80,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     }, [connection, fetchNFTBalance]);
 
     // Return the current nfts and any error message
-    return { nftBalance, ownedAssets, checkNFTBalance, fetchNFTBalance, error };
+    return { nftBalance, ownedAssets, collectionAssets, checkNFTBalance, fetchNFTBalance, error };
 };
 
 export default useNFTBalance;
