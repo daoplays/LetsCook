@@ -59,6 +59,17 @@
                               'embedded-opentype', and 'svg' */
 }
 
+@font-face {
+    font-family: "Whocats";
+    src:
+        local("Whocats"),
+        url(/fonts/Whocats.ttf) format("truetype");
+}
+
+.font-face-wc {
+    font-family: "Whocats";
+}
+
 .font-face-pk {
     font-family: "Pokemon";
 }
