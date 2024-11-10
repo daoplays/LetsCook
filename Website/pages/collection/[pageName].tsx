@@ -735,7 +735,7 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <ViewCollection assets={ownedAssets} collection={collection} actionTypeData={"List"} />
+                            <ViewCollection assets={ownedAssets} collection={collection} listings={[]} actionTypeData={"List"} />
                         </VStack>
                     </div>
                 )}
@@ -750,7 +750,7 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <ViewCollection assets={listedNFTs} collection={collection} actionTypeData={"Buy"} />
+                            <ViewCollection assets={listedNFTs} collection={collection} listings={collectionPlugins ? collectionPlugins.listings : []} actionTypeData={"Buy"} />
                         </VStack>
                     </div>
                 )}

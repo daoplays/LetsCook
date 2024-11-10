@@ -33,7 +33,7 @@ import bs58 from "bs58";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
-class NFTListingData {
+export class NFTListingData {
     constructor(
         readonly asset: PublicKey,
         readonly seller: PublicKey,
@@ -56,11 +56,6 @@ class NFTListingData {
     );
 }
 
-export interface NFTListing {
-    asset: PublicKey;
-    seller: PublicKey;
-    price: bignum;
-}
 
 export interface CollectionPluginData {
     // mint probability

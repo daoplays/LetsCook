@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import { CollectionData } from "../../components/collection/collectionState";
+import { CollectionData, NFTListingData } from "../../components/collection/collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";
@@ -17,6 +17,7 @@ interface RecievedAssetModalProps {
     assets: AssetWithMetadata[];
     collection: CollectionData;
     actionTypeData: string;
+    listings: NFTListingData[];
 }
 
 function ViewCollection({ assets, collection, actionTypeData }: RecievedAssetModalProps) {
@@ -26,6 +27,7 @@ function ViewCollection({ assets, collection, actionTypeData }: RecievedAssetMod
     const [hasAction, setHasAction] = useState(false);
     const [actionType, setActionType] = useState(actionTypeData);
     const [activeAsset, setActiveAsset] = useState();
+    const [activeListing, setActiveListing] = useState<NFTListingData | null>(null);
 
     const userHasCollection = assets.length > 0;
 

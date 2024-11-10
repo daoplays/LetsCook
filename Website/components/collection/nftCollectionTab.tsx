@@ -8,6 +8,9 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import ethImage from "@/public/images/eth.png";
 import useListNFT from "@/hooks/collections/useListNFT";
+import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
+import useBuyNFT from "@/hooks/collections/useBuyNFT";
+
 import { Config } from "../Solana/constants";
 import { PublicKey } from "@solana/web3.js";
 interface RecievedAssetModalProps {
@@ -18,9 +21,11 @@ interface RecievedAssetModalProps {
     asset: AssetWithMetadata;
     collection: CollectionData;
 }
-function NftCollectionTab({ isOpened, onClose,collection,  asset, action, actionType }: RecievedAssetModalProps) {
+function NftCollectionTab({ isOpened, onClose, collection, asset, action, actionType }: RecievedAssetModalProps) {
     const { xs, sm } = useResponsive();
     const { ListNFT } = useListNFT(collection);
+    const { UnlistNFT } = useUnlistNFT(collection);
+    const { BuyNFT } = useBuyNFT(collection);
 
     console.log("FT collection, asset", collection);
     let asset_name, asset_Attribute;
