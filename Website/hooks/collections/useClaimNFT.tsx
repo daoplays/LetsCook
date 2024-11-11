@@ -177,7 +177,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
 
     const { MintNFT } = useMintNFT(launchData);
     const { MintRandom } = useMintRandom(launchData);
-    const {getWrapInstruction} = useWrapSOL();
+    const { getWrapInstruction } = useWrapSOL();
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {

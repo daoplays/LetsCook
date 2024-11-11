@@ -130,7 +130,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
         let mint_info = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
-        
+
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner

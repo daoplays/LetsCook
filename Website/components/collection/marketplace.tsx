@@ -137,10 +137,8 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         <FaEye />
                                                     </VStack>
                                                 </Box>
-                                                <span className="flex items-center justify-center mt-2 font-semibold">
-                                                    <p className="text-white">
-                                                        {lamportsToSol(price)} 
-                                                    </p>
+                                                <span className="mt-2 flex items-center justify-center font-semibold">
+                                                    <p className="text-white">{lamportsToSol(price)}</p>
                                                     <div className="flex flex-col gap-2 text-white">
                                                         <button className="flex items-center gap-2 rounded-lg px-2.5">
                                                             <div className="w-6">
@@ -174,8 +172,8 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                 })}
                         </Flex>
                     ) : (
-                        <div className="flex flex-col gap-2 my-4">
-                            <Text className="text-xl font-semibold text-center text-white opacity-25">
+                        <div className="my-4 flex flex-col gap-2">
+                            <Text className="text-center text-xl font-semibold text-white opacity-25">
                                 You Don&apos;t Have Any {collection.nft_name}
                             </Text>
                         </div>
@@ -209,7 +207,7 @@ const Attributes = ({ asset }: { asset: AssetWithMetadata }) => {
     let asset_Attribute = asset.metadata["attributes"] ? asset.metadata["attributes"] : null;
     return (
         <>
-            <div className="flex items-start justify-center w-full gap-4 text-white">
+            <div className="flex w-full items-start justify-center gap-4 text-white">
                 <Image src={asset.metadata["image"]} width={280} height={280} style={{ borderRadius: "8px" }} alt="nftImage" />
                 <div className="flex flex-col gap-3">
                     <span>Asset name: {asset_name}</span>

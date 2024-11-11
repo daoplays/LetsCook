@@ -1,9 +1,8 @@
-import { use, useCallback, useEffect, useRef, useState} from "react";
+import { use, useCallback, useEffect, useRef, useState } from "react";
 import { TldParser, NameRecordHeader, NameAccountAndDomain, findMainDomain, MainDomain } from "@onsol/tldparser";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 const useDomain = () => {
-    
     const wallet = useWallet();
     const { connection } = useConnection();
 
@@ -67,7 +66,6 @@ const useDomain = () => {
         fetchAndRetry();
     }, [fetchUserDomain]);
 
-
     useEffect(() => {
         if (!wallet || !wallet.publicKey) return;
 
@@ -82,7 +80,7 @@ const useDomain = () => {
         };
     }, [wallet]);
 
-    return { userDomain};
+    return { userDomain };
 };
 
 export default useDomain;

@@ -211,7 +211,7 @@ const CollectionSwapPage = () => {
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: "auto" }}>
                 <CollectionFeaturedBanner featuredLaunch={collection} isHomePage={false} />
-                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="mt-2 ml-4">
+                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="ml-4 mt-2">
                     {/* add rewards  */}
                     {["Mint", "My NFTs", "Marketplace"].map((name, i) => {
                         const isActive = selected === name;

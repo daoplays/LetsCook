@@ -13,12 +13,11 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 export function DisconnectWalletButton() {
     const wallet = useWallet();
     const { handleDisconnectWallet } = UseWalletConnection();
-    const {userDomain} = useDomain();
+    const { userDomain } = useDomain();
 
-    let address = trimAddress(wallet.publicKey.toString())
-    
-    if (userDomain && userDomain.length > 0)
-        address = userDomain[0].domain.substring(0, userDomain[0].domain.lastIndexOf('.'));
+    let address = trimAddress(wallet.publicKey.toString());
+
+    if (userDomain && userDomain.length > 0) address = userDomain[0].domain.substring(0, userDomain[0].domain.lastIndexOf("."));
     return (
         <>
             <Box

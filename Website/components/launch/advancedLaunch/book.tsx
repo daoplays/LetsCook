@@ -242,7 +242,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
             <Center width="100%">
                 <VStack w="100%">
                     <div className="flex flex-col gap-2 md:mb-4">
-                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Book Token Raffle</Text>
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Book Token Raffle</Text>
                         {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
                     </div>
                     <VStack w={"100%"} spacing={sm ? 42 : 50} align="start">

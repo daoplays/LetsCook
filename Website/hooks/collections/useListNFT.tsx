@@ -45,7 +45,6 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 
-
 function serialise_list_nft_instruction(price: number): Buffer {
     const data = new ListNFT_Instruction(LaunchInstruction.list_nft, price);
 
@@ -53,7 +52,6 @@ function serialise_list_nft_instruction(price: number): Buffer {
 
     return buf;
 }
-
 
 class ListNFT_Instruction {
     constructor(
@@ -71,13 +69,7 @@ class ListNFT_Instruction {
     );
 }
 
-export const GetListInstructions = async (
-    launchData: CollectionData,
-    user: PublicKey,
-    asset_key: PublicKey,
-    price: number,
-) => {
-
+export const GetListInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, price: number) => {
     let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
     let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
@@ -94,7 +86,6 @@ export const GetListInstructions = async (
 
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
     account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
-
 
     const list_instruction = new TransactionInstruction({
         keys: account_vector,
@@ -142,7 +133,6 @@ const useListNFT = (launchData: CollectionData) => {
             isLoading: false,
             autoClose: 3000,
         });
-
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -158,7 +148,7 @@ const useListNFT = (launchData: CollectionData) => {
         });
     }, []);
 
-    const ListNFT = async (asset_key: PublicKey, price : number) => {
+    const ListNFT = async (asset_key: PublicKey, price: number) => {
         console.log("in list nft");
 
         if (wallet.signTransaction === undefined) {

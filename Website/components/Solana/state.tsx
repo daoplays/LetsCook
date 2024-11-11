@@ -719,7 +719,7 @@ export const enum LaunchInstruction {
     add_trade_rewards = 29,
     list_nft = 30,
     unlist_nft = 31,
-    buy_nft = 32
+    buy_nft = 32,
 }
 
 export interface LaunchDataUserInput {

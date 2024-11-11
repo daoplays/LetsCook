@@ -133,7 +133,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
         });
     }, []);
 
-    const UnlistNFT = async (asset_key: PublicKey, index : number) => {
+    const UnlistNFT = async (asset_key: PublicKey, index: number) => {
         console.log("in list nft");
 
         if (wallet.signTransaction === undefined) {

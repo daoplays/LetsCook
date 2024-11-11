@@ -31,16 +31,12 @@ const useCollection = (props: useCollectionProps | null) => {
     const pageName = props?.pageName || null;
 
     const getCollectionDataAccount = useCallback(() => {
-
         if (!pageName) {
             setCollection(null);
             setError("No page name provided");
             return;
         }
-        return PublicKey.findProgramAddressSync(
-            [Buffer.from(pageName), Buffer.from("Collection")],
-            PROGRAM,
-        )[0];
+        return PublicKey.findProgramAddressSync([Buffer.from(pageName), Buffer.from("Collection")], PROGRAM)[0];
     }, [pageName]);
 
     // Function to fetch the current assignment data
@@ -86,7 +82,9 @@ const useCollection = (props: useCollectionProps | null) => {
         if (!plugins.mintOnly) {
             let transfer_fee_config = getTransferFeeConfig(token.mint);
             let input_fee =
-                transfer_fee_config === null ? 0 : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(collection.swap_price)));
+                transfer_fee_config === null
+                    ? 0
+                    : Number(calculateFee(transfer_fee_config.newerTransferFee, BigInt(collection.swap_price)));
             let swap_price = bignum_to_num(collection.swap_price);
 
             let input_amount = swap_price - input_fee;
@@ -103,11 +101,10 @@ const useCollection = (props: useCollectionProps | null) => {
             let out_amount = final_output / Math.pow(10, collection.token_decimals);
             setOutAmount(out_amount);
         }
-
     }, [getCollectionDataAccount]);
 
-      // Callback function to handle account changes
-      const handleAccountChange = useCallback((accountInfo: any) => {
+    // Callback function to handle account changes
+    const handleAccountChange = useCallback((accountInfo: any) => {
         let account_data = Buffer.from(accountInfo.data, "base64");
 
         if (account_data.length === 0) {
@@ -121,7 +118,6 @@ const useCollection = (props: useCollectionProps | null) => {
         setCollection(updated_data);
         setCollectionPlugins(updated_plugins);
     }, []);
-
 
     // Effect to set up the subscription and fetch initial data
     useEffect(() => {

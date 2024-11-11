@@ -86,7 +86,6 @@ export const GetBuyNFTInstructions = async (launchData: CollectionData, user: Pu
         { pubkey: asset_key, isSigner: false, isWritable: true },
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: seller, isSigner: false, isWritable: true },
-
     ];
 
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });

@@ -185,7 +185,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             <Center width="100%">
                 <VStack w="100%">
                     <div className="flex flex-col gap-2 md:mb-4">
-                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Page Information:</Text>
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Page Information:</Text>
                         {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
                     </div>
                     <VStack width="100%" mt={4}>
@@ -219,8 +219,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                             </InputGroup>
                                         </HStack>
                                         <HStack spacing={0} mt={sm ? 0 : 3} className={styles.eachField}>
-                                            
-                                        <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Banner:</p>
+                                            <p className="min-w-[120px] text-lg text-white md:min-w-[132px]">Banner:</p>
 
                                             <div>
                                                 <label className={styles.label}>
@@ -243,7 +242,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                                 </label>
                                             </div>
 
-                                            <span className="ml-4 text-white opacity-50 text-md">
+                                            <span className="text-md ml-4 text-white opacity-50">
                                                 {newLaunchData.current.banner_file !== null ? banner_name : "No File Selected"}
                                             </span>
                                         </HStack>
@@ -254,8 +253,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
 
                         <VStack w="100%" spacing={30} mt={42} mb={25}>
                             <div className={styles.launchBodyLowerVertical}>
-                                
-                            <p className="min-w-[120px] text-lg text-white md:min-w-[175px]">Description:</p>
+                                <p className="min-w-[120px] text-lg text-white md:min-w-[175px]">Description:</p>
 
                                 <div className={styles.textLabelInput}>
                                     <textarea

@@ -390,7 +390,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                     </span>
                 </label>
             </div>
-            <span className="ml-4 opacity-50 text-md">
+            <span className="text-md ml-4 opacity-50">
                 {newLaunchData.current.icon_file !== null ? newLaunchData.current.icon_file.name : "No File Selected"}
             </span>
         </HStack>
@@ -401,7 +401,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             <Center height="100%" width="100%">
                 <VStack height="100%" w="100%">
                     <div className="flex flex-col gap-2 md:mb-4">
-                        <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Token Information</Text>
+                        <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Token Information</Text>
                         {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
                     </div>
                     <VStack w={"100%"} spacing={25} mt={4}>
@@ -516,7 +516,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                             </HStack>
 
                             <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                <p className="min-w-[110px] md:min-w-[132px] text-lg text-white xl:min-w-fit">Decimals:</p>
+                                <p className="min-w-[110px] text-lg text-white md:min-w-[132px] xl:min-w-fit">Decimals:</p>
 
                                 <div className={styles.textLabelInput}>
                                     <Input
@@ -535,7 +535,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                         <HStack spacing={0} className={styles.eachField}>
                             <p className="min-w-[110px] text-lg text-white md:min-w-[130px]">Launch Mode:</p>
-                            <RadioGroup  onChange={setLaunchType} value={launch_type} className="overflow-auto md:ml-[0.3125rem]">
+                            <RadioGroup onChange={setLaunchType} value={launch_type} className="overflow-auto md:ml-[0.3125rem]">
                                 <Stack direction="row" gap={5}>
                                     <Radio value="FCFS" color="white">
                                         <Tooltip
@@ -613,7 +613,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
 
                                     <HStack spacing={lg ? 0 : 30} className={styles.eachField}>
-                                        <p className="min-w-[110px] md:min-w-[186px] text-lg text-white xl:min-w-[75px]">Max Fee:</p>
+                                        <p className="min-w-[110px] text-lg text-white md:min-w-[186px] xl:min-w-[75px]">Max Fee:</p>
 
                                         <div className={styles.textLabelInput}>
                                             <Input
@@ -708,7 +708,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </HStack>
 
                                     <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                        <p className="min-w-[110px] md:min-w-[180px] text-lg text-white xl:min-w-[95px]">Ticket Price:</p>
+                                        <p className="min-w-[110px] text-lg text-white md:min-w-[180px] xl:min-w-[95px]">Ticket Price:</p>
                                         <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Price Per Ticket"}

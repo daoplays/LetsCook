@@ -82,10 +82,9 @@ const useWrapSOL = () => {
 
         let sync_idx = createSyncNativeInstruction(associatedTokenAccount);
 
-                
         let ata_balance = await connection.getBalance(associatedTokenAccount);
 
-        let instructions = []
+        let instructions = [];
         if (ata_balance === 0) {
             instructions.push(create_ata_idx);
         }
@@ -93,7 +92,7 @@ const useWrapSOL = () => {
         instructions.push(sync_idx);
 
         return instructions;
-    }
+    };
 
     const WrapSOL = async (sol_amount: number) => {
         // if we have already done this then just skip this step
