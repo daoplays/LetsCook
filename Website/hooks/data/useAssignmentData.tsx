@@ -95,7 +95,7 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
             return;
         }
 
-        console.log("update assignment", assignmentData);
+        //console.log("update assignment", assignmentData);
 
         if (assignmentData.status < 2) {
             setAsset(null);
@@ -104,10 +104,12 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
             let nft_index = assignmentData.nft_index;
             let json_url = collection.nft_meta_url + nft_index + ".json";
             let asset = null;
-            let metadata = await fetch(json_url).then((res) => res.json());
-            console.log("json:", metadata);
+            let metadata = null;
 
             try {
+                metadata = await fetch(json_url).then((res) => res.json());
+                //console.log("json:", metadata);
+
                 const umi = createUmi(Config.RPC_NODE, "confirmed");
 
                 let asset_umiKey = publicKey(assignmentData.nft_address.toString());
@@ -115,10 +117,10 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
 
                 if (myAccount.exists) {
                     asset = await deserializeAssetV1(myAccount as RpcAccount);
-                    console.log("new asset", asset);
+                    //console.log("new asset", asset);
 
                     metadata = await fetch(asset.uri).then((res) => res.json());
-                    console.log("json2:", metadata);
+                    //console.log("json2:", metadata);
                 } else {
                     asset = null;
                 }

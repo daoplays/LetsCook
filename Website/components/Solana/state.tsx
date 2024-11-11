@@ -717,6 +717,9 @@ export const enum LaunchInstruction {
     init_cook_external = 27,
     create_instant_launch = 28,
     add_trade_rewards = 29,
+    list_nft = 30,
+    unlist_nft = 31,
+    buy_nft = 32,
 }
 
 export interface LaunchDataUserInput {

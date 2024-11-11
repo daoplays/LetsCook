@@ -218,7 +218,7 @@ export function ReceivedAssetModal({
                                     {"Generating Random Data"}
                                 </Text>
                                 <VStack align="center" fontFamily="ReemKufiRegular">
-                                    <img
+                                    <Image
                                         loading="lazy"
                                         src={"/images/cooking.gif"}
                                         width={200}
@@ -329,7 +329,7 @@ export function ReceivedAssetModal({
                             )}
                             <VStack align="center" fontFamily="ReemKufiRegular">
                                 {checking && (
-                                    <img
+                                    <Image
                                         loading="lazy"
                                         src={style.check_image}
                                         width={200}
@@ -350,7 +350,7 @@ export function ReceivedAssetModal({
                                 )}
 
                                 {success && image_url && (
-                                    <img
+                                    <Image
                                         loading="lazy"
                                         src={image_url}
                                         width={200}

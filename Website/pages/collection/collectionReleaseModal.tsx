@@ -31,7 +31,7 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
         return (
             <>
                 <Image src={asset.metadata["image"]} width={110} height={110} style={{ borderRadius: "8px" }} alt="nftImage" />
-                 <VStack style={hoveredIndex === index ? overlayVisibleStyle : overlayStyle}>
+                <VStack style={hoveredIndex === index ? overlayVisibleStyle : overlayStyle}>
                     <Text
                         m={0}
                         lineHeight={0.75}
@@ -73,7 +73,7 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
                         IV: {attributes[3].value}
                     </Text>
                     */}
-                </VStack> 
+                </VStack>
             </>
         );
     };
@@ -97,8 +97,8 @@ export function CollectionReleaseModal({ isOpened, onClose, assets, collection }
                             overflowY="auto"
                             // style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
                         >
-                            <div className="flex flex-col gap-2 mb-4">
-                                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Your NFTs</Text>
+                            <div className="mb-4 flex flex-col gap-2">
+                                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Your NFTs</Text>
                             </div>
                             {userHasPepemon ? (
                                 <Grid templateColumns="repeat(3, 1fr)" gap={4} pb={1}>

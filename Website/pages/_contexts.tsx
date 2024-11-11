@@ -537,7 +537,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
                     let amm_key = getAMMKey(amm, amm.provider);
                     amm_data.set(amm_key.toString(), amm);
-                    
+
                     //console.log("AMM", amm.provider, amm.base_mint.toString());
                 } catch (error) {
                     console.log("bad amm data", program_data[i].pubkey.toString());

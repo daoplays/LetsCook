@@ -128,6 +128,30 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             PROGRAM,
         )[0];
 
+        let token_mint = launchData.keys[CollectionKeys.MintAddress];
+        let mint_info = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
+
+        let user_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            wallet.publicKey, // owner
+            true, // allow owner off curve
+            mint_info.token_program,
+        );
+
+        let pda_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            program_sol_account, // owner
+            true, // allow owner off curve
+            mint_info.token_program,
+        );
+
+        let team_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            launchData.keys[CollectionKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            mint_info.token_program,
+        );
+
         const instruction_data = serialise_basic_instruction(LaunchInstruction.mint_nft);
 
         var account_vector = [
@@ -138,13 +162,19 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
             { pubkey: asset_keypair.publicKey, isSigner: true, isWritable: true },
-
             { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
+
+            { pubkey: launchData.keys[CollectionKeys.TeamWallet], isSigner: false, isWritable: true },
+            { pubkey: token_mint, isSigner: false, isWritable: false },
+            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: team_token_account_key, isSigner: false, isWritable: true },
         ];
 
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: mint_info.token_program, isSigner: false, isWritable: false });
 
         const list_instruction = new TransactionInstruction({
             keys: account_vector,

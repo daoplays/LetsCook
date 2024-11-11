@@ -33,6 +33,24 @@ import bs58 from "bs58";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
+export class NFTListingData {
+    constructor(
+        readonly asset: PublicKey,
+        readonly seller: PublicKey,
+        readonly price: bignum,
+    ) {}
+
+    static readonly struct = new BeetStruct<NFTListingData>(
+        [
+            ["asset", publicKey],
+            ["seller", publicKey],
+            ["price", u64],
+        ],
+        (args) => new NFTListingData(args.asset!, args.seller!, args.price!),
+        "NFTListingData",
+    );
+}
+
 export interface CollectionPluginData {
     // mint probability
     probability: string;
@@ -44,6 +62,9 @@ export interface CollectionPluginData {
 
     // mint only plugin
     mintOnly: boolean;
+
+    // listings
+    listings: NFTListingData[];
 }
 
 export function getCollectionPlugins(collection: CollectionData): CollectionPluginData {
@@ -53,6 +74,7 @@ export function getCollectionPlugins(collection: CollectionData): CollectionPlug
         whitelistAmount: null,
         whitelistPhaseEnd: null,
         mintOnly: false,
+        listings: [],
     };
 
     return collection.plugins.reduce((acc, plugin) => {
@@ -68,6 +90,9 @@ export function getCollectionPlugins(collection: CollectionData): CollectionPlug
             case "MintOnly":
                 acc.mintOnly = true;
                 break;
+            case "Marketplace":
+                acc.listings = plugin["listings"];
+                break;
             default:
                 break;
         }
@@ -82,6 +107,7 @@ type CollectionPluginEnum = {
     MintProbability: { mint_prob: number };
     Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
     MintOnly;
+    Marketplace: { listings: NFTListingData[] };
 };
 type CollectionPlugin = DataEnumKeyAsKind<CollectionPluginEnum>;
 
@@ -110,6 +136,13 @@ const collectionPluginBeet = dataEnum<CollectionPluginEnum>([
         ),
     ],
     ["MintOnly", new BeetArgsStruct<CollectionPluginEnum["MintOnly"]>([], 'CollectionPluginEnum["MintOnly"]')],
+    [
+        "Marketplace",
+        new FixableBeetArgsStruct<CollectionPluginEnum["Marketplace"]>(
+            [["listings", array(NFTListingData.struct)]],
+            'CollectionPluginEnum["Marketplace"]',
+        ),
+    ],
 ]) as FixableBeet<CollectionPlugin>;
 
 type CollectionMetaEnum = {

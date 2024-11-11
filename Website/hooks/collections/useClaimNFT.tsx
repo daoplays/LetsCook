@@ -177,7 +177,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
 
     const { MintNFT } = useMintNFT(launchData);
     const { MintRandom } = useMintRandom(launchData);
-    const {getWrapInstruction} = useWrapSOL();
+    const { getWrapInstruction } = useWrapSOL();
     const signature_ws_id = useRef<number | null>(null);
 
     const check_signature_update = useCallback(async (result: any) => {
@@ -296,11 +296,11 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
         );
 
         let token_destination_account = pda_token_account_key;
-        for (let i = 0; i < launchData.plugins.length; i++) {
-            if (launchData.plugins[i]["__kind"] === "MintOnly") {
-                token_destination_account = team_token_account_key;
-            }
-        }
+        //for (let i = 0; i < launchData.plugins.length; i++) {
+        //    if (launchData.plugins[i]["__kind"] === "MintOnly") {
+        //        token_destination_account = team_token_account_key;
+        //    }
+        //}
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -392,7 +392,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
 
-            { pubkey: token_mint, isSigner: false, isWritable: true },
+            { pubkey: token_mint, isSigner: false, isWritable: false },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
             { pubkey: token_destination_account, isSigner: false, isWritable: true },
 

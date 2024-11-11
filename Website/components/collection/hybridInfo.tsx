@@ -207,7 +207,7 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
             return;
         }
 
-        newCollectionData.current.team_wallet = team_wallet;
+        newCollectionData.current.team_wallet = team_wallet === "" ? PROGRAM.toString() : team_wallet;
         newCollectionData.current.token_image_url = token_icon_url;
         newCollectionData.current.token_name = token_name;
         newCollectionData.current.token_symbol = token_symbol;
@@ -420,9 +420,8 @@ const HybridInfo = ({ setScreen }: HybridInfoProps) => {
                                     <div className={styles.textLabelInput}>
                                         <Input
                                             bg="#494949"
-                                            placeholder="Enter Solana Wallet Address"
+                                            placeholder="Optional - Enter Solana Wallet Address"
                                             size={lg ? "md" : "lg"}
-                                            required
                                             type="text"
                                             value={team_wallet}
                                             onChange={(e) => {
