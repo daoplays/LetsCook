@@ -1,5 +1,5 @@
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { CollectionData } from "./collectionState";
 import { Modal, ModalBody, ModalContent, ModalOverlay, VStack, Text, Spinner } from "@chakra-ui/react";
@@ -9,6 +9,8 @@ import useListNFT from "@/hooks/collections/useListNFT";
 
 import { Config } from "../Solana/constants";
 import { PublicKey } from "@solana/web3.js";
+import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
+import useBuyNFT from "@/hooks/collections/useBuyNFT";
 
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;
@@ -16,11 +18,18 @@ interface ViewNFTDetailsModalProps {
     nft?: AssetWithMetadata;
     collection?: CollectionData;
     isNFTListed: boolean;
+    isUserOwned?: boolean;
+    tab?: string;
+    nftPrice?: number;
 }
 
-function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed }: ViewNFTDetailsModalProps) {
+function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed, tab, isUserOwned, nftPrice }: ViewNFTDetailsModalProps) {
     const { xs, sm } = useResponsive();
     const { ListNFT } = useListNFT(collection);
+    const { UnlistNFT } = useUnlistNFT(collection);
+    const { BuyNFT } = useBuyNFT(collection);
+
+    const [solAmount, setSolAmount] = useState<number>(0);
 
     let asset_name, asset_Attribute;
     let asset_key: PublicKey | null = null;
@@ -30,7 +39,6 @@ function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed }: Vie
         asset_key = nft ? new PublicKey(nft.asset.publicKey.toString()) : null;
     }
 
-    console.log(isNFTListed);
     return (
         <Modal size="lg" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
             <ModalOverlay />
@@ -72,7 +80,9 @@ function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed }: Vie
                             </div>
                         )}
                         <div className={`${isNFTListed ? "hidden" : "flex flex-col items-center"} `}>
-                            <div className="mt-2 flex items-center gap-2 rounded-xl bg-gray-800 p-3 text-white">
+                            <div
+                                className={`mt-2 items-center gap-2 rounded-xl bg-gray-800 p-3 text-white ${tab === "Marketplace" ? "hidden" : "flex"}`}
+                            >
                                 <div className="flex flex-col gap-2">
                                     <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                         <div className="w-6">
@@ -88,27 +98,40 @@ function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed }: Vie
                                     </button>
                                 </div>
                                 <input
-                                    type="number"
                                     className="w-full bg-transparent text-right text-xl focus:outline-none"
                                     placeholder="0"
                                     step="0.0000000001" // Adjust this as needed for precision
-                                    min="0" // Optional: restrict to non-negative values
+                                    onChange={(e) => {
+                                        setSolAmount(
+                                            !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                ? parseFloat(e.target.value)
+                                                : solAmount,
+                                        );
+                                    }}
+                                    type="number"
+                                    min="0"
                                 />
                             </div>
                             <Button
                                 className="mt-2 w-fit transition-all hover:opacity-90"
                                 size="lg"
                                 onClick={async (e) => {
-                                    try {
-                                        asset_key ? await ListNFT(asset_key, 1) : {};
-                                    } catch (e) {
-                                        console.error(e);
-                                    } finally {
-                                        onClose();
+                                    if (isUserOwned) {
+                                        await UnlistNFT(asset_key, nftPrice);
+                                    } else if (tab === "Marketplace") {
+                                        await BuyNFT(asset_key, 0);
+                                    } else {
+                                        try {
+                                            asset_key ? await ListNFT(asset_key, solAmount) : {};
+                                        } catch (e) {
+                                            console.error(e);
+                                        } finally {
+                                            onClose();
+                                        }
                                     }
                                 }}
                             >
-                                List
+                                {isUserOwned ? "Unlist" : tab === "Marketplace" ? "Buy" : "List"}
                             </Button>
                         </div>
                     </VStack>

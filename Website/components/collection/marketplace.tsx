@@ -14,33 +14,35 @@ import useListNFT from "@/hooks/collections/useListNFT";
 import ViewNFTDetails from "./viewNftDetails";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
+import useBuyNFT from "@/hooks/collections/useBuyNFT";
 import { Config } from "../Solana/constants";
 import { lamportsToSol } from "@/utils/lamportToSol";
 
-interface MyNFTsPanelProps {
+interface MarketplaceProps {
     ownedNFTs?: AssetWithMetadata[];
     listedNFTs: AssetWithMetadata[];
     allListings?: NFTListingData[];
     collection: CollectionData;
+    tab?: string;
 }
 
-function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsPanelProps) {
+function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: MarketplaceProps) {
     const wallet = useWallet();
     const [selectedNFT, setSelectedNFT] = useState<AssetWithMetadata | null>(null);
     const [isNFTListed, setIsNFTListed] = useState(false);
-    const [nftPrice, setNftPrice] = useState(0);
-
     const [hoveredIndex, setHoveredIndex] = useState(null);
+    const [isUserOwned, setIsUserowned] = useState(false);
 
     const handleMouseEnter = (index) => setHoveredIndex(index);
     const handleMouseLeave = () => setHoveredIndex(null);
 
     const { UnlistNFT } = useUnlistNFT(collection);
+    const { BuyNFT } = useBuyNFT(collection);
+
     const { isOpen: isViewDetailsOpened, onOpen: openViewDetailsModal, onClose: closeViewDetailsModal } = useDisclosure();
 
-    const handleNFTClick = (nft: AssetWithMetadata, isListed: boolean, price?: number) => {
-        setNftPrice(price);
-        setIsNFTListed(isListed);
+    const handleNFTClick = (nft: AssetWithMetadata, isUserOwned: boolean) => {
+        setIsUserowned(isUserOwned);
         setSelectedNFT(nft);
         openViewDetailsModal();
     };
@@ -59,16 +61,10 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
         <>
             <main>
                 <VStack h="100%" position="relative" overflowY="auto">
-                    {ownedNFTs.length > 0 || ownerListedNFTs.length > 0 ? (
-                        <Flex w={"100%"} wrap={"wrap"} gap={10} justify={"center"} align={"start"}>
-                            {[
-                                ...ownedNFTs,
-                                ...ownerListedNFTs.filter(
-                                    (listedNFT) => !ownedNFTs.some((ownedNFT) => ownedNFT.asset.publicKey === listedNFT.asset.publicKey),
-                                ),
-                            ].map((nft, index) => {
-                                // Check if the current NFT is listed
-                                const isListed = ownerListedNFTs.some((listedNFT) => listedNFT.asset.publicKey === nft.asset.publicKey);
+                    {listedNFTs.length > 0 ? (
+                        <Flex w={"100%"} wrap={"wrap"} gap={10} justify={"center"} align={"center"}>
+                            {listedNFTs.map((nft, index) => {
+                                const isUserOwned = ownerListedNFTs.some((ownedNFT) => ownedNFT.asset.publicKey === nft.asset.publicKey);
 
                                 const listingData = allListings?.find((listing) => {
                                     const assetKey = new PublicKey(nft.asset.publicKey);
@@ -100,7 +96,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                         display: hoveredIndex === index ? "flex" : "none",
                                                     }}
                                                     onClick={() => {
-                                                        handleNFTClick(nft, isListed, price);
+                                                        handleNFTClick(nft, isUserOwned);
                                                     }}
                                                 >
                                                     <Text
@@ -119,34 +115,22 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                     <FaEye />
                                                 </VStack>
                                             </Box>
-                                            {isListed && (
-                                                <p className="text-white">
-                                                    {lamportsToSol(price)} {Config.token}
-                                                </p>
-                                            )}
-                                            {isListed ? (
-                                                // Unlist button if the NFT is listed
-                                                <Button
-                                                    className="mt-2 transition-all hover:opacity-90"
-                                                    size="lg"
-                                                    onClick={async () => {
+                                            <p className="text-white">
+                                                {lamportsToSol(price)} {Config.token}
+                                            </p>
+                                            <Button
+                                                className="mt-2 transition-all hover:opacity-90"
+                                                size="lg"
+                                                onClick={async () => {
+                                                    if (isUserOwned) {
                                                         await UnlistNFT(new PublicKey(nft.asset.publicKey), price);
-                                                    }}
-                                                >
-                                                    Unlist
-                                                </Button>
-                                            ) : (
-                                                // List button if the NFT is not listed
-                                                <Button
-                                                    className="mt-2 transition-all hover:opacity-90"
-                                                    size="lg"
-                                                    onClick={() => {
-                                                        handleNFTClick(nft, isListed);
-                                                    }}
-                                                >
-                                                    List
-                                                </Button>
-                                            )}
+                                                    } else {
+                                                        await BuyNFT(new PublicKey(nft.asset.publicKey), 0);
+                                                    }
+                                                }}
+                                            >
+                                                {isUserOwned ? "Unlist" : "Buy"}
+                                            </Button>
                                         </VStack>
                                     </GridItem>
                                 );
@@ -169,12 +153,13 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                         closeViewDetailsModal();
                         setSelectedNFT(null);
                         setIsNFTListed(null);
-                        setNftPrice(nftPrice);
+                        setIsUserowned(false);
                     }}
                     collection={collection}
                     nft={selectedNFT}
-                    isNFTListed={isNFTListed}
-                    nftPrice={nftPrice}
+                    isNFTListed={isUserOwned}
+                    isUserOwned={isUserOwned}
+                    tab={tab}
                 />
             )}
         </>
@@ -235,4 +220,4 @@ const overlayVisibleStyle = {
     ...overlayStyle,
     opacity: 1,
 };
-export default MyNFTsPanel;
+export default Marketplace;

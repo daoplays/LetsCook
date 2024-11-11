@@ -52,6 +52,7 @@ import styles from "../../styles/Launch.module.css";
 import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
+import Marketplace from "@/components/collection/marketplace";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -744,7 +745,7 @@ const CollectionSwapPage = () => {
                     </div>
                 )}
 
-                {/* {selected == "Marketplace" && (
+                {selected == "Marketplace" && (
                     <div style={{ padding: "16px" }}>
                         <VStack
                             p={md ? 22 : 50}
@@ -754,10 +755,17 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <ViewCollection listedNFTs={listedNFTs} collection={collection} />
+                            <Marketplace
+                                ownedNFTs={ownedAssets}
+                                listedNFTs={listedNFTs}
+                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                collection={collection}
+                                tab={selected}
+                            />
                         </VStack>
                     </div>
-                )} */}
+                )}
+
                 <ReceivedAssetModal
                     curated={false}
                     have_randoms={validRandoms}
