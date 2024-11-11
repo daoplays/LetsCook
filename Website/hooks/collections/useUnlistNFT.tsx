@@ -31,7 +31,6 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u32, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 
-
 function serialise_unlist_nft_instruction(index: number): Buffer {
     const data = new UnlistNFT_Instruction(LaunchInstruction.unlist_nft, index);
 
@@ -39,7 +38,6 @@ function serialise_unlist_nft_instruction(index: number): Buffer {
 
     return buf;
 }
-
 
 class UnlistNFT_Instruction {
     constructor(
@@ -57,13 +55,7 @@ class UnlistNFT_Instruction {
     );
 }
 
-export const GetUnlistInstructions = async (
-    launchData: CollectionData,
-    user: PublicKey,
-    asset_key: PublicKey,
-    index: number,
-) => {
-
+export const GetUnlistInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, index: number) => {
     let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
     let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
@@ -80,7 +72,6 @@ export const GetUnlistInstructions = async (
 
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
     account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
-
 
     const list_instruction = new TransactionInstruction({
         keys: account_vector,
@@ -127,7 +118,6 @@ const useUnlistNFT = (launchData: CollectionData) => {
             isLoading: false,
             autoClose: 3000,
         });
-
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -143,7 +133,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
         });
     }, []);
 
-    const UnlistNFT = async (asset_key: PublicKey, price : number) => {
+    const UnlistNFT = async (asset_key: PublicKey, index: number) => {
         console.log("in list nft");
 
         if (wallet.signTransaction === undefined) {
@@ -171,7 +161,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
 
         setIsLoading(true);
 
-        let instructions = await GetUnlistInstructions(launchData, wallet.publicKey, asset_key, price * LAMPORTS_PER_SOL);
+        let instructions = await GetUnlistInstructions(launchData, wallet.publicKey, asset_key, index);
 
         let txArgs = await get_current_blockhash("");
 

@@ -29,6 +29,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
     const [selectedNFT, setSelectedNFT] = useState<AssetWithMetadata | null>(null);
     const [isNFTListed, setIsNFTListed] = useState(false);
     const [nftPrice, setNftPrice] = useState(0);
+    const [nftIndex, setNftIndex] = useState(0);
 
     const [hoveredIndex, setHoveredIndex] = useState(null);
 
@@ -38,7 +39,8 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
     const { UnlistNFT } = useUnlistNFT(collection);
     const { isOpen: isViewDetailsOpened, onOpen: openViewDetailsModal, onClose: closeViewDetailsModal } = useDisclosure();
 
-    const handleNFTClick = (nft: AssetWithMetadata, isListed: boolean, price?: number) => {
+    const handleNFTClick = (nft: AssetWithMetadata, isListed: boolean, price?: number, index?: number) => {
+        setNftIndex(index);
         setNftPrice(price);
         setIsNFTListed(isListed);
         setSelectedNFT(nft);
@@ -79,6 +81,8 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
 
                                 const price = listingData ? listingData.price.toString() : "Unavailable";
 
+                                const nftIndex = listedNFTs.indexOf(nft);
+
                                 return (
                                     <GridItem key={`nft-${index}`}>
                                         <VStack>
@@ -100,7 +104,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                         display: hoveredIndex === index ? "flex" : "none",
                                                     }}
                                                     onClick={() => {
-                                                        handleNFTClick(nft, isListed, price);
+                                                        handleNFTClick(nft, isListed, price, nftIndex);
                                                     }}
                                                 >
                                                     <Text
@@ -130,7 +134,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                     className="mt-2 transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={async () => {
-                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), price);
+                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
                                                     }}
                                                 >
                                                     Unlist
@@ -175,6 +179,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                     nft={selectedNFT}
                     isNFTListed={isNFTListed}
                     nftPrice={nftPrice}
+                    nftIndex={nftIndex}
                 />
             )}
         </>
