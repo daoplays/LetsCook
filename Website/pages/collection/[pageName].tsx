@@ -202,7 +202,8 @@ const CollectionSwapPage = () => {
         ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
         : true;
 
-    console.log(whiteListTokenBalance, "whiteListTokenBalance >= collectionPlugins.whitelistAmount", enoughTokenBalance);
+    //console.log(collection.keys[CollectionKeys.TeamWallet].toString())
+    //console.log(whiteListTokenBalance, "whiteListTokenBalance >= collectionPlugins.whitelistAmount", enoughTokenBalance);
     return (
         <>
             <Head>
