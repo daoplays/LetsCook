@@ -99,6 +99,10 @@ const CollectionSwapPage = () => {
 
     const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
 
+    const { tokenBalance: whiteListTokenBalance } = useTokenBalance(
+        collectionPlugins && collectionPlugins.whitelistKey ? { mintAddress: collectionPlugins.whitelistKey } : null,
+    );
+
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);
@@ -192,7 +196,9 @@ const CollectionSwapPage = () => {
     const handleClick = (tab: string) => {
         setSelected(tab);
     };
-
+    const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
+    const hasEnoughWhitelistToken =  whiteListTokenBalance >= Math.pow(collectionPlugins.whitelistAmount.toNumber(), whiteListDecimals)
+    console.log(whiteListTokenBalance,"whiteListTokenBalance >= collectionPlugins.whitelistAmount",hasEnoughWhitelistToken);
     return (
         <>
             <Head>
@@ -200,7 +206,7 @@ const CollectionSwapPage = () => {
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: "auto" }}>
                 <CollectionFeaturedBanner featuredLaunch={collection} isHomePage={false} />
-                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="ml-4 mt-2">
+                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="mt-2 ml-4">
                     {/* add rewards  */}
                     {["Mint", "My NFTs", "Marketplace"].map((name, i) => {
                         const isActive = selected === name;
@@ -265,21 +271,21 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <Flex gap={lg ? 12 : 24} direction={lg ? "column" : "row"} className="items-center xl:items-start">
+                            <Flex gap={lg ? 12 : 24} direction={lg ? "column" : "row"} className="items-center">
                                 <VStack minW={220}>
                                     <Image
-                                        src={collection.collection_icon_url}
+                                        src={tokenMint.icon}
                                         width={180}
                                         height={180}
                                         alt="Image Frame"
                                         style={{ backgroundSize: "cover", borderRadius: 12 }}
                                     />
                                     <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        {collection.collection_name}
+                                        {collection.token_symbol}
                                     </Text>
                                     <HStack spacing={2} align="start" justify="start">
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                            CA: {trimAddress(collection.keys[CollectionKeys.CollectionMint].toString())}
+                                            CA: {trimAddress(collection.keys[CollectionKeys.MintAddress].toString())}
                                         </Text>
 
                                         <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -287,11 +293,7 @@ const CollectionSwapPage = () => {
                                                 style={{ cursor: "pointer" }}
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    navigator.clipboard.writeText(
-                                                        collection && collection.keys && collection.keys[CollectionKeys.CollectionMint]
-                                                            ? collection.keys[CollectionKeys.CollectionMint].toString()
-                                                            : "",
-                                                    );
+                                                    navigator.clipboard.writeText(collection.keys[CollectionKeys.MintAddress].toString());
                                                 }}
                                             >
                                                 <MdOutlineContentCopy color="white" size={lg ? 22 : 22} />
@@ -300,7 +302,7 @@ const CollectionSwapPage = () => {
 
                                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                             <Link
-                                                href={getSolscanLink(collection.keys[CollectionKeys.CollectionMint], "Collection")}
+                                                href={getSolscanLink(collection.keys[CollectionKeys.MintAddress], "Token")}
                                                 target="_blank"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
@@ -312,10 +314,56 @@ const CollectionSwapPage = () => {
                                                 />
                                             </Link>
                                         </Tooltip>
-                                    </HStack>
-                                    <ShowExtensions extension_flag={collection.flags[LaunchFlags.Extensions]} />
-                                </VStack>
 
+                                        <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
+                                            <Link
+                                                href={`https://rugcheck.xyz/tokens/${
+                                                    collection && collection.keys && collection.keys[CollectionKeys.MintAddress]
+                                                        ? collection.keys[CollectionKeys.MintAddress].toString()
+                                                        : ""
+                                                }`}
+                                                target="_blank"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <Image
+                                                    src="/images/rugcheck.jpeg"
+                                                    width={22}
+                                                    height={22}
+                                                    alt="Rugcheck icon"
+                                                    style={{ borderRadius: "100%" }}
+                                                />
+                                            </Link>
+                                        </Tooltip>
+                                    </HStack>
+                                    <ShowExtensions extension_flag={collection.token_extensions} />
+                                    {collection.keys[CollectionKeys.MintAddress].equals(WRAPPED_SOL) && (
+                                        <HStack spacing={4} mt={-3} w="100%" className={styles.eachField} justify={"center"}>
+                                            <div
+                                                className={`${styles.textLabel} font-face-kg mt-1`}
+                                                style={{ minWidth: sm ? "80px" : "80px" }}
+                                            >
+                                                Wrap {Config.token}:
+                                            </div>
+                                            <HStack>
+                                                <Switch
+                                                    py={2}
+                                                    size={lg ? "md" : "md"}
+                                                    isChecked={wrapSOL === 1}
+                                                    onChange={() => setWrapSOL(wrapSOL === 0 ? 1 : 0)}
+                                                />
+                                                <Tooltip
+                                                    label={"Program will wrap the W" + Config.token + " token for you"}
+                                                    hasArrow
+                                                    w={270}
+                                                    fontSize="large"
+                                                    offset={[0, 10]}
+                                                >
+                                                    <Image width={25} height={25} src="/images/help.png" alt="Help" />
+                                                </Tooltip>
+                                            </HStack>
+                                        </HStack>
+                                    )}
+                                </VStack>
                                 <VStack pb={whitelistMint && 6}>
                                     {whitelistMint &&
                                         collectionPlugins.whitelistPhaseEnd &&
@@ -347,7 +395,7 @@ const CollectionSwapPage = () => {
                                                 {collectionPlugins.whitelistPhaseEnd &&
                                                     Math.floor(collectionPlugins.whitelistPhaseEnd.getTime() / 1000) > 0 &&
                                                     new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime() && (
-                                                        <Text align="center" mb={0} opacity="50%">
+                                                        <Text align="center" mb={0} opacity="50%" color={"white"}>
                                                             Until: {collectionPlugins.whitelistPhaseEnd.toLocaleString()}
                                                         </Text>
                                                     )}
@@ -597,21 +645,20 @@ const CollectionSwapPage = () => {
                                         )}
                                     </VStack>
                                 </VStack>
-
                                 <VStack minW={220}>
                                     <Image
-                                        src={tokenMint.icon}
+                                        src={collection.collection_icon_url}
                                         width={180}
                                         height={180}
                                         alt="Image Frame"
                                         style={{ backgroundSize: "cover", borderRadius: 12 }}
                                     />
                                     <Text mt={1} mb={0} color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
-                                        {collection.token_symbol}
+                                        {collection.collection_name}
                                     </Text>
                                     <HStack spacing={2} align="start" justify="start">
                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"large"}>
-                                            CA: {trimAddress(collection.keys[CollectionKeys.MintAddress].toString())}
+                                            CA: {trimAddress(collection.keys[CollectionKeys.CollectionMint].toString())}
                                         </Text>
 
                                         <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
@@ -619,7 +666,11 @@ const CollectionSwapPage = () => {
                                                 style={{ cursor: "pointer" }}
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    navigator.clipboard.writeText(collection.keys[CollectionKeys.MintAddress].toString());
+                                                    navigator.clipboard.writeText(
+                                                        collection && collection.keys && collection.keys[CollectionKeys.CollectionMint]
+                                                            ? collection.keys[CollectionKeys.CollectionMint].toString()
+                                                            : "",
+                                                    );
                                                 }}
                                             >
                                                 <MdOutlineContentCopy color="white" size={lg ? 22 : 22} />
@@ -628,7 +679,7 @@ const CollectionSwapPage = () => {
 
                                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                             <Link
-                                                href={getSolscanLink(collection.keys[CollectionKeys.MintAddress], "Token")}
+                                                href={getSolscanLink(collection.keys[CollectionKeys.CollectionMint], "Collection")}
                                                 target="_blank"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
@@ -640,55 +691,8 @@ const CollectionSwapPage = () => {
                                                 />
                                             </Link>
                                         </Tooltip>
-
-                                        <Tooltip label="Rug Check" hasArrow fontSize="large" offset={[0, 10]}>
-                                            <Link
-                                                href={`https://rugcheck.xyz/tokens/${
-                                                    collection && collection.keys && collection.keys[CollectionKeys.MintAddress]
-                                                        ? collection.keys[CollectionKeys.MintAddress].toString()
-                                                        : ""
-                                                }`}
-                                                target="_blank"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
-                                                <Image
-                                                    src="/images/rugcheck.jpeg"
-                                                    width={22}
-                                                    height={22}
-                                                    alt="Rugcheck icon"
-                                                    style={{ borderRadius: "100%" }}
-                                                />
-                                            </Link>
-                                        </Tooltip>
                                     </HStack>
-                                    <ShowExtensions extension_flag={collection.token_extensions} />
-                                    {collection.keys[CollectionKeys.MintAddress].equals(WRAPPED_SOL) && (
-                                        <HStack spacing={4} mt={-3} w="100%" className={styles.eachField} justify={"center"}>
-                                            <div
-                                                className={`${styles.textLabel} font-face-kg mt-1`}
-                                                style={{ minWidth: sm ? "80px" : "80px" }}
-                                            >
-                                                Wrap {Config.token}:
-                                            </div>
-                                            <HStack>
-                                                <Switch
-                                                    py={2}
-                                                    size={lg ? "md" : "md"}
-                                                    isChecked={wrapSOL === 1}
-                                                    onChange={() => setWrapSOL(wrapSOL === 0 ? 1 : 0)}
-                                                />
-                                                <Tooltip
-                                                    label={"Program will wrap the W" + Config.token + " token for you"}
-                                                    hasArrow
-                                                    w={270}
-                                                    fontSize="large"
-                                                    offset={[0, 10]}
-                                                >
-                                                    <Image width={25} height={25} src="/images/help.png" alt="Help" />
-                                                </Tooltip>
-                                            </HStack>
-                                        </HStack>
-                                    )}
+                                    <ShowExtensions extension_flag={collection.flags[LaunchFlags.Extensions]} />
                                 </VStack>
                             </Flex>
 
