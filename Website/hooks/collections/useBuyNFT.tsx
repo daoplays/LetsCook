@@ -10,7 +10,7 @@ import {
     getRecentPrioritizationFees,
     MintData,
 } from "../../components/Solana/state";
-import { CollectionData, AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
+import { CollectionData, AssignmentData, request_assignment_data, getCollectionPlugins } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
@@ -31,7 +31,6 @@ import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u32, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 
-
 function serialise_buy_nft_instruction(index: number): Buffer {
     const data = new BuyNFT_Instruction(LaunchInstruction.buy_nft, index);
 
@@ -39,7 +38,6 @@ function serialise_buy_nft_instruction(index: number): Buffer {
 
     return buf;
 }
-
 
 class BuyNFT_Instruction {
     constructor(
@@ -57,17 +55,28 @@ class BuyNFT_Instruction {
     );
 }
 
-export const GetBuyNFTInstructions = async (
-    launchData: CollectionData,
-    user: PublicKey,
-    asset_key: PublicKey,
-    index: number,
-) => {
-
+export const GetBuyNFTInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, index: number) => {
     let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
     let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
 
+    let plugins = getCollectionPlugins(launchData);
+    let listings = plugins.listings;
+    if (index >= listings.length) {
+        toast.error("Invalid index", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }
+    if (!listings[index].asset.equals(asset_key)) {
+        toast.error("Asset doesn't match index", {
+            type: "error",
+            isLoading: false,
+            autoClose: 3000,
+        });
+    }
+    let seller = plugins.listings[index].seller;
     const instruction_data = serialise_buy_nft_instruction(index);
 
     var account_vector = [
@@ -76,11 +85,12 @@ export const GetBuyNFTInstructions = async (
         { pubkey: program_sol_account, isSigner: false, isWritable: true },
         { pubkey: asset_key, isSigner: false, isWritable: true },
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
+        { pubkey: seller, isSigner: false, isWritable: true },
+
     ];
 
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
     account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
-
 
     const list_instruction = new TransactionInstruction({
         keys: account_vector,
@@ -127,7 +137,6 @@ const useBuyNFT = (launchData: CollectionData) => {
             isLoading: false,
             autoClose: 3000,
         });
-
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -143,7 +152,7 @@ const useBuyNFT = (launchData: CollectionData) => {
         });
     }, []);
 
-    const BuyNFT = async (asset_key: PublicKey, index : number) => {
+    const BuyNFT = async (asset_key: PublicKey, index: number) => {
         console.log("in buy nft");
 
         if (wallet.signTransaction === undefined) {

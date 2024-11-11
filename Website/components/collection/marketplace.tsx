@@ -32,6 +32,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
     const [isNFTListed, setIsNFTListed] = useState(false);
     const [hoveredIndex, setHoveredIndex] = useState(null);
     const [isUserOwned, setIsUserowned] = useState(false);
+    const [nftIndex, setNftIndex] = useState(0);
 
     const handleMouseEnter = (index) => setHoveredIndex(index);
     const handleMouseLeave = () => setHoveredIndex(null);
@@ -41,7 +42,8 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
 
     const { isOpen: isViewDetailsOpened, onOpen: openViewDetailsModal, onClose: closeViewDetailsModal } = useDisclosure();
 
-    const handleNFTClick = (nft: AssetWithMetadata, isUserOwned: boolean) => {
+    const handleNFTClick = (nft: AssetWithMetadata, isUserOwned: boolean, index: number) => {
+        setNftIndex(index);
         setIsUserowned(isUserOwned);
         setSelectedNFT(nft);
         openViewDetailsModal();
@@ -75,6 +77,8 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
 
                                 const price = listingData ? listingData.price.toString() : "Unavailable";
 
+                                const nftIndex = listedNFTs.indexOf(nft);
+
                                 return (
                                     <GridItem key={`nft-${index}`}>
                                         <VStack>
@@ -96,7 +100,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         display: hoveredIndex === index ? "flex" : "none",
                                                     }}
                                                     onClick={() => {
-                                                        handleNFTClick(nft, isUserOwned);
+                                                        handleNFTClick(nft, isUserOwned, nftIndex);
                                                     }}
                                                 >
                                                     <Text
@@ -123,9 +127,9 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                 size="lg"
                                                 onClick={async () => {
                                                     if (isUserOwned) {
-                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), index);
+                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
                                                     } else {
-                                                        await BuyNFT(new PublicKey(nft.asset.publicKey), 0);
+                                                        await BuyNFT(new PublicKey(nft.asset.publicKey), nftIndex);
                                                     }
                                                 }}
                                             >

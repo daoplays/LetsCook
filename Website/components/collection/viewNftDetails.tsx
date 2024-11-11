@@ -21,9 +21,20 @@ interface ViewNFTDetailsModalProps {
     isUserOwned?: boolean;
     tab?: string;
     nftPrice?: number;
+    nftIndex?: number;
 }
 
-function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed, tab, isUserOwned, nftPrice }: ViewNFTDetailsModalProps) {
+function ViewNFTDetails({
+    isOpened,
+    onClose,
+    collection,
+    nft,
+    isNFTListed,
+    tab,
+    isUserOwned,
+    nftPrice,
+    nftIndex,
+}: ViewNFTDetailsModalProps) {
     const { xs, sm } = useResponsive();
     const { ListNFT } = useListNFT(collection);
     const { UnlistNFT } = useUnlistNFT(collection);
@@ -117,9 +128,9 @@ function ViewNFTDetails({ isOpened, onClose, collection, nft, isNFTListed, tab, 
                                 size="lg"
                                 onClick={async (e) => {
                                     if (isUserOwned) {
-                                        await UnlistNFT(asset_key, nftPrice);
+                                        await UnlistNFT(asset_key, nftIndex);
                                     } else if (tab === "Marketplace") {
-                                        await BuyNFT(asset_key, 0);
+                                        await BuyNFT(asset_key, nftIndex);
                                     } else {
                                         try {
                                             asset_key ? await ListNFT(asset_key, solAmount) : {};
