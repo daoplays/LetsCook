@@ -27,7 +27,7 @@ function MyApp({ Component, pageProps }) {
 
     const wallets = useMemo(() => [], []);
 
-    const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed" };
+    const connectionConfig: ConnectionConfig = { wsEndpoint: Config.WSS_NODE, commitment: "confirmed", disableRetryOnRateLimit: true };
 
     const searchParams = useSearchParams();
 
