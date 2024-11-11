@@ -53,6 +53,7 @@ import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
+import { PublicKey } from "@solana/web3.js";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -197,8 +198,11 @@ const CollectionSwapPage = () => {
         setSelected(tab);
     };
     const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
-    const hasEnoughWhitelistToken =  whiteListTokenBalance >= Math.pow(collectionPlugins.whitelistAmount.toNumber(), whiteListDecimals)
-    console.log(whiteListTokenBalance,"whiteListTokenBalance >= collectionPlugins.whitelistAmount",hasEnoughWhitelistToken);
+    const hasEnoughWhitelistToken = whitelistMint
+        ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
+        : true;
+
+    console.log(whiteListTokenBalance, "whiteListTokenBalance >= collectionPlugins.whitelistAmount", enoughTokenBalance);
     return (
         <>
             <Head>
@@ -569,10 +573,15 @@ const CollectionSwapPage = () => {
                                                     <HStack w="100%">
                                                         {assignmentData === null || assignmentData.status > 0 ? (
                                                             <Tooltip
-                                                                label="You don't have enough token balance"
+                                                                label={
+                                                                    enoughTokenBalance == false
+                                                                        ? "You don't have enough token balance"
+                                                                        : hasEnoughWhitelistToken == false &&
+                                                                          "You don't have WhiteList token balance"
+                                                                }
                                                                 hasArrow
                                                                 offset={[0, 10]}
-                                                                isDisabled={enoughTokenBalance}
+                                                                isDisabled={enoughTokenBalance && hasEnoughWhitelistToken}
                                                             >
                                                                 <Button
                                                                     w="100%"
@@ -587,7 +596,11 @@ const CollectionSwapPage = () => {
                                                                         }
                                                                     }}
                                                                     isLoading={isLoading}
-                                                                    isDisabled={!enoughTokenBalance || isLoading}
+                                                                    isDisabled={
+                                                                        enoughTokenBalance == false ||
+                                                                        hasEnoughWhitelistToken == false ||
+                                                                        isLoading
+                                                                    }
                                                                 >
                                                                     Confirm {collectionPlugins.probability}
                                                                 </Button>
