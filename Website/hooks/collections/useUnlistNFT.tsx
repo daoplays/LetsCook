@@ -143,7 +143,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
         });
     }, []);
 
-    const UnlistNFT = async (asset_key: PublicKey, price : number) => {
+    const UnlistNFT = async (asset_key: PublicKey, index : number) => {
         console.log("in list nft");
 
         if (wallet.signTransaction === undefined) {
@@ -171,7 +171,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
 
         setIsLoading(true);
 
-        let instructions = await GetUnlistInstructions(launchData, wallet.publicKey, asset_key, price * LAMPORTS_PER_SOL);
+        let instructions = await GetUnlistInstructions(launchData, wallet.publicKey, asset_key, index);
 
         let txArgs = await get_current_blockhash("");
 

@@ -123,7 +123,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                 size="lg"
                                                 onClick={async () => {
                                                     if (isUserOwned) {
-                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), price);
+                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), index);
                                                     } else {
                                                         await BuyNFT(new PublicKey(nft.asset.publicKey), 0);
                                                     }
