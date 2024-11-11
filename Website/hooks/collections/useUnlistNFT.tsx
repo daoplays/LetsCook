@@ -113,7 +113,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
             return;
         }
 
-        toast.success("Successfully Listed NFT!", {
+        toast.success("Successfully Unlisted NFT!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
