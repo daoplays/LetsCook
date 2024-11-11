@@ -65,84 +65,117 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                 <VStack h="100%" position="relative" overflowY="auto">
                     {listedNFTs.length > 0 ? (
                         <Flex w={"100%"} wrap={"wrap"} gap={10} justify={"center"} align={"center"}>
-                            {listedNFTs.map((nft, index) => {
-                                const isUserOwned = ownerListedNFTs.some((ownedNFT) => ownedNFT.asset.publicKey === nft.asset.publicKey);
+                            {listedNFTs
+                                .map((nft, index) => {
+                                    // Find the listing data for each NFT and calculate the price
+                                    const listingData = allListings?.find((listing) => {
+                                        const assetKey = new PublicKey(nft.asset.publicKey);
+                                        const listingKey = listing.asset;
+                                        return assetKey.equals(listingKey);
+                                    });
 
-                                const listingData = allListings?.find((listing) => {
-                                    const assetKey = new PublicKey(nft.asset.publicKey);
-                                    const listingKey = listing.asset;
+                                    const price = listingData ? parseFloat(listingData.price.toString()) : Infinity;
 
-                                    return assetKey.equals(listingKey);
-                                });
+                                    // Return the nft with its original index and price
+                                    return { nft, price, nftIndex: index };
+                                })
+                                // Now sort the array by price
+                                .sort((a, b) => b.price - a.price)
+                                // After sorting, map the sorted NFTs back to render the UI
+                                .map((item, index) => {
+                                    const { nft, nftIndex } = item; // Extract nft and its original index
+                                    const isUserOwned = ownerListedNFTs.some(
+                                        (ownedNFT) => ownedNFT.asset.publicKey === nft.asset.publicKey,
+                                    );
 
-                                const price = listingData ? listingData.price.toString() : "Unavailable";
+                                    const listingData = allListings?.find((listing) => {
+                                        const assetKey = new PublicKey(nft.asset.publicKey);
+                                        const listingKey = listing.asset;
 
-                                const nftIndex = listedNFTs.indexOf(nft);
+                                        return assetKey.equals(listingKey);
+                                    });
 
-                                return (
-                                    <GridItem key={`nft-${index}`}>
-                                        <VStack>
-                                            <Box
-                                                style={gridItemStyle}
-                                                onMouseEnter={() => handleMouseEnter(index)}
-                                                onMouseLeave={handleMouseLeave}
-                                            >
-                                                <Image
-                                                    src={nft.metadata["image"]}
-                                                    width={180}
-                                                    height={180}
-                                                    style={{ borderRadius: "8px" }}
-                                                    alt="nftImage"
-                                                />
-                                                <VStack
-                                                    style={{
-                                                        ...overlayVisibleStyle,
-                                                        display: hoveredIndex === index ? "flex" : "none",
-                                                    }}
-                                                    onClick={() => {
-                                                        handleNFTClick(nft, isUserOwned, nftIndex);
-                                                    }}
+                                    const price = listingData ? listingData.price.toString() : "Unavailable";
+
+                                    return (
+                                        <GridItem key={`nft-${index}`}>
+                                            <VStack>
+                                                <Box
+                                                    style={gridItemStyle}
+                                                    onMouseEnter={() => handleMouseEnter(index)}
+                                                    onMouseLeave={handleMouseLeave}
                                                 >
-                                                    <Text
-                                                        m={0}
-                                                        lineHeight={0.75}
-                                                        align="center"
-                                                        fontSize="large"
+                                                    <Image
+                                                        src={nft.metadata["image"]}
+                                                        width={180}
+                                                        height={180}
+                                                        style={{ borderRadius: "8px" }}
+                                                        alt="nftImage"
+                                                    />
+                                                    <VStack
                                                         style={{
-                                                            fontFamily: "pokemon",
-                                                            color: "white",
-                                                            fontWeight: "semibold",
+                                                            ...overlayVisibleStyle,
+                                                            display: hoveredIndex === index ? "flex" : "none",
+                                                        }}
+                                                        onClick={() => {
+                                                            handleNFTClick(nft, isUserOwned, nftIndex); // Use nftIndex here
                                                         }}
                                                     >
-                                                        {nft.asset.name}
-                                                    </Text>
-                                                    <FaEye />
-                                                </VStack>
-                                            </Box>
-                                            <p className="text-white">
-                                                {lamportsToSol(price)} {Config.token}
-                                            </p>
-                                            <Button
-                                                className="mt-2 transition-all hover:opacity-90"
-                                                size="lg"
-                                                onClick={async () => {
-                                                    if (isUserOwned) {
-                                                        await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
-                                                    } else {
-                                                        await BuyNFT(new PublicKey(nft.asset.publicKey), nftIndex);
-                                                    }
-                                                }}
-                                            >
-                                                {isUserOwned ? "Unlist" : "Buy"}
-                                            </Button>
-                                        </VStack>
-                                    </GridItem>
-                                );
-                            })}
+                                                        <Text
+                                                            m={0}
+                                                            lineHeight={0.75}
+                                                            align="center"
+                                                            fontSize="large"
+                                                            style={{
+                                                                fontFamily: "pokemon",
+                                                                color: "white",
+                                                                fontWeight: "semibold",
+                                                            }}
+                                                        >
+                                                            {nft.asset.name}
+                                                        </Text>
+                                                        <FaEye />
+                                                    </VStack>
+                                                </Box>
+                                                <span className="flex items-center justify-center mt-2 font-semibold">
+                                                    <p className="text-white">
+                                                        {lamportsToSol(price)} 
+                                                    </p>
+                                                    <div className="flex flex-col gap-2 text-white">
+                                                        <button className="flex items-center gap-2 rounded-lg px-2.5">
+                                                            <div className="w-6">
+                                                                <Image
+                                                                    src={Config.token_image}
+                                                                    width={25}
+                                                                    height={25}
+                                                                    alt="$JOY Icon"
+                                                                    className="rounded-full"
+                                                                />
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                </span>
+                                                <Button
+                                                    className="mt-2 transition-all hover:opacity-90"
+                                                    size="lg"
+                                                    onClick={async () => {
+                                                        if (isUserOwned) {
+                                                            await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex); // Use nftIndex here
+                                                        } else {
+                                                            await BuyNFT(new PublicKey(nft.asset.publicKey), nftIndex); // Use nftIndex here
+                                                        }
+                                                    }}
+                                                >
+                                                    {isUserOwned ? "Unlist" : "Buy"}
+                                                </Button>
+                                            </VStack>
+                                        </GridItem>
+                                    );
+                                })}
                         </Flex>
                     ) : (
-                        <div className="my-4 flex flex-col gap-2">
-                            <Text className="text-center text-xl font-semibold text-white opacity-25">
+                        <div className="flex flex-col gap-2 my-4">
+                            <Text className="text-xl font-semibold text-center text-white opacity-25">
                                 You Don&apos;t Have Any {collection.nft_name}
                             </Text>
                         </div>
@@ -176,7 +209,7 @@ const Attributes = ({ asset }: { asset: AssetWithMetadata }) => {
     let asset_Attribute = asset.metadata["attributes"] ? asset.metadata["attributes"] : null;
     return (
         <>
-            <div className="flex w-full items-start justify-center gap-4 text-white">
+            <div className="flex items-start justify-center w-full gap-4 text-white">
                 <Image src={asset.metadata["image"]} width={280} height={280} style={{ borderRadius: "8px" }} alt="nftImage" />
                 <div className="flex flex-col gap-3">
                     <span>Asset name: {asset_name}</span>
