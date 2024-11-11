@@ -51,7 +51,8 @@ import useNFTBalance from "../../hooks/data/useNFTBalance";
 import styles from "../../styles/Launch.module.css";
 import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "./collectionReleaseModal";
-import ViewCollection from "@/components/collection/viewCollection";
+import MyNFTsPanel from "@/components/collection/myAssets";
+import Marketplace from "@/components/collection/marketplace";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -102,7 +103,9 @@ const CollectionSwapPage = () => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);
 
-    const { nftBalance, ownedAssets, collectionAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(collectionAddress ? { collectionAddress } : null);
+    const { nftBalance, ownedAssets, collectionAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(
+        collectionAddress ? { collectionAddress } : null,
+    );
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
 
@@ -155,22 +158,17 @@ const CollectionSwapPage = () => {
     useEffect(() => {
         checkNFTBalance.current = true;
         fetchNFTBalance();
-
     }, [collectionPlugins, checkNFTBalance, fetchNFTBalance]);
 
     useEffect(() => {
-        
         if (!collectionAssets || !collectionPlugins) return;
 
-        let new_listings = []
-        for (let i = 0; i < collectionPlugins.listings.length; i++)
-        {
+        let new_listings = [];
+        for (let i = 0; i < collectionPlugins.listings.length; i++) {
             const asset_key = collectionPlugins.listings[i].asset;
             const asset = collectionAssets.get(asset_key.toString());
-            if (asset)
-                new_listings.push(asset);
+            if (asset) new_listings.push(asset);
         }
-        console.log("new listings", new_listings);
         setListedNFTs(new_listings);
     }, [collectionPlugins, collectionAssets]);
 
@@ -194,14 +192,15 @@ const CollectionSwapPage = () => {
     const handleClick = (tab: string) => {
         setSelected(tab);
     };
+
     return (
         <>
             <Head>
                 <title>Let&apos;s Cook | {pageName}</title>
             </Head>
-            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: "auto"  }}>
+            <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: "auto" }}>
                 <CollectionFeaturedBanner featuredLaunch={collection} isHomePage={false} />
-                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="mt-2 ml-4">
+                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="ml-4 mt-2">
                     {/* add rewards  */}
                     {["Mint", "My NFTs", "Marketplace"].map((name, i) => {
                         const isActive = selected === name;
@@ -255,6 +254,7 @@ const CollectionSwapPage = () => {
                         );
                     })}
                 </HStack>
+
                 {selected == "Mint" && (
                     <div style={{ padding: "16px" }}>
                         <VStack
@@ -725,7 +725,7 @@ const CollectionSwapPage = () => {
                     </div>
                 )}
 
-                {selected == "My NFTs" && (
+                {selected === "My NFTs" && (
                     <div style={{ padding: "16px" }}>
                         <VStack
                             p={md ? 22 : 50}
@@ -735,7 +735,12 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <ViewCollection assets={ownedAssets} collection={collection} listings={[]} actionTypeData={"List"} />
+                            <MyNFTsPanel
+                                ownedNFTs={ownedAssets}
+                                listedNFTs={listedNFTs}
+                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                collection={collection}
+                            />
                         </VStack>
                     </div>
                 )}
@@ -750,10 +755,17 @@ const CollectionSwapPage = () => {
                             h="fit-content"
                             justifyContent="space-between"
                         >
-                            <ViewCollection assets={listedNFTs} collection={collection} listings={collectionPlugins ? collectionPlugins.listings : []} actionTypeData={"Buy"} />
+                            <Marketplace
+                                ownedNFTs={ownedAssets}
+                                listedNFTs={listedNFTs}
+                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                collection={collection}
+                                tab={selected}
+                            />
                         </VStack>
                     </div>
                 )}
+
                 <ReceivedAssetModal
                     curated={false}
                     have_randoms={validRandoms}
@@ -766,7 +778,6 @@ const CollectionSwapPage = () => {
                     style={modalStyle}
                     isLoading={isLoading}
                 />
-
             </main>
         </>
     );
