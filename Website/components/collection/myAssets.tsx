@@ -64,10 +64,25 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                     {ownedNFTs.length > 0 || ownerListedNFTs.length > 0 ? (
                         <Flex w={"100%"} wrap={"wrap"} gap={10} justify={"center"} align={"start"}>
                             {[
+                                ...ownerListedNFTs
+                                    .filter(
+                                        (listedNFT) =>
+                                            !ownedNFTs.some((ownedNFT) => ownedNFT.asset.publicKey === listedNFT.asset.publicKey),
+                                    )
+                                    .sort((a, b) => {
+                                        const listingDataA = allListings?.find((listing) =>
+                                            new PublicKey(a.asset.publicKey).equals(listing.asset),
+                                        );
+                                        const listingDataB = allListings?.find((listing) =>
+                                            new PublicKey(b.asset.publicKey).equals(listing.asset),
+                                        );
+
+                                        const priceA = listingDataA ? parseFloat(listingDataA.price.toString()) : Infinity;
+                                        const priceB = listingDataB ? parseFloat(listingDataB.price.toString()) : Infinity;
+
+                                        return priceB - priceA;
+                                    }),
                                 ...ownedNFTs,
-                                ...ownerListedNFTs.filter(
-                                    (listedNFT) => !ownedNFTs.some((ownedNFT) => ownedNFT.asset.publicKey === listedNFT.asset.publicKey),
-                                ),
                             ].map((nft, index) => {
                                 // Check if the current NFT is listed
                                 const isListed = ownerListedNFTs.some((listedNFT) => listedNFT.asset.publicKey === nft.asset.publicKey);
@@ -124,9 +139,22 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                 </VStack>
                                             </Box>
                                             {isListed && (
-                                                <p className="text-white">
-                                                    {lamportsToSol(price)} {Config.token}
-                                                </p>
+                                                <span className="flex items-center justify-center mt-2 font-semibold">
+                                                    <p className="text-white">{lamportsToSol(price)}</p>
+                                                    <div className="flex flex-col gap-2 text-white">
+                                                        <button className="flex items-center gap-1 rounded-lg px-2.5">
+                                                            <div className="w-6">
+                                                                <Image
+                                                                    src={Config.token_image}
+                                                                    width={25}
+                                                                    height={25}
+                                                                    alt="$JOY Icon"
+                                                                    className="rounded-full"
+                                                                />
+                                                            </div>
+                                                        </button>
+                                                    </div>
+                                                </span>
                                             )}
                                             {isListed ? (
                                                 // Unlist button if the NFT is listed
@@ -157,8 +185,8 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                             })}
                         </Flex>
                     ) : (
-                        <div className="my-4 flex flex-col gap-2">
-                            <Text className="text-center text-xl font-semibold text-white opacity-25">
+                        <div className="flex flex-col gap-2 my-4">
+                            <Text className="text-xl font-semibold text-center text-white opacity-25">
                                 You Don&apos;t Have Any {collection.nft_name}
                             </Text>
                         </div>
@@ -192,7 +220,7 @@ const Attributes = ({ asset }: { asset: AssetWithMetadata }) => {
     let asset_Attribute = asset.metadata["attributes"] ? asset.metadata["attributes"] : null;
     return (
         <>
-            <div className="flex w-full items-start justify-center gap-4 text-white">
+            <div className="flex items-start justify-center w-full gap-4 text-white">
                 <Image src={asset.metadata["image"]} width={280} height={280} style={{ borderRadius: "8px" }} alt="nftImage" />
                 <div className="flex flex-col gap-3">
                     <span>Asset name: {asset_name}</span>
