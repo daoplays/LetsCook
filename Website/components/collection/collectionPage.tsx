@@ -180,6 +180,11 @@ const CollectionPage = ({ setScreen }: CollectionPageProps) => {
             return false;
         }
 
+        if (name === "") {
+            toast.error("Please enter a page name");
+            return false;
+        }
+
         if (newCollectionData.current.banner_file === null) {
             toast.error("Please select a banner image.");
             return false;

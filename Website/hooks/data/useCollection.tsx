@@ -69,6 +69,7 @@ const useCollection = (props: useCollectionProps | null) => {
         }
 
         let plugins: CollectionPluginData = getCollectionPlugins(collection);
+        //console.log("set plugins", plugins);
         setCollectionPlugins(plugins);
         setTokenMint(token);
 
