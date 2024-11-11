@@ -104,10 +104,12 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
             let nft_index = assignmentData.nft_index;
             let json_url = collection.nft_meta_url + nft_index + ".json";
             let asset = null;
-            let metadata = await fetch(json_url).then((res) => res.json());
-            console.log("json:", metadata);
+            let metadata = null;
 
             try {
+                metadata = await fetch(json_url).then((res) => res.json());
+                console.log("json:", metadata);
+
                 const umi = createUmi(Config.RPC_NODE, "confirmed");
 
                 let asset_umiKey = publicKey(assignmentData.nft_address.toString());
