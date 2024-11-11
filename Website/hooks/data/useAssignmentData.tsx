@@ -95,7 +95,7 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
             return;
         }
 
-        console.log("update assignment", assignmentData);
+        //console.log("update assignment", assignmentData);
 
         if (assignmentData.status < 2) {
             setAsset(null);
@@ -108,7 +108,7 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
 
             try {
                 metadata = await fetch(json_url).then((res) => res.json());
-                console.log("json:", metadata);
+                //console.log("json:", metadata);
 
                 const umi = createUmi(Config.RPC_NODE, "confirmed");
 
@@ -117,10 +117,10 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
 
                 if (myAccount.exists) {
                     asset = await deserializeAssetV1(myAccount as RpcAccount);
-                    console.log("new asset", asset);
+                    //console.log("new asset", asset);
 
                     metadata = await fetch(asset.uri).then((res) => res.json());
-                    console.log("json2:", metadata);
+                    //console.log("json2:", metadata);
                 } else {
                     asset = null;
                 }

@@ -106,7 +106,7 @@ const TokenMintPage = () => {
         win_prob = (launchData.num_mints - launchData.mints_won) / (launchData.tickets_sold - launchData.tickets_claimed);
     }
 
-    console.log("launch", launchData);
+    //console.log("launch", launchData);
 
     useEffect(() => {
         if (listingData === null || launchList === null) return;
@@ -127,7 +127,7 @@ const TokenMintPage = () => {
             for (let i = 0; i < launchData.plugins.length; i++) {
                 if (launchData.plugins[i]["__kind"] === "Whitelist") {
                     let whitelist_mint: PublicKey = launchData.plugins[i]["key"];
-                    console.log("have whitelist ", whitelist_mint.toString());
+                    //console.log("have whitelist ", whitelist_mint.toString());
                     setWhitelist(mintData.get(whitelist_mint.toString()));
                 }
             }
@@ -295,7 +295,7 @@ const TokenMintPage = () => {
                                     <Box
                                         mt={-3}
                                         onClick={() => {
-                                            console.log(wallet.publicKey);
+                                            //console.log(wallet.publicKey);
                                             if (wallet.publicKey === null) {
                                                 handleConnectWallet();
                                             } else {
