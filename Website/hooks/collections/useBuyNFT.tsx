@@ -9,6 +9,7 @@ import {
     request_raw_account_data,
     getRecentPrioritizationFees,
     MintData,
+    bignum_to_num,
 } from "../../components/Solana/state";
 import { CollectionData, AssignmentData, request_assignment_data, getCollectionPlugins } from "../../components/collection/collectionState";
 import {
@@ -62,12 +63,13 @@ export const GetBuyNFTInstructions = async (launchData: CollectionData, user: Pu
 
     let plugins = getCollectionPlugins(launchData);
     let listings = plugins.listings;
-    if (index >= listings.length) {
+    if (index == undefined || index >= listings.length) {
         toast.error("Invalid index", {
             type: "error",
             isLoading: false,
             autoClose: 3000,
         });
+        return []
     }
     if (!listings[index].asset.equals(asset_key)) {
         toast.error("Asset doesn't match index", {
@@ -75,6 +77,7 @@ export const GetBuyNFTInstructions = async (launchData: CollectionData, user: Pu
             isLoading: false,
             autoClose: 3000,
         });
+        return [];
     }
     let seller = plugins.listings[index].seller;
     const instruction_data = serialise_buy_nft_instruction(index);
@@ -152,7 +155,6 @@ const useBuyNFT = (launchData: CollectionData) => {
     }, []);
 
     const BuyNFT = async (asset_key: PublicKey, index: number) => {
-        console.log("in buy nft");
 
         if (wallet.signTransaction === undefined) {
             console.log(wallet, "invalid wallet");
@@ -180,6 +182,11 @@ const useBuyNFT = (launchData: CollectionData) => {
         setIsLoading(true);
 
         let instructions = await GetBuyNFTInstructions(launchData, wallet.publicKey, asset_key, index);
+
+        if (instructions.length == 0) {
+            setIsLoading(false);
+            return;
+        }
 
         let txArgs = await get_current_blockhash("");
 

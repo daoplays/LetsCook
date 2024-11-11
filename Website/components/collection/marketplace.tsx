@@ -195,6 +195,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                     isNFTListed={isUserOwned}
                     isUserOwned={isUserOwned}
                     tab={tab}
+                    nftIndex={nftIndex}
                 />
             )}
         </>
