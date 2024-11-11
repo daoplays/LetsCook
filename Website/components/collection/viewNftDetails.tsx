@@ -130,6 +130,7 @@ function ViewNFTDetails({
                                     if (isUserOwned) {
                                         await UnlistNFT(asset_key, nftIndex);
                                     } else if (tab === "Marketplace") {
+                                        console.log("buying nft", asset_key, nftIndex);
                                         await BuyNFT(asset_key, nftIndex);
                                     } else {
                                         try {
