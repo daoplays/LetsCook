@@ -43,7 +43,7 @@ const Joy = () => {
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
     const router = useRouter();
-    const collection_name = Config.NETWORK === "mainnet" ? "badger" : "testingtest";
+    const collection_name = Config.NETWORK === "eclipse" ? "badger" : "joypeeptest1";
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
