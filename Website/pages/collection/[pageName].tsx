@@ -21,7 +21,7 @@ import {
 } from "@chakra-ui/react";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { bignum_to_num } from "../../components/Solana/state";
-import { useEffect, useCallback, useState, useMemo } from "react";
+import { useEffect, useCallback, useState, useMemo, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -54,6 +54,8 @@ import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
 import { PublicKey } from "@solana/web3.js";
+import { set } from "date-fns";
+import { NFTListingData } from "@/components/collection/collectionState";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -95,7 +97,6 @@ const CollectionSwapPage = () => {
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
 
     const { tokenBalance } = useTokenBalance({mintData: tokenMint});
-
     const { tokenBalance: whiteListTokenBalance } = useTokenBalance({mintData: whitelistMint});
 
     const collectionAddress = useMemo(() => {
@@ -107,6 +108,9 @@ const CollectionSwapPage = () => {
     );
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
+    const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
+
+    const prevUserListedNFTsRef = useRef<string>('');
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
@@ -150,26 +154,42 @@ const CollectionSwapPage = () => {
         updateAssignment();
     }, [collection, assignmentData, updateAssignment]);
 
+    // 1. Effect for initial balance
     useEffect(() => {
-        fetchNFTBalance();
-    }, [collection, wallet, fetchNFTBalance]);
+        if (collection && wallet && wallet.connected) {
+            checkNFTBalance.current = true;
+            fetchNFTBalance();
+        }
+    }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
+
 
     useEffect(() => {
         checkNFTBalance.current = true;
         fetchNFTBalance();
-    }, [collectionPlugins, checkNFTBalance, fetchNFTBalance]);
+    }, [userListedNFTs, checkNFTBalance, fetchNFTBalance]);
 
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
 
-        let new_listings = [];
+        let new_listings : AssetWithMetadata[] = [];
+        let user_listings : string[] = [];
         for (let i = 0; i < collectionPlugins.listings.length; i++) {
             const asset_key = collectionPlugins.listings[i].asset;
             const asset = collectionAssets.get(asset_key.toString());
             if (asset) new_listings.push(asset);
+            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey)) user_listings.push(asset.asset.publicKey.toString());
         }
+
         setListedNFTs(new_listings);
-    }, [collectionPlugins, collectionAssets]);
+        // Stringify new values
+        const newUserListingsStr = JSON.stringify(user_listings);
+
+        // Compare with previous values stored in refs
+        if (newUserListingsStr !== prevUserListedNFTsRef.current) {
+            setUserListedNFTs(user_listings);
+            prevUserListedNFTsRef.current = newUserListingsStr;
+        }
+    }, [collectionPlugins, collectionAssets, wallet]);
 
     if (!pageName) return;
 
@@ -191,8 +211,13 @@ const CollectionSwapPage = () => {
     const handleClick = (tab: string) => {
         setSelected(tab);
     };
+    const whitelistActive = whitelistMint &&
+    collectionPlugins.whitelistPhaseEnd &&
+    (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
+        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime());
+
     const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
-    const hasEnoughWhitelistToken = whitelistMint
+    const hasEnoughWhitelistToken = whitelistMint && whitelistActive
         ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
         : true;
 
@@ -525,7 +550,7 @@ const CollectionSwapPage = () => {
                                                             fontFamily="ReemKufiRegular"
                                                             fontSize={"medium"}
                                                         >
-                                                            {nftBalance}
+                                                            {nftBalance + userListedNFTs.length}
                                                         </Text>
                                                         <Text m={0} color={"white"} fontFamily="ReemKufiRegular" fontSize={"medium"}>
                                                             {collection.collection_symbol}
