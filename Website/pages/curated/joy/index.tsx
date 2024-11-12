@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import { Info, Loader, Loader2Icon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { IoSwapVertical } from "react-icons/io5";
@@ -56,7 +56,10 @@ const Joy = () => {
     const [activeTab, setActiveTab] = useState("Mint");
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
+    const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
 
+    const prevUserListedNFTsRef = useRef<string>('');
+    
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
     const {
@@ -116,14 +119,25 @@ const Joy = () => {
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
 
-        let new_listings = [];
+        let new_listings : AssetWithMetadata[] = [];
+        let user_listings : string[] = [];
         for (let i = 0; i < collectionPlugins.listings.length; i++) {
             const asset_key = collectionPlugins.listings[i].asset;
             const asset = collectionAssets.get(asset_key.toString());
             if (asset) new_listings.push(asset);
+            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey)) user_listings.push(asset.asset.publicKey.toString());
         }
+
         setListedNFTs(new_listings);
-    }, [collectionPlugins, collectionAssets]);
+        // Stringify new values
+        const newUserListingsStr = JSON.stringify(user_listings);
+
+        // Compare with previous values stored in refs
+        if (newUserListingsStr !== prevUserListedNFTsRef.current) {
+            setUserListedNFTs(user_listings);
+            prevUserListedNFTsRef.current = newUserListingsStr;
+        }
+    }, [collectionPlugins, collectionAssets, wallet]);
 
     const updateAssignment = useCallback(async () => {
         // if we are started to wait for randoms then open up the modal
@@ -145,9 +159,13 @@ const Joy = () => {
         updateAssignment();
     }, [collection, assignmentData, updateAssignment]);
 
+    // 1. Effect for initial balance
     useEffect(() => {
-        fetchNFTBalance();
-    }, [collection, wallet, fetchNFTBalance]);
+        if (collection && wallet && wallet.connected) {
+            checkNFTBalance.current = true;
+            fetchNFTBalance();
+        }
+    }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
     // if (!pageName) return;
 
@@ -158,8 +176,13 @@ const Joy = () => {
     const enoughTokenBalance =
         (wrapSOL ? userSOLBalance : tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
+    const whitelistActive = whitelistMint &&
+    collectionPlugins.whitelistPhaseEnd &&
+    (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
+        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime());
+
     const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
-    const hasEnoughWhitelistToken = whitelistMint
+    const hasEnoughWhitelistToken = whitelistMint && whitelistActive
         ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
         : true;
 
@@ -449,7 +472,7 @@ const Joy = () => {
                                                 <div className="flex items-center gap-1 opacity-75">
                                                     <FaWallet size={12} />
                                                     <p className="text-sm">
-                                                        {nftBalance}
+                                                        {nftBalance + userListedNFTs.length}
                                                         {collection.collection_symbol}
                                                     </p>
                                                 </div>
