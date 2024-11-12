@@ -54,16 +54,16 @@ function ViewNFTDetails({
         <Modal isOpen={isOpened} onClose={onClose} isCentered motionPreset="slideInBottom" size="2xl">
             <ModalOverlay className="backdrop-blur-sm" />
             <ModalContent className="bg-transparent">
-                <ModalBody className="overflow-hidden p-0">
-                    <div className="relative flex flex-col gap-4 overflow-hidden rounded-2xl bg-slate-900/80 p-8 backdrop-blur-md">
+                <ModalBody className="p-0 overflow-hidden">
+                    <div className="relative flex flex-col gap-4 p-8 overflow-hidden rounded-2xl bg-slate-900/80 backdrop-blur-md">
                         <div className="flex items-center justify-between">
                             <p className="text-2xl font-semibold text-white">{asset_name}</p>
                             <div className="relative">
                                 <button
                                     onClick={onClose}
-                                    className="rounded-full bg-white/10 p-2 text-white/70 transition-all hover:bg-white/20 hover:text-white"
+                                    className="p-2 transition-all rounded-full bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
                                 >
-                                    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
@@ -76,7 +76,7 @@ function ViewNFTDetails({
                                     src={nft?.metadata?.image}
                                     width={300}
                                     height={300}
-                                    alt={nft?.metadata?.name}
+                                    alt={nft?.metadata?.name || 'NFT Image'}
                                     className="rounded-lg"
                                 />
                             </div>
@@ -97,8 +97,8 @@ function ViewNFTDetails({
                             <div className="flex flex-col items-center gap-3">
                                 {tab !== "Marketplace" && (
                                     <div className="max-w-md">
-                                        <div className="flex items-center gap-2 rounded-xl bg-slate-800/75 p-3">
-                                            <div className="flex w-fit items-center gap-2 rounded-lg bg-slate-700/50 px-3 py-2">
+                                        <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-800/75">
+                                            <div className="flex items-center gap-2 px-3 py-2 rounded-lg w-fit bg-slate-700/50">
                                                 <Image
                                                     src={Config.token_image}
                                                     width={24}
@@ -109,7 +109,7 @@ function ViewNFTDetails({
                                                 <span className="mr-5 font-semibold text-white">{Config.token}</span>
                                             </div>
                                             <input
-                                                className="w-full bg-transparent text-right text-xl text-white placeholder-white/50 focus:outline-none"
+                                                className="w-full text-xl text-right text-white bg-transparent placeholder-white/50 focus:outline-none"
                                                 placeholder="0"
                                                 step="0.0000000001" // Adjust this as needed for precision
                                                 onChange={(e) => {
