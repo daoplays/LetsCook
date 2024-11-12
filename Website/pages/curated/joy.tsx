@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
-import { Info, Loader } from "lucide-react";
+import { Info, Loader, Loader2Icon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { IoSwapVertical } from "react-icons/io5";
 import { FaWallet } from "react-icons/fa";
@@ -10,7 +10,6 @@ import trimAddress from "@/utils/trimAddress";
 import UseWalletConnection from "@/hooks/useWallet";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import useCollection from "@/hooks/data/useCollection";
 import useMintNFT from "@/hooks/collections/useMintNFT";
 import useWrapNFT from "@/hooks/collections/useWrapNFT";
@@ -20,13 +19,14 @@ import useClaimNFT from "@/hooks/collections/useClaimNFT";
 import { CollectionKeys, Config, SYSTEM_KEY } from "@/components/Solana/constants";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import useNFTBalance from "@/hooks/data/useNFTBalance";
-import { useDisclosure } from "@chakra-ui/react";
+import { useDisclosure, VStack, HStack, Text, Box } from "@chakra-ui/react";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "@/components/Solana/modals";
 import PageNotFound from "@/components/pageNotFound";
 import { bignum_to_num } from "@/components/Solana/state";
 import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "../collection/collectionReleaseModal";
 import formatPrice from "@/utils/formatPrice";
+import useResponsive from "@/hooks/useResponsive";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -42,13 +42,18 @@ const Joy = () => {
 
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
-    const router = useRouter();
-    const collection_name = Config.NETWORK === "eclipse" ? "badger" : "joypeeptest1";
+    const collection_name = "joypeeptest1";
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
 
     const [wrapSOL, setWrapSOL] = useState<number>(0);
+
+    const [selected, setSelected] = useState("Mint");
+
+    const handleClick = (tab: string) => {
+        setSelected(tab);
+    };
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
@@ -76,9 +81,17 @@ const Joy = () => {
 
     const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
 
+    const { tokenBalance: whiteListTokenBalance } = useTokenBalance(
+        collectionPlugins && collectionPlugins.whitelistKey ? { mintAddress: collectionPlugins.whitelistKey } : null,
+    );
+
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);
+
+    const tokenAddress = useMemo(() => {
+        return collection?.keys?.[CollectionKeys.MintAddress] || null;
+    }, [tokenMint]);
 
     const { nftBalance, ownedAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(collectionAddress ? { collectionAddress } : null);
 
@@ -137,6 +150,11 @@ const Joy = () => {
     const enoughTokenBalance =
         (wrapSOL ? userSOLBalance : tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
+    const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
+    const hasEnoughWhitelistToken = whitelistMint
+        ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
+        : true;
+
     let progress_string = "";
     if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
         progress_string = collection.num_available.toString() + " / " + collection.total_supply.toString();
@@ -153,7 +171,7 @@ const Joy = () => {
             {/* Header */}
             <div className="mt-15 absolute top-0 flex min-h-20 w-full items-center bg-[#00357A] xl:h-24">
                 <p className="font-face-wc left-0 right-0 mx-auto mt-2 text-wrap text-center text-[1.75rem] text-white sm:text-3xl xl:text-6xl">
-                    THE <span className="text-[#FFDD56]">JOY</span> TRANSMOGIFIER
+                    THE <span className="text-[#FFDD56]">JOY</span> TRANSMOGRIFIER
                 </p>
             </div>
 
@@ -176,20 +194,14 @@ const Joy = () => {
                 </div>
             ) : (
                 <div
-                    className={`mt-20 flex transform items-center justify-center gap-16 rounded-2xl bg-clip-padding transition-all duration-500 md:p-8 xl:bg-[#00357A]/75 xl:px-16 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter ${isHomePage ? "scale-90 opacity-0" : "scale-100 opacity-100"}`}
+                    className={`mt-24 flex transform items-center justify-center gap-16 rounded-2xl bg-clip-padding transition-all duration-500 md:p-8 xl:bg-[#00357A]/75 xl:px-16 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter ${isHomePage ? "scale-80 opacity-0" : "scale-100 opacity-100"}`}
                 >
-                    
-                    <div className="flex-col items-center justify-center hidden gap-2 xl:flex">
-                        <p className="text-6xl font-face-wc">${collection.collection_name}</p>
-                        <Image
-                            src={collection.collection_icon_url}
-                            width={225}
-                            height={225}
-                            alt="$JOY Icon"
-                            className="rounded-full shadow-xl"
-                        />
+                    <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
+                        <p className="font-face-wc text-6xl">${collection.token_symbol}</p>
 
-                        <p className="text-lg">Token Address: {trimAddress(collection.keys[CollectionKeys.CollectionMint].toString())}</p>
+                        <Image src={tokenMint.icon} width={250} height={250} alt="BOY Icon" className="rounded-full shadow-xl" />
+
+                        <p className="text-lg">Token Address: {trimAddress(tokenAddress.toString())}</p>
                         <div className="flex gap-2">
                             <TooltipProvider>
                                 <Tooltip delayDuration={0}>
@@ -198,9 +210,7 @@ const Joy = () => {
                                             style={{ cursor: "pointer" }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigator.clipboard.writeText(
-                                                    trimAddress(collection.keys[CollectionKeys.CollectionMint].toString()),
-                                                );
+                                                navigator.clipboard.writeText(tokenAddress.toString());
                                             }}
                                         >
                                             <MdOutlineContentCopy color="white" size={22} />
@@ -216,9 +226,7 @@ const Joy = () => {
                                 <Tooltip delayDuration={0}>
                                     <TooltipTrigger>
                                         <Link
-                                            href={
-                                                "https://eclipsescan.xyz/token/" + collection.keys[CollectionKeys.CollectionMint].toString()
-                                            }
+                                            href={"https://eclipsescan.xyz/token/" + tokenAddress.toString()}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -241,10 +249,7 @@ const Joy = () => {
                                 <Tooltip delayDuration={0}>
                                     <TooltipTrigger>
                                         <Link
-                                            href={
-                                                "https://www.validators.wtf/rugcheck?mint=" +
-                                                collection.keys[CollectionKeys.CollectionMint].toString()
-                                            }
+                                            href={"https://www.validators.wtf/rugcheck?mint=" + tokenAddress.toString()}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
@@ -262,29 +267,46 @@ const Joy = () => {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
+
+                            <TooltipProvider>
+                                <Tooltip delayDuration={0}>
+                                    <TooltipTrigger>
+                                        <Link href={"https://eclipse.letscook.wtf"} target="_blank" onClick={(e) => e.stopPropagation()}>
+                                            <Image
+                                                src={"/favicon.ico"}
+                                                width={25}
+                                                height={25}
+                                                alt="Let's Cook Icon"
+                                                className="rounded-full"
+                                            />
+                                        </Link>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom">
+                                        <p>Buy on Let's Cook</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         </div>
                     </div>
                     <div className="w-full rounded-2xl border border-t-[3px] border-t-[#FFDD56] bg-[#00357A]/75 p-4 text-white shadow-2xl md:w-[400px] xl:bg-transparent">
-                        <div className="flex flex-col items-center gap-1 mx-auto mb-3 w-fit">
-                            <p className="mx-auto text-3xl font-face-wc w-fit">Transmogify</p>
-
-                            <div className="flex items-center gap-1 text-md">
+                        <div className="mx-auto mb-4 flex w-fit flex-col items-center gap-2">
+                            <p className="font-face-wc mx-auto w-fit text-3xl">Transmogrify</p>
+                            <div className="text-md flex items-center gap-1">
                                 <p>
                                     {!isTokenToNFT
-                                        ? `1 NFT = ${parseFloat(formatPrice(outAmount, 3)).toLocaleString("en-US", {
-                                              minimumFractionDigits: 3,
-                                          })} ${collection.token_symbol}`
+                                        ? `1 NFT = ${parseFloat(formatPrice(outAmount, 2)).toLocaleString(
+                                              "en-US",
+                                              {},
+                                          )} $${collection.token_symbol}`
                                         : `${parseFloat(
                                               formatPrice(
                                                   bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals),
-                                                  3,
+                                                  2,
                                               ),
-                                          ).toLocaleString("en-US", {
-                                              minimumFractionDigits: 3,
-                                          })} $${collection.token_symbol} = 1 NFT`}
+                                          ).toLocaleString("en-US", {})} $${collection.token_symbol} = 1 NFT`}
                                 </p>
-                                {/* {isTokenToNFT ? <p>100,000 $JOY = 1 NFT </p> : <p>1 NFT = 98,000 $JOY </p>} */}
-                                {isTokenToNFT && (
+
+                                {!isTokenToNFT && (
                                     <TooltipProvider>
                                         <Tooltip delayDuration={0}>
                                             <TooltipTrigger>
@@ -302,7 +324,7 @@ const Joy = () => {
                         <div className={`flex ${isTokenToNFT ? "flex-col" : "flex-col-reverse"}`}>
                             {/* From Token Input */}
                             <div className={`${isTokenToNFT ? "" : "-mt-6 mb-3"}`}>
-                                <div className="flex items-center justify-between mb-2">
+                                <div className="mb-2 flex items-center justify-between">
                                     <div className="text-sm">{isTokenToNFT ? `You're Swapping` : "To Receive"}</div>
 
                                     <div className="flex items-center gap-1 opacity-75">
@@ -312,7 +334,7 @@ const Joy = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
+                                <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
                                     <div className="flex flex-col gap-2">
                                         <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                             <div className="w-6">
@@ -324,12 +346,12 @@ const Joy = () => {
                                                     className="rounded-full"
                                                 />
                                             </div>
-                                            <span>JOY</span>
+                                            <span>{collection.token_symbol}</span>
                                         </button>
                                     </div>
                                     <input
                                         type="text"
-                                        className="w-full text-xl text-right bg-transparent focus:outline-none"
+                                        className="w-full cursor-not-allowed bg-transparent text-right text-xl text-gray-500 focus:outline-none"
                                         placeholder="0"
                                         value={
                                             isTokenToNFT
@@ -355,7 +377,7 @@ const Joy = () => {
                             <div className="flex justify-center">
                                 <button
                                     onClick={() => setIsTokenToNFT(!isTokenToNFT)}
-                                    className="z-50 p-2 mx-auto my-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
+                                    className="z-50 mx-auto my-2 cursor-pointer rounded-lg bg-gray-800 p-2 hover:bg-gray-700"
                                 >
                                     <IoSwapVertical size={18} className="opacity-75" />
                                 </button>
@@ -363,7 +385,7 @@ const Joy = () => {
 
                             {/* To Token Input */}
                             <div className={`${!isTokenToNFT ? "" : "-mt-6 mb-3"}`}>
-                                <div className="flex items-center justify-between mb-2">
+                                <div className="mb-2 flex items-center justify-between">
                                     <div className="text-sm">{!isTokenToNFT ? `You're Swapping` : "To Receive"}</div>
 
                                     <div className="flex items-center gap-1 opacity-75">
@@ -374,7 +396,7 @@ const Joy = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
+                                <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
                                     <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                         <div className="w-6">
                                             <Image
@@ -385,11 +407,11 @@ const Joy = () => {
                                                 className="rounded-full"
                                             />
                                         </div>
-                                        <span>BOYS</span>
+                                        <span className="text-nowrap">{collection.collection_name}</span>
                                     </button>
                                     <input
                                         type="text"
-                                        className="w-full text-xl text-right bg-transparent focus:outline-none"
+                                        className="w-full cursor-not-allowed bg-transparent text-right text-xl text-gray-500 focus:outline-none"
                                         placeholder="0"
                                         value={1}
                                         onChange={(e) => {
@@ -409,7 +431,7 @@ const Joy = () => {
                             isTokenToNFT ? (
                                 assignmentData === null || assignmentData.status > 0 ? (
                                     <button
-                                        className="w-full rounded-xl bg-[#FFE376] py-3 text-lg font-semibold text-[#BA6502] hover:bg-opacity-90"
+                                        className={`w-full rounded-xl bg-[#FFE376] py-3 text-lg font-semibold text-[#BA6502] hover:bg-opacity-90`}
                                         onClick={() => {
                                             if (!wallet.connected) {
                                                 handleConnectWallet();
@@ -419,8 +441,17 @@ const Joy = () => {
                                                 ClaimNFT();
                                             }
                                         }}
+                                        disabled={!enoughTokenBalance}
                                     >
-                                        Swap
+                                        {isLoading ? (
+                                            <Loader2Icon className="mx-auto animate-spin" />
+                                        ) : !enoughTokenBalance ? (
+                                            "Insufficient token balance"
+                                        ) : !hasEnoughWhitelistToken ? (
+                                            "Whitelist Token Required"
+                                        ) : (
+                                            "Mint NFT"
+                                        )}
                                     </button>
                                 ) : (
                                     <button
@@ -429,8 +460,9 @@ const Joy = () => {
                                             openAssetModal();
                                             MintNFT();
                                         }}
+                                        disabled={isLoading}
                                     >
-                                        Swap
+                                        {isLoading ? <Loader2Icon className="mx-auto animate-spin" /> : "Check your NFT"}
                                     </button>
                                 )
                             ) : (
@@ -445,9 +477,14 @@ const Joy = () => {
                                         }
                                     }}
                                     disabled={nftBalance <= 0 || isLoading}
-                                    // isLoading={isWrapLoading}
                                 >
-                                    Swap
+                                    {isLoading ? (
+                                        <Loader2Icon className="mx-auto animate-spin" />
+                                    ) : nftBalance <= 0 ? (
+                                        `Insufficient NFT balance `
+                                    ) : (
+                                        "Swap"
+                                    )}
                                 </button>
                             )
                         ) : (
@@ -459,7 +496,7 @@ const Joy = () => {
                             </button>
                         )}
 
-                        <div className="flex flex-col gap-2 mt-4 text-sm">
+                        <div className="mt-4 flex flex-col gap-2 text-sm">
                             <div className="flex justify-between opacity-75">
                                 <span>NFTs Available</span>
                                 <span>{collection.num_available}</span>
@@ -473,12 +510,46 @@ const Joy = () => {
                                 <span>Total NFT Supply</span>
                                 <span>{collection.total_supply}</span>
                             </div>
+
+                            {whitelistMint &&
+                                collectionPlugins.whitelistPhaseEnd &&
+                                (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
+                                    new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime()) && (
+                                    <>
+                                        <div className="flex justify-between opacity-75">
+                                            <span>Whitelist Token</span>
+                                            <HStack justifyContent="center">
+                                                <span>{trimAddress(whitelistMint.mint.address.toString())}</span>
+                                            </HStack>
+                                        </div>
+                                        <div className="flex justify-between opacity-75">
+                                            <span>WL End Date</span>
+                                            <HStack justifyContent="center">
+                                                <span>
+                                                    {collectionPlugins.whitelistPhaseEnd &&
+                                                        Math.floor(collectionPlugins.whitelistPhaseEnd.getTime() / 1000) > 0 &&
+                                                        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime() && (
+                                                            <span>{collectionPlugins.whitelistPhaseEnd.toLocaleString()}</span>
+                                                        )}
+                                                </span>
+                                            </HStack>
+                                        </div>
+                                    </>
+                                )}
                         </div>
                     </div>
-                    <div className="flex-col items-center justify-center hidden gap-2 xl:flex">
-                        <p className="text-6xl font-face-wc">{collection.token_symbol}</p>
-                        <Image src={tokenMint.icon} width={250} height={250} alt="BOY Icon" className="rounded-full shadow-xl" />
-                        <p className="text-lg">Collection Address: {trimAddress(collection.keys[CollectionKeys.MintAddress].toString())}</p>
+
+                    <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
+                        <p className="font-face-wc text-6xl">{collection.collection_name}</p>
+
+                        <Image
+                            src={collection.collection_icon_url}
+                            width={225}
+                            height={225}
+                            alt="$JOY Icon"
+                            className="rounded-full shadow-xl"
+                        />
+                        <p className="text-lg">Collection Address: {trimAddress(collectionAddress.toString())}</p>
                         <div className="flex gap-2">
                             <TooltipProvider>
                                 <Tooltip delayDuration={0}>
@@ -487,9 +558,7 @@ const Joy = () => {
                                             style={{ cursor: "pointer" }}
                                             onClick={(e) => {
                                                 e.preventDefault();
-                                                navigator.clipboard.writeText(
-                                                    trimAddress(collection.keys[CollectionKeys.MintAddress].toString()),
-                                                );
+                                                navigator.clipboard.writeText(collectionAddress.toString());
                                             }}
                                         >
                                             <MdOutlineContentCopy color="white" size={22} />
@@ -505,10 +574,7 @@ const Joy = () => {
                                 <Tooltip delayDuration={0}>
                                     <TooltipTrigger>
                                         <Link
-                                            href={
-                                                "https://eclipsescan.xyz/token/" +
-                                                trimAddress(collection.keys[CollectionKeys.MintAddress].toString())
-                                            }
+                                            href={"https://eclipsescan.xyz/token/" + collectionAddress.toString()}
                                             target="_blank"
                                             onClick={(e) => e.stopPropagation()}
                                         >
