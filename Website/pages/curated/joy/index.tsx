@@ -81,11 +81,9 @@ const Joy = () => {
         return collection?.keys?.[CollectionKeys.MintAddress] || null;
     }, [collection]);
 
-    const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
+    const { tokenBalance } = useTokenBalance({mintData: tokenMint});
 
-    const { tokenBalance: whiteListTokenBalance } = useTokenBalance(
-        collectionPlugins && collectionPlugins.whitelistKey ? { mintAddress: collectionPlugins.whitelistKey } : null,
-    );
+    const { tokenBalance: whiteListTokenBalance } = useTokenBalance({mintData: whitelistMint});
 
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
