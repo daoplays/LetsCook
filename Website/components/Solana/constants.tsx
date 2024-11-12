@@ -102,7 +102,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = EclipseMainNetConfig;
+export let Config = DevNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,
