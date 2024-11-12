@@ -174,7 +174,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                     ) : (
                         <div className="my-4 flex flex-col gap-2">
                             <Text className="text-center text-xl font-semibold text-white opacity-25">
-                                You Don&apos;t Have Any {collection.nft_name}
+                                No Listings for {collection.nft_name}
                             </Text>
                         </div>
                     )}

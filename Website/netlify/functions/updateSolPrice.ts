@@ -7,7 +7,7 @@ import { RaydiumAMM } from "@/components/Solana/jupiter_state";
 // Helper function to fetch price from Jupiter API
 async function fetchJupiterPrice() {
     try {
-        const connection = new Connection("https://kimmie-wuj3pm-fast-mainnet.helius-rpc.com");
+        const connection = new Connection("https://api.mainnet-beta.solana.com");
         let pool_address =
             Config.token === "SOL" ? "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2" : "EoNrn8iUhwgJySD1pHu8Qxm5gSQqLK3za4m8xzD2RuEb";
 

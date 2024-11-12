@@ -14,6 +14,13 @@ interface UseTokenBalanceProps {
 
 const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
 
+const timeFunction = async (fn) => {
+    const start = performance.now();
+    await fn();
+    const end = performance.now();
+    return end - start;
+};
+
 const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     // State to store the token balance and any error messages
     const [nftBalance, setNFTBalance] = useState<number>(null);
@@ -72,16 +79,30 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
             .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
             .getDeserialized();
 
+        // Create an array of promises for all fetch requests
+        const fetchPromises = assets.map(async (asset) => {
+            const uri_json = await fetch(asset.uri).then((res) => res.json());
+            const entry: AssetWithMetadata = { asset, metadata: uri_json };
+            
+            // Return both the entry and whether it's owned
+            return {
+                entry,
+                isOwned: asset.owner.toString() === wallet.publicKey.toString()
+            };
+        });
+    
+        // Wait for all promises to resolve simultaneously
+        const results = await Promise.all(fetchPromises);
+    
         let owned_assets: AssetWithMetadata[] = [];
         let all_assets: Map<string, AssetWithMetadata> = new Map();
-        for (let i = 0; i < assets.length; i++) {
-            let uri_json = await fetch(assets[i].uri).then((res) => res.json());
-            let entry: AssetWithMetadata = { asset: assets[i], metadata: uri_json };
+        // Process results
+        results.forEach(({ entry, isOwned }) => {
             all_assets.set(entry.asset.publicKey.toString(), entry);
-            if (assets[i].owner.toString() === wallet.publicKey.toString()) {
+            if (isOwned) {
                 owned_assets.push(entry);
             }
-        }
+        });
 
         setOwnedAssets(owned_assets);
         setCollectionAssets(all_assets);
