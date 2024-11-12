@@ -31,7 +31,7 @@ const useDomain = () => {
             let ownedDomainsFromTld = await parser.getParsedAllUserDomainsFromTldUnwrapped(wallet.publicKey, "turbo");
             setUserDomain(ownedDomainsFromTld);
         } catch (e) {
-            console.log("error getting user domain", e);
+            //console.log("error getting user domain", e);
             currentTries.current++;
             return false;
         }
@@ -48,9 +48,9 @@ const useDomain = () => {
                     clearInterval(intervalRef.current);
                     intervalRef.current = null;
                 }
-                console.log("Domain fetched successfully, stopping retries");
+                //console.log("Domain fetched successfully, stopping retries");
             } else {
-                console.log("Domain Fetch failed, will retry in 1 second");
+                //console.log("Domain Fetch failed, will retry in 1 second");
             }
         };
 
