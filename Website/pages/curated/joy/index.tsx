@@ -77,10 +77,6 @@ const Joy = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
 
-    const mintAddress = useMemo(() => {
-        return collection?.keys?.[CollectionKeys.MintAddress] || null;
-    }, [collection]);
-
     const { tokenBalance } = useTokenBalance({mintData: tokenMint});
 
     const { tokenBalance: whiteListTokenBalance } = useTokenBalance({mintData: whitelistMint});
