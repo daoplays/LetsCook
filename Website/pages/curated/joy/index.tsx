@@ -179,7 +179,7 @@ const Joy = () => {
 
     return (
         <main
-            className={`relative flex min-h-full w-full items-center justify-center py-16 text-white ${montserrat.className}`}
+            className={`relative flex min-h-full w-full items-center justify-center py-16 text-white overflow-hidden ${montserrat.className}`}
             style={{ background: "linear-gradient(180deg, #5DBBFF 0%, #0076CC 100%)" }}
         >
             {/* Header */}
@@ -189,17 +189,17 @@ const Joy = () => {
                 </p>
             </div>
 
-            <Image src={"/curatedLaunches/joy/bot.png"} width={750} height={750} alt="JOY BOT" className="absolute bottom-0" />
+            <Image src={"/curatedLaunches/joy/bg asset.png"} width={1150} height={1150} alt="JOY BOT" className="absolute bottom-0" />
             {isHomePage ? (
                 <div className="absolute bottom-0 left-0 right-0 flex justify-center">
-                    <Image src={"/curatedLaunches/joy/bot.png"} width={750} height={750} alt="JOY BOT" />
+                    <Image src={"/curatedLaunches/joy/bg asset.png"} width={1150} height={1150} alt="JOY BOT"/>
 
                     <p
-                        className="font-face-wc absolute cursor-pointer text-3xl text-white transition-all hover:text-[4rem] md:text-6xl"
+                        className="font-face-wc absolute cursor-pointer text-3xl text-white transition-all hover:text-[4rem] md:text-6xl z-50"
                         style={{
                             top: "50%",
                             left: "50%",
-                            transform: "translate(-50%, 25%)",
+                            transform: "translate(-50%, 94%)",
                         }}
                         onClick={() => setIsHomePage(false)}
                     >
@@ -207,7 +207,7 @@ const Joy = () => {
                     </p>
                 </div>
             ) : (
-                <div className="mt-16 flex flex-col items-center gap-2 px-4 md:gap-3">
+                <div className="flex flex-col items-center gap-2 px-4 mt-16 md:gap-3">
                     <div className="-ml-1 flex w-fit gap-1 rounded-2xl p-2 xl:bg-[#00357A]/75 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter">
                         <button
                             onClick={() => setActiveTab("Mint")}
@@ -245,7 +245,7 @@ const Joy = () => {
                             className={`flex transform items-center justify-center gap-16 rounded-2xl bg-clip-padding transition-all duration-500 md:p-8 xl:bg-[#00357A]/75 xl:px-16 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter ${isHomePage ? "scale-80 opacity-0" : "scale-100 opacity-100"} `}
                         >
                             <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
-                                <p className="font-face-wc text-6xl">${collection.token_symbol}</p>
+                                <p className="text-6xl font-face-wc">${collection.token_symbol}</p>
 
                                 <Image src={tokenMint.icon} width={250} height={250} alt="BOY Icon" className="rounded-full shadow-xl" />
 
@@ -342,9 +342,9 @@ const Joy = () => {
                             </div>
 
                             <div className="w-full rounded-2xl border border-t-[3px] border-t-[#FFDD56] bg-[#00357A]/75 p-4 text-white shadow-2xl md:w-[400px] xl:bg-transparent">
-                                <div className="mx-auto mb-4 flex w-fit flex-col items-center gap-2">
-                                    <p className="font-face-wc mx-auto w-fit text-3xl">Transmogrify</p>
-                                    <div className="text-md flex items-center gap-1">
+                                <div className="flex flex-col items-center gap-2 mx-auto mb-4 w-fit">
+                                    <p className="mx-auto text-3xl font-face-wc w-fit">Transmogrify</p>
+                                    <div className="flex items-center gap-1 text-md">
                                         <p>
                                             {!isTokenToNFT
                                                 ? `1 NFT = ${parseFloat(formatPrice(outAmount, 2)).toLocaleString(
@@ -377,7 +377,7 @@ const Joy = () => {
                                 <div className={`flex ${isTokenToNFT ? "flex-col" : "flex-col-reverse"}`}>
                                     {/* From Token Input */}
                                     <div className={`${isTokenToNFT ? "" : "-mt-6 mb-3"}`}>
-                                        <div className="mb-2 flex items-center justify-between">
+                                        <div className="flex items-center justify-between mb-2">
                                             <div className="text-sm">{isTokenToNFT ? `You're Swapping` : "To Receive"}</div>
 
                                             <div className="flex items-center gap-1 opacity-75">
@@ -387,7 +387,7 @@ const Joy = () => {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
+                                        <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
                                             <div className="flex flex-col gap-2">
                                                 <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                     <div className="w-6">
@@ -404,7 +404,7 @@ const Joy = () => {
                                             </div>
                                             <input
                                                 type="text"
-                                                className="w-full cursor-not-allowed bg-transparent text-right text-xl text-gray-500 focus:outline-none"
+                                                className="w-full text-xl text-right text-gray-500 bg-transparent cursor-not-allowed focus:outline-none"
                                                 placeholder="0"
                                                 value={
                                                     isTokenToNFT
@@ -431,7 +431,7 @@ const Joy = () => {
                                     <div className="flex justify-center">
                                         <button
                                             onClick={() => setIsTokenToNFT(!isTokenToNFT)}
-                                            className="z-50 mx-auto my-2 cursor-pointer rounded-lg bg-gray-800 p-2 hover:bg-gray-700"
+                                            className="z-50 p-2 mx-auto my-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
                                         >
                                             <IoSwapVertical size={18} className="opacity-75" />
                                         </button>
@@ -439,7 +439,7 @@ const Joy = () => {
 
                                     {/* To Token Input */}
                                     <div className={`${!isTokenToNFT ? "" : "-mt-6 mb-3"}`}>
-                                        <div className="mb-2 flex items-center justify-between">
+                                        <div className="flex items-center justify-between mb-2">
                                             <div className="text-sm">{!isTokenToNFT ? `You're Swapping` : "To Receive"}</div>
 
                                             <div className="flex items-center gap-1 opacity-75">
@@ -450,7 +450,7 @@ const Joy = () => {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
+                                        <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="w-6">
                                                     <Image
@@ -465,7 +465,7 @@ const Joy = () => {
                                             </button>
                                             <input
                                                 type="text"
-                                                className="w-full cursor-not-allowed bg-transparent text-right text-xl text-gray-500 focus:outline-none"
+                                                className="w-full text-xl text-right text-gray-500 bg-transparent cursor-not-allowed focus:outline-none"
                                                 placeholder="0"
                                                 value={1}
                                                 onChange={(e) => {
@@ -550,7 +550,7 @@ const Joy = () => {
                                     </button>
                                 )}
 
-                                <div className="mt-4 flex flex-col gap-2 text-sm">
+                                <div className="flex flex-col gap-2 mt-4 text-sm">
                                     <div className="flex justify-between opacity-75">
                                         <span>NFTs Available</span>
                                         <span>{collection.num_available}</span>
@@ -594,14 +594,14 @@ const Joy = () => {
                             </div>
 
                             <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
-                                <p className="font-face-wc text-6xl">{collection.collection_name}</p>
+                                <p className="text-6xl font-face-wc">{collection.collection_name}</p>
 
                                 <Image
                                     src={collection.collection_icon_url}
                                     width={225}
                                     height={225}
                                     alt="$JOY Icon"
-                                    className="rounded-xl shadow-xl"
+                                    className="shadow-xl rounded-xl"
                                 />
                                 <p className="text-lg">Collection Address: {trimAddress(collectionAddress.toString())}</p>
                                 <div className="flex gap-2">
