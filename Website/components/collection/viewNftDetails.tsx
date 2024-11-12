@@ -11,6 +11,7 @@ import { Config } from "../Solana/constants";
 import { PublicKey } from "@solana/web3.js";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
+import { Attribute } from "@metaplex-foundation/mpl-core";
 
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;
@@ -42,12 +43,19 @@ function ViewNFTDetails({
 
     const [solAmount, setSolAmount] = useState<number>(0);
 
-    let asset_name, asset_Attribute;
+    let asset_name;
+    let offchain_attributes = [];
+    let onchain_attributes : Attribute[] = [];
     let asset_key: PublicKey | null = null;
     if (nft !== undefined) {
         asset_name = nft.metadata["name"] ? nft.metadata["name"] : nft.asset.name;
-        asset_Attribute = nft.metadata["attributes"] ? nft.metadata["attributes"] : null;
+        offchain_attributes = nft.metadata["attributes"] ? nft.metadata["attributes"] : [];
         asset_key = nft ? new PublicKey(nft.asset.publicKey.toString()) : null;
+        onchain_attributes = nft.asset.attributes.attributeList;
+        const index = onchain_attributes.findIndex(attr => attr.key === 'CookWrapIndex');
+        if (index > -1) {
+            onchain_attributes.splice(index, 1);
+        }
     }
 
     return (
@@ -81,12 +89,16 @@ function ViewNFTDetails({
                                     alt="nftImage"
                                 />
                                 <div className="flex flex-col gap-3">
-                                    {asset_Attribute !== null &&
-                                        asset_Attribute.map((value, index) => (
+                                    {offchain_attributes.map((value, index) => (
                                             <span key={index}>
                                                 {value.trait_type}: {value["value"]}
                                             </span>
-                                        ))}
+                                    ))}
+                                    {onchain_attributes.map((value, index) => (
+                                        <span key={index}>
+                                            {value.key}: {value.value}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         )}
