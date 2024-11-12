@@ -162,12 +162,6 @@ const CollectionSwapPage = () => {
         }
     }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
-
-    useEffect(() => {
-        checkNFTBalance.current = true;
-        fetchNFTBalance();
-    }, [userListedNFTs, checkNFTBalance, fetchNFTBalance]);
-
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
 
