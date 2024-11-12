@@ -45,7 +45,7 @@ export const useSOLPrice = () => {
         try {
             const response = await fetch(url, options);
             const result = await response.json();
-            console.log("price result", result);
+            //console.log("price result", result);
             setPrice(result.data[Config.token].price);
             setError(null);
             have_price.current = true;
@@ -62,7 +62,7 @@ export const useSOLPrice = () => {
 
             return true; // Indicate successful fetch
         } catch (error) {
-            console.log("error getting price", error);
+            //console.log("error getting price", error);
             setError("Failed to fetch SOL price");
             currentTries.current++;
             if (currentTries.current >= MAX_RETRIES) {
