@@ -94,15 +94,9 @@ const CollectionSwapPage = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
 
-    const mintAddress = useMemo(() => {
-        return collection?.keys?.[CollectionKeys.MintAddress] || null;
-    }, [collection]);
+    const { tokenBalance } = useTokenBalance({mintData: tokenMint});
 
-    const { tokenBalance } = useTokenBalance(mintAddress ? { mintAddress } : null);
-
-    const { tokenBalance: whiteListTokenBalance } = useTokenBalance(
-        collectionPlugins && collectionPlugins.whitelistKey ? { mintAddress: collectionPlugins.whitelistKey } : null,
-    );
+    const { tokenBalance: whiteListTokenBalance } = useTokenBalance({mintData: whitelistMint});
 
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
