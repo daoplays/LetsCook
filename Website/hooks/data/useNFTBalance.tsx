@@ -12,6 +12,8 @@ interface UseTokenBalanceProps {
     collectionAddress: PublicKey | null;
 }
 
+const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
+
 const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     // State to store the token balance and any error messages
     const [nftBalance, setNFTBalance] = useState<number>(null);
@@ -21,6 +23,9 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
     const checkNFTBalance = useRef<boolean>(true);
     const checkInitialNFTBalance = useRef<boolean>(true);
+    const lastFetchTime = useRef<number>(0);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isExecutingRef = useRef<boolean>(false);
 
     // Get the Solana connection and wallet
     const { connection } = useConnection();
@@ -34,8 +39,30 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
         if (!checkNFTBalance.current) return;
 
+        const now = Date.now();
+        const timeSinceLastFetch = now - lastFetchTime.current;
+
+        // If a fetch is already scheduled, don't schedule another one
+        if (timeoutRef.current) return;
+
+        // If we're currently executing a fetch, don't do anything
+        if (isExecutingRef.current) return;
+
+        // If we haven't waited long enough since the last fetch
+        if (timeSinceLastFetch < RATE_LIMIT_INTERVAL) {
+            // Schedule the next fetch
+            timeoutRef.current = setTimeout(() => {
+                timeoutRef.current = null;
+                fetchNFTBalance();
+            }, RATE_LIMIT_INTERVAL - timeSinceLastFetch);
+            return;
+        }
+
+         // Mark that we're executing a fetch
+         isExecutingRef.current = true;
         console.log("CHECKING NFT BALANCE");
 
+        try {
         const umi = createUmi(Config.RPC_NODE, "confirmed");
 
         let collection_umiKey = publicKey(collectionAddress.toString());
@@ -60,7 +87,15 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
         setCollectionAssets(all_assets);
         setNFTBalance(owned_assets.length);
 
+    } catch (err) {
+        setError(err.message);
+    } finally {
+        // Update the last fetch time and reset executing status
+        lastFetchTime.current = Date.now();
+        isExecutingRef.current = false;
         checkNFTBalance.current = false;
+    }
+
     }, [collectionAddress, wallet]);
 
     // Effect to set up the subscription and fetch initial balance
@@ -77,6 +112,14 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
             fetchNFTBalance();
             checkInitialNFTBalance.current = false;
         }
+
+        // Cleanup function to clear any pending timeouts
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        };
     }, [connection, fetchNFTBalance]);
 
     // Return the current nfts and any error message
