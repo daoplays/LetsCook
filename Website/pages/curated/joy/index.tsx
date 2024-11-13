@@ -392,7 +392,9 @@ const Joy = () => {
                                             <Tooltip delayDuration={0}>
                                                 <TooltipTrigger>
                                                     <Link
-                                                        href={"https://eclipse.letscook.wtf/trade/8dotswVmYUDF24Z4Fvq4f7zZ6M2YfVuKddSUspyzwF2H"}
+                                                        href={
+                                                            "https://eclipse.letscook.wtf/trade/8dotswVmYUDF24Z4Fvq4f7zZ6M2YfVuKddSUspyzwF2H"
+                                                        }
                                                         target="_blank"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
@@ -569,7 +571,7 @@ const Joy = () => {
                                                             ClaimNFT();
                                                         }
                                                     }}
-                                                    disabled={!enoughTokenBalance}
+                                                    disabled={!enoughTokenBalance || isLoading}
                                                 >
                                                     {isLoading ? (
                                                         <Loader2Icon className="mx-auto animate-spin" />
