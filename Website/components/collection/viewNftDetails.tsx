@@ -51,7 +51,7 @@ function ViewNFTDetails({
     }
 
     return (
-        <Modal size="lg" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
+        <Modal size="2xl" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
             <ModalOverlay />
 
             <ModalContent w={xs ? 380 : 800} style={{ background: "transparent" }}>
@@ -72,21 +72,26 @@ function ViewNFTDetails({
                             <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">{nft.metadata["name"]}</Text>
                         </div>
                         {nft !== undefined && (
-                            <div className="flex w-full items-start justify-center gap-4 text-white">
-                                <Image
-                                    src={nft.metadata["image"]}
-                                    width={200}
-                                    height={200}
-                                    style={{ borderRadius: "8px" }}
-                                    alt="nftImage"
-                                />
-                                <div className="flex flex-col gap-3">
-                                    {asset_Attribute !== null &&
-                                        asset_Attribute.map((value, index) => (
-                                            <span key={index}>
-                                                {value.trait_type}: {value["value"]}
-                                            </span>
+                            <div className="flex flex-col gap-4 lg:flex-row">
+                                <div className="aspect-square rounded-xl">
+                                    <Image
+                                        src={nft?.metadata?.image}
+                                        width={300}
+                                        height={300}
+                                        alt={nft?.metadata?.name || "NFT Image"}
+                                        className="rounded-lg"
+                                    />
+                                </div>
+
+                                <div className="flex-grow">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {nft?.metadata?.attributes?.map((attr, index) => (
+                                            <div key={index} className="rounded-xl bg-slate-700/50 px-3 py-[1.3rem] backdrop-blur-sm">
+                                                <div className="text-sm text-white/70">{attr.trait_type}</div>
+                                                <div className="mt-1 text-lg font-semibold text-white">{attr.value}</div>
+                                            </div>
                                         ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -124,7 +129,7 @@ function ViewNFTDetails({
                                 />
                             </div>
                             <Button
-                                className="mt-2 w-fit transition-all hover:opacity-90"
+                                className="mt-2 w-fit transition-all hover:opacity-90 rounded-md"
                                 size="lg"
                                 onClick={async (e) => {
                                     if (isUserOwned) {
