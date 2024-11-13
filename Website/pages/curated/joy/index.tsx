@@ -311,7 +311,7 @@ const Joy = () => {
                                 className={`flex transform items-center justify-center gap-16 rounded-2xl bg-clip-padding transition-all duration-500 md:p-8 xl:bg-[#00357A]/75 xl:px-16 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter ${isHomePage ? "scale-80 opacity-0" : "scale-100 opacity-100"} `}
                             >
                                 <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
-                                    <p className="font-face-wc text-6xl">${collection.token_symbol}</p>
+                                    <p className="font-face-wc text-6xl">{collection.token_symbol}</p>
 
                                     <Image
                                         src={tokenMint.icon}
@@ -422,14 +422,14 @@ const Joy = () => {
                                                     ? `1 NFT = ${parseFloat(formatPrice(outAmount, 2)).toLocaleString(
                                                           "en-US",
                                                           {},
-                                                      )} $${collection.token_symbol}`
+                                                      )} ${collection.token_symbol}`
                                                     : `${parseFloat(
                                                           formatPrice(
                                                               bignum_to_num(collection.swap_price) /
                                                                   Math.pow(10, collection.token_decimals),
                                                               2,
                                                           ),
-                                                      ).toLocaleString("en-US", {})} $${collection.token_symbol} = 1 NFT`}
+                                                      ).toLocaleString("en-US", {})} ${collection.token_symbol} = 1 NFT`}
                                             </p>
 
                                             {!isTokenToNFT && (
