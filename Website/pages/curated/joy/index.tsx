@@ -189,6 +189,67 @@ const Joy = () => {
                 </p>
             </div>
 
+            {isHomePage && (
+                <div className="absolute bottom-[0] left-1/2 h-[1050px] w-[1850px] -translate-x-1/2">
+                    <Image
+                        src={"/curatedLaunches/joy/image4.png"}
+                        width={300}
+                        height={300}
+                        alt="ROCKET"
+                        className="infinite absolute bottom-[0px] left-[200px] animate-pulse duration-1000 ease-linear"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/image8.png"}
+                        width={230}
+                        height={230}
+                        alt="100 emoji"
+                        className="infinite absolute left-[50px] top-[190px] animate-pulse duration-1000 ease-linear"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/image23.png"}
+                        width={200}
+                        height={200}
+                        alt="Thread"
+                        className="infinite absolute right-[150px] top-[150px] animate-pulse duration-1000 ease-linear"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/joy2.png"}
+                        width={180}
+                        height={180}
+                        alt="JOY face up"
+                        className="absolute left-[400px] top-[400px]"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/joy3.png"}
+                        width={140}
+                        height={140}
+                        alt="JOY face down"
+                        className="absolute right-[400px] top-[400px]"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/image108.png"}
+                        width={341}
+                        height={341}
+                        alt="Eggplant"
+                        className="infinite absolute right-[600px] top-[100px] animate-pulse duration-1000 ease-linear"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/image 24.png"}
+                        width={270}
+                        height={270}
+                        alt="money with wings"
+                        className="infinite absolute bottom-[300px] right-[50px] animate-pulse duration-1000 ease-linear"
+                    />
+                    <Image
+                        src={"/curatedLaunches/joy/joy4.png"}
+                        width={250}
+                        height={250}
+                        alt="JOY BOT9"
+                        className="absolute bottom-[0px] right-[300px]"
+                    />
+                </div>
+            )}
+           
             {isHomePage ? (
                 <div className="absolute bottom-0 left-0 right-0 flex justify-center">
                     <Image src={"/curatedLaunches/joy/bot.png"} width={750} height={750} alt="JOY BOT" />
