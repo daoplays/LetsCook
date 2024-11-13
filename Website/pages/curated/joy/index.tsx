@@ -47,7 +47,7 @@ const Joy = () => {
 
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
-    const collection_name = "joypeeptest1";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "joypeeptest1";
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
@@ -392,7 +392,7 @@ const Joy = () => {
                                             <Tooltip delayDuration={0}>
                                                 <TooltipTrigger>
                                                     <Link
-                                                        href={"https://eclipse.letscook.wtf"}
+                                                        href={"https://eclipse.letscook.wtf/trade/8dotswVmYUDF24Z4Fvq4f7zZ6M2YfVuKddSUspyzwF2H"}
                                                         target="_blank"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
