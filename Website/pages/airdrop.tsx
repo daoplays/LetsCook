@@ -24,6 +24,9 @@ import { PublicKey } from "@solana/web3.js";
 import { RiDeleteBinLine, RiDownloadLine } from "react-icons/ri"; // Import the icon
 import useResponsive from "@/hooks/useResponsive";
 import styles from "../styles/Launch.module.css";
+import { getMintData } from "@/components/amm/launch";
+import { MintData } from "@/components/Solana/state";
+import { set } from "date-fns";
 
 interface AirdropRecord {
     address: string; // wallet address
@@ -36,14 +39,18 @@ export const AirdropPage = () => {
     const { sm, md, lg } = useResponsive();
     const toast = useToast();
     const [mintAddress, setMintAddress] = useState("");
+    const [airdroppedToken, setAirdroppedToken] = useState("");
+
     const [distributionType, setDistributionType] = useState<"fixed" | "even" | "proRata">("fixed");
     const [amount, setAmount] = useState("");
     const [threshold, setThreshold] = useState("0");
     const [airdropProgress, setAirdropProgress] = useState(0);
-    const [completedAirdrops, setCompletedAirdrops] = useState<Set<string>>(new Set());
     const [isAirdropping, setIsAirdropping] = useState(false);
 
-    const { takeSnapshot, calculateAirdropAmounts, executeAirdrop, setHolders, holders, filteredHolders, mintData, isLoading, error } =
+    const [signatures, setSignatures] = useState<Map<string, string>>(new Map());
+
+
+    const { takeSnapshot, calculateAirdropAmounts, executeAirdrop, setHolders, filterHolders, setAirdroppedMint, holders, filteredHolders, snapshotMint, airdroppedMint, isLoading, error } =
         useAirdrop();
 
     // Calculate airdrop distributions whenever relevant inputs change
@@ -54,8 +61,21 @@ export const AirdropPage = () => {
 
     const handleMintInput = (value: string) => {
         setMintAddress(value);
-        setCompletedAirdrops(new Set());
         setAirdropProgress(0);
+    };
+
+    const handleAirdropInput = async () => {
+       let airdroppedMint = await getMintData(airdroppedToken);
+       setAirdroppedMint(airdroppedMint);
+        
+    };
+
+    const handleThresholdChange = (value: string) => {
+        setThreshold(value);
+        let thresholdFloat = parseFloat(value);
+        if (isFinite(thresholdFloat)) {
+            filterHolders(value);
+        }
     };
 
     const handleSnapshot = async (e) => {
@@ -70,10 +90,10 @@ export const AirdropPage = () => {
                 return;
             }
 
-            // Validate mint address
-            try {
-                new PublicKey(mintAddress);
-            } catch {
+
+            let snapshotMint = await getMintData(mintAddress);
+
+            if (!snapshotMint) {
                 toast({
                     title: "Error",
                     description: "Invalid mint address",
@@ -82,7 +102,17 @@ export const AirdropPage = () => {
                 return;
             }
 
-            await takeSnapshot(mintAddress, threshold);
+            const minThreshold = parseFloat(threshold);
+            if (isNaN(minThreshold)) {
+                toast({
+                    title: "Error",
+                    description: "Invalid Threshold",
+                    status: "error",
+                });                
+                return;
+            }
+
+            await takeSnapshot(snapshotMint, minThreshold);
 
             toast({
                 title: "Success",
@@ -101,22 +131,18 @@ export const AirdropPage = () => {
     const handleAirdrop = async () => {
         try {
             setIsAirdropping(true);
-            setCompletedAirdrops(new Set());
+            const newSignatures = new Map<string, string>();
 
-            await executeAirdrop(distributions, (progress) => {
+            await executeAirdrop(distributions, (progress, signature, recipientAddresses) => {
                 setAirdropProgress(progress * 100);
-                // Mark recipients in the current batch as complete
-                const batchSize = 8;
-                const completedIndex = Math.floor((progress * distributions.length) / batchSize) * batchSize;
-                const newCompleted = new Set(completedAirdrops);
-                for (let i = 0; i < completedIndex; i++) {
-                    newCompleted.add(distributions[i].address);
-                }
-                setCompletedAirdrops(newCompleted);
-            });
 
-            // Mark all as complete
-            setCompletedAirdrops(new Set(distributions.map((d) => d.address)));
+                if (signature && recipientAddresses) {
+                    recipientAddresses.forEach(address => {
+                      newSignatures.set(address, signature);
+                    });
+                    setSignatures(new Map(newSignatures));
+                }
+            });
 
             toast({
                 title: "Success",
@@ -231,6 +257,20 @@ export const AirdropPage = () => {
                         </HStack>
                     </FormControl>
 
+                    {/* Token Info */}
+                    {snapshotMint && (
+                        <Box borderWidth={1} borderRadius="md" p={4} className={`${styles.textLabelInput} bg-[#454444] text-white`}>
+                            <Text fontWeight="bold">Token Info</Text>
+                            <Text>Decimals: {snapshotMint.mint.decimals}</Text>
+                            {snapshotMint && (
+                                <>
+                                    <Text>Name: {snapshotMint.name}</Text>
+                                    <Text>Symbol: {snapshotMint.symbol}</Text>
+                                </>
+                            )}
+                        </Box>
+                    )}
+
                     {/* Threshold Input */}
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
@@ -240,7 +280,7 @@ export const AirdropPage = () => {
                                 size={lg ? "md" : "lg"}
                                 type="number"
                                 value={threshold}
-                                onChange={(e) => setThreshold(e.target.value)}
+                                onChange={(e) => handleThresholdChange(e.target.value)}
                                 min={0}
                             />
                         </div>
@@ -257,6 +297,45 @@ export const AirdropPage = () => {
                             </Stack>
                         </RadioGroup>
                     </FormControl>
+
+                    <FormControl>
+                        <FormLabel className="min-w-[100px] text-lg text-white">Airdrop Mint Address</FormLabel>
+                        <HStack>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    className="text-white"
+                                    placeholder="Enter airdrop mint address"
+                                    size={lg ? "md" : "lg"}
+                                    required
+                                    type="text"
+                                    value={airdroppedToken}
+                                    onChange={(e) => setAirdroppedToken(e.target.value)}
+                                />
+                            </div>
+                            <Button
+                                className="!bg-custom-gradient text-white"
+                                onClick={() => handleAirdropInput()}
+                                isLoading={isLoading}
+                                loadingText="Loading"
+                            >
+                                Set
+                            </Button>
+                        </HStack>
+                    </FormControl>
+
+                    {/* Token Info */}
+                    {airdroppedMint && (
+                        <Box borderWidth={1} borderRadius="md" p={4} className={`${styles.textLabelInput} bg-[#454444] text-white`}>
+                            <Text fontWeight="bold">Token Info</Text>
+                            <Text>Decimals: {airdroppedMint.mint.decimals}</Text>
+                            {airdroppedMint && (
+                                <>
+                                    <Text>Name: {airdroppedMint.name}</Text>
+                                    <Text>Symbol: {airdroppedMint.symbol}</Text>
+                                </>
+                            )}
+                        </Box>
+                    )}
 
                     {/* Amount Input */}
                     <FormControl>
@@ -275,19 +354,7 @@ export const AirdropPage = () => {
                         </div>
                     </FormControl>
 
-                    {/* Token Info */}
-                    {mintData && (
-                        <Box borderWidth={1} borderRadius="md" p={4} className={`${styles.textLabelInput} bg-[#454444] text-white`}>
-                            <Text fontWeight="bold">Token Info</Text>
-                            <Text>Decimals: {mintData.mint.decimals}</Text>
-                            {mintData && (
-                                <>
-                                    <Text>Name: {mintData.name}</Text>
-                                    <Text>Symbol: {mintData.symbol}</Text>
-                                </>
-                            )}
-                        </Box>
-                    )}
+ 
 
                     {/* Holders Table */}
                     {holders.length > 0 && (
@@ -305,7 +372,6 @@ export const AirdropPage = () => {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="min-w-[140px]">Status</TableHead>
                                         <TableHead className="min-w-[140px]">Wallet</TableHead>
                                         <TableHead className="min-w-[140px]">Current Balance</TableHead>
                                         <TableHead className="min-w-[140px]">Will Receive</TableHead>
@@ -314,14 +380,14 @@ export const AirdropPage = () => {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {holders.map((holder) => {
+                                    {filteredHolders
+                                    .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
+                                    .map((holder) => {
                                         const distribution = distributions.find((d) => d.address === holder.address);
-                                        const isCompleted = completedAirdrops.has(holder.address);
-                                        const signature = "aaaaaaaaaaaa"; // signatures.get(holder.address);
+                                        const signature = signatures.get(holder.address);
 
                                         return (
                                             <TableRow key={holder.address} className="hover:bg-muted/50 cursor-pointer transition-colors">
-                                                <TableCell>{isCompleted ? "✓" : ""}</TableCell>
                                                 <TableCell className="font-mono text-sm">
                                                     {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
                                                 </TableCell>

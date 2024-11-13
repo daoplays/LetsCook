@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { 
   Connection,
   PublicKey,
@@ -11,8 +11,9 @@ import {
   createTransferInstruction,
 } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { MintData, TokenAccount } from '@/components/Solana/state';
+import { bignum_to_num, MintData, TokenAccount } from '@/components/Solana/state';
 import { getMintData } from '@/components/amm/launch';
+import { toast } from 'react-toastify';
 
 interface TokenHolder {
   address: string;
@@ -30,32 +31,34 @@ type DistributionType = 'fixed' | 'even' | 'proRata';
 
 export const useAirdrop = () => {
   const { connection } = useConnection();
+  const wallet = useWallet();
   
-  const { publicKey, signTransaction } = useWallet();
   const [distributions, setDistributions] = useState<AirdropRecipient[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [holders, setHolders] = useState<TokenHolder[]>([]);
   const [filteredHolders, setFilteredHolders] = useState<TokenHolder[]>([]);
-  const [mintData, setMintData] = useState<MintData | null>(null);
+  const [snapshotMint, setSnapshotMint] = useState<MintData | null>(null);
+  const [airdroppedMint, setAirdroppedMint] = useState<MintData | null>(null);
+
+  const [threshold, setThreshold] = useState<number>(0);
 
   const takeSnapshot = useCallback(async (
-    mintAddress: string,
-    minThreshold: string = '0'
+    snapshotMint: MintData,
+    minThreshold: number = 0
   ): Promise<TokenHolder[]> => {
     setIsLoading(true);
     setError(null);
 
     try {
       // Get mint data using provided function
-      const mintData = await getMintData(mintAddress);
-      setMintData(mintData);
+      setSnapshotMint(snapshotMint);
 
-      let mint_bytes = mintData.mint.address.toBase58();
+      let mint_bytes = snapshotMint.mint.address.toBase58();
       
       // Get all token accounts for this mint
       const accounts = await connection.getProgramAccounts(
-        mintData.token_program,
+        snapshotMint.token_program,
         {
           filters: [
             {
@@ -71,7 +74,7 @@ export const useAirdrop = () => {
       console.log(accounts);
 
       // Process accounts and aggregate balances by owner
-      const holdersMap = new Map<string, bigint>();
+      const holdersMap = new Map<string, number>();
       
       for (const { account } of accounts) {
         // Deserialize account data using provided TokenAccount struct
@@ -83,22 +86,21 @@ export const useAirdrop = () => {
         if (tokenAccount.state !== 0) continue;
 
         const ownerAddress = tokenAccount.owner.toString();
-        const balance = tokenAccount.amount;
+        const balance = bignum_to_num(tokenAccount.amount / Math.pow(10, snapshotMint.mint.decimals));
 
-        if (balance === BigInt(0)) continue;
+        if (balance === 0) continue;
 
-        const currentBalance = holdersMap.get(ownerAddress) || BigInt(0);
-        holdersMap.set(ownerAddress, currentBalance + balance);
+        holdersMap.set(ownerAddress, balance);
       }
 
       // Convert map to array and filter by threshold
-      const minThresholdBigInt = BigInt(minThreshold);
+      
       const holdersArray: TokenHolder[] = Array.from(holdersMap.entries())
         .map(([address, balance]) => ({
           address,
           balance: balance.toString(),
         }))
-        .filter(holder => BigInt(holder.balance) >= minThresholdBigInt);
+        .filter(holder => parseFloat(holder.balance) >= minThreshold);
 
       setHolders(holdersArray);
       setFilteredHolders(holdersArray);
@@ -111,36 +113,43 @@ export const useAirdrop = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [connection, getMintData]);
+  }, [connection]);
 
-  const filterHolders = useCallback((threshold: string): TokenHolder[] => {
-    const thresholdBigInt = BigInt(threshold);
-    const filtered = holders.filter(holder =>
-      BigInt(holder.balance) >= thresholdBigInt
-    );
-    setFilteredHolders(filtered);
-    return filtered;
+  const filterHolders = useCallback((thresholdInput: string): TokenHolder[] => {
+    const threshold = parseFloat(thresholdInput);
+    if (isNaN(threshold)) return holders;
+    setThreshold(threshold);
   }, [holders]);
 
+  useEffect(() => {
+
+    const filtered = holders.filter(holder =>
+      parseFloat(holder.balance) >= threshold
+    );
+
+    setFilteredHolders(filtered);
+    
+}, [holders, threshold]);
+
   const calculateAirdropAmounts = useCallback((
-    totalAmount: string,
+    totalAmountInput: string,
     distributionType: DistributionType = 'fixed'
   ): AirdropRecipient[] => {
 
     if (filteredHolders.length === 0) return [];
 
-    const totalAmountBigInt = BigInt(totalAmount);
+    const totalAmount = parseFloat(totalAmountInput);
     let newDistributions: AirdropRecipient[];
 
     if (distributionType === 'fixed') {
 
-      const amountPerHolder = totalAmountBigInt;
+      const amountPerHolder = totalAmount;
       newDistributions = holders.map(holder => ({
         address: holder.address,
         amount: amountPerHolder.toString()
       }));
     } else if (distributionType === 'even') {
-      const amountPerHolder = totalAmountBigInt / BigInt(filteredHolders.length);
+      const amountPerHolder = totalAmount / filteredHolders.length;
       
       newDistributions = filteredHolders.map(holder => ({
         address: holder.address,
@@ -150,12 +159,12 @@ export const useAirdrop = () => {
     else {
       // Pro rata distribution
       const totalBalance = filteredHolders.reduce(
-        (acc, holder) => acc + BigInt(holder.balance),
-        BigInt(0)
+        (acc, holder) => acc + parseFloat(holder.balance),
+        0
       );
 
       newDistributions = filteredHolders.map(holder => {
-        const share = (BigInt(holder.balance) * BigInt(totalAmount)) / totalBalance;
+        const share = (parseFloat(holder.balance) * parseFloat(totalAmountInput)) / totalBalance;
         return {
           address: holder.address,
           amount: share.toString()
@@ -167,23 +176,31 @@ export const useAirdrop = () => {
     return newDistributions;
   }, [filteredHolders]);
 
+  type ProgressCallback = (
+    progress: number, 
+    signature?: string, 
+    recipientAddresses?: string[]
+  ) => void;
+
   const executeAirdrop = useCallback(async (
     recipients: AirdropRecipient[],
-    onProgress: (progress: number) => void = () => {}
+    onProgress: ProgressCallback = () => {}
   ): Promise<boolean> => {
-    if (!publicKey || !signTransaction) {
-      throw new Error('Wallet not connected');
+    if (!wallet || !wallet.publicKey ) {
+      toast.error('Wallet not connected');
+      return;
     }
 
-    if (!mintData) {
-      throw new Error('Mint data not set. Take snapshot first.');
+    if (!airdroppedMint) {
+      toast.error('Airdropped Mint data not set.');
+      return;
     }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const mintPubkey = new PublicKey(mintData.mint.address);
+      const mintPubkey = airdroppedMint.mint.address;
       
       // Process in batches of 8 to avoid hitting transaction size limits
       const BATCH_SIZE = 8;
@@ -193,6 +210,18 @@ export const useAirdrop = () => {
         batches.push(recipients.slice(i, i + BATCH_SIZE));
       }
 
+                
+      // Get or create associated token accounts
+      const senderATA = await getAssociatedTokenAddress(
+        mintPubkey,
+        wallet.publicKey,
+        false,
+        airdroppedMint.token_program
+      );
+
+      console.log("senderATA: ", senderATA.toString());
+
+
       for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
         const transaction = new Transaction();
@@ -201,32 +230,28 @@ export const useAirdrop = () => {
         // Build transfer instructions for batch
         for (const { address, amount } of batch) {
           const recipientPubkey = new PublicKey(address);
-          
-          // Get or create associated token accounts
-          const senderATA = await getAssociatedTokenAddress(
-            mintPubkey,
-            publicKey,
-            false,
-            mintData.token_program
-          );
+          const airdropAmount = Math.floor(parseFloat(amount) * Math.pow(10, airdroppedMint.mint.decimals));
+
           
           const recipientATA = await getAssociatedTokenAddress(
             mintPubkey,
             recipientPubkey,
-            false,
-            mintData.token_program
+            true,
+            airdroppedMint.token_program
           );
+
+          console.log("recipientATA: ", recipientATA.toString());
 
           // Check if recipient has an associated token account
           const recipientAccount = await connection.getAccountInfo(recipientATA);
           if (!recipientAccount) {
             instructions.push(
               createAssociatedTokenAccountInstruction(
-                publicKey,
+                wallet.publicKey,
                 recipientATA,
                 recipientPubkey,
                 mintPubkey,
-                mintData.token_program
+                airdroppedMint.token_program
               )
             );
           }
@@ -235,28 +260,38 @@ export const useAirdrop = () => {
             createTransferInstruction(
               senderATA,
               recipientATA,
-              publicKey,
-              BigInt(amount),
+              wallet.publicKey,
+              airdropAmount,
               [],
-              mintData.token_program
+              airdroppedMint.token_program
             )
           );
+
         }
 
         transaction.add(...instructions);
 
         // Get latest blockhash
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = publicKey;
+        const  blockhash = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash.blockhash;
+        transaction.feePayer = wallet.publicKey;
 
         // Sign and send transaction
-        const signed = await signTransaction(transaction);
-        const signature = await connection.sendRawTransaction(signed.serialize());
-        await connection.confirmTransaction(signature);
+        let signed_transaction = await wallet.signTransaction(transaction);
 
+        var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
+        await connection.confirmTransaction({
+          blockhash: blockhash.blockhash,
+          lastValidBlockHeight: blockhash.lastValidBlockHeight,
+          signature
+        },
+        'confirmed' );
         // Update progress
-        onProgress((i + 1) / batches.length);
+        onProgress(
+          (i + 1) / batches.length,
+          signature,
+          batch.map(r => r.address)
+        );      
       }
 
       return true;
@@ -267,19 +302,21 @@ export const useAirdrop = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [connection, publicKey, signTransaction, mintData]);
+  }, [connection, wallet, airdroppedMint]);
 
   return {
     isLoading,
     error,
     holders,
     filteredHolders,
-    mintData,
+    snapshotMint,
+    airdroppedMint,
     setHolders,
     takeSnapshot,
     filterHolders,
     calculateAirdropAmounts,
-    executeAirdrop
+    executeAirdrop,
+    setAirdroppedMint
   };
 };
 

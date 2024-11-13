@@ -11,6 +11,7 @@ import { Config } from "../Solana/constants";
 import { PublicKey } from "@solana/web3.js";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
+import { Attribute } from "@metaplex-foundation/mpl-core";
 
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;
@@ -42,12 +43,21 @@ function ViewNFTDetails({
 
     const [solAmount, setSolAmount] = useState<number>(0);
 
-    let asset_name, asset_Attribute;
+    let asset_name;
+    let offchain_attributes = [];
+    let onchain_attributes : Attribute[] = [];
+
     let asset_key: PublicKey | null = null;
     if (nft !== undefined) {
         asset_name = nft.metadata["name"] ? nft.metadata["name"] : nft.asset.name;
-        asset_Attribute = nft.metadata["attributes"] ? nft.metadata["attributes"] : null;
         asset_key = nft ? new PublicKey(nft.asset.publicKey.toString()) : null;
+
+        offchain_attributes = nft.metadata["attributes"] ? nft.metadata["attributes"] : [];
+        onchain_attributes = nft.asset.attributes.attributeList;
+        const index = onchain_attributes.findIndex(attr => attr.key === 'CookWrapIndex');
+        if (index > -1) {
+            onchain_attributes.splice(index, 1);
+        }
     }
 
     return (
@@ -85,9 +95,15 @@ function ViewNFTDetails({
 
                                 <div className="flex-grow">
                                     <div className="grid grid-cols-2 gap-2">
-                                        {nft?.metadata?.attributes?.map((attr, index) => (
+                                        {offchain_attributes.map((attr, index) => (
                                             <div key={index} className="rounded-xl bg-slate-700/50 px-3 py-[1.3rem] backdrop-blur-sm">
                                                 <div className="text-sm text-white/70">{attr.trait_type}</div>
+                                                <div className="mt-1 text-lg font-semibold text-white">{attr.value}</div>
+                                            </div>
+                                        ))}
+                                        {onchain_attributes.map((attr, index) => (
+                                            <div key={index} className="rounded-xl bg-slate-700/50 px-3 py-[1.3rem] backdrop-blur-sm">
+                                                <div className="text-sm text-white/70">{attr.key}</div>
                                                 <div className="mt-1 text-lg font-semibold text-white">{attr.value}</div>
                                             </div>
                                         ))}
