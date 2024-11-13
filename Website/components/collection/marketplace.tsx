@@ -27,6 +27,7 @@ interface MarketplaceProps {
 }
 
 function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: MarketplaceProps) {
+    const { sm } = useResponsive();
     const wallet = useWallet();
     const [selectedNFT, setSelectedNFT] = useState<AssetWithMetadata | null>(null);
     const [isNFTListed, setIsNFTListed] = useState(false);
@@ -105,13 +106,33 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                     onMouseEnter={() => handleMouseEnter(index)}
                                                     onMouseLeave={handleMouseLeave}
                                                 >
-                                                    <Image
-                                                        src={nft.metadata["image"]}
-                                                        width={180}
-                                                        height={180}
-                                                        style={{ borderRadius: "8px" }}
-                                                        alt="nftImage"
-                                                    />
+                                                    <div className="relative">
+                                                        <Image
+                                                            src={nft.metadata["image"]}
+                                                            width={180}
+                                                            height={180}
+                                                            style={{ borderRadius: "8px" }}
+                                                            alt="nftImage"
+                                                        />
+                                                        <div className="absolute bottom-0 right-0">
+                                                            <span className="absolute bottom-2 right-2 mt-2 flex items-center justify-center gap-1 rounded-lg bg-black/50 px-2 py-1 shadow-lg ring-1 ring-white/10 backdrop-blur-sm md:px-3 md:py-2">
+                                                                <p className="text-sm font-semibold text-white md:text-[1rem]">
+                                                                    {lamportsToSol(price)}
+                                                                </p>
+                                                                <div className="flex items-center text-white">
+                                                                    <div className="w-4 drop-shadow-md md:w-6">
+                                                                        <Image
+                                                                            src={Config.token_image}
+                                                                            width={sm ? 18 : 23}
+                                                                            height={sm ? 18 : 23}
+                                                                            alt={Config.token}
+                                                                            className="rounded-full"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                     <VStack
                                                         style={{
                                                             ...overlayVisibleStyle,
@@ -137,24 +158,9 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         <FaEye />
                                                     </VStack>
                                                 </Box>
-                                                <span className="mt-2 flex items-center justify-center font-semibold">
-                                                    <p className="text-white">{lamportsToSol(price)}</p>
-                                                    <div className="flex flex-col gap-2 text-white">
-                                                        <button className="flex items-center gap-2 rounded-lg px-2.5">
-                                                            <div className="w-6">
-                                                                <Image
-                                                                    src={Config.token_image}
-                                                                    width={25}
-                                                                    height={25}
-                                                                    alt="$JOY Icon"
-                                                                    className="rounded-full"
-                                                                />
-                                                            </div>
-                                                        </button>
-                                                    </div>
-                                                </span>
+                                                
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90"
+                                                    className="mt-2 w-full transition-all hover:opacity-90 rounded-md"
                                                     size="lg"
                                                     onClick={async () => {
                                                         if (isUserOwned) {
