@@ -24,24 +24,11 @@ interface AirdropRecipient {
   amount: string;
 }
 
-type DistributionType = 'fixed' | 'proRata';
+type DistributionType = 'fixed' | 'even' | 'proRata';
 
-interface HookState {
-  isLoading: boolean;
-  error: string | null;
-  holders: TokenHolder[];
-  filteredHolders: TokenHolder[];
-  mintData: MintData | null;
-}
 
-interface HookActions {
-  takeSnapshot: (mintAddress: string, minThreshold?: string) => Promise<TokenHolder[]>;
-  filterHolders: (threshold: string) => TokenHolder[];
-  calculateAirdropAmounts: (totalAmount: string, distributionType: DistributionType) => AirdropRecipient[];
-  executeAirdrop: (recipients: AirdropRecipient[], onProgress?: (progress: number) => void) => Promise<boolean>;
-}
 
-export const useAirdrop = (): HookState & HookActions => {
+export const useAirdrop = () => {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
   
@@ -92,7 +79,7 @@ export const useAirdrop = (): HookState & HookActions => {
         console.log(tokenAccount, tokenAccount.owner.toString());
         
         // Skip closed or frozen accounts
-        if (tokenAccount.state !== 1) continue;
+        if (tokenAccount.state !== 0) continue;
 
         const ownerAddress = tokenAccount.owner.toString();
         const balance = tokenAccount.amount;
@@ -142,13 +129,21 @@ export const useAirdrop = (): HookState & HookActions => {
     const totalAmountBigInt = BigInt(totalAmount);
 
     if (distributionType === 'fixed') {
+
+      const amountPerHolder = totalAmountBigInt;
+      return filteredHolders.map(holder => ({
+        address: holder.address,
+        amount: amountPerHolder.toString()
+      }));
+    } else if (distributionType === 'even') {
       const amountPerHolder = totalAmountBigInt / BigInt(filteredHolders.length);
       
       return filteredHolders.map(holder => ({
         address: holder.address,
         amount: amountPerHolder.toString()
       }));
-    } else {
+    }
+    else {
       // Pro rata distribution
       const totalBalance = filteredHolders.reduce(
         (acc, holder) => acc + BigInt(holder.balance),
@@ -274,6 +269,7 @@ export const useAirdrop = (): HookState & HookActions => {
     holders,
     filteredHolders,
     mintData,
+    setHolders,
     takeSnapshot,
     filterHolders,
     calculateAirdropAmounts,

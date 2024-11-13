@@ -21,15 +21,18 @@ import {
   HStack,
   useToast,
   Progress,
+  IconButton,
+  Link,
 } from '@chakra-ui/react';
 import { useAirdrop } from '../hooks/useAirdrop';
 import { PublicKey } from '@solana/web3.js';
+import { RiDeleteBinLine } from 'react-icons/ri';  // Import the icon
 
 
 export const AirdropPage = () => {
   const toast = useToast();
   const [mintAddress, setMintAddress] = useState('');
-  const [distributionType, setDistributionType] = useState<'fixed' | 'proRata'>('fixed');
+  const [distributionType, setDistributionType] = useState<'fixed' | 'even' | 'proRata'>('fixed');
   const [amount, setAmount] = useState('');
   const [threshold, setThreshold] = useState('0');
   const [airdropProgress, setAirdropProgress] = useState(0);
@@ -40,6 +43,7 @@ export const AirdropPage = () => {
     takeSnapshot,
     calculateAirdropAmounts,
     executeAirdrop,
+    setHolders,
     holders,
     mintData,
     isLoading,
@@ -136,6 +140,12 @@ export const AirdropPage = () => {
     }
   };
 
+  const handleDeleteHolder = (addressToDelete: string) => {
+    // Update holders directly
+    const newHolders = holders.filter(holder => holder.address !== addressToDelete);
+    setHolders(newHolders);
+  };
+
   console.log("holders", holders);
   return (
     <Box p={8} maxW="1200px" mx="auto">
@@ -175,9 +185,10 @@ export const AirdropPage = () => {
         {/* Distribution Type Selection */}
         <FormControl>
           <FormLabel>Distribution Type</FormLabel>
-          <RadioGroup value={distributionType} onChange={(value: 'fixed' | 'proRata') => setDistributionType(value)}>
+          <RadioGroup value={distributionType} onChange={(value: 'fixed' | 'even' | 'proRata') => setDistributionType(value)}>
             <Stack direction="row">
               <Radio value="fixed">Fixed Amount Per Holder</Radio>
+              <Radio value="even">Even Split Per Holder</Radio>
               <Radio value="proRata">Pro Rata Split</Radio>
             </Stack>
           </RadioGroup>
@@ -221,28 +232,54 @@ export const AirdropPage = () => {
                   <Th>Wallet</Th>
                   <Th isNumeric>Current Balance</Th>
                   <Th isNumeric>Will Receive</Th>
+                  <Th> Signature </Th>
+                  <Th> Remove</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {distributions.map(({ address, amount: airdropAmount }) => {
-                  const holder = holders.find(h => h.address === address);
-                  const isCompleted = completedAirdrops.has(address);
-                  
-                  return (
-                    <Tr key={address} bg={isCompleted ? 'green.50' : undefined}>
-                      <Td>
-                        {isCompleted ? '✓' : ''}
-                      </Td>
-                      <Td>
-                        <Text fontSize="sm" fontFamily="monospace">
-                          {address.slice(0, 4)}...{address.slice(-4)}
-                        </Text>
-                      </Td>
-                      <Td isNumeric>{holder?.balance || '0'}</Td>
-                      <Td isNumeric>{airdropAmount}</Td>
-                    </Tr>
-                  );
-                })}
+              {holders.map(holder => {
+                const distribution = distributions.find(d => d.address === holder.address);
+                const isCompleted = completedAirdrops.has(holder.address);
+                const signature = "aaaaaaaaaaaa"//signatures.get(holder.address);
+                
+                return (
+                  <Tr key={holder.address} bg={isCompleted ? 'green.50' : undefined}>
+                    <Td>
+                      {isCompleted ? '✓' : ''}
+                    </Td>
+                    <Td>
+                      <Text fontSize="sm" fontFamily="monospace">
+                        {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
+                      </Text>
+                    </Td>
+                    <Td isNumeric>{holder.balance}</Td>
+                    <Td isNumeric>{distribution?.amount || '0'}</Td>
+                    <Td>
+                      {signature && (
+                        <Link 
+                          href={`https://solscan.io/tx/${signature}`}
+                          isExternal
+                          color="blue.500"
+                          fontSize="sm"
+                          fontFamily="monospace"
+                        >
+                          {signature.slice(0, 4)}...{signature.slice(-4)}
+                        </Link>
+                      )}
+                    </Td>
+                    <Td>
+                      <IconButton
+                        aria-label="Remove address"
+                        icon={<RiDeleteBinLine />}
+                        size="sm"
+                        colorScheme="red"
+                        variant="ghost"
+                        onClick={() => handleDeleteHolder(holder.address)}
+                      />
+                    </Td>
+                  </Tr>
+                );
+              })}
               </Tbody>
             </Table>
 
