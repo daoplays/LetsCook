@@ -35,7 +35,7 @@ const EclipseMainNetConfig: NetworkConfig = {
     NETWORK: "eclipse",
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
-    RPC_NODE: "https://mainnetbeta-rpc.eclipse.xyz/",
+    RPC_NODE: "https:///eclipse.lgns.net/",
     WSS_NODE: "wss://mainnetbeta-rpc.eclipse.xyz/",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
