@@ -51,6 +51,7 @@ export const AirdropPage = () => {
     executeAirdrop,
     setHolders,
     holders,
+    filteredHolders,
     mintData,
     isLoading,
     error,
@@ -157,13 +158,13 @@ export const AirdropPage = () => {
 const handleDownloadCSV = () => {
   try {
     // 1. Create records from holders data
-    const records: AirdropRecord[] = holders.map(holder => {
+    const records: AirdropRecord[] = filteredHolders.map(holder => {
       const distribution = distributions.find(d => d.address === holder.address);
       return {
         address: holder.address,
         currentBalance: holder.balance,
         airdropAmount: distribution?.amount || '0',
-        signature: "aaaaaaaaa"//signatures.get(holder.address) || ''
+        signature: "aaaaaaaa"//signatures.get(holder.address) || ''
       };
     });
 

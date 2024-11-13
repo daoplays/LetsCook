@@ -26,86 +26,18 @@ interface AirdropRecipient {
 
 type DistributionType = 'fixed' | 'even' | 'proRata';
 
-// First define the type for our row data
-interface AirdropRecord {
-  address: string;      // wallet address
-  currentBalance: string;  // their token balance
-  airdropAmount: string;   // what they'll receive
-  signature?: string;    // transaction signature if airdrop completed
-}
 
 
 export const useAirdrop = () => {
   const { connection } = useConnection();
-  const { publicKey, signTransaction } = useWallet();
   
+  const { publicKey, signTransaction } = useWallet();
+  const [distributions, setDistributions] = useState<AirdropRecipient[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [holders, setHolders] = useState<TokenHolder[]>([]);
   const [filteredHolders, setFilteredHolders] = useState<TokenHolder[]>([]);
   const [mintData, setMintData] = useState<MintData | null>(null);
-
-
-// The download handler function
-const handleDownloadCSV = () => {
-  try {
-    // 1. Create records from holders data
-    const records: AirdropRecord[] = holders.map(holder => {
-      const distribution = distributions.find(d => d.address === holder.address);
-      return {
-        address: holder.address,
-        currentBalance: holder.balance,
-        airdropAmount: distribution?.amount || '0',
-        signature: signatures.get(holder.address) || ''
-      };
-    });
-
-    // 2. Create CSV header row and format data rows
-    const csvRows = [
-      // Header row
-      ['Wallet Address', 'Current Balance', 'Airdrop Amount', 'Transaction Signature'],
-      // Data rows
-      ...records.map(record => [
-        record.address,
-        record.currentBalance,
-        record.airdropAmount,
-        record.signature
-      ])
-    ];
-
-    // 3. Convert to CSV string (handle potential commas in data)
-    const csvContent = csvRows
-      .map(row => row.map(cell => 
-        // Wrap in quotes if contains comma
-        cell.includes(',') ? `"${cell}"` : cell
-      ).join(','))
-      .join('\n');
-
-    // 4. Create and trigger download
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    // Use mint address and timestamp in filename
-    link.setAttribute(
-      'download', 
-      `airdrop_${mintAddress.slice(0,8)}_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    
-    // 5. Trigger download and cleanup
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-  } catch (err) {
-    toast({
-      title: 'Error',
-      description: 'Failed to download CSV',
-      status: 'error',
-    });
-  }
-};
 
   const takeSnapshot = useCallback(async (
     mintAddress: string,
@@ -194,20 +126,23 @@ const handleDownloadCSV = () => {
     totalAmount: string,
     distributionType: DistributionType = 'fixed'
   ): AirdropRecipient[] => {
+
     if (filteredHolders.length === 0) return [];
+
     const totalAmountBigInt = BigInt(totalAmount);
+    let newDistributions: AirdropRecipient[];
 
     if (distributionType === 'fixed') {
 
       const amountPerHolder = totalAmountBigInt;
-      return filteredHolders.map(holder => ({
+      newDistributions = holders.map(holder => ({
         address: holder.address,
         amount: amountPerHolder.toString()
       }));
     } else if (distributionType === 'even') {
       const amountPerHolder = totalAmountBigInt / BigInt(filteredHolders.length);
       
-      return filteredHolders.map(holder => ({
+      newDistributions = filteredHolders.map(holder => ({
         address: holder.address,
         amount: amountPerHolder.toString()
       }));
@@ -219,15 +154,17 @@ const handleDownloadCSV = () => {
         BigInt(0)
       );
 
-      return filteredHolders.map(holder => {
-        const share = (BigInt(holder.balance) * totalAmountBigInt) / totalBalance;
-        
+      newDistributions = filteredHolders.map(holder => {
+        const share = (BigInt(holder.balance) * BigInt(totalAmount)) / totalBalance;
         return {
           address: holder.address,
           amount: share.toString()
         };
       });
     }
+
+    setDistributions(newDistributions);
+    return newDistributions;
   }, [filteredHolders]);
 
   const executeAirdrop = useCallback(async (
