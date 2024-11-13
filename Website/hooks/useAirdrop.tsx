@@ -26,6 +26,13 @@ interface AirdropRecipient {
 
 type DistributionType = 'fixed' | 'even' | 'proRata';
 
+// First define the type for our row data
+interface AirdropRecord {
+  address: string;      // wallet address
+  currentBalance: string;  // their token balance
+  airdropAmount: string;   // what they'll receive
+  signature?: string;    // transaction signature if airdrop completed
+}
 
 
 export const useAirdrop = () => {
@@ -37,6 +44,68 @@ export const useAirdrop = () => {
   const [holders, setHolders] = useState<TokenHolder[]>([]);
   const [filteredHolders, setFilteredHolders] = useState<TokenHolder[]>([]);
   const [mintData, setMintData] = useState<MintData | null>(null);
+
+
+// The download handler function
+const handleDownloadCSV = () => {
+  try {
+    // 1. Create records from holders data
+    const records: AirdropRecord[] = holders.map(holder => {
+      const distribution = distributions.find(d => d.address === holder.address);
+      return {
+        address: holder.address,
+        currentBalance: holder.balance,
+        airdropAmount: distribution?.amount || '0',
+        signature: signatures.get(holder.address) || ''
+      };
+    });
+
+    // 2. Create CSV header row and format data rows
+    const csvRows = [
+      // Header row
+      ['Wallet Address', 'Current Balance', 'Airdrop Amount', 'Transaction Signature'],
+      // Data rows
+      ...records.map(record => [
+        record.address,
+        record.currentBalance,
+        record.airdropAmount,
+        record.signature
+      ])
+    ];
+
+    // 3. Convert to CSV string (handle potential commas in data)
+    const csvContent = csvRows
+      .map(row => row.map(cell => 
+        // Wrap in quotes if contains comma
+        cell.includes(',') ? `"${cell}"` : cell
+      ).join(','))
+      .join('\n');
+
+    // 4. Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    // Use mint address and timestamp in filename
+    link.setAttribute(
+      'download', 
+      `airdrop_${mintAddress.slice(0,8)}_${new Date().toISOString().split('T')[0]}.csv`
+    );
+    
+    // 5. Trigger download and cleanup
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+  } catch (err) {
+    toast({
+      title: 'Error',
+      description: 'Failed to download CSV',
+      status: 'error',
+    });
+  }
+};
 
   const takeSnapshot = useCallback(async (
     mintAddress: string,

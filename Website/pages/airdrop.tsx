@@ -26,8 +26,14 @@ import {
 } from '@chakra-ui/react';
 import { useAirdrop } from '../hooks/useAirdrop';
 import { PublicKey } from '@solana/web3.js';
-import { RiDeleteBinLine } from 'react-icons/ri';  // Import the icon
+import { RiDeleteBinLine, RiDownloadLine } from 'react-icons/ri';  // Import the icon
 
+interface AirdropRecord {
+  address: string;      // wallet address
+  currentBalance: string;  // their token balance
+  airdropAmount: string;   // what they'll receive
+  signature?: string;    // transaction signature if airdrop completed
+}
 
 export const AirdropPage = () => {
   const toast = useToast();
@@ -146,6 +152,68 @@ export const AirdropPage = () => {
     setHolders(newHolders);
   };
 
+
+// The download handler function
+const handleDownloadCSV = () => {
+  try {
+    // 1. Create records from holders data
+    const records: AirdropRecord[] = holders.map(holder => {
+      const distribution = distributions.find(d => d.address === holder.address);
+      return {
+        address: holder.address,
+        currentBalance: holder.balance,
+        airdropAmount: distribution?.amount || '0',
+        signature: "aaaaaaaaa"//signatures.get(holder.address) || ''
+      };
+    });
+
+    // 2. Create CSV header row and format data rows
+    const csvRows = [
+      // Header row
+      ['Wallet Address', 'Current Balance', 'Airdrop Amount', 'Transaction Signature'],
+      // Data rows
+      ...records.map(record => [
+        record.address,
+        record.currentBalance,
+        record.airdropAmount,
+        record.signature
+      ])
+    ];
+
+    // 3. Convert to CSV string (handle potential commas in data)
+    const csvContent = csvRows
+      .map(row => row.map(cell => 
+        // Wrap in quotes if contains comma
+        cell.includes(',') ? `"${cell}"` : cell
+      ).join(','))
+      .join('\n');
+
+    // 4. Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    // Use mint address and timestamp in filename
+    link.setAttribute(
+      'download', 
+      `airdrop_${mintAddress.slice(0,8)}_${new Date().toISOString().split('T')[0]}.csv`
+    );
+    
+    // 5. Trigger download and cleanup
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+  } catch (err) {
+    toast({
+      title: 'Error',
+      description: 'Failed to download CSV',
+      status: 'error',
+    });
+  }
+};
+
   console.log("holders", holders);
   return (
     <Box p={8} maxW="1200px" mx="auto">
@@ -225,6 +293,16 @@ export const AirdropPage = () => {
         {/* Holders Table */}
         {holders.length > 0 && (
           <Box overflowX="auto">
+          <Button
+            leftIcon={<RiDownloadLine />}  // Using react-icons
+            colorScheme="teal"
+            size="sm"
+            mb={4}
+            onClick={handleDownloadCSV}
+            disabled={holders.length === 0}
+          >
+            Download CSV
+          </Button>
             <Table variant="simple">
               <Thead>
                 <Tr>
