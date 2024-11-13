@@ -20,7 +20,7 @@ import { CollectionKeys, Config, SYSTEM_KEY } from "@/components/Solana/constant
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import useNFTBalance from "@/hooks/data/useNFTBalance";
 import { useDisclosure, VStack, HStack, Text, Box } from "@chakra-ui/react";
-import { ReceivedAssetModal, ReceivedAssetModalStyle } from "@/components/Solana/modals";
+import { ReceivedAssetModalStyle } from "@/components/Solana/modals";
 import PageNotFound from "@/components/pageNotFound";
 import { bignum_to_num } from "@/components/Solana/state";
 import useAppRoot from "@/context/useAppRoot";
@@ -30,6 +30,7 @@ import useResponsive from "@/hooks/useResponsive";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import MyNFTsPanel from "./myAssets";
 import Marketplace from "./marketplace";
+import { ReceivedAssetModal } from "./receiveAssetModal";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -58,8 +59,8 @@ const Joy = () => {
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
     const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
 
-    const prevUserListedNFTsRef = useRef<string>('');
-    
+    const prevUserListedNFTsRef = useRef<string>("");
+
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
     const {
@@ -80,7 +81,7 @@ const Joy = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
 
-    const { tokenBalance } = useTokenBalance({mintData: tokenMint});
+    const { tokenBalance } = useTokenBalance({ mintData: tokenMint });
 
     const { tokenBalance: whiteListTokenBalance } = useTokenBalance({ mintData: whitelistMint });
 
@@ -96,36 +97,17 @@ const Joy = () => {
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
-    const { isOpen: isReleaseModalOpen, onOpen: openReleaseModal, onClose: closeReleaseModal } = useDisclosure();
-    const modalStyle: ReceivedAssetModalStyle = {
-        check_image: "/images/cooks.jpeg",
-        failed_image: "/images/cooks.jpeg",
-        fontFamily: "KGSummerSunshineBlackout",
-        fontColor: "white",
-        succsss_h: 620,
-        failed_h: 620,
-        checking_h: 620,
-        success_w: 620,
-        failed_w: 620,
-        checking_w: 620,
-        sm_succsss_h: 570,
-        sm_success_w: 420,
-        sm_failed_h: 350,
-        sm_failed_w: 350,
-        sm_checking_h: 570,
-        sm_checking_w: 420,
-    };
-
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
 
-        let new_listings : AssetWithMetadata[] = [];
-        let user_listings : string[] = [];
+        let new_listings: AssetWithMetadata[] = [];
+        let user_listings: string[] = [];
         for (let i = 0; i < collectionPlugins.listings.length; i++) {
             const asset_key = collectionPlugins.listings[i].asset;
             const asset = collectionAssets.get(asset_key.toString());
             if (asset) new_listings.push(asset);
-            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey)) user_listings.push(asset.asset.publicKey.toString());
+            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
+                user_listings.push(asset.asset.publicKey.toString());
         }
 
         setListedNFTs(new_listings);
@@ -176,15 +158,16 @@ const Joy = () => {
     const enoughTokenBalance =
         (wrapSOL ? userSOLBalance : tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
-    const whitelistActive = whitelistMint &&
-    collectionPlugins.whitelistPhaseEnd &&
-    (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
-        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime());
+    const whitelistActive =
+        whitelistMint &&
+        collectionPlugins.whitelistPhaseEnd &&
+        (collectionPlugins.whitelistPhaseEnd.getTime() === 0 || new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime());
 
     const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
-    const hasEnoughWhitelistToken = whitelistMint && whitelistActive
-        ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
-        : true;
+    const hasEnoughWhitelistToken =
+        whitelistMint && whitelistActive
+            ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
+            : true;
 
     let progress_string = "";
     if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
@@ -200,7 +183,7 @@ const Joy = () => {
             style={{ background: "linear-gradient(180deg, #5DBBFF 0%, #0076CC 100%)" }}
         >
             {/* Header */}
-            <div className="mt-15 absolute top-0 flex min-h-20 w-full items-center bg-[#00357A] xl:h-24 z-50">
+            <div className="mt-15 absolute top-0 z-50 flex min-h-20 w-full items-center bg-[#00357A] xl:h-24">
                 <p className="font-face-wc left-0 right-0 mx-auto mt-2 text-wrap text-center text-[1.75rem] text-white sm:text-3xl xl:text-6xl">
                     THE <span className="text-[#FFDD56]">JOY</span> TRANSMOGRIFIER
                 </p>
@@ -208,10 +191,15 @@ const Joy = () => {
 
             {isHomePage ? (
                 <div className="absolute bottom-0 left-0 right-0 flex justify-center">
-                    <Image src={"/curatedLaunches/joy/bg asset.png"} width={1050} height={1050} alt="JOY BOT"/>
+                    <Image src={"/curatedLaunches/joy/bot.png"} width={750} height={750} alt="JOY BOT" />
 
                     <p
-                        className="font-face-wc absolute left-1/2 top-1/2 z-50 -translate-x-1/2 translate-y-1/2 md:translate-y-[60%] lg:translate-y-[90%] cursor-pointer text-2xl text-white transition-all hover:text-[4rem] md:text-5xl xl:text-6xl"
+                        className="font-face-wc absolute cursor-pointer text-3xl text-white transition-all hover:text-[4rem] md:text-6xl"
+                        style={{
+                            top: "50%",
+                            left: "50%",
+                            transform: "translate(-50%, 25%)",
+                        }}
                         onClick={() => setIsHomePage(false)}
                     >
                         Start
@@ -219,14 +207,12 @@ const Joy = () => {
                 </div>
             ) : (
                 <>
-                    <Image
-                        src={"/curatedLaunches/joy/bg asset.png"}
-                        width={1150}
-                        height={1150}
-                        alt="JOY BOT"
-                        className="absolute bottom-0"
-                    />
-                    <div className="z-10 flex flex-col items-center gap-2 px-4 mt-16 md:gap-3">
+                    <div className="absolute bottom-0 left-0 right-0 flex justify-center">
+                        <Image src={"/curatedLaunches/joy/bot.png"} width={750} height={750} alt="JOY BOT" />
+                    </div>
+                    <div
+                        className={`mt-16 flex transform flex-col items-center gap-2 px-4 transition-all duration-500 md:gap-3 ${isHomePage ? "scale-80 opacity-0" : "scale-100 opacity-100"}`}
+                    >
                         <div className="-ml-1 flex w-fit gap-1 rounded-2xl p-2 xl:bg-[#00357A]/75 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter">
                             <button
                                 onClick={() => setActiveTab("Mint")}
@@ -264,7 +250,7 @@ const Joy = () => {
                                 className={`flex transform items-center justify-center gap-16 rounded-2xl bg-clip-padding transition-all duration-500 md:p-8 xl:bg-[#00357A]/75 xl:px-16 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter ${isHomePage ? "scale-80 opacity-0" : "scale-100 opacity-100"} `}
                             >
                                 <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
-                                    <p className="text-6xl font-face-wc">${collection.token_symbol}</p>
+                                    <p className="font-face-wc text-6xl">${collection.token_symbol}</p>
 
                                     <Image
                                         src={tokenMint.icon}
@@ -367,9 +353,9 @@ const Joy = () => {
                                 </div>
 
                                 <div className="w-full rounded-2xl border border-t-[3px] border-t-[#FFDD56] bg-[#00357A]/75 p-4 text-white shadow-2xl md:w-[400px] xl:bg-transparent">
-                                    <div className="flex flex-col items-center gap-2 mx-auto mb-4 w-fit">
-                                        <p className="mx-auto text-3xl font-face-wc w-fit">Transmogrify</p>
-                                        <div className="flex items-center gap-1 text-md">
+                                    <div className="mx-auto mb-4 flex w-fit flex-col items-center gap-2">
+                                        <p className="font-face-wc mx-auto w-fit text-3xl">Transmogrify</p>
+                                        <div className="text-md flex items-center gap-1">
                                             <p>
                                                 {!isTokenToNFT
                                                     ? `1 NFT = ${parseFloat(formatPrice(outAmount, 2)).toLocaleString(
@@ -403,7 +389,7 @@ const Joy = () => {
                                     <div className={`flex ${isTokenToNFT ? "flex-col" : "flex-col-reverse"}`}>
                                         {/* From Token Input */}
                                         <div className={`${isTokenToNFT ? "" : "-mt-6 mb-3"}`}>
-                                            <div className="flex items-center justify-between mb-2">
+                                            <div className="mb-2 flex items-center justify-between">
                                                 <div className="text-sm">{isTokenToNFT ? `You're Swapping` : "To Receive"}</div>
 
                                                 <div className="flex items-center gap-1 opacity-75">
@@ -414,7 +400,7 @@ const Joy = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
+                                            <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
                                                 <div className="flex flex-col gap-2">
                                                     <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                         <div className="w-6">
@@ -431,7 +417,7 @@ const Joy = () => {
                                                 </div>
                                                 <input
                                                     type="text"
-                                                    className="w-full text-xl text-right text-gray-500 bg-transparent cursor-not-allowed focus:outline-none"
+                                                    className="w-full cursor-not-allowed bg-transparent text-right text-xl text-gray-500 focus:outline-none"
                                                     placeholder="0"
                                                     value={
                                                         isTokenToNFT
@@ -458,7 +444,7 @@ const Joy = () => {
                                         <div className="flex justify-center">
                                             <button
                                                 onClick={() => setIsTokenToNFT(!isTokenToNFT)}
-                                                className="z-50 p-2 mx-auto my-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
+                                                className="z-50 mx-auto my-2 cursor-pointer rounded-lg bg-gray-800 p-2 hover:bg-gray-700"
                                             >
                                                 <IoSwapVertical size={18} className="opacity-75" />
                                             </button>
@@ -466,7 +452,7 @@ const Joy = () => {
 
                                         {/* To Token Input */}
                                         <div className={`${!isTokenToNFT ? "" : "-mt-6 mb-3"}`}>
-                                            <div className="flex items-center justify-between mb-2">
+                                            <div className="mb-2 flex items-center justify-between">
                                                 <div className="text-sm">{!isTokenToNFT ? `You're Swapping` : "To Receive"}</div>
 
                                                 <div className="flex items-center gap-1 opacity-75">
@@ -477,7 +463,7 @@ const Joy = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
+                                            <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
                                                 <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                     <div className="w-6">
                                                         <Image
@@ -492,7 +478,7 @@ const Joy = () => {
                                                 </button>
                                                 <input
                                                     type="text"
-                                                    className="w-full text-xl text-right text-gray-500 bg-transparent cursor-not-allowed focus:outline-none"
+                                                    className="w-full cursor-not-allowed bg-transparent text-right text-xl text-gray-500 focus:outline-none"
                                                     placeholder="0"
                                                     value={1}
                                                     onChange={(e) => {
@@ -577,7 +563,7 @@ const Joy = () => {
                                         </button>
                                     )}
 
-                                    <div className="flex flex-col gap-2 mt-4 text-sm">
+                                    <div className="mt-4 flex flex-col gap-2 text-sm">
                                         <div className="flex justify-between opacity-75">
                                             <span>NFTs Available</span>
                                             <span>{collection.num_available}</span>
@@ -622,14 +608,14 @@ const Joy = () => {
                                 </div>
 
                                 <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
-                                    <p className="text-6xl font-face-wc">{collection.collection_name}</p>
+                                    <p className="font-face-wc text-6xl">{collection.collection_name}</p>
 
                                     <Image
                                         src={collection.collection_icon_url}
                                         width={225}
                                         height={225}
                                         alt="$JOY Icon"
-                                        className="shadow-xl rounded-xl"
+                                        className="rounded-xl shadow-xl"
                                     />
                                     <p className="text-lg">Collection Address: {trimAddress(collectionAddress.toString())}</p>
                                     <div className="flex gap-2">
@@ -709,7 +695,6 @@ const Joy = () => {
                 </>
             )}
             <ReceivedAssetModal
-                curated={false}
                 have_randoms={validRandoms}
                 isWarningOpened={isAssetModalOpen}
                 closeWarning={closeAssetModal}
@@ -717,15 +702,7 @@ const Joy = () => {
                 collection={collection}
                 asset={asset}
                 asset_image={assetMeta}
-                style={modalStyle}
                 isLoading={isLoading}
-            />
-
-            <CollectionReleaseModal
-                isOpened={isReleaseModalOpen}
-                onClose={closeReleaseModal}
-                assets={ownedAssets}
-                collection={collection}
             />
         </main>
     );
