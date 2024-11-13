@@ -30,7 +30,7 @@ import useResponsive from "@/hooks/useResponsive";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import MyNFTsPanel from "./myAssets";
 import Marketplace from "./marketplace";
-import { ReceivedAssetModal } from "./receiveAssetModal";
+import ReceivedAssetModal from "./receiveAssetModal";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -249,7 +249,7 @@ const Joy = () => {
                     />
                 </div>
             )}
-           
+
             {isHomePage ? (
                 <div className="absolute bottom-0 left-0 right-0 flex justify-center">
                     <Image src={"/curatedLaunches/joy/bot.png"} width={750} height={750} alt="JOY BOT" />

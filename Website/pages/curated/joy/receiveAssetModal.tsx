@@ -18,7 +18,7 @@ interface RecievedAssetModalProps {
     have_randoms: boolean;
 }
 
-export function ReceivedAssetModal({
+export default function ReceivedAssetModal({
     isWarningOpened,
     closeWarning,
     collection,
