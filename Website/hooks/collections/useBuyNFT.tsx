@@ -161,11 +161,6 @@ const useBuyNFT = (launchData: CollectionData) => {
             return;
         }
 
-        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
-            alert("Launch creator cannot buy tickets");
-            return;
-        }
-
         if (signature_ws_id.current !== null) {
             console.log("signature not null");
             alert("Transaction pending, please wait");

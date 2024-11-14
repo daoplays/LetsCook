@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { CollectionData, CollectionPluginData, getCollectionPlugins } from "../../components/collection/collectionState";
 import { CollectionKeys, PROGRAM } from "../../components/Solana/constants";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
@@ -6,6 +6,7 @@ import { MintData, bignum_to_num, request_raw_account_data } from "../../compone
 import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { getMintData } from "@/components/amm/launch";
+import useMarketplace from "./useMarketplace";
 
 interface useCollectionProps {
     pageName: string | null;
@@ -28,16 +29,20 @@ const useCollection = (props: useCollectionProps | null) => {
 
     const { connection } = useConnection();
 
+
     const pageName = props?.pageName || null;
 
-    const getCollectionDataAccount = useCallback(() => {
+    const collectionDataAccount = useMemo(() => {
         if (!pageName) {
             setCollection(null);
             setError("No page name provided");
-            return;
+            return null;
         }
         return PublicKey.findProgramAddressSync([Buffer.from(pageName), Buffer.from("Collection")], PROGRAM)[0];
     }, [pageName]);
+
+    const {marketplaceSummary, listedAssets} = useMarketplace({collectionAddress: collection?.keys[CollectionKeys.CollectionMint]});
+
 
     // Function to fetch the current assignment data
     const fetchInitialCollectionData = useCallback(async () => {
@@ -45,7 +50,7 @@ const useCollection = (props: useCollectionProps | null) => {
             return;
         }
 
-        let collection_account = getCollectionDataAccount();
+        let collection_account = collectionDataAccount;
 
         if (!collection_account) {
             return;
@@ -102,7 +107,7 @@ const useCollection = (props: useCollectionProps | null) => {
             let out_amount = final_output / Math.pow(10, collection.token_decimals);
             setOutAmount(out_amount);
         }
-    }, [getCollectionDataAccount]);
+    }, [collectionDataAccount]);
 
     // Callback function to handle account changes
     const handleAccountChange = useCallback((accountInfo: any) => {
@@ -128,7 +133,7 @@ const useCollection = (props: useCollectionProps | null) => {
             return;
         }
 
-        const collectionAccount = getCollectionDataAccount();
+        const collectionAccount = collectionDataAccount;
         if (!collectionAccount) return;
 
         // Fetch the initial account data
@@ -147,10 +152,10 @@ const useCollection = (props: useCollectionProps | null) => {
                 subscriptionRef.current = null;
             }
         };
-    }, [connection, pageName, fetchInitialCollectionData, getCollectionDataAccount, handleAccountChange]);
+    }, [connection, pageName, fetchInitialCollectionData, collectionDataAccount, handleAccountChange]);
 
     // Return the current token balance and any error message
-    return { collection, collectionPlugins, tokenMint, whitelistMint, outAmount, error };
+    return { collection, collectionPlugins, tokenMint, whitelistMint, outAmount, marketplaceSummary, listedAssets, error };
 };
 
 export default useCollection;

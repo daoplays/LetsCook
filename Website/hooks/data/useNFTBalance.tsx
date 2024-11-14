@@ -7,6 +7,7 @@ import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { Config } from "../../components/Solana/constants";
+import { NewNFTListingData, NFTListingData } from "@/components/collection/collectionState";
 
 interface UseTokenBalanceProps {
     collectionAddress: PublicKey | null;
@@ -26,6 +27,8 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     const [nftBalance, setNFTBalance] = useState<number>(null);
     const [ownedAssets, setOwnedAssets] = useState<AssetWithMetadata[]>([]);
     const [collectionAssets, setCollectionAssets] = useState<Map<string, AssetWithMetadata> | null>(null);
+    const [listedAssets, setListedAssets] = useState<NFTListingData[]>([]);
+
     const [error, setError] = useState<string | null>(null);
 
     const checkNFTBalance = useRef<boolean>(true);
@@ -144,7 +147,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
     }, [connection, fetchNFTBalance]);
 
     // Return the current nfts and any error message
-    return { nftBalance, ownedAssets, collectionAssets, checkNFTBalance, fetchNFTBalance, error };
+    return { nftBalance, ownedAssets, collectionAssets, listedAssets, checkNFTBalance, fetchNFTBalance, error };
 };
 
 export default useNFTBalance;
