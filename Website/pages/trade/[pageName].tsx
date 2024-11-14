@@ -338,7 +338,8 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = bignum_to_num(item.volume) / Math.pow(10, base_mint.mint.decimals);
+                let volume = Buffer.from(item.volume).readFloatLE(0) * close;
+                //console.log("price data", time, open, high, low, close, volume);
 
                 data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
                 //console.log("new data", data);
@@ -571,7 +572,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = Buffer.from(item.volume).readFloatLE(0);
+                let volume = Buffer.from(item.volume).readFloatLE(0) * close;
                 //console.log("price data", time, open, high, low, close, volume);
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;
@@ -1164,7 +1165,7 @@ const InfoContent = ({
                 <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
                     <span className="text-md text- text-white text-opacity-50">Volume (24h):</span>
                     <div className="flex items-center space-x-2">
-                        <span className="text-md text-white">{(volume * price).toLocaleString()}</span>
+                        <span className="text-md text-white">{(volume).toLocaleString()}</span>
                         <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
                     </div>
                 </div>
