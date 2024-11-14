@@ -346,7 +346,7 @@ const TradePage = () => {
             }
             setMarketData(data);
         },
-        [base_mint],
+        [],
     );
 
     const check_user_token_update = useCallback(async (result: any) => {

@@ -11,6 +11,9 @@ interface useMarketplaceProps {
     collectionAddress: PublicKey | null;
 }
 
+const RATE_LIMIT_INTERVAL = 1000; // 1 second rate limit
+
+
 // Collections are already streamed via _contexts so we dont need to have a websocket here aswell
 const useMarketplace = (props: useMarketplaceProps | null) => {
     // State to store the token balance and any error messages
@@ -27,6 +30,11 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
 
     const collectionAddress = props?.collectionAddress || null;
 
+    // Rate limiting refs
+    const lastFetchTime = useRef<number>(0);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isExecutingRef = useRef<boolean>(false);
+
 
     const getMarketplaceAccount = useCallback(() => {
         if (!collectionAddress) {
@@ -37,27 +45,49 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
         return PublicKey.findProgramAddressSync([collectionAddress.toBytes(), Buffer.from("Summary")], new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"))[0];
     }, [collectionAddress]);
 
-        // Function to fetch the current nft balance
-        const fetchListings = useCallback(async () => {
-            if (!collectionAddress) return;
+    // Function to fetch the current nft balance
+    const fetchListings = useCallback(async () => {
+        if (!collectionAddress) return;
 
-            try{
-            // get the marketplace 
+        const now = Date.now();
+        const timeSinceLastFetch = now - lastFetchTime.current;
+
+        // If a fetch is already scheduled, don't schedule another one
+        if (timeoutRef.current) return;
+
+        // If we're currently executing a fetch, don't do anything
+        if (isExecutingRef.current) return;
+
+        // If we haven't waited long enough since the last fetch
+        if (timeSinceLastFetch < RATE_LIMIT_INTERVAL) {
+            // Schedule the next fetch
+            timeoutRef.current = setTimeout(() => {
+                timeoutRef.current = null;
+                fetchListings();
+            }, RATE_LIMIT_INTERVAL - timeSinceLastFetch);
+            return;
+        }
+
+        // Mark that we're executing a fetch
+        isExecutingRef.current = true;
+
+        try {
             const listings = await connection.getProgramAccounts(
                 new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"),
                 {
-                  filters: [
-                    {
-                      dataSize: 104, // Filter exact account size
-                    },
-                    {
-                      memcmp: {
-                        offset: 0, // collection is first field
-                        bytes: collectionAddress.toBase58() // Filter by collection address
-                      }
-                    }
-                  ]
-                }
+                    commitment: 'confirmed',
+                    filters: [
+                        {
+                            dataSize: 104,
+                        },
+                        {
+                            memcmp: {
+                                offset: 0,
+                                bytes: collectionAddress.toBase58()
+                            }
+                        }
+                    ]
+                },
             );
     
             let mp_listings = [];
@@ -65,17 +95,19 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
                 const [listing] = NewNFTListingData.struct.deserialize(listing_data.account.data);
                 let old_listing = new NFTListingData(listing.asset, listing.seller, listing.price);
                 mp_listings.push(old_listing);
-                console.log("listing", listing);
             }
+            console.log("have listings", mp_listings);
             setListedAssets(mp_listings);
     
         } catch (err) {
             setError(err.message);
         } finally {
-
+            // Update the last fetch time and reset executing status
+            lastFetchTime.current = Date.now();
+            isExecutingRef.current = false;
         }
-    
-        }, [collectionAddress]);
+
+    }, [collectionAddress]);
 
     // Function to fetch the current assignment data
     const fetchInitialMarketData = useCallback(async () => {
@@ -146,6 +178,12 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
             if (subscriptionRef.current !== null) {
                 connection.removeAccountChangeListener(subscriptionRef.current);
                 subscriptionRef.current = null;
+            }
+
+            // Clean up any pending timeouts
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
             }
         };
     }, [connection, collectionAddress, fetchInitialMarketData, getMarketplaceAccount, handleAccountChange]);
