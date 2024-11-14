@@ -47,6 +47,7 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
 
     // Function to fetch the current nft balance
     const fetchListings = useCallback(async () => {
+        console.log("fetching listings for ", collectionAddress?.toString(), timeoutRef.current, isExecutingRef.current);
         if (!collectionAddress) return;
 
         const now = Date.now();
@@ -60,6 +61,7 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
 
         // If we haven't waited long enough since the last fetch
         if (timeSinceLastFetch < RATE_LIMIT_INTERVAL) {
+            console.log("waiting for rate limit", timeSinceLastFetch);
             // Schedule the next fetch
             timeoutRef.current = setTimeout(() => {
                 timeoutRef.current = null;
@@ -70,7 +72,7 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
 
         // Mark that we're executing a fetch
         isExecutingRef.current = true;
-
+        console.log("run GPA")
         try {
             const listings = await connection.getProgramAccounts(
                 new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"),
@@ -135,7 +137,7 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
 
         fetchListings();
 
-    }, [getMarketplaceAccount]);
+    }, [getMarketplaceAccount, fetchListings]);
 
     // Callback function to handle account changes
     const handleAccountChange = useCallback((accountInfo: any) => {
@@ -150,7 +152,7 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
         console.log("Have marketplace update")
         setMarketplaceSummary(updated_data);
         fetchListings();
-    }, []);
+    }, [fetchListings]);
 
     // Effect to set up the subscription and fetch initial data
     useEffect(() => {

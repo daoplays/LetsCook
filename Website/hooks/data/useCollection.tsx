@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { CollectionData, CollectionPluginData, getCollectionPlugins } from "../../components/collection/collectionState";
 import { CollectionKeys, PROGRAM } from "../../components/Solana/constants";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
@@ -21,6 +21,7 @@ const useCollection = (props: useCollectionProps | null) => {
     const [whitelistMint, setWhitelistMint] = useState<MintData | null>(null);
     const [outAmount, setOutAmount] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [collectionMint, setCollectionMint] = useState<PublicKey | null>(null);
 
     const check_initial_collection = useRef<boolean>(true);
 
@@ -32,16 +33,17 @@ const useCollection = (props: useCollectionProps | null) => {
 
     const pageName = props?.pageName || null;
 
-    const collectionDataAccount = useMemo(() => {
+    const getCollectionDataAccount = useCallback(() => {
         if (!pageName) {
             setCollection(null);
             setError("No page name provided");
-            return null;
+            return;
         }
         return PublicKey.findProgramAddressSync([Buffer.from(pageName), Buffer.from("Collection")], PROGRAM)[0];
     }, [pageName]);
 
-    const {marketplaceSummary, listedAssets} = useMarketplace({collectionAddress: collection?.keys[CollectionKeys.CollectionMint]});
+
+    const {marketplaceSummary, listedAssets} = useMarketplace({collectionAddress: collectionMint});
 
 
     // Function to fetch the current assignment data
@@ -50,7 +52,7 @@ const useCollection = (props: useCollectionProps | null) => {
             return;
         }
 
-        let collection_account = collectionDataAccount;
+        let collection_account = getCollectionDataAccount();
 
         if (!collection_account) {
             return;
@@ -65,6 +67,7 @@ const useCollection = (props: useCollectionProps | null) => {
         const [collection] = CollectionData.struct.deserialize(collection_data);
 
         setCollection(collection);
+        setCollectionMint(collection.keys[CollectionKeys.CollectionMint]);
 
         let token = await getMintData(collection.keys[CollectionKeys.MintAddress].toString());
 
@@ -107,7 +110,7 @@ const useCollection = (props: useCollectionProps | null) => {
             let out_amount = final_output / Math.pow(10, collection.token_decimals);
             setOutAmount(out_amount);
         }
-    }, [collectionDataAccount]);
+    }, [getCollectionDataAccount]);
 
     // Callback function to handle account changes
     const handleAccountChange = useCallback((accountInfo: any) => {
@@ -133,7 +136,7 @@ const useCollection = (props: useCollectionProps | null) => {
             return;
         }
 
-        const collectionAccount = collectionDataAccount;
+        const collectionAccount = getCollectionDataAccount();
         if (!collectionAccount) return;
 
         // Fetch the initial account data
@@ -152,7 +155,7 @@ const useCollection = (props: useCollectionProps | null) => {
                 subscriptionRef.current = null;
             }
         };
-    }, [connection, pageName, fetchInitialCollectionData, collectionDataAccount, handleAccountChange]);
+    }, [connection, pageName, fetchInitialCollectionData, getCollectionDataAccount, handleAccountChange]);
 
     // Return the current token balance and any error message
     return { collection, collectionPlugins, tokenMint, whitelistMint, outAmount, marketplaceSummary, listedAssets, error };
