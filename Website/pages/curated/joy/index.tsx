@@ -69,6 +69,8 @@ const Joy = () => {
         tokenMint,
         whitelistMint,
         outAmount,
+        marketplaceSummary,
+        listedAssets,
         error: collectionError,
     } = useCollection({ pageName: collection_name as string | null });
 
@@ -109,6 +111,13 @@ const Joy = () => {
             if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
                 user_listings.push(asset.asset.publicKey.toString());
         }
+        for (let i = 0; i < listedAssets.length; i++) {
+            console.log("listed asset", listedAssets[i].asset.toString(), listedAssets[i].seller.toString(), bignum_to_num(listedAssets[i].price));
+            const asset = collectionAssets.get(listedAssets[i].asset.toString());
+            if (asset) new_listings.push(asset);
+            if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))
+                user_listings.push(asset.asset.publicKey.toString());
+        }
 
         setListedNFTs(new_listings);
         // Stringify new values
@@ -119,7 +128,7 @@ const Joy = () => {
             setUserListedNFTs(user_listings);
             prevUserListedNFTsRef.current = newUserListingsStr;
         }
-    }, [collectionPlugins, collectionAssets, wallet]);
+    }, [collectionPlugins, collectionAssets, listedAssets, wallet]);
 
     const updateAssignment = useCallback(async () => {
         // if we are started to wait for randoms then open up the modal
@@ -735,7 +744,7 @@ const Joy = () => {
                                 <MyNFTsPanel
                                     ownedNFTs={ownedAssets}
                                     listedNFTs={listedNFTs}
-                                    allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                    allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                     collection={collection}
                                 />
                             </div>
@@ -748,7 +757,7 @@ const Joy = () => {
                                 <Marketplace
                                     ownedNFTs={ownedAssets}
                                     listedNFTs={listedNFTs}
-                                    allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                    allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                     collection={collection}
                                     tab={activeTab}
                                 />
