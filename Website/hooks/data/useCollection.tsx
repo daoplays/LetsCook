@@ -6,6 +6,7 @@ import { MintData, bignum_to_num, request_raw_account_data } from "../../compone
 import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { getMintData } from "@/components/amm/launch";
+import useMarketplace from "./useMarketplace";
 
 interface useCollectionProps {
     pageName: string | null;
@@ -20,6 +21,7 @@ const useCollection = (props: useCollectionProps | null) => {
     const [whitelistMint, setWhitelistMint] = useState<MintData | null>(null);
     const [outAmount, setOutAmount] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [collectionMint, setCollectionMint] = useState<PublicKey | null>(null);
 
     const check_initial_collection = useRef<boolean>(true);
 
@@ -27,6 +29,7 @@ const useCollection = (props: useCollectionProps | null) => {
     const subscriptionRef = useRef<number | null>(null);
 
     const { connection } = useConnection();
+
 
     const pageName = props?.pageName || null;
 
@@ -38,6 +41,10 @@ const useCollection = (props: useCollectionProps | null) => {
         }
         return PublicKey.findProgramAddressSync([Buffer.from(pageName), Buffer.from("Collection")], PROGRAM)[0];
     }, [pageName]);
+
+
+    const {marketplaceSummary, listedAssets} = useMarketplace({collectionAddress: collectionMint});
+
 
     // Function to fetch the current assignment data
     const fetchInitialCollectionData = useCallback(async () => {
@@ -60,6 +67,7 @@ const useCollection = (props: useCollectionProps | null) => {
         const [collection] = CollectionData.struct.deserialize(collection_data);
 
         setCollection(collection);
+        setCollectionMint(collection.keys[CollectionKeys.CollectionMint]);
 
         let token = await getMintData(collection.keys[CollectionKeys.MintAddress].toString());
 
@@ -150,7 +158,7 @@ const useCollection = (props: useCollectionProps | null) => {
     }, [connection, pageName, fetchInitialCollectionData, getCollectionDataAccount, handleAccountChange]);
 
     // Return the current token balance and any error message
-    return { collection, collectionPlugins, tokenMint, whitelistMint, outAmount, error };
+    return { collection, collectionPlugins, tokenMint, whitelistMint, outAmount, marketplaceSummary, listedAssets, error };
 };
 
 export default useCollection;

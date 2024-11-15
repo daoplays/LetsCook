@@ -18,6 +18,7 @@ import {
     useDisclosure,
     Switch,
     Box,
+    list,
 } from "@chakra-ui/react";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { bignum_to_num } from "../../components/Solana/state";
@@ -84,6 +85,8 @@ const CollectionSwapPage = () => {
         tokenMint,
         whitelistMint,
         outAmount,
+        marketplaceSummary,
+        listedAssets,
         error: collectionError,
     } = useCollection({ pageName: pageName as string | null });
 
@@ -163,15 +166,25 @@ const CollectionSwapPage = () => {
     }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
     useEffect(() => {
-        if (!collectionAssets || !collectionPlugins) return;
+        if (!collectionAssets ) return;
 
         let new_listings: AssetWithMetadata[] = [];
         let user_listings: string[] = [];
-        for (let i = 0; i < collectionPlugins.listings.length; i++) {
-            const asset_key = collectionPlugins.listings[i].asset;
-            const asset = collectionAssets.get(asset_key.toString());
+
+        if (collectionPlugins) {
+            for (let i = 0; i < collectionPlugins.listings.length; i++) {
+                const asset_key = collectionPlugins.listings[i].asset;
+                const asset = collectionAssets.get(asset_key.toString());
+                if (asset) new_listings.push(asset);
+                if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
+                    user_listings.push(asset.asset.publicKey.toString());
+            }
+        }
+        for (let i = 0; i < listedAssets.length; i++) {
+            console.log("listed asset", listedAssets[i].asset.toString(), listedAssets[i].seller.toString(), bignum_to_num(listedAssets[i].price));
+            const asset = collectionAssets.get(listedAssets[i].asset.toString());
             if (asset) new_listings.push(asset);
-            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
+            if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))
                 user_listings.push(asset.asset.publicKey.toString());
         }
 
@@ -184,7 +197,7 @@ const CollectionSwapPage = () => {
             setUserListedNFTs(user_listings);
             prevUserListedNFTsRef.current = newUserListingsStr;
         }
-    }, [collectionPlugins, collectionAssets, wallet]);
+    }, [collectionPlugins, collectionAssets, listedAssets, wallet]);
 
     if (!pageName) return;
 
@@ -772,7 +785,7 @@ const CollectionSwapPage = () => {
                             <MyNFTsPanel
                                 ownedNFTs={ownedAssets}
                                 listedNFTs={listedNFTs}
-                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                 collection={collection}
                             />
                         </VStack>
@@ -792,7 +805,7 @@ const CollectionSwapPage = () => {
                             <Marketplace
                                 ownedNFTs={ownedAssets}
                                 listedNFTs={listedNFTs}
-                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                 collection={collection}
                                 tab={selected}
                             />
