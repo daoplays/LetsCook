@@ -166,7 +166,7 @@ const CollectionSwapPage = () => {
     }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
     useEffect(() => {
-        if (!collectionAssets ) return;
+        if (!collectionAssets) return;
 
         let new_listings: AssetWithMetadata[] = [];
         let user_listings: string[] = [];
@@ -181,7 +181,12 @@ const CollectionSwapPage = () => {
             }
         }
         for (let i = 0; i < listedAssets.length; i++) {
-            console.log("listed asset", listedAssets[i].asset.toString(), listedAssets[i].seller.toString(), bignum_to_num(listedAssets[i].price));
+            console.log(
+                "listed asset",
+                listedAssets[i].asset.toString(),
+                listedAssets[i].seller.toString(),
+                bignum_to_num(listedAssets[i].price),
+            );
             const asset = collectionAssets.get(listedAssets[i].asset.toString());
             if (asset) new_listings.push(asset);
             if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))

@@ -11,7 +11,13 @@ import {
     MintData,
     bignum_to_num,
 } from "../../components/Solana/state";
-import { CollectionData, AssignmentData, request_assignment_data, getCollectionPlugins, NewNFTListingData } from "../../components/collection/collectionState";
+import {
+    CollectionData,
+    AssignmentData,
+    request_assignment_data,
+    getCollectionPlugins,
+    NewNFTListingData,
+} from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
@@ -62,28 +68,29 @@ export const GetBuyNFTInstructions = async (launchData: CollectionData, user: Pu
     let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
     let listings_program = new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd");
     let listings_account = PublicKey.findProgramAddressSync([asset_key.toBytes(), Buffer.from("Listing")], listings_program)[0];
-    let listings_summary_account = PublicKey.findProgramAddressSync([launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("Summary")], listings_program)[0];
+    let listings_summary_account = PublicKey.findProgramAddressSync(
+        [launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("Summary")],
+        listings_program,
+    )[0];
 
-  
     let listing_data = await request_raw_account_data("", listings_account);
     let seller;
     if (listing_data) {
         const [listing] = NewNFTListingData.struct.deserialize(listing_data);
         seller = listing.seller;
-        console.log("Have listing data: ", listing, listing.seller.toString())
-    }
-    else {
+        console.log("Have listing data: ", listing, listing.seller.toString());
+    } else {
         let plugins = getCollectionPlugins(launchData);
 
-        if (index == undefined ) {
+        if (index == undefined) {
             toast.error("Invalid index", {
                 type: "error",
                 isLoading: false,
                 autoClose: 3000,
             });
-            return []
+            return [];
         }
-    
+
         if (!plugins.listings[index].asset.equals(asset_key)) {
             toast.error("Asset doesn't match index", {
                 type: "error",
@@ -172,7 +179,6 @@ const useBuyNFT = (launchData: CollectionData) => {
     }, []);
 
     const BuyNFT = async (asset_key: PublicKey, index: number) => {
-
         if (wallet.signTransaction === undefined) {
             console.log(wallet, "invalid wallet");
             return;

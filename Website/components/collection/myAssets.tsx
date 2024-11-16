@@ -165,7 +165,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             {isListed ? (
                                                 // Unlist button if the NFT is listed
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90 w-full rounded-md"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={async () => {
                                                         await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
@@ -176,7 +176,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             ) : (
                                                 // List button if the NFT is not listed
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90 w-full rounded-md"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={() => {
                                                         handleNFTClick(nft, isListed);

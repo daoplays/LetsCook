@@ -1,5 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { CollectionData, CollectionPluginData, getCollectionPlugins, MarketplaceSummary, NewNFTListingData, NFTListingData } from "../../components/collection/collectionState";
+import {
+    CollectionData,
+    CollectionPluginData,
+    getCollectionPlugins,
+    MarketplaceSummary,
+    NewNFTListingData,
+    NFTListingData,
+} from "../../components/collection/collectionState";
 import { CollectionKeys, PROGRAM } from "../../components/Solana/constants";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import { MintData, bignum_to_num, request_raw_account_data } from "../../components/Solana/state";
@@ -12,7 +19,6 @@ interface useMarketplaceProps {
 }
 
 const RATE_LIMIT_INTERVAL = 1000; // 1 second rate limit
-
 
 // Collections are already streamed via _contexts so we dont need to have a websocket here aswell
 const useMarketplace = (props: useMarketplaceProps | null) => {
@@ -35,14 +41,16 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const isExecutingRef = useRef<boolean>(false);
 
-
     const getMarketplaceAccount = useCallback(() => {
         if (!collectionAddress) {
             setMarketplaceSummary(null);
             setError("No page name provided");
             return;
         }
-        return PublicKey.findProgramAddressSync([collectionAddress.toBytes(), Buffer.from("Summary")], new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"))[0];
+        return PublicKey.findProgramAddressSync(
+            [collectionAddress.toBytes(), Buffer.from("Summary")],
+            new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"),
+        )[0];
     }, [collectionAddress]);
 
     // Function to fetch the current nft balance
@@ -72,26 +80,23 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
 
         // Mark that we're executing a fetch
         isExecutingRef.current = true;
-        console.log("run GPA")
+        console.log("run GPA");
         try {
-            const listings = await connection.getProgramAccounts(
-                new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"),
-                {
-                    commitment: 'confirmed',
-                    filters: [
-                        {
-                            dataSize: 104,
+            const listings = await connection.getProgramAccounts(new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd"), {
+                commitment: "confirmed",
+                filters: [
+                    {
+                        dataSize: 104,
+                    },
+                    {
+                        memcmp: {
+                            offset: 0,
+                            bytes: collectionAddress.toBase58(),
                         },
-                        {
-                            memcmp: {
-                                offset: 0,
-                                bytes: collectionAddress.toBase58()
-                            }
-                        }
-                    ]
-                },
-            );
-    
+                    },
+                ],
+            });
+
             let mp_listings = [];
             for (let listing_data of listings) {
                 const [listing] = NewNFTListingData.struct.deserialize(listing_data.account.data);
@@ -100,7 +105,6 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
             }
             console.log("have listings", mp_listings);
             setListedAssets(mp_listings);
-    
         } catch (err) {
             setError(err.message);
         } finally {
@@ -108,18 +112,15 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
             lastFetchTime.current = Date.now();
             isExecutingRef.current = false;
         }
-
     }, [collectionAddress]);
 
     // Function to fetch the current assignment data
     const fetchInitialMarketData = useCallback(async () => {
-
         if (!check_initial_collection.current) {
             return;
         }
 
         let summary_account = getMarketplaceAccount();
-
 
         if (!summary_account) {
             return;
@@ -136,27 +137,28 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
         setMarketplaceSummary(summary);
 
         fetchListings();
-
     }, [getMarketplaceAccount, fetchListings]);
 
     // Callback function to handle account changes
-    const handleAccountChange = useCallback((accountInfo: any) => {
-        let account_data = Buffer.from(accountInfo.data, "base64");
+    const handleAccountChange = useCallback(
+        (accountInfo: any) => {
+            let account_data = Buffer.from(accountInfo.data, "base64");
 
-        if (account_data.length === 0) {
-            setMarketplaceSummary(null);
-            return;
-        }
+            if (account_data.length === 0) {
+                setMarketplaceSummary(null);
+                return;
+            }
 
-        const [updated_data] = MarketplaceSummary.struct.deserialize(account_data);
-        console.log("Have marketplace update")
-        setMarketplaceSummary(updated_data);
-        fetchListings();
-    }, [fetchListings]);
+            const [updated_data] = MarketplaceSummary.struct.deserialize(account_data);
+            console.log("Have marketplace update");
+            setMarketplaceSummary(updated_data);
+            fetchListings();
+        },
+        [fetchListings],
+    );
 
     // Effect to set up the subscription and fetch initial data
     useEffect(() => {
-
         if (!collectionAddress) {
             setMarketplaceSummary(null);
             setError(null);
@@ -191,7 +193,7 @@ const useMarketplace = (props: useMarketplaceProps | null) => {
     }, [connection, collectionAddress, fetchInitialMarketData, getMarketplaceAccount, handleAccountChange]);
 
     // Return the current token balance and any error message
-    return {marketplaceSummary, listedAssets, error };
+    return { marketplaceSummary, listedAssets, error };
 };
 
 export default useMarketplace;

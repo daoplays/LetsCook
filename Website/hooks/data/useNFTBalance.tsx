@@ -15,7 +15,7 @@ interface UseTokenBalanceProps {
 
 const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
 
-export async function getCollectionAssets(collectionAddress: PublicKey)  {
+export async function getCollectionAssets(collectionAddress: PublicKey) {
     try {
         const umi = createUmi(Config.RPC_NODE, "confirmed");
 
@@ -30,21 +30,20 @@ export async function getCollectionAssets(collectionAddress: PublicKey)  {
         const fetchPromises = assets.map(async (asset) => {
             const uri_json = await fetch(asset.uri).then((res) => res.json());
             const entry: AssetWithMetadata = { asset, metadata: uri_json };
-            
+
             // Return both the entry and whether it's owned
             return {
-                entry
+                entry,
             };
         });
-    
+
         // Wait for all promises to resolve simultaneously
         const results = await Promise.all(fetchPromises);
-    
+
         let all_assets: Map<string, AssetWithMetadata> = new Map();
         // Process results
         results.forEach(({ entry }) => {
             all_assets.set(entry.asset.publicKey.toString(), entry);
-           
         });
 
         return all_assets;
@@ -100,58 +99,56 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
             return;
         }
 
-         // Mark that we're executing a fetch
-         isExecutingRef.current = true;
+        // Mark that we're executing a fetch
+        isExecutingRef.current = true;
         console.log("CHECKING NFT BALANCE");
 
         try {
-        const umi = createUmi(Config.RPC_NODE, "confirmed");
+            const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-        let collection_umiKey = publicKey(collectionAddress.toString());
+            let collection_umiKey = publicKey(collectionAddress.toString());
 
-        const assets = await getAssetV1GpaBuilder(umi)
-            .whereField("key", Key.AssetV1)
-            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
-            .getDeserialized();
+            const assets = await getAssetV1GpaBuilder(umi)
+                .whereField("key", Key.AssetV1)
+                .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+                .getDeserialized();
 
-        // Create an array of promises for all fetch requests
-        const fetchPromises = assets.map(async (asset) => {
-            const uri_json = await fetch(asset.uri).then((res) => res.json());
-            const entry: AssetWithMetadata = { asset, metadata: uri_json };
-            
-            // Return both the entry and whether it's owned
-            return {
-                entry,
-                isOwned: wallet && wallet.publicKey && asset.owner.toString() === wallet.publicKey.toString()
-            };
-        });
-    
-        // Wait for all promises to resolve simultaneously
-        const results = await Promise.all(fetchPromises);
-    
-        let owned_assets: AssetWithMetadata[] = [];
-        let all_assets: Map<string, AssetWithMetadata> = new Map();
-        // Process results
-        results.forEach(({ entry, isOwned }) => {
-            all_assets.set(entry.asset.publicKey.toString(), entry);
-            if (isOwned) {
-                owned_assets.push(entry);
-            }
-        });
+            // Create an array of promises for all fetch requests
+            const fetchPromises = assets.map(async (asset) => {
+                const uri_json = await fetch(asset.uri).then((res) => res.json());
+                const entry: AssetWithMetadata = { asset, metadata: uri_json };
 
-        setOwnedAssets(owned_assets);
-        setCollectionAssets(all_assets);
-        setNFTBalance(owned_assets.length);
+                // Return both the entry and whether it's owned
+                return {
+                    entry,
+                    isOwned: wallet && wallet.publicKey && asset.owner.toString() === wallet.publicKey.toString(),
+                };
+            });
 
-    } catch (err) {
-        setError(err.message);
-    } finally {
-        // Update the last fetch time and reset executing status
-        lastFetchTime.current = Date.now();
-        isExecutingRef.current = false;
-        checkNFTBalance.current = false;
-    }
+            // Wait for all promises to resolve simultaneously
+            const results = await Promise.all(fetchPromises);
 
+            let owned_assets: AssetWithMetadata[] = [];
+            let all_assets: Map<string, AssetWithMetadata> = new Map();
+            // Process results
+            results.forEach(({ entry, isOwned }) => {
+                all_assets.set(entry.asset.publicKey.toString(), entry);
+                if (isOwned) {
+                    owned_assets.push(entry);
+                }
+            });
+
+            setOwnedAssets(owned_assets);
+            setCollectionAssets(all_assets);
+            setNFTBalance(owned_assets.length);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            // Update the last fetch time and reset executing status
+            lastFetchTime.current = Date.now();
+            isExecutingRef.current = false;
+            checkNFTBalance.current = false;
+        }
     }, [collectionAddress, wallet]);
 
     // Effect to set up the subscription and fetch initial balance

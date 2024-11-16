@@ -319,35 +319,32 @@ const TradePage = () => {
         setQuoteAmount(amount);
     }, []);
 
-    const check_price_update = useCallback(
-        async (result: any) => {
-            //console.log(result);
-            // if we have a subscription field check against ws_id
+    const check_price_update = useCallback(async (result: any) => {
+        //console.log(result);
+        // if we have a subscription field check against ws_id
 
-            let event_data = result.data;
-            const [price_data] = TimeSeriesData.struct.deserialize(event_data);
-            //console.log("updated price data", price_data);
+        let event_data = result.data;
+        const [price_data] = TimeSeriesData.struct.deserialize(event_data);
+        //console.log("updated price data", price_data);
 
-            let data: MarketData[] = [];
+        let data: MarketData[] = [];
 
-            for (let i = 0; i < price_data.data.length; i++) {
-                let item = price_data.data[i];
-                let time = bignum_to_num(item.timestamp) * 60;
+        for (let i = 0; i < price_data.data.length; i++) {
+            let item = price_data.data[i];
+            let time = bignum_to_num(item.timestamp) * 60;
 
-                let open = Buffer.from(item.open).readFloatLE(0);
-                let high = Buffer.from(item.high).readFloatLE(0);
-                let low = Buffer.from(item.low).readFloatLE(0);
-                let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = Buffer.from(item.volume).readFloatLE(0) * open;
-                //console.log("price data", time, open, high, low, close, volume);
+            let open = Buffer.from(item.open).readFloatLE(0);
+            let high = Buffer.from(item.high).readFloatLE(0);
+            let low = Buffer.from(item.low).readFloatLE(0);
+            let close = Buffer.from(item.close).readFloatLE(0);
+            let volume = Buffer.from(item.volume).readFloatLE(0) * open;
+            //console.log("price data", time, open, high, low, close, volume);
 
-                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-                //console.log("new data", data);
-            }
-            setMarketData(data);
-        },
-        [],
-    );
+            data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
+            //console.log("new data", data);
+        }
+        setMarketData(data);
+    }, []);
 
     const check_user_token_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -1165,7 +1162,7 @@ const InfoContent = ({
                 <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
                     <span className="text-md text- text-white text-opacity-50">Volume (24h):</span>
                     <div className="flex items-center space-x-2">
-                        <span className="text-md text-white">{(volume).toLocaleString()}</span>
+                        <span className="text-md text-white">{volume.toLocaleString()}</span>
                         <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
                     </div>
                 </div>

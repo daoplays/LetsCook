@@ -158,9 +158,9 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         <FaEye />
                                                     </VStack>
                                                 </Box>
-                                                
+
                                                 <Button
-                                                    className="mt-2 w-full transition-all hover:opacity-90 rounded-md"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={async () => {
                                                         if (isUserOwned) {

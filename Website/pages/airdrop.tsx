@@ -29,7 +29,7 @@ import { MintData } from "@/components/Solana/state";
 import { set } from "date-fns";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import Image from "next/image";
-import { CollectionV1, fetchCollectionV1 } from '@metaplex-foundation/mpl-core'
+import { CollectionV1, fetchCollectionV1 } from "@metaplex-foundation/mpl-core";
 import { publicKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { Config } from "@/components/Solana/constants";
@@ -112,41 +112,38 @@ export const AirdropPage = () => {
                 return;
             }
 
-            let snapshotCollection : CollectionV1 | null = null;
-            let collectionWithMetadata : CollectionWithMetadata | null = null;
+            let snapshotCollection: CollectionV1 | null = null;
+            let collectionWithMetadata: CollectionWithMetadata | null = null;
 
             const umi = createUmi(Config.RPC_NODE, "confirmed");
 
             let collection_umiKey = publicKey(mintAddress);
 
-            snapshotCollection = await fetchCollectionV1(umi, collection_umiKey)
+            snapshotCollection = await fetchCollectionV1(umi, collection_umiKey);
             if (snapshotCollection) {
                 console.log(snapshotCollection, "snapshotCollection");
                 let icon: string;
                 let uri = snapshotCollection.uri;
                 uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
 
-                collectionWithMetadata= {collection: snapshotCollection, metadata: "", icon: ""}
-                
+                collectionWithMetadata = { collection: snapshotCollection, metadata: "", icon: "" };
+
                 try {
                     let uri_json = await fetchWithTimeout(uri, 3000).then((res) => res.json());
-                    console.log(uri_json)
+                    console.log(uri_json);
                     icon = uri_json["image"];
                     collectionWithMetadata.metadata = uri_json;
                     collectionWithMetadata.icon = icon;
-
                 } catch (error) {
                     console.log("error getting uri, using SOL icon");
                     console.log(error);
                     collectionWithMetadata.icon = Config.token_image;
                 }
-
             }
 
             let snapshotMint = null;
             if (!snapshotCollection) {
                 snapshotMint = await getMintData(mintAddress);
-
             }
 
             if (!snapshotMint && !snapshotCollection) {
@@ -281,8 +278,8 @@ export const AirdropPage = () => {
     const { tokenBalance: airdroppedMintTokenBalance } = useTokenBalance(airdroppedMint ? { mintData: airdroppedMint } : null);
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
-            <div className="flex flex-col gap-2 mb-4">
-                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
+            <div className="mb-4 flex flex-col gap-2">
+                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
                 {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
             </div>
             <Box w={"100%"} mx="auto">
@@ -318,10 +315,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
 
-                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
                                 {snapshotMint && (
                                     <>
-                                        <div className="flex flex-col gap-2 w-fit">
+                                        <div className="flex w-fit flex-col gap-2">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -335,11 +332,11 @@ export const AirdropPage = () => {
                                                 <span>{snapshotMint.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Decimals:</b>
                                             <Text> {snapshotMint.mint.decimals}</Text>
                                         </span>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Symbol:</b>
                                             <Text> {snapshotMint.symbol}</Text>
                                         </span>
@@ -352,10 +349,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Collection Info</FormLabel>
 
-                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
                                 {snapshotCollection && (
                                     <>
-                                        <div className="flex flex-col gap-2 w-fit">
+                                        <div className="flex w-fit flex-col gap-2">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -369,11 +366,10 @@ export const AirdropPage = () => {
                                                 <span>{snapshotCollection.collection.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Total Minted:</b>
                                             <Text> {snapshotCollection.collection.currentSize}</Text>
                                         </span>
-                                        
                                     </>
                                 )}
                             </Box>
@@ -438,10 +434,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
 
-                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
                                 {airdroppedMint && (
                                     <>
-                                        <div className="flex flex-col gap-2 w-fit">
+                                        <div className="flex w-fit flex-col gap-2">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -455,15 +451,15 @@ export const AirdropPage = () => {
                                                 <span>{airdroppedMint.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Decimals:</b>
                                             <Text> {airdroppedMint.mint.decimals}</Text>
                                         </span>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Symbol:</b>
                                             <Text> {airdroppedMint.symbol}</Text>
                                         </span>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Token Balance:</b>
                                             <Text> {airdroppedMintTokenBalance}</Text>
                                         </span>
@@ -523,7 +519,7 @@ export const AirdropPage = () => {
                                             return (
                                                 <TableRow
                                                     key={holder.address}
-                                                    className="transition-colors cursor-pointer hover:bg-muted/50"
+                                                    className="hover:bg-muted/50 cursor-pointer transition-colors"
                                                 >
                                                     <TableCell className="font-mono text-sm">
                                                         {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
@@ -565,7 +561,7 @@ export const AirdropPage = () => {
                             )}
 
                             {/* Airdrop Button */}
-                            <div className="flex justify-center w-full">
+                            <div className="flex w-full justify-center">
                                 <Button
                                     mt={4}
                                     colorScheme="green"

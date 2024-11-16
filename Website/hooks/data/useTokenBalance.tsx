@@ -22,7 +22,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
     const wallet = useWallet();
 
     // Get the mintData from the app's root context
-    const { mintData : mintDataMap } = useAppRoot();
+    const { mintData: mintDataMap } = useAppRoot();
 
     // Ref to store the subscription ID, persists across re-renders
     const subscriptionRef = useRef<number | null>(null);
