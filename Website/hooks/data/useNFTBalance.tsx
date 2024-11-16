@@ -45,7 +45,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
     // Function to fetch the current nft balance
     const fetchNFTBalance = useCallback(async () => {
-        if (!collectionAddress || wallet === null || wallet.publicKey === null) return;
+        if (!collectionAddress) return;
 
         if (!checkNFTBalance.current) return;
 
@@ -90,7 +90,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
             // Return both the entry and whether it's owned
             return {
                 entry,
-                isOwned: asset.owner.toString() === wallet.publicKey.toString()
+                isOwned: wallet && wallet.publicKey && asset.owner.toString() === wallet.publicKey.toString()
             };
         });
     
