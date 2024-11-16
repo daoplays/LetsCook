@@ -56,9 +56,11 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
         : [];
 
     // Filter `listedNFTs` to include only those listed by the owner
-    const ownerListedNFTs = wallet.connected
-        ? listedNFTs.filter((nft) => ownerListedNFTPubkeys.some((pubkey) => pubkey.equals(new PublicKey(nft.asset.publicKey))))
-        : [];
+    const ownerListedNFTs = listedNFTs.filter((nft) =>
+        wallet.connected
+            ? ownerListedNFTPubkeys.some((pubkey) => pubkey.equals(new PublicKey(nft.asset.publicKey)))
+            : true // Include all listed NFTs if the wallet is not connected
+    );
 
     return (
         <>
