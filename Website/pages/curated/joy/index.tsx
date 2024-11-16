@@ -69,6 +69,8 @@ const Joy = () => {
         tokenMint,
         whitelistMint,
         outAmount,
+        marketplaceSummary,
+        listedAssets,
         error: collectionError,
     } = useCollection({ pageName: collection_name as string | null });
 
@@ -109,6 +111,13 @@ const Joy = () => {
             if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
                 user_listings.push(asset.asset.publicKey.toString());
         }
+        for (let i = 0; i < listedAssets.length; i++) {
+            console.log("listed asset", listedAssets[i].asset.toString(), listedAssets[i].seller.toString(), bignum_to_num(listedAssets[i].price));
+            const asset = collectionAssets.get(listedAssets[i].asset.toString());
+            if (asset) new_listings.push(asset);
+            if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))
+                user_listings.push(asset.asset.publicKey.toString());
+        }
 
         setListedNFTs(new_listings);
         // Stringify new values
@@ -119,7 +128,7 @@ const Joy = () => {
             setUserListedNFTs(user_listings);
             prevUserListedNFTsRef.current = newUserListingsStr;
         }
-    }, [collectionPlugins, collectionAssets, wallet]);
+    }, [collectionPlugins, collectionAssets, listedAssets, wallet]);
 
     const updateAssignment = useCallback(async () => {
         // if we are started to wait for randoms then open up the modal
@@ -311,7 +320,7 @@ const Joy = () => {
                                 className={`flex transform items-center justify-center gap-16 rounded-2xl bg-clip-padding transition-all duration-500 md:p-8 xl:bg-[#00357A]/75 xl:px-16 xl:shadow-2xl xl:backdrop-blur-sm xl:backdrop-filter ${isHomePage ? "scale-80 opacity-0" : "scale-100 opacity-100"} `}
                             >
                                 <div className="hidden w-[320px] flex-col items-center justify-center gap-2 xl:flex">
-                                    <p className="font-face-wc text-6xl">${collection.token_symbol}</p>
+                                    <p className="font-face-wc text-6xl">{collection.token_symbol}</p>
 
                                     <Image
                                         src={tokenMint.icon}
@@ -392,7 +401,9 @@ const Joy = () => {
                                             <Tooltip delayDuration={0}>
                                                 <TooltipTrigger>
                                                     <Link
-                                                        href={"https://eclipse.letscook.wtf"}
+                                                        href={
+                                                            "https://eclipse.letscook.wtf/trade/8dotswVmYUDF24Z4Fvq4f7zZ6M2YfVuKddSUspyzwF2H"
+                                                        }
                                                         target="_blank"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
@@ -422,14 +433,14 @@ const Joy = () => {
                                                     ? `1 NFT = ${parseFloat(formatPrice(outAmount, 2)).toLocaleString(
                                                           "en-US",
                                                           {},
-                                                      )} $${collection.token_symbol}`
+                                                      )} ${collection.token_symbol}`
                                                     : `${parseFloat(
                                                           formatPrice(
                                                               bignum_to_num(collection.swap_price) /
                                                                   Math.pow(10, collection.token_decimals),
                                                               2,
                                                           ),
-                                                      ).toLocaleString("en-US", {})} $${collection.token_symbol} = 1 NFT`}
+                                                      ).toLocaleString("en-US", {})} ${collection.token_symbol} = 1 NFT`}
                                             </p>
 
                                             {!isTokenToNFT && (
@@ -569,7 +580,7 @@ const Joy = () => {
                                                             ClaimNFT();
                                                         }
                                                     }}
-                                                    disabled={!enoughTokenBalance}
+                                                    disabled={!enoughTokenBalance || isLoading}
                                                 >
                                                     {isLoading ? (
                                                         <Loader2Icon className="mx-auto animate-spin" />
@@ -733,7 +744,7 @@ const Joy = () => {
                                 <MyNFTsPanel
                                     ownedNFTs={ownedAssets}
                                     listedNFTs={listedNFTs}
-                                    allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                    allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                     collection={collection}
                                 />
                             </div>
@@ -746,7 +757,7 @@ const Joy = () => {
                                 <Marketplace
                                     ownedNFTs={ownedAssets}
                                     listedNFTs={listedNFTs}
-                                    allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                    allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                     collection={collection}
                                     tab={activeTab}
                                 />

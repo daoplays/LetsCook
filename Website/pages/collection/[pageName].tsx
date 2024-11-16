@@ -18,6 +18,7 @@ import {
     useDisclosure,
     Switch,
     Box,
+    list,
 } from "@chakra-ui/react";
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { bignum_to_num } from "../../components/Solana/state";
@@ -84,6 +85,8 @@ const CollectionSwapPage = () => {
         tokenMint,
         whitelistMint,
         outAmount,
+        marketplaceSummary,
+        listedAssets,
         error: collectionError,
     } = useCollection({ pageName: pageName as string | null });
 
@@ -96,8 +99,8 @@ const CollectionSwapPage = () => {
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);
 
-    const { tokenBalance } = useTokenBalance({mintData: tokenMint});
-    const { tokenBalance: whiteListTokenBalance } = useTokenBalance({mintData: whitelistMint});
+    const { tokenBalance } = useTokenBalance({ mintData: tokenMint });
+    const { tokenBalance: whiteListTokenBalance } = useTokenBalance({ mintData: whitelistMint });
 
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
@@ -110,7 +113,7 @@ const CollectionSwapPage = () => {
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
     const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
 
-    const prevUserListedNFTsRef = useRef<string>('');
+    const prevUserListedNFTsRef = useRef<string>("");
 
     let isLoading = isClaimLoading || isMintRandomLoading || isWrapLoading || isMintLoading;
 
@@ -163,15 +166,26 @@ const CollectionSwapPage = () => {
     }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
     useEffect(() => {
-        if (!collectionAssets || !collectionPlugins) return;
+        if (!collectionAssets ) return;
 
-        let new_listings : AssetWithMetadata[] = [];
-        let user_listings : string[] = [];
-        for (let i = 0; i < collectionPlugins.listings.length; i++) {
-            const asset_key = collectionPlugins.listings[i].asset;
-            const asset = collectionAssets.get(asset_key.toString());
+        let new_listings: AssetWithMetadata[] = [];
+        let user_listings: string[] = [];
+
+        if (collectionPlugins) {
+            for (let i = 0; i < collectionPlugins.listings.length; i++) {
+                const asset_key = collectionPlugins.listings[i].asset;
+                const asset = collectionAssets.get(asset_key.toString());
+                if (asset) new_listings.push(asset);
+                if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
+                    user_listings.push(asset.asset.publicKey.toString());
+            }
+        }
+        for (let i = 0; i < listedAssets.length; i++) {
+            console.log("listed asset", listedAssets[i].asset.toString(), listedAssets[i].seller.toString(), bignum_to_num(listedAssets[i].price));
+            const asset = collectionAssets.get(listedAssets[i].asset.toString());
             if (asset) new_listings.push(asset);
-            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey)) user_listings.push(asset.asset.publicKey.toString());
+            if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))
+                user_listings.push(asset.asset.publicKey.toString());
         }
 
         setListedNFTs(new_listings);
@@ -183,7 +197,7 @@ const CollectionSwapPage = () => {
             setUserListedNFTs(user_listings);
             prevUserListedNFTsRef.current = newUserListingsStr;
         }
-    }, [collectionPlugins, collectionAssets, wallet]);
+    }, [collectionPlugins, collectionAssets, listedAssets, wallet]);
 
     if (!pageName) return;
 
@@ -205,15 +219,16 @@ const CollectionSwapPage = () => {
     const handleClick = (tab: string) => {
         setSelected(tab);
     };
-    const whitelistActive = whitelistMint &&
-    collectionPlugins.whitelistPhaseEnd &&
-    (collectionPlugins.whitelistPhaseEnd.getTime() === 0 ||
-        new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime());
+    const whitelistActive =
+        whitelistMint &&
+        collectionPlugins.whitelistPhaseEnd &&
+        (collectionPlugins.whitelistPhaseEnd.getTime() === 0 || new Date().getTime() < collectionPlugins.whitelistPhaseEnd.getTime());
 
     const whiteListDecimals = whitelistMint?.mint?.decimals || 1;
-    const hasEnoughWhitelistToken = whitelistMint && whitelistActive
-        ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
-        : true;
+    const hasEnoughWhitelistToken =
+        whitelistMint && whitelistActive
+            ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
+            : true;
 
     //console.log(collection.keys[CollectionKeys.TeamWallet].toString())
     //console.log(whiteListTokenBalance, "whiteListTokenBalance >= collectionPlugins.whitelistAmount", enoughTokenBalance);
@@ -634,6 +649,7 @@ const CollectionSwapPage = () => {
                                                                     }
                                                                 }}
                                                                 isLoading={isLoading}
+                                                                disabled={isLoading}
                                                             >
                                                                 Confirm {collectionPlugins.probability}
                                                             </Button>
@@ -769,7 +785,7 @@ const CollectionSwapPage = () => {
                             <MyNFTsPanel
                                 ownedNFTs={ownedAssets}
                                 listedNFTs={listedNFTs}
-                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                 collection={collection}
                             />
                         </VStack>
@@ -789,7 +805,7 @@ const CollectionSwapPage = () => {
                             <Marketplace
                                 ownedNFTs={ownedAssets}
                                 listedNFTs={listedNFTs}
-                                allListings={collectionPlugins ? collectionPlugins.listings : []}
+                                allListings={[...(collectionPlugins?.listings || []), ...(listedAssets || [])]}
                                 collection={collection}
                                 tab={selected}
                             />
