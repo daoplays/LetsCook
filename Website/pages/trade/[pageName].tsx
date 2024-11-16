@@ -338,7 +338,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = Buffer.from(item.volume).readFloatLE(0) * close;
+                let volume = Buffer.from(item.volume).readFloatLE(0) * open;
                 //console.log("price data", time, open, high, low, close, volume);
 
                 data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
@@ -572,7 +572,7 @@ const TradePage = () => {
                 let high = Buffer.from(item.high).readFloatLE(0);
                 let low = Buffer.from(item.low).readFloatLE(0);
                 let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = Buffer.from(item.volume).readFloatLE(0) * close;
+                let volume = Buffer.from(item.volume).readFloatLE(0) * open;
                 //console.log("price data", time, open, high, low, close, volume);
                 if (now - time < 24 * 60 * 60) {
                     last_volume += volume;
