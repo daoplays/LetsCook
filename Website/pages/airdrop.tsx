@@ -29,16 +29,23 @@ import { MintData } from "@/components/Solana/state";
 import { set } from "date-fns";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import Image from "next/image";
-import { fetchCollectionV1 } from '@metaplex-foundation/mpl-core'
+import { CollectionV1, fetchCollectionV1 } from '@metaplex-foundation/mpl-core'
 import { publicKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { Config } from "@/components/Solana/constants";
+import { fetchWithTimeout } from "@/utils/fetchWithTimeout";
 
 interface AirdropRecord {
     address: string; // wallet address
     currentBalance: string; // their token balance
     airdropAmount: string; // what they'll receive
     signature?: string; // transaction signature if airdrop completed
+}
+
+export interface CollectionWithMetadata {
+    collection: CollectionV1;
+    metadata: any;
+    icon: string;
 }
 
 export const AirdropPage = () => {
@@ -105,15 +112,36 @@ export const AirdropPage = () => {
                 return;
             }
 
-            let snapshotCollection = null;
+            let snapshotCollection : CollectionV1 | null = null;
+            let collectionWithMetadata : CollectionWithMetadata | null = null;
 
             const umi = createUmi(Config.RPC_NODE, "confirmed");
 
             let collection_umiKey = publicKey(mintAddress);
 
             snapshotCollection = await fetchCollectionV1(umi, collection_umiKey)
-            console.log(snapshotCollection, "snapshotCollection");
-        
+            if (snapshotCollection) {
+                console.log(snapshotCollection, "snapshotCollection");
+                let icon: string;
+                let uri = snapshotCollection.uri;
+                uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
+
+                collectionWithMetadata= {collection: snapshotCollection, metadata: "", icon: ""}
+                
+                try {
+                    let uri_json = await fetchWithTimeout(uri, 3000).then((res) => res.json());
+                    console.log(uri_json)
+                    icon = uri_json["image"];
+                    collectionWithMetadata.metadata = uri_json;
+                    collectionWithMetadata.icon = icon;
+
+                } catch (error) {
+                    console.log("error getting uri, using SOL icon");
+                    console.log(error);
+                    collectionWithMetadata.icon = Config.token_image;
+                }
+
+            }
 
             let snapshotMint = null;
             if (!snapshotCollection) {
@@ -140,7 +168,7 @@ export const AirdropPage = () => {
                 return;
             }
 
-            await takeSnapshot(snapshotMint, snapshotCollection, minThreshold);
+            await takeSnapshot(snapshotMint, collectionWithMetadata, minThreshold);
 
             toast({
                 title: "Success",
@@ -315,6 +343,37 @@ export const AirdropPage = () => {
                                             <b>Symbol:</b>
                                             <Text> {snapshotMint.symbol}</Text>
                                         </span>
+                                    </>
+                                )}
+                            </Box>
+                        </Box>
+                    )}
+                    {snapshotCollection && (
+                        <Box>
+                            <FormLabel className="min-w-[100px] text-lg text-white">Collection Info</FormLabel>
+
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                                {snapshotCollection && (
+                                    <>
+                                        <div className="flex flex-col gap-2 w-fit">
+                                            <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
+                                                <div className="">
+                                                    <Image
+                                                        src={snapshotCollection.icon}
+                                                        width={25}
+                                                        height={25}
+                                                        alt="Eth Icon"
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <span>{snapshotCollection.collection.name}</span>
+                                            </button>
+                                        </div>
+                                        <span className="flex justify-between w-full">
+                                            <b>Total Minted:</b>
+                                            <Text> {snapshotCollection.collection.currentSize}</Text>
+                                        </span>
+                                        
                                     </>
                                 )}
                             </Box>

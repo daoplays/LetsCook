@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 import { CollectionV1 } from '@metaplex-foundation/mpl-core';
 import { getCollectionAssets } from './data/useNFTBalance';
 import { AssetWithMetadata } from '@/pages/collection/[pageName]';
+import { CollectionWithMetadata } from '@/pages/airdrop';
 
 interface TokenHolder {
   address: string;
@@ -42,7 +43,7 @@ export const useAirdrop = () => {
   const [holders, setHolders] = useState<TokenHolder[]>([]);
   const [filteredHolders, setFilteredHolders] = useState<TokenHolder[]>([]);
   const [snapshotMint, setSnapshotMint] = useState<MintData | null>(null);
-  const [snapshotCollection, setSnapshotCollection] = useState<CollectionV1 | null>(null);
+  const [snapshotCollection, setSnapshotCollection] = useState<CollectionWithMetadata | null>(null);
 
   const [airdroppedMint, setAirdroppedMint] = useState<MintData | null>(null);
 
@@ -50,7 +51,7 @@ export const useAirdrop = () => {
 
   const takeSnapshot = useCallback(async (
     snapshotMint: MintData | null,
-    snapshotCollection: CollectionV1 | null,
+    snapshotCollection: CollectionWithMetadata | null,
     minThreshold: number = 0
   ): Promise<TokenHolder[]> => {
     setIsLoading(true);
@@ -109,7 +110,7 @@ export const useAirdrop = () => {
       if (snapshotCollection) {
         // Get collection assets
         const assets: Map<string, AssetWithMetadata> = await getCollectionAssets(
-          new PublicKey(snapshotCollection.publicKey.toString())
+          new PublicKey(snapshotCollection.collection.publicKey.toString())
         );
         
         // Process each asset and count NFTs per owner
