@@ -98,6 +98,8 @@ const LandingPage = () => {
     const handleMouseLeave = () => setHoveredIndex(null);
 
 
+
+
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
 
@@ -132,10 +134,6 @@ const LandingPage = () => {
     }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
     // if (!pageName) return;
-
-    if (collection === null || tokenMint === null) return <Loader />;
-
-    if (!collection) return <PageNotFound />;
 
 
     const NFTGrid = () => (
@@ -207,6 +205,12 @@ const LandingPage = () => {
             </Flex>
         </VStack>
     );
+
+    if (collection === null || tokenMint === null) return <Loader />;
+
+    if (!collection) return <PageNotFound />;
+
+
 
     console.log("set show interactive", showInteractive);
     return (

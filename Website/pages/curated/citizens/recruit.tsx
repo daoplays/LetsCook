@@ -46,8 +46,6 @@ function Recruit({ collection, tokenMint, tokenAddress, tokenBalance, nftBalance
     const isTokenToNFT = true;
     const requiredAmount= 1000;
 
-    if (!collection) return (<></>);
-
     const enoughTokenBalance =
         (tokenBalance) >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
@@ -75,6 +73,9 @@ function Recruit({ collection, tokenMint, tokenAddress, tokenBalance, nftBalance
         updateAssignment();
     }, [collection, assignmentData, updateAssignment]);
     
+
+    if (!collection) return (<></>);
+
     return (
         <div className="flex w-full max-w-4xl flex-col items-center gap-6 p-6">
             {/* Tavern Ambiance */}
@@ -107,7 +108,7 @@ function Recruit({ collection, tokenMint, tokenAddress, tokenBalance, nftBalance
                     <div className="flex flex-col gap-2">
                         <h2 className="font-serif text-xl text-[#C4A484]">Thomas Blackwood, The Keeper</h2>
                         <p className="font-serif italic text-[#8B7355]">
-                            "Fresh meat for the grinder, eh? These lost souls might serve your purpose... if you've got the coin."
+                        &ldquo;Fresh meat for the grinder, eh? These lost souls might serve your purpose... if you&apos;ve got the coin.&rdquo;
                         </p>
                     </div>
                 </div>
