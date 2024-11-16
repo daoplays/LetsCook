@@ -47,7 +47,7 @@ const Joy = () => {
 
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
-    const collection_name = "joypeeptest1";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "joypeeptest1";
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
