@@ -29,6 +29,10 @@ import { MintData } from "@/components/Solana/state";
 import { set } from "date-fns";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import Image from "next/image";
+import { fetchCollectionV1 } from '@metaplex-foundation/mpl-core'
+import { publicKey } from "@metaplex-foundation/umi";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { Config } from "@/components/Solana/constants";
 
 interface AirdropRecord {
     address: string; // wallet address
@@ -60,6 +64,7 @@ export const AirdropPage = () => {
         holders,
         filteredHolders,
         snapshotMint,
+        snapshotCollection,
         airdroppedMint,
         isLoading,
         error,
@@ -100,9 +105,23 @@ export const AirdropPage = () => {
                 return;
             }
 
-            let snapshotMint = await getMintData(mintAddress);
+            let snapshotCollection = null;
 
-            if (!snapshotMint) {
+            const umi = createUmi(Config.RPC_NODE, "confirmed");
+
+            let collection_umiKey = publicKey(mintAddress);
+
+            snapshotCollection = await fetchCollectionV1(umi, collection_umiKey)
+            console.log(snapshotCollection, "snapshotCollection");
+        
+
+            let snapshotMint = null;
+            if (!snapshotCollection) {
+                snapshotMint = await getMintData(mintAddress);
+
+            }
+
+            if (!snapshotMint && !snapshotCollection) {
                 toast({
                     title: "Error",
                     description: "Invalid mint address",
@@ -121,11 +140,11 @@ export const AirdropPage = () => {
                 return;
             }
 
-            await takeSnapshot(snapshotMint, minThreshold);
+            await takeSnapshot(snapshotMint, snapshotCollection, minThreshold);
 
             toast({
                 title: "Success",
-                description: "Token holder snapshot completed",
+                description: "Snapshot completed",
                 status: "success",
             });
         } catch (err) {
@@ -232,7 +251,6 @@ export const AirdropPage = () => {
     };
 
     const { tokenBalance: airdroppedMintTokenBalance } = useTokenBalance(airdroppedMint ? { mintData: airdroppedMint } : null);
-    const { tokenBalance: snapshotMintTokenBalance } = useTokenBalance(snapshotMint ? { mintData: snapshotMint } : null);
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
             <div className="flex flex-col gap-2 mb-4">
@@ -296,10 +314,6 @@ export const AirdropPage = () => {
                                         <span className="flex justify-between w-full">
                                             <b>Symbol:</b>
                                             <Text> {snapshotMint.symbol}</Text>
-                                        </span>
-                                        <span className="flex justify-between w-full">
-                                            <b>Token Balance:</b>
-                                            <Text> {snapshotMintTokenBalance}</Text>
                                         </span>
                                     </>
                                 )}

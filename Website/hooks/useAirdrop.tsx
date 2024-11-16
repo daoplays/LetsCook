@@ -14,6 +14,9 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { bignum_to_num, MintData, TokenAccount } from '@/components/Solana/state';
 import { getMintData } from '@/components/amm/launch';
 import { toast } from 'react-toastify';
+import { CollectionV1 } from '@metaplex-foundation/mpl-core';
+import { getCollectionAssets } from './data/useNFTBalance';
+import { AssetWithMetadata } from '@/pages/collection/[pageName]';
 
 interface TokenHolder {
   address: string;
@@ -39,12 +42,15 @@ export const useAirdrop = () => {
   const [holders, setHolders] = useState<TokenHolder[]>([]);
   const [filteredHolders, setFilteredHolders] = useState<TokenHolder[]>([]);
   const [snapshotMint, setSnapshotMint] = useState<MintData | null>(null);
+  const [snapshotCollection, setSnapshotCollection] = useState<CollectionV1 | null>(null);
+
   const [airdroppedMint, setAirdroppedMint] = useState<MintData | null>(null);
 
   const [threshold, setThreshold] = useState<number>(0);
 
   const takeSnapshot = useCallback(async (
-    snapshotMint: MintData,
+    snapshotMint: MintData | null,
+    snapshotCollection: CollectionV1 | null,
     minThreshold: number = 0
   ): Promise<TokenHolder[]> => {
     setIsLoading(true);
@@ -53,59 +59,84 @@ export const useAirdrop = () => {
     try {
       // Get mint data using provided function
       setSnapshotMint(snapshotMint);
-
-      let mint_bytes = snapshotMint.mint.address.toBase58();
-      
-      // Get all token accounts for this mint
-      const accounts = await connection.getProgramAccounts(
-        snapshotMint.token_program,
-        {
-          filters: [
-            {
-              memcmp: {
-                offset: 0,
-                bytes: mint_bytes,
-              },
-            },
-          ],
-        }
-      );
-
-      console.log(accounts);
-
+      setSnapshotCollection(snapshotCollection);
+  
+      if (!snapshotMint && !snapshotCollection) {
+        toast.error('Snapshot mint and collection not set.');
+        return [];
+      }
+  
       // Process accounts and aggregate balances by owner
       const holdersMap = new Map<string, number>();
       
-      for (const { account } of accounts) {
-        // Deserialize account data using provided TokenAccount struct
-        const [tokenAccount] = TokenAccount.struct.deserialize(account.data);
-
-        console.log(tokenAccount, tokenAccount.owner.toString());
+      let accounts;
+      if (snapshotMint) {
+        let mint_bytes = snapshotMint.mint.address.toBase58();
         
-        // Skip closed or frozen accounts
-        if (tokenAccount.state !== 0) continue;
-
-        const ownerAddress = tokenAccount.owner.toString();
-        const balance = bignum_to_num(tokenAccount.amount / Math.pow(10, snapshotMint.mint.decimals));
-
-        if (balance === 0) continue;
-
-        holdersMap.set(ownerAddress, balance);
+        // Get all token accounts for this mint
+        accounts = await connection.getProgramAccounts(
+          snapshotMint.token_program,
+          {
+            filters: [
+              {
+                memcmp: {
+                  offset: 0,
+                  bytes: mint_bytes,
+                },
+              },
+            ],
+          }
+        );
+  
+        for (const { account } of accounts) {
+          // Deserialize account data using provided TokenAccount struct
+          const [tokenAccount] = TokenAccount.struct.deserialize(account.data);
+  
+          console.log(tokenAccount, tokenAccount.owner.toString());
+          
+          // Skip closed or frozen accounts
+          if (tokenAccount.state !== 0) continue;
+  
+          const ownerAddress = tokenAccount.owner.toString();
+          const balance = bignum_to_num(tokenAccount.amount / Math.pow(10, snapshotMint.mint.decimals));
+  
+          if (balance === 0) continue;
+  
+          holdersMap.set(ownerAddress, balance);
+        }
       }
-
-      // Convert map to array and filter by threshold
       
+      if (snapshotCollection) {
+        // Get collection assets
+        const assets: Map<string, AssetWithMetadata> = await getCollectionAssets(
+          new PublicKey(snapshotCollection.publicKey.toString())
+        );
+        
+        // Process each asset and count NFTs per owner
+        assets.forEach((asset, _) => {
+          if (!asset.asset.owner) return; // Skip if no owner
+          
+          const ownerAddress = asset.asset.owner.toString();
+          
+          // Increment NFT count for this owner
+          const currentCount = holdersMap.get(ownerAddress) || 0;
+          holdersMap.set(ownerAddress, currentCount + 1);
+        });
+      }
+  
+      // Convert map to array and filter by threshold
       const holdersArray: TokenHolder[] = Array.from(holdersMap.entries())
         .map(([address, balance]) => ({
           address,
           balance: balance.toString(),
         }))
         .filter(holder => parseFloat(holder.balance) >= minThreshold);
-
+  
       setHolders(holdersArray);
       setFilteredHolders(holdersArray);
       
       return holdersArray;
+  
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
       setError(errorMessage);
@@ -310,6 +341,7 @@ export const useAirdrop = () => {
     holders,
     filteredHolders,
     snapshotMint,
+    snapshotCollection,
     airdroppedMint,
     setHolders,
     takeSnapshot,
