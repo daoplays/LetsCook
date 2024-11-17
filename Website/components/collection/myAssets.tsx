@@ -119,7 +119,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             >
                                                 <div className="relative">
                                                     {!isListed && (
-                                                        <Menubar className="absolute right-0 top-0 z-10 m-1 cursor-pointer rounded-md bg-[rgba(0,0,0,0.5)] text-white">
+                                                        <Menubar className="absolute right-0 top-0 z-10 m-2 cursor-pointer rounded-md bg-[rgba(0,0,0,0.5)] text-white">
                                                             <MenubarMenu>
                                                                 <MenubarTrigger>
                                                                     <SlOptionsVertical className="text-sm"/>
