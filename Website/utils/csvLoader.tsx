@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Button, FormControl, FormLabel, VStack, useToast, Text } from "@chakra-ui/react";
-import Papa from 'papaparse';
+import Papa from "papaparse";
 import { RiUploadLine } from "react-icons/ri";
 import styles from "../styles/Launch.module.css";
 
@@ -20,7 +20,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
             skipEmptyLines: true,
             complete: (results) => {
                 // Validate CSV structure
-                if (!results.meta.fields?.includes('address')) {
+                if (!results.meta.fields?.includes("address")) {
                     toast({
                         title: "Error",
                         description: "CSV must contain an 'address' column",
@@ -39,7 +39,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 // Process each row
                 results.data.forEach((row: any) => {
                     if (!row.address?.trim()) return;
-                    
+
                     const address = row.address.trim();
 
                     // Check if address is valid Solana address
@@ -58,7 +58,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     addressSet.add(address);
                     validHolders.push({
                         address,
-                        balance: "1" // Set balance to 1 for all addresses
+                        balance: "1", // Set balance to 1 for all addresses
                     });
                 });
 
@@ -83,7 +83,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
                 // Pass processed data to parent component
                 onHoldersUpdate(validHolders);
-                
+
                 toast({
                     title: "Success",
                     description: `Successfully processed ${validHolders.length} unique addresses`,
@@ -94,19 +94,19 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
             error: (error) => {
                 toast({
                     title: "Error",
-                    description: 'Error processing CSV: ' + error.message,
+                    description: "Error processing CSV: " + error.message,
                     status: "error",
                 });
                 setIsProcessing(false);
-            }
+            },
         });
     };
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-        
-        if (!file.name.toLowerCase().endsWith('.csv')) {
+
+        if (!file.name.toLowerCase().endsWith(".csv")) {
             toast({
                 title: "Error",
                 description: "Please upload a CSV file",
@@ -119,23 +119,15 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
     return (
         <Box className="w-full">
-            <label className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 p-6 hover:border-gray-500 hover:bg-gray-700 ${styles.textLabelInput}`}>
+            <label
+                className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 p-6 hover:border-gray-500 hover:bg-gray-700 ${styles.textLabelInput}`}
+            >
                 <div className="flex flex-col items-center justify-center">
                     <RiUploadLine className="mb-2 h-8 w-8 text-gray-400" />
-                    <Text className="text-sm text-gray-400">
-                        {isProcessing ? "Processing..." : "Click to upload CSV"}
-                    </Text>
-                    <Text className="mt-1 text-xs text-gray-500">
-                        CSV must contain an "address" column
-                    </Text>
+                    <Text className="text-sm text-gray-400">{isProcessing ? "Processing..." : "Click to upload CSV"}</Text>
+                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column</Text>
                 </div>
-                <input
-                    type="file"
-                    className="hidden"
-                    accept=".csv"
-                    onChange={handleFileUpload}
-                    disabled={isProcessing}
-                />
+                <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
             </label>
         </Box>
     );

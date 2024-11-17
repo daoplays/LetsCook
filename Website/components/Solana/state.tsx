@@ -597,6 +597,8 @@ export function getLaunchType(launch_type: number): string {
             return "IDO";
         case 3:
             return "Instant";
+        case 4:
+            return "None"
         default:
             return "FCFS";
     }
@@ -612,6 +614,8 @@ export function getLaunchTypeIndex(launch_type: string): number {
             return 2;
         case "Instant":
             return 3;
+        case "None":
+            return 4;
         default:
             return 1;
     }

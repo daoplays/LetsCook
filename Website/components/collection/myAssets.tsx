@@ -122,10 +122,10 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                         <Menubar className="absolute right-0 top-0 z-10 m-1 cursor-pointer rounded-md bg-[rgba(0,0,0,0.5)] text-white">
                                                             <MenubarMenu>
                                                                 <MenubarTrigger>
-                                                                    <SlOptionsVertical className="text-sm"/>
+                                                                    <SlOptionsVertical className="text-sm" />
                                                                 </MenubarTrigger>
                                                                 <MenubarContent>
-                                                                    <MenubarItem onClick={()=>WrapNFT(nftAssetKey)}>Unwrap</MenubarItem>
+                                                                    <MenubarItem onClick={() => WrapNFT(nftAssetKey)}>Unwrap</MenubarItem>
                                                                     <MenubarItem onClick={() => handleTransferNFTClick(nft)}>
                                                                         Transfer
                                                                     </MenubarItem>
@@ -142,7 +142,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                     />
                                                     {isListed && (
                                                         <div className="absolute bottom-0 right-0">
-                                                            <span className="absolute flex items-center justify-center gap-1 px-2 py-1 mt-2 rounded-lg shadow-lg bottom-2 right-2 bg-black/50 ring-1 ring-white/10 backdrop-blur-sm md:px-3 md:py-2">
+                                                            <span className="absolute bottom-2 right-2 mt-2 flex items-center justify-center gap-1 rounded-lg bg-black/50 px-2 py-1 shadow-lg ring-1 ring-white/10 backdrop-blur-sm md:px-3 md:py-2">
                                                                 <p className="text-sm font-semibold text-white md:text-[1rem]">
                                                                     {lamportsToSol(price)}
                                                                 </p>
@@ -190,7 +190,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             {isListed ? (
                                                 // Unlist button if the NFT is listed
                                                 <Button
-                                                    className="w-full mt-2 transition-all rounded-md hover:opacity-90"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={async () => {
                                                         await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
@@ -201,7 +201,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             ) : (
                                                 // List button if the NFT is not listed
                                                 <Button
-                                                    className="w-full mt-2 transition-all rounded-md hover:opacity-90"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={() => {
                                                         handleNFTClick(nft, isListed);
@@ -216,8 +216,8 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                             })}
                         </Flex>
                     ) : (
-                        <div className="flex flex-col gap-2 my-4">
-                            <Text className="text-xl font-semibold text-center text-white opacity-25">
+                        <div className="my-4 flex flex-col gap-2">
+                            <Text className="text-center text-xl font-semibold text-white opacity-25">
                                 You Don&apos;t Have Any {collection.nft_name}
                             </Text>
                         </div>
@@ -259,7 +259,7 @@ const Attributes = ({ asset }: { asset: AssetWithMetadata }) => {
     let asset_Attribute = asset.metadata["attributes"] ? asset.metadata["attributes"] : null;
     return (
         <>
-            <div className="flex items-start justify-center w-full gap-4 text-white">
+            <div className="flex w-full items-start justify-center gap-4 text-white">
                 <Image src={asset.metadata["image"]} width={280} height={280} style={{ borderRadius: "8px" }} alt="nftImage" />
                 <div className="flex flex-col gap-3">
                     <span>Asset name: {asset_name}</span>

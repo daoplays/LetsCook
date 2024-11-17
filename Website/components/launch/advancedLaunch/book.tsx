@@ -147,7 +147,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
     async function setData(e): Promise<boolean> {
         console.log("in set data");
 
-        if (newLaunchData.current.launch_type !== 3) {
+        if (newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3) {
             let balance = 1;
             try {
                 let teamPubKey = new PublicKey(teamWallet);
@@ -449,7 +449,7 @@ const BookPage = ({ setScreen }: BookPageProps) => {
                         </HStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
-                            {newLaunchData.current.launch_type !== 3 && (
+                            {newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3 && (
                                 <HStack>
                                     <Button type="button" size="lg" className="mt-2" onClick={onOpen}>
                                         Preview

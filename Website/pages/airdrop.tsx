@@ -379,10 +379,10 @@ export const AirdropPage = () => {
                     {/* CSV Upload Section */}
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Or Upload Addresses CSV</FormLabel>
-                        <CSVUploader 
+                        <CSVUploader
                             onHoldersUpdate={(newHolders) => {
                                 setHolders(newHolders);
-                            }} 
+                            }}
                         />
                     </FormControl>
                     {/* Threshold Input */}

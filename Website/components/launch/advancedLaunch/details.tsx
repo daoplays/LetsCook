@@ -23,6 +23,7 @@ import Image from "next/image";
 import useCreateLaunch from "../../../hooks/launch/useCreateLaunch";
 import LaunchPreviewModal from "../../launchPreview/modal";
 import { Button } from "@/components/ui/button";
+import useCreateToken2022 from "@/hooks/useCreateToken2022";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
@@ -39,6 +40,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const [twitter, setTwitter] = useState(newLaunchData.current.twt_url);
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
+
+    const {CreateToken} = useCreateToken2022();
 
     const { CreateLaunch } = useCreateLaunch();
 
@@ -108,7 +111,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        if (newLaunchData.current.launch_type !== 3 && name === "") {
+        if (newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3 && name === "") {
             toast.error("Page name cannot be empty");
             return false;
         }
@@ -123,12 +126,12 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        if (newLaunchData.current.launch_type !== 3 && newLaunchData.current.banner_file === null) {
+        if (newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3 && newLaunchData.current.banner_file === null) {
             toast.error("Please select a banner image.");
             return false;
         }
 
-        if (newLaunchData.current.launch_type !== 3) {
+        if (newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3) {
             let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(name), Buffer.from("Launch")], PROGRAM)[0];
 
             let balance = 0;
@@ -173,7 +176,12 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     }
 
     async function nextPage(e) {
-        if (await setData(e)) setScreen("book");
+        if (await setData(e)) {
+            if (newLaunchData.current.launch_type === 4) {
+                CreateToken(newLaunchData.current.name, newLaunchData.current.symbol, newLaunchData.current.decimals, newLaunchData.current.total_supply, newLaunchData.current.icon_file, newLaunchData.current.description);
+                return;
+            }
+            setScreen("book");}
     }
 
     async function prevPage(e) {
@@ -191,7 +199,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                     <VStack width="100%" mt={4}>
                         <div className={styles.launchBodyUpper}>
                             <div className={styles.launchBodyUpperFields}>
-                                {newLaunchData.current.launch_type !== 3 && (
+                                {newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3 && (
                                     <>
                                         {" "}
                                         <HStack spacing={0} className={styles.eachField}>
@@ -270,6 +278,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                 </div>
                             </div>
 
+                            {newLaunchData.current.launch_type !== 4 && (
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
@@ -285,7 +294,9 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     </div>
                                 </div>
                             </div>
+                            )}
 
+                            {newLaunchData.current.launch_type !== 4 && (
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
@@ -302,6 +313,9 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     </div>
                                 </div>
                             </div>
+                            )}
+
+                            {newLaunchData.current.launch_type !== 4 && (
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
@@ -319,7 +333,8 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     </div>
                                 </div>
                             </div>
-
+                            )}
+                            {newLaunchData.current.launch_type !== 4 && (
                             <div className={styles.launchBodyLowerHorizontal}>
                                 <div className={styles.eachField}>
                                     <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
@@ -336,6 +351,9 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                     </div>
                                 </div>
                             </div>
+                            )}
+                            
+                            
                         </VStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">
@@ -358,7 +376,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                                         nextPage(e);
                                     }}
                                 >
-                                    Next (2/3)
+                                    {newLaunchData.current.launch_type === 4 ? "Create" : "Next (2/3)"}
                                 </Button>
                             </Stack>
                         </VStack>
