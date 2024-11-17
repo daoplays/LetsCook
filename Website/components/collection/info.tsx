@@ -376,7 +376,7 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         <Divider orientation="vertical" />
                                     </Center>
                                     <Tooltip
-                                        label="No limit on the number of NFTs that can be minted. The launch will end on the specified date."
+                                        label="No limit on the number of NFTs that can be minted."
                                         hasArrow
                                         fontSize="lg"
                                         offset={[0, 10]}
