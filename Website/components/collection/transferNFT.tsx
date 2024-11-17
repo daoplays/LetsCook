@@ -6,10 +6,12 @@ import { Modal, ModalBody, ModalContent, ModalOverlay, VStack, Text, Spinner, us
 import useResponsive from "@/hooks/useResponsive";
 import { Button } from "../ui/button";
 import { CiWallet } from "react-icons/ci";
-import { Config } from "../Solana/constants";
+import { CollectionKeys, Config } from "../Solana/constants";
 import { publicKey } from "@metaplex-foundation/umi";
 import { transferV1 } from "@metaplex-foundation/mpl-core";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import useTransferCoreAsset from "@/hooks/useTransferCoreAsset";
+import { PublicKey } from "@solana/web3.js";
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;
     onClose: () => void;
@@ -23,7 +25,7 @@ function TransferNft({ isOpened, onClose, collection, nft }: ViewNFTDetailsModal
     const [recipientAddress, setRecipientAddress] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-
+    const {transferAsset} = useTransferCoreAsset(); 
 
     return (
         <Modal size="2xl" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
@@ -67,6 +69,7 @@ function TransferNft({ isOpened, onClose, collection, nft }: ViewNFTDetailsModal
                             className="mt-3 transition-all rounded-md w-fit hover:opacity-90"
                             size="lg"
                             isLoading={isLoading}
+                            onClick={() => {transferAsset(nft?.asset, collection?.keys[CollectionKeys.CollectionMint], new PublicKey(recipientAddress))}}
                         >
                             Transfer
                         </Button>

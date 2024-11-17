@@ -181,12 +181,7 @@ const CollectionSwapPage = () => {
             }
         }
         for (let i = 0; i < listedAssets.length; i++) {
-            console.log(
-                "listed asset",
-                listedAssets[i].asset.toString(),
-                listedAssets[i].seller.toString(),
-                bignum_to_num(listedAssets[i].price),
-            );
+           
             const asset = collectionAssets.get(listedAssets[i].asset.toString());
             if (asset) new_listings.push(asset);
             if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))
