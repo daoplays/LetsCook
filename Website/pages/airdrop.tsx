@@ -34,6 +34,7 @@ import { publicKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { Config } from "@/components/Solana/constants";
 import { fetchWithTimeout } from "@/utils/fetchWithTimeout";
+import CSVUploader from "@/utils/csvLoader";
 
 interface AirdropRecord {
     address: string; // wallet address
@@ -375,7 +376,15 @@ export const AirdropPage = () => {
                             </Box>
                         </Box>
                     )}
-
+                    {/* CSV Upload Section */}
+                    <FormControl>
+                        <FormLabel className="min-w-[100px] text-lg text-white">Or Upload Addresses CSV</FormLabel>
+                        <CSVUploader 
+                            onHoldersUpdate={(newHolders) => {
+                                setHolders(newHolders);
+                            }} 
+                        />
+                    </FormControl>
                     {/* Threshold Input */}
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
