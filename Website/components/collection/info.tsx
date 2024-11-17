@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
-import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack, Tooltip, Switch } from "@chakra-ui/react";
+import { Center, VStack, Text, HStack, Input, chakra, Flex, RadioGroup, Radio, Stack, Tooltip, Switch, Divider } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import styles from "../../styles/Launch.module.css";
@@ -26,8 +26,8 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     const [description, setDescription] = useState<string>(newCollectionData.current.description);
     const [isLoading, setIsLoading] = useState(false);
     const [grindComplete, setGrindComplete] = useState(false);
-    const [supplyMode, setSupplyMode] = useState<string>(newCollectionData.current.collection_type == 0 ? "fixed" : "unlimited");
-    const [isMintOnly, setIsMintOnly] = useState<boolean>(newCollectionData.current.mint_only);
+    const [isUnlimitedSupply, setIsUnlimitedSupply] = useState<boolean>(false); // Default to Fixed Supply
+    const [isStandardMint, setIsStandardMint] = useState<boolean>(true); // Default to Standard Mint
 
     const grind_attempts = useRef<number>(0);
     const grind_toast = useRef<any | null>(null);
@@ -130,6 +130,11 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         "O",
     ];
 
+    useEffect(() => {
+        newCollectionData.current.collection_type = isUnlimitedSupply ? 1 : 0;
+        newCollectionData.current.mint_only = isStandardMint;
+    }, [isUnlimitedSupply, isStandardMint, newCollectionData]);
+
     async function setData(e): Promise<boolean> {
         e.preventDefault();
 
@@ -163,15 +168,6 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
         newCollectionData.current.collection_name = name;
         newCollectionData.current.displayImg = displayImg;
         newCollectionData.current.description = description;
-
-        if (supplyMode === "fixed") {
-            newCollectionData.current.collection_type = 0;
-        }
-        if (supplyMode === "unlimited") {
-            newCollectionData.current.collection_type = 1;
-        }
-
-        newCollectionData.current.mint_only = isMintOnly;
 
         if (tokenStart !== "") {
             // Call tokenGrind() and wait for it to finish
@@ -250,13 +246,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
     );
 
     return (
-        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:!w-fit md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[975px]">
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:w-[975px] md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8">
             <Center width="100%" h="100%">
                 <VStack w="100%" h="100%">
                     <div className="mb-4 flex flex-col gap-2">
                         <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">New Collection</Text>
                     </div>
-                    <VStack spacing={25} className="w-full md:w-auto">
+                    <VStack spacing={25} className="w-full">
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
                             {displayImg ? (
                                 <Image
@@ -329,18 +325,19 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                         </div>
                                     </HStack>
                                 </Flex>
-                                <HStack flexDirection={lg ? "column" : "row"} className={styles.eachField}>
+                                <HStack className={`w-full flex-nowrap overflow-auto`}>
                                     <HStack spacing={0} className={styles.eachField}>
                                         <p className="min-w-[100px] text-lg text-white md:min-w-[130px]">Mode:</p>
                                         <RadioGroup
-                                            onChange={setSupplyMode}
-                                            value={supplyMode}
-                                            className="!w-fit overflow-auto md:!w-[320px]"
+                                            onChange={(value: string) => {
+                                                setIsStandardMint(value === "standard");
+                                            }}
+                                            value={isStandardMint ? "standard" : "hybrid"}
                                         >
                                             <Stack direction="row" gap={5}>
-                                                <Radio value="fixed" color="white">
+                                                <Radio value="standard" color="white">
                                                     <Tooltip
-                                                        label="Each NFT will only be minted once"
+                                                        label="Users buy NFTs with tokens. Once sold out, no more can be minted."
                                                         hasArrow
                                                         fontSize="large"
                                                         offset={[0, 10]}
@@ -351,13 +348,13 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                             className="font-face-rk text-nowrap"
                                                             fontSize={lg ? "medium" : "lg"}
                                                         >
-                                                            Fixed Supply
+                                                            Standard Mint
                                                         </Text>
                                                     </Tooltip>
                                                 </Radio>
-                                                <Radio value="unlimited">
+                                                <Radio value="hybrid">
                                                     <Tooltip
-                                                        label="Each NFT can be minted multiple times."
+                                                        label="Users can swap tokens for NFTs and back, with a swap fee sent to wallet you assigned."
                                                         hasArrow
                                                         fontSize="large"
                                                         offset={[0, 10]}
@@ -368,24 +365,43 @@ const CollectionInfo = ({ setScreen }: CollectionInfoProps) => {
                                                             className="font-face-rk text-nowrap"
                                                             fontSize={lg ? "medium" : "lg"}
                                                         >
-                                                            Unlimited Supply
+                                                            Hybrid Mint
                                                         </Text>
                                                     </Tooltip>
                                                 </Radio>
                                             </Stack>
                                         </RadioGroup>
                                     </HStack>
-
-                                    <HStack className={styles.eachField} mt={lg && 4}>
-                                        <p className="min-w-[100px] text-lg text-white md:min-w-[130px]">Traditional Mint:</p>
-                                        <Switch
-                                            ml={2}
-                                            py={2}
-                                            size={"md"}
-                                            isChecked={isMintOnly}
-                                            onChange={() => setIsMintOnly(!isMintOnly)}
-                                        />
-                                    </HStack>
+                                    <Center height="20px" className="mx-2">
+                                        <Divider orientation="vertical" />
+                                    </Center>
+                                    <Tooltip
+                                        label="No limit on the number of NFTs that can be minted. The launch will end on the specified date."
+                                        hasArrow
+                                        fontSize="lg"
+                                        offset={[0, 10]}
+                                    >
+                                        <HStack
+                                            className={styles.eachField}
+                                            alignItems="center"
+                                            spacing={3} // Adds spacing for better visual separation
+                                        >
+                                            <Text
+                                                className="font-face-rk text-nowrap text-lg text-white"
+                                                color="white"
+                                                m={0}
+                                                fontSize={lg ? "medium" : "lg"}
+                                            >
+                                                Unlimited Supply
+                                            </Text>
+                                            <Switch
+                                                py={2}
+                                                size="md"
+                                                isChecked={isUnlimitedSupply}
+                                                onChange={() => setIsUnlimitedSupply(!isUnlimitedSupply)}
+                                            />
+                                        </HStack>
+                                    </Tooltip>
                                 </HStack>
                                 {!lg && <Browse />}
                             </VStack>

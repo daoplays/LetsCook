@@ -50,18 +50,20 @@ export interface CollectionWithMetadata {
 }
 
 export const AirdropPage = () => {
-    const { sm, md, lg } = useResponsive();
+    const { xs, sm, md, lg } = useResponsive();
     const toast = useToast();
     const [mintAddress, setMintAddress] = useState("");
     const [airdroppedToken, setAirdroppedToken] = useState("");
 
     const [distributionType, setDistributionType] = useState<"fixed" | "even" | "proRata">("fixed");
+    const [activeTab, setActiveTab] = useState("Scan");
     const [amount, setAmount] = useState("");
     const [threshold, setThreshold] = useState("0");
     const [airdropProgress, setAirdropProgress] = useState(0);
     const [isAirdropping, setIsAirdropping] = useState(false);
 
     const [signatures, setSignatures] = useState<Map<string, string>>(new Map());
+
     const {
         takeSnapshot,
         calculateAirdropAmounts,
@@ -279,47 +281,68 @@ export const AirdropPage = () => {
     const { tokenBalance: airdroppedMintTokenBalance } = useTokenBalance(airdroppedMint ? { mintData: airdroppedMint } : null);
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
-            <div className="mb-4 flex flex-col gap-2">
-                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
+            <div className="flex flex-col gap-2 mb-4">
+                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
                 {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
             </div>
-            <Box w={"100%"} mx="auto">
+            <div className="flex justify-center w-full gap-1 p-1 -ml-1 bg-gray-700 rounded-md shadow-2xl backdrop-blur-sm backdrop-filter">
+                <button
+                    onClick={() => setActiveTab("Scan")}
+                    className={`h-fit w-full rounded-md font-bold transition-all duration-200 md:text-lg ${
+                        activeTab === "Scan" ? "bg-white text-black shadow-lg" : "text-white/70 hover:text-white"
+                    } `}
+                    type="button"
+                >
+                    Scan
+                </button>
+                <button
+                    onClick={() => setActiveTab("Upload CSV")}
+                    className={`h-fit w-full rounded-md font-bold transition-all duration-200 md:text-lg ${
+                        activeTab === "Upload CSV" ? "bg-white text-black shadow-lg" : "text-white/70 hover:text-white"
+                    } `}
+                    type="button"
+                >
+                    Upload CSV
+                </button>
+            </div>
+            <Box w={"100%"} mx="auto" className="mt-4">
                 <VStack spacing={6} align="stretch">
                     {/* Input Section */}
-                    <FormControl>
-                        <FormLabel className="min-w-[100px] text-lg text-white">Token / Collection Address</FormLabel>
-                        <HStack>
-                            <div className={styles.textLabelInput}>
-                                <Input
-                                    className="text-white"
-                                    placeholder="Enter token mint address"
-                                    size={lg ? "md" : "lg"}
-                                    required
-                                    type="text"
-                                    value={mintAddress}
-                                    onChange={(e) => handleMintInput(e.target.value)}
-                                />
-                            </div>
-                            <Button
-                                className="!bg-custom-gradient text-white"
-                                onClick={handleSnapshot}
-                                isLoading={isLoading}
-                                loadingText="Loading"
-                            >
-                                Get Holders
-                            </Button>
-                        </HStack>
-                    </FormControl>
+                    {activeTab === "Scan" && (
+                        <FormControl>
+                            <HStack>
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        className="text-white"
+                                        placeholder="Enter Token / Collection Address"
+                                        size={lg ? "md" : "lg"}
+                                        required
+                                        type="text"
+                                        value={mintAddress}
+                                        onChange={(e) => handleMintInput(e.target.value)}
+                                    />
+                                </div>
+                                <Button
+                                    className="!bg-custom-gradient text-white"
+                                    onClick={handleSnapshot}
+                                    isLoading={isLoading}
+                                    loadingText="Loading"
+                                >
+                                    Get Holders
+                                </Button>
+                            </HStack>
+                        </FormControl>
+                    )}
 
                     {/* Token Info */}
                     {snapshotMint && (
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
 
-                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
                                 {snapshotMint && (
                                     <>
-                                        <div className="flex w-fit flex-col gap-2">
+                                        <div className="flex flex-col gap-2 w-fit">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -333,11 +356,11 @@ export const AirdropPage = () => {
                                                 <span>{snapshotMint.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex w-full justify-between">
+                                        <span className="flex justify-between w-full">
                                             <b>Decimals:</b>
                                             <Text> {snapshotMint.mint.decimals}</Text>
                                         </span>
-                                        <span className="flex w-full justify-between">
+                                        <span className="flex justify-between w-full">
                                             <b>Symbol:</b>
                                             <Text> {snapshotMint.symbol}</Text>
                                         </span>
@@ -350,10 +373,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Collection Info</FormLabel>
 
-                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
                                 {snapshotCollection && (
                                     <>
-                                        <div className="flex w-fit flex-col gap-2">
+                                        <div className="flex flex-col gap-2 w-fit">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -367,7 +390,7 @@ export const AirdropPage = () => {
                                                 <span>{snapshotCollection.collection.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex w-full justify-between">
+                                        <span className="flex justify-between w-full">
                                             <b>Total Minted:</b>
                                             <Text> {snapshotCollection.collection.currentSize}</Text>
                                         </span>
@@ -377,14 +400,15 @@ export const AirdropPage = () => {
                         </Box>
                     )}
                     {/* CSV Upload Section */}
-                    <FormControl>
-                        <FormLabel className="min-w-[100px] text-lg text-white">Or Upload Addresses CSV</FormLabel>
-                        <CSVUploader
-                            onHoldersUpdate={(newHolders) => {
-                                setHolders(newHolders);
-                            }}
-                        />
-                    </FormControl>
+                    {activeTab === "Upload CSV" && (
+                        <FormControl>
+                            <CSVUploader
+                                onHoldersUpdate={(newHolders) => {
+                                    setHolders(newHolders);
+                                }}
+                            />
+                        </FormControl>
+                    )}
                     {/* Threshold Input */}
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
@@ -443,10 +467,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
 
-                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
                                 {airdroppedMint && (
                                     <>
-                                        <div className="flex w-fit flex-col gap-2">
+                                        <div className="flex flex-col gap-2 w-fit">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -460,15 +484,15 @@ export const AirdropPage = () => {
                                                 <span>{airdroppedMint.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex w-full justify-between">
+                                        <span className="flex justify-between w-full">
                                             <b>Decimals:</b>
                                             <Text> {airdroppedMint.mint.decimals}</Text>
                                         </span>
-                                        <span className="flex w-full justify-between">
+                                        <span className="flex justify-between w-full">
                                             <b>Symbol:</b>
                                             <Text> {airdroppedMint.symbol}</Text>
                                         </span>
-                                        <span className="flex w-full justify-between">
+                                        <span className="flex justify-between w-full">
                                             <b>Token Balance:</b>
                                             <Text> {airdroppedMintTokenBalance}</Text>
                                         </span>
@@ -528,7 +552,7 @@ export const AirdropPage = () => {
                                             return (
                                                 <TableRow
                                                     key={holder.address}
-                                                    className="hover:bg-muted/50 cursor-pointer transition-colors"
+                                                    className="transition-colors cursor-pointer hover:bg-muted/50"
                                                 >
                                                     <TableCell className="font-mono text-sm">
                                                         {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
@@ -570,7 +594,7 @@ export const AirdropPage = () => {
                             )}
 
                             {/* Airdrop Button */}
-                            <div className="flex w-full justify-center">
+                            <div className="flex justify-center w-full">
                                 <Button
                                     mt={4}
                                     colorScheme="green"

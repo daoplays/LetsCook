@@ -119,16 +119,24 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
     return (
         <Box className="w-full">
-            <label
-                className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-600 bg-gray-800 p-6 hover:border-gray-500 hover:bg-gray-700 ${styles.textLabelInput}`}
-            >
+            <div className="flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer border-1" style={{backgroundColor: "#454444"}}>
                 <div className="flex flex-col items-center justify-center">
-                    <RiUploadLine className="mb-2 h-8 w-8 text-gray-400" />
-                    <Text className="text-sm text-gray-400">{isProcessing ? "Processing..." : "Click to upload CSV"}</Text>
-                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column</Text>
+                    <RiUploadLine className="w-8 h-8 mb-2 text-white" />
+                    <Text className="text-sm text-center text-white">
+                        {isProcessing ? "Processing..." : "Click to upload token / collection ddresses CSV"}
+                    </Text>
+                    <Text className="mt-1 text-xs text-gray-500">
+                        CSV must contain an "address" column
+                    </Text>
                 </div>
-                <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
-            </label>
+                <input
+                    type="file"
+                    className="hidden"
+                    accept=".csv"
+                    onChange={handleFileUpload}
+                    disabled={isProcessing}
+                />
+            </div>
         </Box>
     );
 };
