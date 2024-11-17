@@ -1,4 +1,4 @@
-import React, { CSSProperties, useState } from 'react';
+import React, { CSSProperties, useState } from "react";
 import { VStack, Flex, GridItem, Box, useDisclosure } from "@chakra-ui/react";
 import Image from "next/image";
 import { PublicKey } from "@solana/web3.js";
@@ -9,8 +9,8 @@ import useResponsive from "@/hooks/useResponsive";
 import ViewNFTDetails from "../joy/viewNftDetails";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
-import { MarketplaceProps } from '../joy/marketplace';
-import { AssetWithMetadata } from '@/pages/collection/[pageName]';
+import { MarketplaceProps } from "../joy/marketplace";
+import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 
 const gridItemStyle: CSSProperties = {
     position: "relative",
@@ -74,7 +74,8 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                         <div className="flex flex-col gap-2">
                             <h2 className="font-serif text-xl text-[#C4A484]">Garrett Voss, The Broker</h2>
                             <p className="font-serif italic text-[#8B7355]">
-                                &ldquo;Looking for experienced steel? I deal in trained blades... for the right price. Each one tested, each one proven.&rdquo;
+                                &ldquo;Looking for experienced steel? I deal in trained blades... for the right price. Each one tested, each
+                                one proven.&rdquo;
                             </p>
                         </div>
                     </div>
@@ -95,9 +96,9 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                 .sort((a, b) => a.price - b.price)
                                 .map(({ nft, nftIndex, price }) => {
                                     const isUserOwned = ownerListedNFTs.some(
-                                        (ownedNFT) => ownedNFT.asset.publicKey === nft.asset.publicKey
+                                        (ownedNFT) => ownedNFT.asset.publicKey === nft.asset.publicKey,
                                     );
-                                    const level = nft.metadata?.attributes?.find(attr => attr.trait_type === "Level")?.value || "1";
+                                    const level = nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1";
 
                                     return (
                                         <div key={`nft-${nftIndex}`} className="flex flex-col gap-4">
@@ -115,9 +116,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                 {/* Price Tag */}
                                                 <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-lg bg-black/60 px-3 py-2 backdrop-blur-sm">
                                                     <FaCoins className="text-[#C4A484]" />
-                                                    <span className="font-bold text-[#C4A484]">
-                                                        {lamportsToSol(price.toString())}
-                                                    </span>
+                                                    <span className="font-bold text-[#C4A484]">{lamportsToSol(price.toString())}</span>
                                                 </div>
 
                                                 <Image
@@ -147,11 +146,11 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         BuyNFT(new PublicKey(nft.asset.publicKey), nftIndex);
                                                     }
                                                 }}
-                                                className={`w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b p-3 text-lg font-bold transition-all
-                                                    ${isUserOwned 
-                                                        ? 'from-[#A13333] to-[#8B1818] text-[#FFD7D7] hover:from-[#CC4444] hover:to-[#A13333]' 
-                                                        : 'from-[#8B7355] to-[#3A2618] text-[#1C1410] hover:from-[#C4A484] hover:to-[#8B7355]'}
-                                                    active:scale-95`}
+                                                className={`w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b p-3 text-lg font-bold transition-all ${
+                                                    isUserOwned
+                                                        ? "from-[#A13333] to-[#8B1818] text-[#FFD7D7] hover:from-[#CC4444] hover:to-[#A13333]"
+                                                        : "from-[#8B7355] to-[#3A2618] text-[#1C1410] hover:from-[#C4A484] hover:to-[#8B7355]"
+                                                } active:scale-95`}
                                             >
                                                 {isUserOwned ? "Withdraw Listing" : "Purchase Mercenary"}
                                             </button>
@@ -161,9 +160,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                         </div>
                     ) : (
                         <div className="flex h-40 items-center justify-center rounded-lg border-2 border-[#3A2618] bg-black/20">
-                            <p className="text-lg font-serif italic text-[#8B7355]">
-                                No mercenaries available for trade at the moment...
-                            </p>
+                            <p className="font-serif text-lg italic text-[#8B7355]">No mercenaries available for trade at the moment...</p>
                         </div>
                     )}
                 </div>

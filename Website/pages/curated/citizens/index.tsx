@@ -1,25 +1,27 @@
-import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Montserrat } from "next/font/google";
 import Image from "next/image";
 import { Loader } from "lucide-react";
-import { CollectionKeys, Config, SYSTEM_KEY } from '@/components/Solana/constants';
-import PageNotFound from '@/components/pageNotFound';
-import { AssetWithMetadata } from '@/pages/collection/[pageName]';
-import useTokenBalance from '@/hooks/data/useTokenBalance';
-import useClaimNFT from '@/hooks/collections/useClaimNFT';
-import useMintRandom from '@/hooks/collections/useMintRandom';
-import useAppRoot from '@/context/useAppRoot';
-import useWrapNFT from '@/hooks/collections/useWrapNFT';
-import useMintNFT from '@/hooks/collections/useMintNFT';
-import useAssignmentData from '@/hooks/data/useAssignmentData';
-import useCollection from '@/hooks/data/useCollection';
-import { Box, Flex, GridItem, VStack, useDisclosure } from '@chakra-ui/react';
-import UseWalletConnection from '@/hooks/useWallet';
-import useResponsive from '@/hooks/useResponsive';
-import useNFTBalance from '@/hooks/data/useNFTBalance';
-import Recruit from './recruit';
-import MissionModal from './mission';
+import { CollectionKeys, Config, SYSTEM_KEY } from "@/components/Solana/constants";
+import PageNotFound from "@/components/pageNotFound";
+import { AssetWithMetadata } from "@/pages/collection/[pageName]";
+import useTokenBalance from "@/hooks/data/useTokenBalance";
+import useClaimNFT from "@/hooks/collections/useClaimNFT";
+import useMintRandom from "@/hooks/collections/useMintRandom";
+import useAppRoot from "@/context/useAppRoot";
+import useWrapNFT from "@/hooks/collections/useWrapNFT";
+import useMintNFT from "@/hooks/collections/useMintNFT";
+import useAssignmentData from "@/hooks/data/useAssignmentData";
+import useCollection from "@/hooks/data/useCollection";
+import { Box, Flex, GridItem, VStack, useDisclosure } from "@chakra-ui/react";
+import UseWalletConnection from "@/hooks/useWallet";
+import useResponsive from "@/hooks/useResponsive";
+import useNFTBalance from "@/hooks/data/useNFTBalance";
+import Recruit from "./recruit";
+import MissionModal from "./mission";
+import useStartMission from "./hooks/useStartMission";
+import { PublicKey } from "@solana/web3.js";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -41,8 +43,6 @@ const gridItemStyle: CSSProperties = {
     cursor: "pointer",
     border: "2px solid #3A2618",
 };
-
-
 
 const LandingPage = () => {
     const [showInteractive, setShowInteractive] = useState(false);
@@ -99,8 +99,7 @@ const LandingPage = () => {
     const handleMouseEnter = (index) => setHoveredIndex(index);
     const handleMouseLeave = () => setHoveredIndex(null);
 
-
-
+    const { StartMission, isLoading: StartMissionLoading } = useStartMission(collection);
 
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
@@ -126,7 +125,6 @@ const LandingPage = () => {
         }
     }, [collectionPlugins, collectionAssets, wallet]);
 
-
     // 1. Effect for initial balance
     useEffect(() => {
         if (collection && wallet && wallet.connected) {
@@ -137,71 +135,64 @@ const LandingPage = () => {
 
     // if (!pageName) return;
 
-
     const NFTGrid = () => {
         const [selectedMercenary, setSelectedMercenary] = useState(null);
         const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
-    
+
         const handleMissionSelect = (difficulty: string) => {
             console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
             // Add your mission logic here
+            StartMission(new PublicKey(selectedMercenary.asset.publicKey.toString()), 0);
             closeMissionModal();
         };
-    
+
         return (
             <>
                 <VStack h="100%" position="relative" overflowY="auto">
                     <Flex w="100%" wrap="wrap" gap={4} justify="center" align="start">
                         {ownedAssets.map((nft, index) => {
-                            const level = nft.metadata?.attributes?.find(attr => attr.trait_type === "Level")?.value || "1";
-                            
+                            const level = nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1";
+
                             return (
                                 <GridItem key={`nft-${index}`}>
                                     <div className="flex flex-col gap-4">
-                                    <Box
-                                        style={gridItemStyle}
-                                        onMouseEnter={() => handleMouseEnter(index)}
-                                        onMouseLeave={handleMouseLeave}
-                                        className="relative overflow-hidden p-2"
-                                    >
-                                        {/* Mercenary Level Banner */}
-                                        <div className="absolute -right-8 top-4 z-10 rotate-45 bg-[#8B7355] px-8 py-1 text-sm text-[#1C1410]">
-                                            Level {nft.metadata?.attributes?.find(attr => attr.trait_type === "Level")?.value || "1"}
-                                        </div>
-                                        
-                                        <Image
-                                            src={nft.metadata["image"]}
-                                            width={sm ? 120 : 250}
-                                            height={sm ? 120 : 250}
-                                            alt={nft.metadata["name"] || nft.asset.name}
-                                            className="rounded-xl"
-                                        />
-                                    </Box>
-                                        
+                                        <Box
+                                            style={gridItemStyle}
+                                            onMouseEnter={() => handleMouseEnter(index)}
+                                            onMouseLeave={handleMouseLeave}
+                                            className="relative overflow-hidden p-2"
+                                        >
+                                            {/* Mercenary Level Banner */}
+                                            <div className="absolute -right-8 top-4 z-10 rotate-45 bg-[#8B7355] px-8 py-1 text-sm text-[#1C1410]">
+                                                Level {nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1"}
+                                            </div>
+
+                                            <Image
+                                                src={nft.metadata["image"]}
+                                                width={sm ? 120 : 250}
+                                                height={sm ? 120 : 250}
+                                                alt={nft.metadata["name"] || nft.asset.name}
+                                                className="rounded-xl"
+                                            />
+                                        </Box>
+
                                         {/* Attributes Display */}
-                                        <div className="rounded-xl bg-[#1C1410]/95 p-4 backdrop-blur-sm border-2 border-[#3A2618]">
-                                            <h3 className="mb-2 text-lg font-bold text-[#C4A484] border-b border-[#3A2618] pb-2">
+                                        <div className="rounded-xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 backdrop-blur-sm">
+                                            <h3 className="mb-2 border-b border-[#3A2618] pb-2 text-lg font-bold text-[#C4A484]">
                                                 {nft.metadata["name"] || nft.asset.name}
                                             </h3>
                                             <div className="grid grid-cols-2 gap-2">
                                                 {nft.metadata?.attributes?.map((attr, attrIndex) => (
-                                                    <div 
-                                                        key={attrIndex} 
-                                                        className="rounded-lg bg-black/20 p-2"
-                                                    >
-                                                        <p className="text-sm text-[#8B7355]">
-                                                            {attr.trait_type}
-                                                        </p>
-                                                        <p className="text-[#C4A484]">
-                                                            {attr.value}
-                                                        </p>
+                                                    <div key={attrIndex} className="rounded-lg bg-black/20 p-2">
+                                                        <p className="text-sm text-[#8B7355]">{attr.trait_type}</p>
+                                                        <p className="text-[#C4A484]">{attr.value}</p>
                                                     </div>
                                                 ))}
                                             </div>
-    
+
                                             {/* Action Buttons */}
                                             <div className="mt-4 flex gap-2">
-                                                <button 
+                                                <button
                                                     className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                     onClick={() => {
                                                         setSelectedMercenary(nft);
@@ -210,9 +201,9 @@ const LandingPage = () => {
                                                 >
                                                     Send on Mission
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="flex-1 transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
-                                                    onClick={() => {}}//handleBetray(nft)}
+                                                    onClick={() => {}} //handleBetray(nft)}
                                                 >
                                                     Betray
                                                 </button>
@@ -224,7 +215,7 @@ const LandingPage = () => {
                         })}
                     </Flex>
                 </VStack>
-    
+
                 <MissionModal
                     isOpen={isMissionModalOpen}
                     onClose={closeMissionModal}
@@ -239,14 +230,11 @@ const LandingPage = () => {
 
     if (!collection) return <PageNotFound />;
 
-
-
-    console.log("set show interactive", showInteractive);
     return (
         <main className={`relative min-h-screen w-full ${montserrat.className}`}>
             {/* Background Image */}
             <div className="absolute inset-0 h-full w-full">
-                <Image 
+                <Image
                     src="/curatedLaunches/citizens/tavern.png"
                     alt="Background"
                     layout="fill"
@@ -254,7 +242,7 @@ const LandingPage = () => {
                     priority
                     className="z-0"
                 />
-                <div className="absolute inset-0 bg-black/50 z-10" /> {/* Darkened overlay */}
+                <div className="absolute inset-0 z-10 bg-black/50" /> {/* Darkened overlay */}
             </div>
 
             {!showInteractive ? (
@@ -304,18 +292,17 @@ const LandingPage = () => {
                         </button>
                     </div>
 
-                    <Recruit 
-                        collection={collection} 
-                        tokenMint={tokenMint} 
-                        tokenAddress={tokenAddress} 
-                        tokenBalance={tokenBalance} 
-                        nftBalance={nftBalance} 
-                        fetchNFTBalance={fetchNFTBalance} 
-                        checkNFTBalance={checkNFTBalance} 
+                    <Recruit
+                        collection={collection}
+                        tokenMint={tokenMint}
+                        tokenAddress={tokenAddress}
+                        tokenBalance={tokenBalance}
+                        nftBalance={nftBalance}
+                        fetchNFTBalance={fetchNFTBalance}
+                        checkNFTBalance={checkNFTBalance}
                         listedNFTs={listedNFTs}
-                        allListings={(listedAssets || [])}
+                        allListings={listedAssets || []}
                         ownedNFTs={ownedAssets}
-
                     />
                 </div>
             )}

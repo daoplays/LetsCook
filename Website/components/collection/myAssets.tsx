@@ -122,7 +122,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                         <Menubar className="absolute right-0 top-0 z-10 m-1 cursor-pointer rounded-md bg-[rgba(0,0,0,0.5)] text-white">
                                                             <MenubarMenu>
                                                                 <MenubarTrigger>
-                                                                    <SlOptionsVertical />
+                                                                    <SlOptionsVertical className="text-sm"/>
                                                                 </MenubarTrigger>
                                                                 <MenubarContent>
                                                                     <MenubarItem onClick={()=>WrapNFT(nftAssetKey)}>Unwrap</MenubarItem>

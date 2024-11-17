@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 import { Modal, ModalOverlay, ModalContent, ModalBody, useDisclosure } from "@chakra-ui/react";
 import Image from "next/image";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { FaSkull, FaCoins } from 'react-icons/fa';
-import { GiCrossedSwords } from 'react-icons/gi';
+import { FaSkull, FaCoins } from "react-icons/fa";
+import { GiCrossedSwords } from "react-icons/gi";
 
 interface DifficultyOption {
     name: string;
@@ -19,22 +19,22 @@ const difficultyOptions: DifficultyOption[] = [
         levelReq: 0,
         successRate: 75,
         deathRate: 25,
-        reward: 500
+        reward: 500,
     },
     {
         name: "Medium",
         levelReq: 5,
         successRate: 50,
         deathRate: 50,
-        reward: 1500
+        reward: 1500,
     },
     {
         name: "Hard",
         levelReq: 10,
         successRate: 25,
         deathRate: 75,
-        reward: 5000
-    }
+        reward: 5000,
+    },
 ];
 
 interface MissionModalProps {
@@ -44,15 +44,14 @@ interface MissionModalProps {
     onSelectMission: (difficulty: string) => void;
 }
 
-
 export const MissionModal = ({ isOpen, onClose, mercenary, onSelectMission }: MissionModalProps) => {
-    const mercenaryLevel = parseInt(mercenary?.metadata?.attributes?.find(attr => attr.trait_type === "Level")?.value || "1");
+    const mercenaryLevel = parseInt(mercenary?.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1");
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="slideInBottom" size="2xl">
             <ModalOverlay className="backdrop-blur-sm" />
             <ModalContent className="bg-transparent">
-                <ModalBody className="p-0 overflow-visible">
+                <ModalBody className="overflow-visible p-0">
                     <div className="relative flex flex-col gap-4 rounded-2xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-8 shadow-2xl backdrop-blur-md">
                         {/* Header Image */}
                         <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
@@ -72,29 +71,37 @@ export const MissionModal = ({ isOpen, onClose, mercenary, onSelectMission }: Mi
                         <div className="grid gap-4">
                             {difficultyOptions.map((difficulty) => {
                                 const isLocked = mercenaryLevel < difficulty.levelReq;
-                                
+
                                 return (
                                     <TooltipProvider key={difficulty.name}>
                                         <Tooltip>
-                                            <div className="w-full"> {/* Wrapper div */}
+                                            <div className="w-full">
+                                                {" "}
+                                                {/* Wrapper div */}
                                                 <TooltipTrigger className="w-full">
                                                     <div
-                                                        onClick={() => !isLocked && onSelectMission(difficulty.name)}
-                                                        className={`w-full transform rounded-lg border-2 p-4 text-left transition-all
-                                                            ${isLocked 
-                                                                ? 'border-[#3A2618]/50 bg-[#1C1410]/50 opacity-50 cursor-not-allowed' 
-                                                                : 'border-[#3A2618] bg-[#1C1410] hover:bg-[#3A2618]/50 cursor-pointer'}`}
+                                                        onClick={() => {
+                                                            console.log(difficulty, isLocked);
+                                                            !isLocked && onSelectMission(difficulty.name);
+                                                        }}
+                                                        className={`w-full transform rounded-lg border-2 p-4 text-left transition-all ${
+                                                            isLocked
+                                                                ? "cursor-not-allowed border-[#3A2618]/50 bg-[#1C1410]/50 opacity-50"
+                                                                : "cursor-pointer border-[#3A2618] bg-[#1C1410] hover:bg-[#3A2618]/50"
+                                                        }`}
                                                     >
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-3">
-                                                                <GiCrossedSwords className={`h-6 w-6 ${
-                                                                    difficulty.name === "Easy" ? "text-green-500" :
-                                                                    difficulty.name === "Medium" ? "text-yellow-500" :
-                                                                    "text-red-500"
-                                                                }`} />
-                                                                <span className="text-lg font-bold text-[#C4A484]">
-                                                                    {difficulty.name}
-                                                                </span>
+                                                                <GiCrossedSwords
+                                                                    className={`h-6 w-6 ${
+                                                                        difficulty.name === "Easy"
+                                                                            ? "text-green-500"
+                                                                            : difficulty.name === "Medium"
+                                                                              ? "text-yellow-500"
+                                                                              : "text-red-500"
+                                                                    }`}
+                                                                />
+                                                                <span className="text-lg font-bold text-[#C4A484]">{difficulty.name}</span>
                                                             </div>
                                                             {isLocked && (
                                                                 <span className="text-sm text-[#8B7355]">
@@ -105,32 +112,24 @@ export const MissionModal = ({ isOpen, onClose, mercenary, onSelectMission }: Mi
                                                     </div>
                                                 </TooltipTrigger>
                                             </div>
-                                            <TooltipContent 
-                                                side="right" 
+                                            <TooltipContent
+                                                side="right"
                                                 className="z-[1500] w-64 rounded-lg border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 shadow-xl"
-                                                >
+                                            >
                                                 <div className="space-y-3">
                                                     <div>
                                                         <div className="flex items-center justify-between text-sm text-[#C4A484]">
                                                             <span>Success Chance</span>
                                                             <span>{difficulty.successRate}%</span>
                                                         </div>
-                                                        <ProgressBar 
-                                                            value={difficulty.successRate} 
-                                                            maxValue={100} 
-                                                            color="bg-green-600" 
-                                                        />
+                                                        <ProgressBar value={difficulty.successRate} maxValue={100} color="bg-green-600" />
                                                     </div>
                                                     <div>
                                                         <div className="flex items-center justify-between text-sm text-[#C4A484]">
                                                             <span>Death Risk</span>
                                                             <span>{difficulty.deathRate}%</span>
                                                         </div>
-                                                        <ProgressBar 
-                                                            value={difficulty.deathRate} 
-                                                            maxValue={100} 
-                                                            color="bg-red-600" 
-                                                        />
+                                                        <ProgressBar value={difficulty.deathRate} maxValue={100} color="bg-red-600" />
                                                     </div>
                                                     <div className="flex items-center gap-2 pt-2 text-[#C4A484]">
                                                         <FaCoins />
@@ -159,10 +158,7 @@ export const MissionModal = ({ isOpen, onClose, mercenary, onSelectMission }: Mi
 
 const ProgressBar = ({ value, maxValue, color }: { value: number; maxValue: number; color: string }) => (
     <div className="h-2 w-full rounded-full bg-[#3A2618]">
-        <div 
-            className={`h-full rounded-full ${color}`}
-            style={{ width: `${(value / maxValue) * 100}%` }}
-        />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${(value / maxValue) * 100}%` }} />
     </div>
 );
 
