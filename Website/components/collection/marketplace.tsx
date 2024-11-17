@@ -81,7 +81,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                     return { nft, price, nftIndex: index };
                                 })
                                 // Now sort the array by price
-                                .sort((a, b) => b.price - a.price)
+                                .sort((a, b) => a.price - b.price)
                                 // After sorting, map the sorted NFTs back to render the UI
                                 .map((item, index) => {
                                     const { nft, nftIndex } = item; // Extract nft and its original index
