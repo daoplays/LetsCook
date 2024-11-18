@@ -29,6 +29,7 @@ import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 import { useConnection } from "@solana/wallet-adapter-react";
 import useInitExternalAMM from "../../hooks/cookAMM/useInitExternalAMM";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
+import { placeholderIcon } from "@/constant/root";
 
 export async function getMint(connection: Connection, mint_string: string): Promise<[Mint, PublicKey] | null> {
     if (mint_string === "" || !mint_string) {
@@ -150,10 +151,10 @@ export async function getMintDataWithMint(connection: Connection, mint: Mint, to
         //console.log(uri_json)
         icon = uri_json["image"];
     } catch (error) {
-        console.log("error getting uri, using SOL icon");
+        console.log("error getting uri, using placeholder icon");
         console.log("name", name, uri, mint.address.toString());
         console.log(error);
-        icon = Config.token_image;
+        icon = placeholderIcon;
     }
     let mint_data: MintData = {
         mint: mint,
