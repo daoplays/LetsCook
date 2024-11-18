@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import { CollectionData, NFTListingData } from "./collectionState";
+import { CollectionData, CollectionPluginData, NFTListingData, getCollectionPlugins } from "./collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";
@@ -67,6 +67,10 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
         ? listedNFTs.filter((nft) => ownerListedNFTPubkeys.some((pubkey) => pubkey.equals(new PublicKey(nft.asset.publicKey))))
         : [];
 
+    const plugins : CollectionPluginData = getCollectionPlugins(collection);
+    const mintOnly = plugins.mintOnly;
+
+
     return (
         <>
             <main>
@@ -125,7 +129,9 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                                     <SlOptionsVertical className="text-sm" />
                                                                 </MenubarTrigger>
                                                                 <MenubarContent>
+                                                                    {!mintOnly && (
                                                                     <MenubarItem onClick={() => WrapNFT(nftAssetKey)}>Unwrap</MenubarItem>
+                                                                    )}
                                                                     <MenubarItem onClick={() => handleTransferNFTClick(nft)}>
                                                                         Transfer
                                                                     </MenubarItem>
