@@ -42,40 +42,38 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { CITIZENS } from "../state";
 
-function serialise_start_mission_instruction(difficulty: number): Buffer {
-    const data = new StartMission_Instruction(0, difficulty);
+function serialise_betray_instruction(): Buffer {
+    const data = new Betray_Instruction(1);
 
-    const [buf] = StartMission_Instruction.struct.serialize(data);
+    const [buf] = Betray_Instruction.struct.serialize(data);
 
     return buf;
 }
 
-class StartMission_Instruction {
+class Betray_Instruction {
     constructor(
         readonly instruction: number,
-        readonly mission_difficulty: number,
     ) {}
 
-    static readonly struct = new BeetStruct<StartMission_Instruction>(
+    static readonly struct = new BeetStruct<Betray_Instruction>(
         [
             ["instruction", u8],
-            ["mission_difficulty", u8],
         ],
-        (args) => new StartMission_Instruction(args.instruction!, args.mission_difficulty!),
-        "StartMission_Instruction",
+        (args) => new Betray_Instruction(args.instruction!),
+        "Betray_Instruction",
     );
 }
 
-export const StartMissionInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, difficulty: number) => {
+export const BetrayInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: string) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];
 
     let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
 
-    const instruction_data = serialise_start_mission_instruction(difficulty);
+    const instruction_data = serialise_betray_instruction();
 
     var account_vector = [
         { pubkey: user, isSigner: true, isWritable: true },
-        { pubkey: asset_key, isSigner: false, isWritable: true },
+        { pubkey: new PublicKey(asset_key), isSigner: false, isWritable: true },
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: user_data_account, isSigner: false, isWritable: true },
         { pubkey: pda_account, isSigner: false, isWritable: true },
@@ -101,7 +99,7 @@ export const StartMissionInstructions = async (launchData: CollectionData, user:
     return instructions;
 };
 
-const useStartMission = (launchData: CollectionData) => {
+const useBetray = (launchData: CollectionData) => {
     const wallet = useWallet();
 
     const [isLoading, setIsLoading] = useState(false);
@@ -124,7 +122,7 @@ const useStartMission = (launchData: CollectionData) => {
             return;
         }
 
-        toast.success("Started Mission!", {
+        toast.success("Betrayed!", {
             type: "success",
             isLoading: false,
             autoClose: 3000,
@@ -144,7 +142,7 @@ const useStartMission = (launchData: CollectionData) => {
         });
     }, []);
 
-    const StartMission = async (asset_key: PublicKey, difficulty: number) => {
+    const Betray = async (asset_key: string) => {
         console.log("in list nft");
 
         if (wallet.signTransaction === undefined) {
@@ -167,7 +165,7 @@ const useStartMission = (launchData: CollectionData) => {
 
         setIsLoading(true);
 
-        let instructions = await StartMissionInstructions(launchData, wallet.publicKey, asset_key, difficulty);
+        let instructions = await BetrayInstructions(launchData, wallet.publicKey, asset_key);
 
         let txArgs = await get_current_blockhash("");
 
@@ -183,7 +181,7 @@ const useStartMission = (launchData: CollectionData) => {
 
             var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
 
-            console.log("start mission sig: ", signature);
+            console.log("betray sig: ", signature);
 
             signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
             setTimeout(transaction_failed, 20000);
@@ -194,7 +192,7 @@ const useStartMission = (launchData: CollectionData) => {
         }
     };
 
-    return { StartMission, StartMissionInstructions, isLoading };
+    return { Betray, isLoading };
 };
 
-export default useStartMission;
+export default useBetray;

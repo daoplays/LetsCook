@@ -7,12 +7,7 @@ import { CollectionKeys, Config, SYSTEM_KEY } from "@/components/Solana/constant
 import PageNotFound from "@/components/pageNotFound";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
-import useClaimNFT from "@/hooks/collections/useClaimNFT";
-import useMintRandom from "@/hooks/collections/useMintRandom";
-import useAppRoot from "@/context/useAppRoot";
-import useWrapNFT from "@/hooks/collections/useWrapNFT";
-import useMintNFT from "@/hooks/collections/useMintNFT";
-import useAssignmentData from "@/hooks/data/useAssignmentData";
+import useCitizenData from "./hooks/useCitizenData";
 import useCollection from "@/hooks/data/useCollection";
 import { Box, Flex, GridItem, VStack, useDisclosure } from "@chakra-ui/react";
 import UseWalletConnection from "@/hooks/useWallet";
@@ -21,6 +16,8 @@ import useNFTBalance from "@/hooks/data/useNFTBalance";
 import Recruit from "./recruit";
 import MissionModal from "./mission";
 import useStartMission from "./hooks/useStartMission";
+import useCheckMission from "./hooks/useCheckMission";
+import useBetray from "./hooks/useBetray";
 import { PublicKey } from "@solana/web3.js";
 
 const montserrat = Montserrat({
@@ -67,6 +64,7 @@ const LandingPage = () => {
     const prevUserListedNFTsRef = useRef<string>("");
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
+
 
     const {
         collection,
@@ -138,6 +136,10 @@ const LandingPage = () => {
     const NFTGrid = () => {
         const [selectedMercenary, setSelectedMercenary] = useState(null);
         const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
+        const {userData} = useCitizenData();
+        const {Betray} = useBetray(collection);
+        const {CheckMission} = useCheckMission(collection);
+
 
         const handleMissionSelect = (difficulty: string) => {
             console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
@@ -190,8 +192,21 @@ const LandingPage = () => {
                                                 ))}
                                             </div>
 
+                                            
                                             {/* Action Buttons */}
                                             <div className="mt-4 flex gap-2">
+                                                <VStack>
+                                            {nft.asset.publicKey.toString() === userData?.asset.toString() && (
+                                                <button
+                                                className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                onClick={() => {
+                                                    CheckMission(nft.asset.publicKey.toString());
+                                                }}
+                                            >
+                                                Check Mission Status
+                                            </button>
+                                            )}
+                                            {nft.asset.publicKey.toString() !== userData?.asset.toString() && (userData?.mission_status === 0 || userData?.mission_status === 3) &&  (
                                                 <button
                                                     className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                     onClick={() => {
@@ -201,12 +216,16 @@ const LandingPage = () => {
                                                 >
                                                     Send on Mission
                                                 </button>
+                                            )}
+                                                
                                                 <button
                                                     className="flex-1 transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
-                                                    onClick={() => {}} //handleBetray(nft)}
+                                                    onClick={() => {Betray(nft.asset.publicKey.toString());
+                                                    }}
                                                 >
                                                     Betray
                                                 </button>
+                                                </VStack>
                                             </div>
                                         </div>
                                     </div>
