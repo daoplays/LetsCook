@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { request_raw_account_data } from "../../../../components/Solana/state";
-import {CITIZENS, CitizenUserData} from "../state";
+import {CITIZENS, CitizenUserData} from "../../../../components/curated/citizens/state";
 
 const useCitizenData = () => {
     // State to store the token balance and any error messages

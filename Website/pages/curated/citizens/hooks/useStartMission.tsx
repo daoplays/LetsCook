@@ -40,7 +40,7 @@ import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
-import { CITIZENS } from "../state";
+import { CITIZENS } from "../../../../components/curated/citizens/state";
 
 function serialise_start_mission_instruction(difficulty: number): Buffer {
     const data = new StartMission_Instruction(0, difficulty);
