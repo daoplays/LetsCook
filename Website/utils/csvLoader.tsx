@@ -123,7 +123,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 <div className="flex flex-col items-center justify-center">
                     <RiUploadLine className="w-8 h-8 mb-2 text-white" />
                     <Text className="text-sm text-center text-white">
-                        {isProcessing ? "Processing..." : "Click to upload token / collection ddresses CSV"}
+                        {isProcessing ? "Processing..." : "Click to upload token / collection addresses CSV"}
                     </Text>
                     <Text className="mt-1 text-xs text-gray-500">
                         CSV must contain an "address" column
