@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { PanelProps } from "./panelProps";
 import Image from "next/image";
-import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
+import usePerformSwap from "../../hooks/jupiter/usePerformSwap";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import formatPrice from "../../utils/formatPrice";
 import { useState } from "react";
@@ -121,7 +121,7 @@ const BuyPanel = ({
     amm_base_balance,
     amm_quote_balance,
 }: PanelProps) => {
-    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
+    const { PerformSwap: PlaceMarketOrder, isLoading: placingOrder } = usePerformSwap(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
     const { SwapRaydiumClassic, isLoading: placingRaydiumClassicOrder } = useSwapRaydiumClassic(amm);
     const [isOpen, setIsOpen] = useState(false);

@@ -1,7 +1,7 @@
 import { VStack, HStack, Center, Divider, Input, InputRightElement, Text, InputGroup, Button } from "@chakra-ui/react";
 import { PanelProps } from "./panelProps";
 import Image from "next/image";
-import usePlaceMarketOrder from "../../hooks/jupiter/usePlaceMarketOrder";
+import usePerformSwap from "../../hooks/jupiter/usePerformSwap";
 import useSwapRaydium from "../../hooks/raydium/useSwapRaydium";
 import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
 import formatPrice from "../../utils/formatPrice";
@@ -101,7 +101,7 @@ const SellPanel = ({
     amm_base_balance,
     amm_quote_balance,
 }: PanelProps) => {
-    const { PlaceMarketOrder, isLoading: placingOrder } = usePlaceMarketOrder(amm);
+    const { PerformSwap: PlaceMarketOrder, isLoading: placingOrder } = usePerformSwap(amm);
     const { SwapRaydium, isLoading: placingRaydiumOrder } = useSwapRaydium(amm);
     const { SwapRaydiumClassic, isLoading: placingRaydiumClassicOrder } = useSwapRaydiumClassic(amm);
     const [isOpen, setIsOpen] = useState(false);
