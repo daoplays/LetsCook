@@ -75,7 +75,10 @@ export const GetListInstructions = async (launchData: CollectionData, user: Publ
     let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
     let listings_program = new PublicKey("288fPpF7XGk82Wth2XgyoF2A82YKryEyzL58txxt47kd");
     let listings_account = PublicKey.findProgramAddressSync([asset_key.toBytes(), Buffer.from("Listing")], listings_program)[0];
-    let listings_summary_account = PublicKey.findProgramAddressSync([launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("Summary")], listings_program)[0];
+    let listings_summary_account = PublicKey.findProgramAddressSync(
+        [launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("Summary")],
+        listings_program,
+    )[0];
 
     const instruction_data = serialise_list_nft_instruction(price);
 
@@ -87,7 +90,6 @@ export const GetListInstructions = async (launchData: CollectionData, user: Publ
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: listings_account, isSigner: false, isWritable: true },
         { pubkey: listings_summary_account, isSigner: false, isWritable: true },
-
     ];
 
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
@@ -162,7 +164,7 @@ const useListNFT = (launchData: CollectionData) => {
             console.log(wallet, "invalid wallet");
             return;
         }
-        
+
         if (signature_ws_id.current !== null) {
             console.log("signature not null");
             alert("Transaction pending, please wait");

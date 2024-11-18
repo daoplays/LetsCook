@@ -34,15 +34,10 @@ import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export class MarketplaceSummary {
-    constructor(
-        readonly num_listings: number
-    ) {}
+    constructor(readonly num_listings: number) {}
 
     static readonly struct = new BeetStruct<MarketplaceSummary>(
-        [
-            ["num_listings", u32],
-           
-        ],
+        [["num_listings", u32]],
         (args) => new MarketplaceSummary(args.num_listings!),
         "MarketplaceSummary",
     );

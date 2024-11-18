@@ -38,7 +38,7 @@ const useAMM = (props: useAMMProps | null) => {
             setError("No page name provided");
             return;
         }
-        return new PublicKey(pageName)
+        return new PublicKey(pageName);
     }, [pageName]);
 
     // Function to fetch the current assignment data
@@ -91,7 +91,6 @@ const useAMM = (props: useAMMProps | null) => {
         setQuoteMint(quoteMint);
 
         setLPMint(lpMint);
-
     }, [getAMMDataAccount]);
 
     // Callback function to handle account changes

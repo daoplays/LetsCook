@@ -30,7 +30,6 @@ const useCollection = (props: useCollectionProps | null) => {
 
     const { connection } = useConnection();
 
-
     const pageName = props?.pageName || null;
 
     const getCollectionDataAccount = useCallback(() => {
@@ -42,9 +41,7 @@ const useCollection = (props: useCollectionProps | null) => {
         return PublicKey.findProgramAddressSync([Buffer.from(pageName), Buffer.from("Collection")], PROGRAM)[0];
     }, [pageName]);
 
-
-    const {marketplaceSummary, listedAssets} = useMarketplace({collectionAddress: collectionMint});
-
+    const { marketplaceSummary, listedAssets } = useMarketplace({ collectionAddress: collectionMint });
 
     // Function to fetch the current assignment data
     const fetchInitialCollectionData = useCallback(async () => {

@@ -14,6 +14,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import * as NProgress from "nprogress";
 import { PiHamburgerFill } from "react-icons/pi";
+import { FaParachuteBox } from "react-icons/fa";
 
 const tabs = {
     create: [
@@ -36,6 +37,11 @@ const tabs = {
             icon: (size: number) => <GiCook size={size} />,
             tab: "Creator Dashboard",
             url: "/dashboard",
+        },
+        {
+            icon: (size: number) => <FaParachuteBox size={size} />,
+            tab: "Airdrop",
+            url: "/airdrop",
         },
     ],
 

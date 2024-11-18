@@ -27,6 +27,14 @@ import styles from "../styles/Launch.module.css";
 import { getMintData } from "@/components/amm/launch";
 import { MintData } from "@/components/Solana/state";
 import { set } from "date-fns";
+import useTokenBalance from "@/hooks/data/useTokenBalance";
+import Image from "next/image";
+import { CollectionV1, fetchCollectionV1 } from "@metaplex-foundation/mpl-core";
+import { publicKey } from "@metaplex-foundation/umi";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { Config } from "@/components/Solana/constants";
+import { fetchWithTimeout } from "@/utils/fetchWithTimeout";
+import CSVUploader from "@/utils/csvLoader";
 
 interface AirdropRecord {
     address: string; // wallet address
@@ -35,13 +43,20 @@ interface AirdropRecord {
     signature?: string; // transaction signature if airdrop completed
 }
 
+export interface CollectionWithMetadata {
+    collection: CollectionV1;
+    metadata: any;
+    icon: string;
+}
+
 export const AirdropPage = () => {
-    const { sm, md, lg } = useResponsive();
+    const { xs, sm, md, lg } = useResponsive();
     const toast = useToast();
     const [mintAddress, setMintAddress] = useState("");
     const [airdroppedToken, setAirdroppedToken] = useState("");
 
     const [distributionType, setDistributionType] = useState<"fixed" | "even" | "proRata">("fixed");
+    const [activeTab, setActiveTab] = useState("Scan");
     const [amount, setAmount] = useState("");
     const [threshold, setThreshold] = useState("0");
     const [airdropProgress, setAirdropProgress] = useState(0);
@@ -49,11 +64,22 @@ export const AirdropPage = () => {
 
     const [signatures, setSignatures] = useState<Map<string, string>>(new Map());
 
+    const {
+        takeSnapshot,
+        calculateAirdropAmounts,
+        executeAirdrop,
+        setHolders,
+        filterHolders,
+        setAirdroppedMint,
+        holders,
+        filteredHolders,
+        snapshotMint,
+        snapshotCollection,
+        airdroppedMint,
+        isLoading,
+        error,
+    } = useAirdrop();
 
-    const { takeSnapshot, calculateAirdropAmounts, executeAirdrop, setHolders, filterHolders, setAirdroppedMint, holders, filteredHolders, snapshotMint, airdroppedMint, isLoading, error } =
-        useAirdrop();
-
-    // Calculate airdrop distributions whenever relevant inputs change
     const distributions = useMemo(() => {
         if (!amount || !holders.length) return [];
         return calculateAirdropAmounts(amount, distributionType);
@@ -65,9 +91,8 @@ export const AirdropPage = () => {
     };
 
     const handleAirdropInput = async () => {
-       let airdroppedMint = await getMintData(airdroppedToken);
-       setAirdroppedMint(airdroppedMint);
-        
+        let airdroppedMint = await getMintData(airdroppedToken);
+        setAirdroppedMint(airdroppedMint);
     };
 
     const handleThresholdChange = (value: string) => {
@@ -90,10 +115,41 @@ export const AirdropPage = () => {
                 return;
             }
 
+            let snapshotCollection: CollectionV1 | null = null;
+            let collectionWithMetadata: CollectionWithMetadata | null = null;
 
-            let snapshotMint = await getMintData(mintAddress);
+            const umi = createUmi(Config.RPC_NODE, "confirmed");
 
-            if (!snapshotMint) {
+            let collection_umiKey = publicKey(mintAddress);
+
+            snapshotCollection = await fetchCollectionV1(umi, collection_umiKey);
+            if (snapshotCollection) {
+                console.log(snapshotCollection, "snapshotCollection");
+                let icon: string;
+                let uri = snapshotCollection.uri;
+                uri = uri.replace("https://cf-ipfs.com/", "https://gateway.moralisipfs.com/");
+
+                collectionWithMetadata = { collection: snapshotCollection, metadata: "", icon: "" };
+
+                try {
+                    let uri_json = await fetchWithTimeout(uri, 3000).then((res) => res.json());
+                    console.log(uri_json);
+                    icon = uri_json["image"];
+                    collectionWithMetadata.metadata = uri_json;
+                    collectionWithMetadata.icon = icon;
+                } catch (error) {
+                    console.log("error getting uri, using SOL icon");
+                    console.log(error);
+                    collectionWithMetadata.icon = Config.token_image;
+                }
+            }
+
+            let snapshotMint = null;
+            if (!snapshotCollection) {
+                snapshotMint = await getMintData(mintAddress);
+            }
+
+            if (!snapshotMint && !snapshotCollection) {
                 toast({
                     title: "Error",
                     description: "Invalid mint address",
@@ -108,15 +164,15 @@ export const AirdropPage = () => {
                     title: "Error",
                     description: "Invalid Threshold",
                     status: "error",
-                });                
+                });
                 return;
             }
 
-            await takeSnapshot(snapshotMint, minThreshold);
+            await takeSnapshot(snapshotMint, collectionWithMetadata, minThreshold);
 
             toast({
                 title: "Success",
-                description: "Token holder snapshot completed",
+                description: "Snapshot completed",
                 status: "success",
             });
         } catch (err) {
@@ -137,8 +193,8 @@ export const AirdropPage = () => {
                 setAirdropProgress(progress * 100);
 
                 if (signature && recipientAddresses) {
-                    recipientAddresses.forEach(address => {
-                      newSignatures.set(address, signature);
+                    recipientAddresses.forEach((address) => {
+                        newSignatures.set(address, signature);
                     });
                     setSignatures(new Map(newSignatures));
                 }
@@ -222,55 +278,137 @@ export const AirdropPage = () => {
         }
     };
 
-    console.log("holders", holders);
+    const { tokenBalance: airdroppedMintTokenBalance } = useTokenBalance(airdroppedMint ? { mintData: airdroppedMint } : null);
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
-            <div className="mb-4 flex flex-col gap-2">
-                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Airdrop</Text>
-                {/* <p className="cursor-pointer text-center text-white/50 transition-all hover:text-white">Switch to Advance Mode</p> */}
+            <div className="flex flex-col gap-2 mb-4">
+                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
+                {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
             </div>
-            <Box w={"100%"} mx="auto">
+            <div className="flex justify-center w-full gap-1 p-1 -ml-1 bg-gray-700 rounded-md shadow-2xl backdrop-blur-sm backdrop-filter">
+                <button
+                    onClick={() => setActiveTab("Scan")}
+                    className={`h-fit w-full rounded-md font-bold transition-all duration-200 md:text-lg ${
+                        activeTab === "Scan" ? "bg-white text-black shadow-lg" : "text-white/70 hover:text-white"
+                    } `}
+                    type="button"
+                >
+                    Scan
+                </button>
+                <button
+                    onClick={() => setActiveTab("Upload CSV")}
+                    className={`h-fit w-full rounded-md font-bold transition-all duration-200 md:text-lg ${
+                        activeTab === "Upload CSV" ? "bg-white text-black shadow-lg" : "text-white/70 hover:text-white"
+                    } `}
+                    type="button"
+                >
+                    Upload CSV
+                </button>
+            </div>
+            <Box w={"100%"} mx="auto" className="mt-4">
                 <VStack spacing={6} align="stretch">
                     {/* Input Section */}
-                    <FormControl>
-                        <FormLabel className="min-w-[100px] text-lg text-white">Token Mint Address</FormLabel>
-                        <HStack>
-                            <div className={styles.textLabelInput}>
-                                <Input
-                                    className="text-white"
-                                    placeholder="Enter token mint address"
-                                    size={lg ? "md" : "lg"}
-                                    required
-                                    type="text"
-                                    value={mintAddress}
-                                    onChange={(e) => handleMintInput(e.target.value)}
-                                />
-                            </div>
-                            <Button
-                                className="!bg-custom-gradient text-white"
-                                onClick={handleSnapshot}
-                                isLoading={isLoading}
-                                loadingText="Loading"
-                            >
-                                Get Holders
-                            </Button>
-                        </HStack>
-                    </FormControl>
+                    {activeTab === "Scan" && (
+                        <FormControl>
+                            <HStack>
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        className="text-white"
+                                        placeholder="Enter Token / Collection Address"
+                                        size={lg ? "md" : "lg"}
+                                        required
+                                        type="text"
+                                        value={mintAddress}
+                                        onChange={(e) => handleMintInput(e.target.value)}
+                                    />
+                                </div>
+                                <Button
+                                    className="!bg-custom-gradient text-white"
+                                    onClick={handleSnapshot}
+                                    isLoading={isLoading}
+                                    loadingText="Loading"
+                                >
+                                    Get Holders
+                                </Button>
+                            </HStack>
+                        </FormControl>
+                    )}
 
                     {/* Token Info */}
                     {snapshotMint && (
-                        <Box borderWidth={1} borderRadius="md" p={4} className={`${styles.textLabelInput} bg-[#454444] text-white`}>
-                            <Text fontWeight="bold">Token Info</Text>
-                            <Text>Decimals: {snapshotMint.mint.decimals}</Text>
-                            {snapshotMint && (
-                                <>
-                                    <Text>Name: {snapshotMint.name}</Text>
-                                    <Text>Symbol: {snapshotMint.symbol}</Text>
-                                </>
-                            )}
+                        <Box>
+                            <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
+
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                                {snapshotMint && (
+                                    <>
+                                        <div className="flex flex-col gap-2 w-fit">
+                                            <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
+                                                <div className="">
+                                                    <Image
+                                                        src={snapshotMint.icon}
+                                                        width={25}
+                                                        height={25}
+                                                        alt="Eth Icon"
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <span>{snapshotMint.name}</span>
+                                            </button>
+                                        </div>
+                                        <span className="flex justify-between w-full">
+                                            <b>Decimals:</b>
+                                            <Text> {snapshotMint.mint.decimals}</Text>
+                                        </span>
+                                        <span className="flex justify-between w-full">
+                                            <b>Symbol:</b>
+                                            <Text> {snapshotMint.symbol}</Text>
+                                        </span>
+                                    </>
+                                )}
+                            </Box>
                         </Box>
                     )}
+                    {snapshotCollection && (
+                        <Box>
+                            <FormLabel className="min-w-[100px] text-lg text-white">Collection Info</FormLabel>
 
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                                {snapshotCollection && (
+                                    <>
+                                        <div className="flex flex-col gap-2 w-fit">
+                                            <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
+                                                <div className="">
+                                                    <Image
+                                                        src={snapshotCollection.icon}
+                                                        width={25}
+                                                        height={25}
+                                                        alt="Eth Icon"
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <span>{snapshotCollection.collection.name}</span>
+                                            </button>
+                                        </div>
+                                        <span className="flex justify-between w-full">
+                                            <b>Total Minted:</b>
+                                            <Text> {snapshotCollection.collection.currentSize}</Text>
+                                        </span>
+                                    </>
+                                )}
+                            </Box>
+                        </Box>
+                    )}
+                    {/* CSV Upload Section */}
+                    {activeTab === "Upload CSV" && (
+                        <FormControl>
+                            <CSVUploader
+                                onHoldersUpdate={(newHolders) => {
+                                    setHolders(newHolders);
+                                }}
+                            />
+                        </FormControl>
+                    )}
                     {/* Threshold Input */}
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
@@ -324,16 +462,43 @@ export const AirdropPage = () => {
                     </FormControl>
 
                     {/* Token Info */}
+
                     {airdroppedMint && (
-                        <Box borderWidth={1} borderRadius="md" p={4} className={`${styles.textLabelInput} bg-[#454444] text-white`}>
-                            <Text fontWeight="bold">Token Info</Text>
-                            <Text>Decimals: {airdroppedMint.mint.decimals}</Text>
-                            {airdroppedMint && (
-                                <>
-                                    <Text>Name: {airdroppedMint.name}</Text>
-                                    <Text>Symbol: {airdroppedMint.symbol}</Text>
-                                </>
-                            )}
+                        <Box>
+                            <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
+
+                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                                {airdroppedMint && (
+                                    <>
+                                        <div className="flex flex-col gap-2 w-fit">
+                                            <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
+                                                <div className="">
+                                                    <Image
+                                                        src={airdroppedMint.icon}
+                                                        width={25}
+                                                        height={25}
+                                                        alt="Eth Icon"
+                                                        className="rounded-full"
+                                                    />
+                                                </div>
+                                                <span>{airdroppedMint.name}</span>
+                                            </button>
+                                        </div>
+                                        <span className="flex justify-between w-full">
+                                            <b>Decimals:</b>
+                                            <Text> {airdroppedMint.mint.decimals}</Text>
+                                        </span>
+                                        <span className="flex justify-between w-full">
+                                            <b>Symbol:</b>
+                                            <Text> {airdroppedMint.symbol}</Text>
+                                        </span>
+                                        <span className="flex justify-between w-full">
+                                            <b>Token Balance:</b>
+                                            <Text> {airdroppedMintTokenBalance}</Text>
+                                        </span>
+                                    </>
+                                )}
+                            </Box>
                         </Box>
                     )}
 
@@ -353,8 +518,6 @@ export const AirdropPage = () => {
                             />
                         </div>
                     </FormControl>
-
- 
 
                     {/* Holders Table */}
                     {holders.length > 0 && (
@@ -381,43 +544,46 @@ export const AirdropPage = () => {
                                 </TableHeader>
                                 <TableBody>
                                     {filteredHolders
-                                    .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
-                                    .map((holder) => {
-                                        const distribution = distributions.find((d) => d.address === holder.address);
-                                        const signature = signatures.get(holder.address);
+                                        .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
+                                        .map((holder) => {
+                                            const distribution = distributions.find((d) => d.address === holder.address);
+                                            const signature = signatures.get(holder.address);
 
-                                        return (
-                                            <TableRow key={holder.address} className="hover:bg-muted/50 cursor-pointer transition-colors">
-                                                <TableCell className="font-mono text-sm">
-                                                    {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
-                                                </TableCell>
-                                                <TableCell>{holder.balance}</TableCell>
-                                                <TableCell>{distribution?.amount || "0"}</TableCell>
-                                                <TableCell>
-                                                    {signature && (
-                                                        <a
-                                                            href={`https://solscan.io/tx/${signature}`}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="font-mono text-sm text-blue-500 hover:text-blue-600"
-                                                        >
-                                                            {signature.slice(0, 4)}...{signature.slice(-4)}
-                                                        </a>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <IconButton
-                                                        aria-label="Remove address"
-                                                        icon={<RiDeleteBinLine />}
-                                                        size="sm"
-                                                        colorScheme="red"
-                                                        variant="ghost"
-                                                        onClick={() => handleDeleteHolder(holder.address)}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
+                                            return (
+                                                <TableRow
+                                                    key={holder.address}
+                                                    className="transition-colors cursor-pointer hover:bg-muted/50"
+                                                >
+                                                    <TableCell className="font-mono text-sm">
+                                                        {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
+                                                    </TableCell>
+                                                    <TableCell>{holder.balance}</TableCell>
+                                                    <TableCell>{distribution?.amount || "0"}</TableCell>
+                                                    <TableCell>
+                                                        {signature && (
+                                                            <a
+                                                                href={`https://solscan.io/tx/${signature}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="font-mono text-sm text-blue-500 hover:text-blue-600"
+                                                            >
+                                                                {signature.slice(0, 4)}...{signature.slice(-4)}
+                                                            </a>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <IconButton
+                                                            aria-label="Remove address"
+                                                            icon={<RiDeleteBinLine />}
+                                                            size="sm"
+                                                            colorScheme="red"
+                                                            variant="ghost"
+                                                            onClick={() => handleDeleteHolder(holder.address)}
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                 </TableBody>
                             </Table>
                             {/* Airdrop Progress */}
@@ -428,7 +594,7 @@ export const AirdropPage = () => {
                             )}
 
                             {/* Airdrop Button */}
-                            <div className="w-full flex justify-center">
+                            <div className="flex justify-center w-full">
                                 <Button
                                     mt={4}
                                     colorScheme="green"

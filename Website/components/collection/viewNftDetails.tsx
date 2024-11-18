@@ -45,7 +45,7 @@ function ViewNFTDetails({
 
     let asset_name;
     let offchain_attributes = [];
-    let onchain_attributes : Attribute[] = [];
+    let onchain_attributes: Attribute[] = [];
 
     let asset_key: PublicKey | null = null;
     if (nft !== undefined) {
@@ -54,7 +54,7 @@ function ViewNFTDetails({
 
         offchain_attributes = nft.metadata["attributes"] ? nft.metadata["attributes"] : [];
         onchain_attributes = nft.asset.attributes.attributeList;
-        const index = onchain_attributes.findIndex(attr => attr.key === 'CookWrapIndex');
+        const index = onchain_attributes.findIndex((attr) => attr.key === "CookWrapIndex");
         if (index > -1) {
             onchain_attributes.splice(index, 1);
         }
@@ -145,7 +145,7 @@ function ViewNFTDetails({
                                 />
                             </div>
                             <Button
-                                className="mt-2 w-fit transition-all hover:opacity-90 rounded-md"
+                                className="mt-2 w-fit rounded-md transition-all hover:opacity-90"
                                 size="lg"
                                 onClick={async (e) => {
                                     if (isUserOwned) {

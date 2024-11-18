@@ -16,6 +16,9 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import { Config } from "../Solana/constants";
 import { lamportsToSol } from "@/utils/lamportToSol";
+import { SlOptionsVertical } from "react-icons/sl";
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarTrigger } from "../ui/menubar";
+import TransferNft from "./transferNFT";
 
 interface MyNFTsPanelProps {
     ownedNFTs?: AssetWithMetadata[];
@@ -39,7 +42,9 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
 
     const { UnlistNFT } = useUnlistNFT(collection);
     const { isOpen: isViewDetailsOpened, onOpen: openViewDetailsModal, onClose: closeViewDetailsModal } = useDisclosure();
+    const { isOpen: isTransferNftOpened, onOpen: openTransferNftModal, onClose: closeTransferNftModal } = useDisclosure();
 
+    const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
     const handleNFTClick = (nft: AssetWithMetadata, isListed: boolean, price?: number, index?: number) => {
         setNftIndex(index);
         setNftPrice(price);
@@ -48,6 +53,10 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
         openViewDetailsModal();
     };
 
+    const handleTransferNFTClick = (nft: AssetWithMetadata) => {
+        setSelectedNFT(nft);
+        openTransferNftModal();
+    };
     // Extract public keys of NFTs listed by the owner
     const ownerListedNFTPubkeys = wallet.connected
         ? allListings?.filter((listing) => listing?.seller.equals(wallet.publicKey)).map((listing) => listing.asset) || []
@@ -99,6 +108,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
 
                                 const nftIndex = listedNFTs.indexOf(nft);
 
+                                const nftAssetKey = new PublicKey(nft.asset.publicKey);
                                 return (
                                     <GridItem key={`nft-${index}`}>
                                         <VStack>
@@ -108,6 +118,21 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                 onMouseLeave={handleMouseLeave}
                                             >
                                                 <div className="relative">
+                                                    {!isListed && (
+                                                        <Menubar className="absolute right-0 top-0 z-10 m-2 cursor-pointer rounded-md bg-[rgba(0,0,0,0.5)] text-white">
+                                                            <MenubarMenu>
+                                                                <MenubarTrigger>
+                                                                    <SlOptionsVertical className="text-sm" />
+                                                                </MenubarTrigger>
+                                                                <MenubarContent>
+                                                                    <MenubarItem onClick={() => WrapNFT(nftAssetKey)}>Unwrap</MenubarItem>
+                                                                    <MenubarItem onClick={() => handleTransferNFTClick(nft)}>
+                                                                        Transfer
+                                                                    </MenubarItem>
+                                                                </MenubarContent>
+                                                            </MenubarMenu>
+                                                        </Menubar>
+                                                    )}
                                                     <Image
                                                         src={nft.metadata["image"]}
                                                         width={180}
@@ -165,7 +190,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             {isListed ? (
                                                 // Unlist button if the NFT is listed
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90 w-full rounded-md"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={async () => {
                                                         await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
@@ -176,7 +201,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             ) : (
                                                 // List button if the NFT is not listed
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90 w-full rounded-md"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={() => {
                                                         handleNFTClick(nft, isListed);
@@ -216,6 +241,14 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                     nftIndex={nftIndex}
                 />
             )}
+            <TransferNft
+                isOpened={isTransferNftOpened}
+                onClose={() => {
+                    closeTransferNftModal();
+                }}
+                collection={collection}
+                nft={selectedNFT}
+            />
         </>
     );
 }
