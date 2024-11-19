@@ -118,11 +118,15 @@ export const AirdropPage = () => {
             let snapshotCollection: CollectionV1 | null = null;
             let collectionWithMetadata: CollectionWithMetadata | null = null;
 
-            const umi = createUmi(Config.RPC_NODE, "confirmed");
-
-            let collection_umiKey = publicKey(mintAddress);
-
-            snapshotCollection = await fetchCollectionV1(umi, collection_umiKey);
+            
+            try{
+                const umi = createUmi(Config.RPC_NODE, "confirmed");
+                let collection_umiKey = publicKey(mintAddress);
+                snapshotCollection = await fetchCollectionV1(umi, collection_umiKey);
+            }
+            catch (error) {
+               
+            }
             if (snapshotCollection) {
                 console.log(snapshotCollection, "snapshotCollection");
                 let icon: string;
