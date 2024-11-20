@@ -36,6 +36,17 @@ import {
     METAPLEX_META,
     CORE,
 } from "../../../../components/Solana/constants";
+import {
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getAssociatedTokenAddress,
+    getAssociatedTokenAddressSync,
+    unpackAccount,
+    Account,
+    getTransferHook,
+    resolveExtraAccountMeta,
+    ExtraAccountMetaAccountDataLayout,
+    TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
@@ -43,7 +54,7 @@ import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSize
 import { CITIZENS } from "../../../../components/curated/citizens/state";
 
 function serialise_betray_instruction(): Buffer {
-    const data = new Betray_Instruction(1);
+    const data = new Betray_Instruction(2);
 
     const [buf] = Betray_Instruction.struct.serialize(data);
 
@@ -51,14 +62,10 @@ function serialise_betray_instruction(): Buffer {
 }
 
 class Betray_Instruction {
-    constructor(
-        readonly instruction: number,
-    ) {}
+    constructor(readonly instruction: number) {}
 
     static readonly struct = new BeetStruct<Betray_Instruction>(
-        [
-            ["instruction", u8],
-        ],
+        [["instruction", u8]],
         (args) => new Betray_Instruction(args.instruction!),
         "Betray_Instruction",
     );
@@ -67,7 +74,44 @@ class Betray_Instruction {
 export const BetrayInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: string) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];
 
+    console.log("pda acount", pda_account.toString());
     let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
+
+    let cook_user_data_account = PublicKey.findProgramAddressSync([pda_account.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+    let cook_pda = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+
+    let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
+
+    let token_mint = launchData.keys[CollectionKeys.MintAddress];
+
+    let user_token_account_key = await getAssociatedTokenAddress(
+        token_mint, // mint
+        user, // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
+
+    let pda_token_account_key = await getAssociatedTokenAddress(
+        token_mint, // mint
+        pda_account, // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
+
+    let cook_token_account_key = await getAssociatedTokenAddress(
+        token_mint, // mint
+        cook_pda, // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
+
+    let team_token_account_key = await getAssociatedTokenAddress(
+        token_mint, // mint
+        launchData.keys[CollectionKeys.TeamWallet], // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
 
     const instruction_data = serialise_betray_instruction();
 
@@ -76,9 +120,29 @@ export const BetrayInstructions = async (launchData: CollectionData, user: Publi
         { pubkey: new PublicKey(asset_key), isSigner: false, isWritable: true },
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: user_data_account, isSigner: false, isWritable: true },
+        { pubkey: user_token_account_key, isSigner: false, isWritable: true },
         { pubkey: pda_account, isSigner: false, isWritable: true },
-    ];
+        { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+        { pubkey: CORE, isSigner: false, isWritable: false },
+        { pubkey: PROGRAM, isSigner: false, isWritable: false },
 
+        { pubkey: cook_user_data_account, isSigner: false, isWritable: true },
+
+        { pubkey: launch_data_account, isSigner: false, isWritable: true },
+
+        { pubkey: cook_pda, isSigner: false, isWritable: true },
+
+        { pubkey: token_mint, isSigner: false, isWritable: true },
+
+        { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+
+        { pubkey: cook_token_account_key, isSigner: false, isWritable: true },
+
+        { pubkey: team_token_account_key, isSigner: false, isWritable: true },
+
+        { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    ];
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
 
     const list_instruction = new TransactionInstruction({

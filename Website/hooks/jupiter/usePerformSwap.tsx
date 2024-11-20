@@ -3,7 +3,6 @@
  * @module hooks/jupiter/usePerformSwap
  */
 
-
 import {
     get_current_blockhash,
     uInt32ToLEBytes,
@@ -37,17 +36,17 @@ import useAppRoot from "../../context/useAppRoot";
  * @returns {Object} Swap utilities
  * @property {Function} PerformSwap - Execute a swap
  * @property {boolean} isLoading - Transaction loading state
- * 
+ *
  * @example
  * ```tsx
  * const MyTradingComponent = ({ amm }) => {
  *   const { PerformSwap, isLoading } = usePerformSwap(amm);
- *   
+ *
  *   const handleTrade = async () => {
  *     // Buy 1 token for 0.1 SOL
  *     await PerformSwap(1, 0.1, 0); // 0 = buy order
  *   };
- *   
+ *
  *   return (
  *     <button disabled={isLoading} onClick={handleTrade}>
  *       {isLoading ? 'Processing...' : 'Trade'}
@@ -93,7 +92,6 @@ const usePerformSwap = (amm: AMMData) => {
             isLoading: false,
             autoClose: 3000,
         });
-
     }, []);
 
     /**
@@ -120,7 +118,6 @@ const usePerformSwap = (amm: AMMData) => {
      * @param order_type - 0 for buy, 1 for sell
      */
     const PerformSwap = async (token_amount: number, sol_amount: number, order_type: number) => {
-
         // Initialize connection and check wallet
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
@@ -176,7 +173,6 @@ const usePerformSwap = (amm: AMMData) => {
             TOKEN_PROGRAM_ID,
         );
 
-
         // Check the AMM Plugins to see if we have trade to earn rewards
         let amm_plugins: AMMPluginData = getAMMPlugins(amm);
         let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - amm_plugins.trade_reward_first_date;
@@ -196,7 +192,6 @@ const usePerformSwap = (amm: AMMData) => {
 
         // Token account for trade to earn rewards
         let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
-
 
         // Lets Cook user data account
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];

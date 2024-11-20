@@ -41,7 +41,7 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const [discord, setDiscord] = useState(newLaunchData.current.disc_url);
     const [banner_name, setBannerName] = useState<string>("");
 
-    const {CreateToken} = useCreateToken2022();
+    const { CreateToken } = useCreateToken2022();
 
     const { CreateLaunch } = useCreateLaunch();
 
@@ -126,7 +126,11 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
             return false;
         }
 
-        if (newLaunchData.current.launch_type !== 4 && newLaunchData.current.launch_type !== 3 && newLaunchData.current.banner_file === null) {
+        if (
+            newLaunchData.current.launch_type !== 4 &&
+            newLaunchData.current.launch_type !== 3 &&
+            newLaunchData.current.banner_file === null
+        ) {
             toast.error("Please select a banner image.");
             return false;
         }
@@ -178,10 +182,18 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     async function nextPage(e) {
         if (await setData(e)) {
             if (newLaunchData.current.launch_type === 4) {
-                CreateToken(newLaunchData.current.name, newLaunchData.current.symbol, newLaunchData.current.decimals, newLaunchData.current.total_supply, newLaunchData.current.icon_file, newLaunchData.current.description);
+                CreateToken(
+                    newLaunchData.current.name,
+                    newLaunchData.current.symbol,
+                    newLaunchData.current.decimals,
+                    newLaunchData.current.total_supply,
+                    newLaunchData.current.icon_file,
+                    newLaunchData.current.description,
+                );
                 return;
             }
-            setScreen("book");}
+            setScreen("book");
+        }
     }
 
     async function prevPage(e) {
@@ -279,81 +291,79 @@ const DetailsPage = ({ setScreen }: DetailsPageProps) => {
                             </div>
 
                             {newLaunchData.current.launch_type !== 4 && (
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            placeholder="Enter your Website URL"
-                                            type="text"
-                                            value={web}
-                                            onChange={(e) => {
-                                                setWeb(e.target.value);
-                                            }}
-                                        />
+                                <div className={styles.launchBodyLowerHorizontal}>
+                                    <div className={styles.eachField}>
+                                        <Image width={40} height={40} src="/images/web.png" alt="Website Logo" />
+                                        <div className={styles.textLabelInput}>
+                                            <input
+                                                placeholder="Enter your Website URL"
+                                                type="text"
+                                                value={web}
+                                                onChange={(e) => {
+                                                    setWeb(e.target.value);
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
 
                             {newLaunchData.current.launch_type !== 4 && (
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
+                                <div className={styles.launchBodyLowerHorizontal}>
+                                    <div className={styles.eachField}>
+                                        <Image width={40} height={40} src="/images/tele.png" alt="Telegram" />
 
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            placeholder="Enter your Telegram Invite URL"
-                                            type="text"
-                                            value={telegram}
-                                            onChange={(e) => {
-                                                setTelegram(e.target.value);
-                                            }}
-                                        />
+                                        <div className={styles.textLabelInput}>
+                                            <input
+                                                placeholder="Enter your Telegram Invite URL"
+                                                type="text"
+                                                value={telegram}
+                                                onChange={(e) => {
+                                                    setTelegram(e.target.value);
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
 
                             {newLaunchData.current.launch_type !== 4 && (
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
+                                <div className={styles.launchBodyLowerHorizontal}>
+                                    <div className={styles.eachField}>
+                                        <Image width={40} height={40} src="/images/twt.png" alt="Twitter" />
 
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            required
-                                            placeholder="Enter your Twitter URL"
-                                            type="text"
-                                            value={twitter}
-                                            onChange={(e) => {
-                                                setTwitter(e.target.value);
-                                            }}
-                                        />
+                                        <div className={styles.textLabelInput}>
+                                            <input
+                                                required
+                                                placeholder="Enter your Twitter URL"
+                                                type="text"
+                                                value={twitter}
+                                                onChange={(e) => {
+                                                    setTwitter(e.target.value);
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
                             {newLaunchData.current.launch_type !== 4 && (
-                            <div className={styles.launchBodyLowerHorizontal}>
-                                <div className={styles.eachField}>
-                                    <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
+                                <div className={styles.launchBodyLowerHorizontal}>
+                                    <div className={styles.eachField}>
+                                        <Image width={40} height={40} src="/images/discord.png" alt="Discord" />
 
-                                    <div className={styles.textLabelInput}>
-                                        <input
-                                            placeholder="Enter your Discord Invite URL"
-                                            type="text"
-                                            value={discord}
-                                            onChange={(e) => {
-                                                setDiscord(e.target.value);
-                                            }}
-                                        />
+                                        <div className={styles.textLabelInput}>
+                                            <input
+                                                placeholder="Enter your Discord Invite URL"
+                                                type="text"
+                                                value={discord}
+                                                onChange={(e) => {
+                                                    setDiscord(e.target.value);
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             )}
-                            
-                            
                         </VStack>
 
                         <VStack spacing={3} align="center" justify="center" w="100%">

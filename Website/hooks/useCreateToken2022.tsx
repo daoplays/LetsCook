@@ -33,7 +33,6 @@ export const useCreateToken2022 = () => {
     const { connection } = useConnection();
     const { uploadFiles } = useIrysUploader(wallet);
 
-
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -72,26 +71,31 @@ export const useCreateToken2022 = () => {
         });
     }, []);
 
-    const CreateToken = async (name: string, symbol: string, decimals: number, initialSupply: number, icon_file : File, description : string) => {
+    const CreateToken = async (
+        name: string,
+        symbol: string,
+        decimals: number,
+        initialSupply: number,
+        icon_file: File,
+        description: string,
+    ) => {
         setIsLoading(true);
         setError(null);
 
         try {
-          let icon_url = ""
-          
-          try {
-              let receipt = await uploadFiles(connection, [icon_file], "Images");
+            let icon_url = "";
 
-              console.log(receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[icon_file.name].id);
+            try {
+                let receipt = await uploadFiles(connection, [icon_file], "Images");
 
-              icon_url =
-                  "https://gateway.irys.xyz/" + receipt.manifest.paths[icon_file.name].id;
-          } catch (e) {
-              console.log(e);
-              setIsLoading(false);
-              return;
-          }
-      
+                console.log(receipt, "https://gateway.irys.xyz/" + receipt.manifest.paths[icon_file.name].id);
+
+                icon_url = "https://gateway.irys.xyz/" + receipt.manifest.paths[icon_file.name].id;
+            } catch (e) {
+                console.log(e);
+                setIsLoading(false);
+                return;
+            }
 
             var metadata = {
                 name: name,
@@ -99,7 +103,7 @@ export const useCreateToken2022 = () => {
                 description: description,
                 image: icon_url,
             };
-            let uri = ""
+            let uri = "";
             const jsn = JSON.stringify(metadata);
             const blob = new Blob([jsn], { type: "application/json" });
             const json_file = new File([blob], "metadata.json");
@@ -115,7 +119,6 @@ export const useCreateToken2022 = () => {
                 setIsLoading(false);
                 return;
             }
-       
 
             // Generate a new mint address
             const mintKeypair = Keypair.generate();
@@ -129,7 +132,7 @@ export const useCreateToken2022 = () => {
             // Get the token account address for the creator
             const tokenAccount = await getAssociatedTokenAddress(mintKeypair.publicKey, wallet.publicKey, false, TOKEN_2022_PROGRAM_ID);
 
-            let tokenMetadata : TokenMetadata = {
+            let tokenMetadata: TokenMetadata = {
                 name: name,
                 symbol: symbol,
                 uri: uri,
@@ -142,7 +145,6 @@ export const useCreateToken2022 = () => {
 
             // Calculate rent
             let lamports = await connection.getMinimumBalanceForRentExemption(mintLen + metadataBuffer.length + 8);
-
 
             // Create instructions array
             const instructions = [
@@ -176,8 +178,6 @@ export const useCreateToken2022 = () => {
                     mintAuthority: wallet.publicKey,
                     updateAuthority: wallet.publicKey,
                 }),
-
-                
 
                 // Create token account for creator
                 createAssociatedTokenAccountInstruction(
