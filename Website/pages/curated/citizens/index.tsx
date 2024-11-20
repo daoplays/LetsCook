@@ -49,7 +49,7 @@ const LandingPage = () => {
 
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
-    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "Citizens2";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
@@ -167,7 +167,17 @@ const LandingPage = () => {
                 <VStack h="100%" position="relative" overflowY="auto">
                     <Flex w="100%" wrap="wrap" gap={4} justify="center" align="start">
                         {allUserAssets.map((nft, index) => {
-                            const level = nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1";
+                            let level = "";
+                            let wealth = "";
+                            let attributes = nft.asset.attributes.attributeList
+                            for (let i = 0; i < attributes.length; i++) {
+                                if (attributes[i].key === "Level") {
+                                    level = attributes[i].value;
+                                }
+                                if (attributes[i].key === "Wealth") {
+                                    wealth = attributes[i].value;
+                                }
+                            }
 
                             return (
                                 <GridItem key={`nft-${index}`}>
@@ -180,7 +190,7 @@ const LandingPage = () => {
                                         >
                                             {/* Mercenary Level Banner */}
                                             <div className="absolute -right-8 top-4 z-10 rotate-45 bg-[#8B7355] px-8 py-1 text-sm text-[#1C1410]">
-                                                Level {nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1"}
+                                                Level {level}
                                             </div>
 
                                             <Image
@@ -198,12 +208,10 @@ const LandingPage = () => {
                                                 {nft.metadata["name"] || nft.asset.name}
                                             </h3>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {nft.metadata?.attributes?.map((attr, attrIndex) => (
-                                                    <div key={attrIndex} className="rounded-lg bg-black/20 p-2">
-                                                        <p className="text-sm text-[#8B7355]">{attr.trait_type}</p>
-                                                        <p className="text-[#C4A484]">{attr.value}</p>
-                                                    </div>
-                                                ))}
+                                            <div  className="rounded-lg bg-black/20 p-2">
+                                                <p className="text-sm text-[#8B7355]">Wealth</p>
+                                                <p className="text-[#C4A484]">{wealth}</p>
+                                            </div>
                                             </div>
 
                                             {/* Action Buttons */}

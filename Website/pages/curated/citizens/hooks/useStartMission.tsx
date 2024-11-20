@@ -70,7 +70,7 @@ class StartMission_Instruction {
 
 export const StartMissionInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, difficulty: number) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];
-
+    console.log("Pda ", pda_account.toString());
     let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
 
     let randomKey = new Keypair();

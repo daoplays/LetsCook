@@ -106,12 +106,6 @@ export const BetrayInstructions = async (launchData: CollectionData, user: Publi
         TOKEN_2022_PROGRAM_ID,
     );
 
-    let team_token_account_key = await getAssociatedTokenAddress(
-        token_mint, // mint
-        launchData.keys[CollectionKeys.TeamWallet], // owner
-        true, // allow owner off curve
-        TOKEN_2022_PROGRAM_ID,
-    );
 
     const instruction_data = serialise_betray_instruction();
 
@@ -138,7 +132,7 @@ export const BetrayInstructions = async (launchData: CollectionData, user: Publi
 
         { pubkey: cook_token_account_key, isSigner: false, isWritable: true },
 
-        { pubkey: team_token_account_key, isSigner: false, isWritable: true },
+        { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
 
         { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
         { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
