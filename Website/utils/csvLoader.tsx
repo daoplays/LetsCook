@@ -4,8 +4,14 @@ import Papa from "papaparse";
 import { RiUploadLine } from "react-icons/ri";
 import styles from "../styles/Launch.module.css";
 
+interface TokenHolder {
+    address: string;
+    balance: string;
+    amount?: string;
+}
+
 interface CSVUploaderProps {
-    onHoldersUpdate: (holders: { address: string; balance: string }[]) => void;
+    onHoldersUpdate: (holders: TokenHolder[]) => void;
 }
 
 export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
@@ -37,7 +43,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 const addressSet = new Set<string>();
                 const duplicates = new Set<string>();
                 const invalidAddresses: string[] = [];
-                const validHolders: { address: string; balance: string }[] = [];
+                const validHolders: TokenHolder[] = [];
 
                 // Check for empty quantity values if quantity column exists
                 if (hasQuantityColumn) {
@@ -77,26 +83,29 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     // Add to unique set and valid holders
                     addressSet.add(address);
 
-                     // Use quantity if available and valid, otherwise default to "1"
-                     let balance = "1";
-                     if (hasQuantityColumn) {
-                         const quantity = parseFloat(row.quantity);
-                         if (!isNaN(quantity) && quantity > 0) {
-                             balance = quantity.toString();
-                         } else {
-                             toast({
-                                 title: "Error",
-                                 description: `Invalid quantity value for address ${address}. Quantity must be a positive number.`,
-                                 status: "error",
-                             });
-                             setIsProcessing(false);
-                             return;
-                         }
-                     }
+                    // Always set balance to "1", but use quantity for airdrop amount if available
+                    const balance = "1";
+                    let airdropAmount: string | undefined;
+
+                    if (hasQuantityColumn) {
+                        const quantity = parseFloat(row.quantity);
+                        if (!isNaN(quantity) && quantity > 0) {
+                            airdropAmount = quantity.toString();
+                        } else {
+                            toast({
+                                title: "Error",
+                                description: `Invalid quantity value for address ${address}. Quantity must be a positive number.`,
+                                status: "error",
+                            });
+                            setIsProcessing(false);
+                            return;
+                        }
+                    }
 
                     validHolders.push({
                         address,
-                        balance
+                        balance,
+                        amount: airdropAmount,
                     });
                 });
 
@@ -157,6 +166,8 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
     return (
         <Box className="w-full">
+                        <label className="w-full cursor-pointer">
+
             <div
                 className="border-1 flex cursor-pointer flex-col items-center justify-center rounded-lg p-6"
                 style={{ backgroundColor: "#454444" }}
@@ -170,6 +181,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 </div>
                 <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
             </div>
+            </label>
         </Box>
     );
 };

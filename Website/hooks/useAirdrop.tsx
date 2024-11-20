@@ -13,6 +13,7 @@ import { CollectionWithMetadata } from "@/pages/airdrop";
 interface TokenHolder {
     address: string;
     balance: string;
+    amount?: string;
 }
 
 interface AirdropRecipient {
@@ -154,35 +155,45 @@ export const useAirdrop = () => {
         (totalAmountInput: string, distributionType: DistributionType = "fixed"): AirdropRecipient[] => {
             if (filteredHolders.length === 0) return [];
 
-            const totalAmount = parseFloat(totalAmountInput);
+            // Check if holders have predefined amounts from CSV
+            const hasPresetAmounts = filteredHolders.some(holder => holder.amount !== undefined);
             let newDistributions: AirdropRecipient[];
 
-            if (distributionType === "fixed") {
-                const amountPerHolder = totalAmount;
-                newDistributions = holders.map((holder) => ({
+            if (hasPresetAmounts) {
+                // If we have preset amounts from CSV, use those
+                newDistributions = filteredHolders.map(holder => ({
                     address: holder.address,
-                    amount: amountPerHolder.toString(),
-                }));
-            } else if (distributionType === "even") {
-                const amountPerHolder = totalAmount / filteredHolders.length;
-
-                newDistributions = filteredHolders.map((holder) => ({
-                    address: holder.address,
-                    amount: amountPerHolder.toString(),
+                    amount: holder.amount || totalAmountInput // Fallback to totalAmountInput if amount not defined
                 }));
             } else {
-                // Pro rata distribution
-                const totalBalance = filteredHolders.reduce((acc, holder) => acc + parseFloat(holder.balance), 0);
+                const totalAmount = parseFloat(totalAmountInput);
 
-                newDistributions = filteredHolders.map((holder) => {
-                    const share = (parseFloat(holder.balance) * parseFloat(totalAmountInput)) / totalBalance;
-                    return {
+                if (distributionType === "fixed") {
+                    const amountPerHolder = totalAmount;
+                    newDistributions = holders.map((holder) => ({
                         address: holder.address,
-                        amount: share.toString(),
-                    };
-                });
-            }
+                        amount: amountPerHolder.toString(),
+                    }));
+                } else if (distributionType === "even") {
+                    const amountPerHolder = totalAmount / filteredHolders.length;
 
+                    newDistributions = filteredHolders.map((holder) => ({
+                        address: holder.address,
+                        amount: amountPerHolder.toString(),
+                    }));
+                } else {
+                    // Pro rata distribution
+                    const totalBalance = filteredHolders.reduce((acc, holder) => acc + parseFloat(holder.balance), 0);
+
+                    newDistributions = filteredHolders.map((holder) => {
+                        const share = (parseFloat(holder.balance) * parseFloat(totalAmountInput)) / totalBalance;
+                        return {
+                            address: holder.address,
+                            amount: share.toString(),
+                        };
+                    });
+                }
+            }
             setDistributions(newDistributions);
             return newDistributions;
         },
