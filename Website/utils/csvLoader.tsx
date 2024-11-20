@@ -30,11 +30,31 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     return;
                 }
 
+                const hasQuantityColumn = results.meta.fields.includes("quantity");
+
+
                 // Track unique addresses and duplicates
                 const addressSet = new Set<string>();
                 const duplicates = new Set<string>();
                 const invalidAddresses: string[] = [];
                 const validHolders: { address: string; balance: string }[] = [];
+
+                // Check for empty quantity values if quantity column exists
+                if (hasQuantityColumn) {
+                    const emptyQuantityRows = results.data.filter((row: any) => {
+                        return row.address?.trim() && (!row.quantity || row.quantity.trim() === '');
+                    });
+
+                    if (emptyQuantityRows.length > 0) {
+                        toast({
+                            title: "Error",
+                            description: `Found ${emptyQuantityRows.length} rows with empty quantity values. All quantity values must be filled when using the quantity column.`,
+                            status: "error",
+                        });
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
 
                 // Process each row
                 results.data.forEach((row: any) => {
@@ -56,9 +76,27 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
                     // Add to unique set and valid holders
                     addressSet.add(address);
+
+                     // Use quantity if available and valid, otherwise default to "1"
+                     let balance = "1";
+                     if (hasQuantityColumn) {
+                         const quantity = parseFloat(row.quantity);
+                         if (!isNaN(quantity) && quantity > 0) {
+                             balance = quantity.toString();
+                         } else {
+                             toast({
+                                 title: "Error",
+                                 description: `Invalid quantity value for address ${address}. Quantity must be a positive number.`,
+                                 status: "error",
+                             });
+                             setIsProcessing(false);
+                             return;
+                         }
+                     }
+
                     validHolders.push({
                         address,
-                        balance: "1", // Set balance to 1 for all addresses
+                        balance
                     });
                 });
 
@@ -128,7 +166,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     <Text className="text-center text-sm text-white">
                         {isProcessing ? "Processing..." : "Click to upload token / collection addresses CSV"}
                     </Text>
-                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column</Text>
+                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column and optional "quantity"</Text>
                 </div>
                 <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
             </div>
