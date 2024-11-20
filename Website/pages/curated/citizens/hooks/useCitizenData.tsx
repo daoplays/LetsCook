@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { request_raw_account_data } from "../../../../components/Solana/state";
-import {CITIZENS, CitizenUserData} from "../../../../components/curated/citizens/state";
+import { CITIZENS, CitizenUserData } from "../../../../components/curated/citizens/state";
 
 const useCitizenData = () => {
     // State to store the token balance and any error messages
@@ -25,10 +25,7 @@ const useCitizenData = () => {
     const getUserDataAccount = useCallback(() => {
         if (!wallet.publicKey) return null;
 
-        return PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), Buffer.from("UserData")],
-            CITIZENS,
-        )[0];
+        return PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
     }, [wallet.publicKey]);
 
     // Function to fetch the current assignment data
@@ -55,7 +52,6 @@ const useCitizenData = () => {
 
         setUserData(updated_data);
     }, [getUserDataAccount]);
-
 
     // Callback function to handle account changes
     const handleAccountChange = useCallback((accountInfo: any) => {
@@ -100,10 +96,8 @@ const useCitizenData = () => {
         };
     }, [connection, wallet, fetchUserData, getUserDataAccount, handleAccountChange]);
 
-    
-
     // Return the current token balance and any error message
-    return { userData};
+    return { userData };
 };
 
 export default useCitizenData;

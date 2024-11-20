@@ -49,7 +49,7 @@ const LandingPage = () => {
 
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
-    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "Citizens2";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
@@ -64,7 +64,6 @@ const LandingPage = () => {
     const prevUserListedNFTsRef = useRef<string>("");
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
-
 
     const {
         collection,
@@ -99,6 +98,8 @@ const LandingPage = () => {
 
     const { StartMission, isLoading: StartMissionLoading } = useStartMission(collection);
 
+    const { userData } = useCitizenData();
+
     useEffect(() => {
         if (!collectionAssets || !collectionPlugins) return;
 
@@ -129,17 +130,17 @@ const LandingPage = () => {
             checkNFTBalance.current = true;
             fetchNFTBalance();
         }
-    }, [collection, wallet, checkNFTBalance, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
+    }, [collection, wallet, checkNFTBalance, userData, fetchNFTBalance]); // Only run on initial mount and when collection/wallet changes
 
     // if (!pageName) return;
 
     const NFTGrid = () => {
         const [selectedMercenary, setSelectedMercenary] = useState(null);
         const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
-        const {userData} = useCitizenData();
-        const {Betray} = useBetray(collection);
-        const {CheckMission} = useCheckMission(collection);
+        const { Betray } = useBetray(collection);
+        const { CheckMission } = useCheckMission(collection);
 
+        let allUserAssets = [...ownedAssets];
 
         const handleMissionSelect = (difficulty: string) => {
             console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
@@ -148,12 +149,35 @@ const LandingPage = () => {
             closeMissionModal();
         };
 
+        if (collectionAssets && userData && !userData.asset.equals(SYSTEM_KEY)) {
+            let mission_asset = collectionAssets.get(userData.asset.toString());
+            console.log("User has asset on a mission", userData, mission_asset);
+            // Check if mission_asset already exists in allUserAssets
+            const assetExists = allUserAssets.some(
+                (asset) => asset && mission_asset && asset.asset.publicKey.toString() === mission_asset.asset.publicKey.toString(),
+            );
+
+            if (!assetExists && mission_asset) {
+                allUserAssets.push(mission_asset);
+            }
+        }
+
         return (
             <>
                 <VStack h="100%" position="relative" overflowY="auto">
                     <Flex w="100%" wrap="wrap" gap={4} justify="center" align="start">
-                        {ownedAssets.map((nft, index) => {
-                            const level = nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1";
+                        {allUserAssets.map((nft, index) => {
+                            let level = "";
+                            let wealth = "";
+                            let attributes = nft.asset.attributes.attributeList
+                            for (let i = 0; i < attributes.length; i++) {
+                                if (attributes[i].key === "Level") {
+                                    level = attributes[i].value;
+                                }
+                                if (attributes[i].key === "Wealth") {
+                                    wealth = attributes[i].value;
+                                }
+                            }
 
                             return (
                                 <GridItem key={`nft-${index}`}>
@@ -166,7 +190,7 @@ const LandingPage = () => {
                                         >
                                             {/* Mercenary Level Banner */}
                                             <div className="absolute -right-8 top-4 z-10 rotate-45 bg-[#8B7355] px-8 py-1 text-sm text-[#1C1410]">
-                                                Level {nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1"}
+                                                Level {level}
                                             </div>
 
                                             <Image
@@ -184,47 +208,48 @@ const LandingPage = () => {
                                                 {nft.metadata["name"] || nft.asset.name}
                                             </h3>
                                             <div className="grid grid-cols-2 gap-2">
-                                                {nft.metadata?.attributes?.map((attr, attrIndex) => (
-                                                    <div key={attrIndex} className="rounded-lg bg-black/20 p-2">
-                                                        <p className="text-sm text-[#8B7355]">{attr.trait_type}</p>
-                                                        <p className="text-[#C4A484]">{attr.value}</p>
-                                                    </div>
-                                                ))}
+                                            <div  className="rounded-lg bg-black/20 p-2">
+                                                <p className="text-sm text-[#8B7355]">Wealth</p>
+                                                <p className="text-[#C4A484]">{wealth}</p>
+                                            </div>
                                             </div>
 
-                                            
                                             {/* Action Buttons */}
                                             <div className="mt-4 flex gap-2">
                                                 <VStack>
-                                            {nft.asset.publicKey.toString() === userData?.asset.toString() && (
-                                                <button
-                                                className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
-                                                onClick={() => {
-                                                    CheckMission(nft.asset.publicKey.toString());
-                                                }}
-                                            >
-                                                Check Mission Status
-                                            </button>
-                                            )}
-                                            {nft.asset.publicKey.toString() !== userData?.asset.toString() && (userData?.mission_status === 0 || userData?.mission_status === 3) &&  (
-                                                <button
-                                                    className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
-                                                    onClick={() => {
-                                                        setSelectedMercenary(nft);
-                                                        openMissionModal();
-                                                    }}
-                                                >
-                                                    Send on Mission
-                                                </button>
-                                            )}
-                                                
-                                                <button
-                                                    className="flex-1 transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
-                                                    onClick={() => {Betray(nft.asset.publicKey.toString());
-                                                    }}
-                                                >
-                                                    Betray
-                                                </button>
+                                                    {nft.asset.publicKey.toString() === userData?.asset.toString() && (
+                                                        <button
+                                                            className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                            onClick={() => {
+                                                                CheckMission(nft.asset.publicKey.toString(), userData?.randoms_address);
+                                                            }}
+                                                        >
+                                                            Check Mission Status
+                                                        </button>
+                                                    )}
+                                                    {(userData === null ||
+                                                        (userData &&
+                                                            nft.asset.publicKey.toString() !== userData?.asset.toString() &&
+                                                            userData?.mission_status !== 1)) && (
+                                                        <button
+                                                            className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                            onClick={() => {
+                                                                setSelectedMercenary(nft);
+                                                                openMissionModal();
+                                                            }}
+                                                        >
+                                                            Send on Mission
+                                                        </button>
+                                                    )}
+
+                                                    <button
+                                                        className="flex-1 transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
+                                                        onClick={() => {
+                                                            Betray(nft.asset.publicKey.toString());
+                                                        }}
+                                                    >
+                                                        Betray
+                                                    </button>
                                                 </VStack>
                                             </div>
                                         </div>
@@ -268,7 +293,7 @@ const LandingPage = () => {
                 // Main Landing Content
                 <div className="relative z-20 flex min-h-screen w-full flex-col items-center justify-center">
                     <div className="w-full max-w-7xl px-4">
-                        {nftBalance === 0 ? (
+                        {nftBalance === 0 && (!userData || userData.asset.equals(SYSTEM_KEY)) ? (
                             <div className="flex flex-col items-center gap-6">
                                 <div className="rounded-xl border-2 border-[#3A2618] bg-[#1C1410]/90 p-6 text-center backdrop-blur-sm">
                                     <h2 className="font-serif text-2xl text-[#C4A484]">Welcome to the Old Town Tavern</h2>

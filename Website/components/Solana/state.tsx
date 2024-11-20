@@ -598,7 +598,7 @@ export function getLaunchType(launch_type: number): string {
         case 3:
             return "Instant";
         case 4:
-            return "None"
+            return "None";
         default:
             return "FCFS";
     }

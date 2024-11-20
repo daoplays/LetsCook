@@ -80,10 +80,22 @@ export const AirdropPage = () => {
         error,
     } = useAirdrop();
 
+    // Modify this section in the distribution calculations
     const distributions = useMemo(() => {
+        // If holders have CSV amounts, use those directly and disable the distribution controls
+        const hasPresetAmounts = holders.some(holder => holder.amount !== undefined);
+        if (hasPresetAmounts) {
+            return holders.map(holder => ({
+                address: holder.address,
+                amount: holder.amount || "0"
+            }));
+        }
+        
+        // Otherwise use the original calculation
         if (!amount || !holders.length) return [];
         return calculateAirdropAmounts(amount, distributionType);
     }, [amount, holders, distributionType, calculateAirdropAmounts]);
+
 
     const handleMintInput = (value: string) => {
         setMintAddress(value);
@@ -118,15 +130,11 @@ export const AirdropPage = () => {
             let snapshotCollection: CollectionV1 | null = null;
             let collectionWithMetadata: CollectionWithMetadata | null = null;
 
-            
-            try{
+            try {
                 const umi = createUmi(Config.RPC_NODE, "confirmed");
                 let collection_umiKey = publicKey(mintAddress);
                 snapshotCollection = await fetchCollectionV1(umi, collection_umiKey);
-            }
-            catch (error) {
-               
-            }
+            } catch (error) {}
             if (snapshotCollection) {
                 console.log(snapshotCollection, "snapshotCollection");
                 let icon: string;
@@ -285,11 +293,11 @@ export const AirdropPage = () => {
     const { tokenBalance: airdroppedMintTokenBalance } = useTokenBalance(airdroppedMint ? { mintData: airdroppedMint } : null);
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
-            <div className="flex flex-col gap-2 mb-4">
-                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
+            <div className="mb-4 flex flex-col gap-2">
+                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Snapshot / Airdrop Tool</Text>
                 {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
             </div>
-            <div className="flex justify-center w-full gap-1 p-1 -ml-1 bg-gray-700 rounded-md shadow-2xl backdrop-blur-sm backdrop-filter">
+            <div className="-ml-1 flex w-full justify-center gap-1 rounded-md bg-gray-700 p-1 shadow-2xl backdrop-blur-sm backdrop-filter">
                 <button
                     onClick={() => setActiveTab("Scan")}
                     className={`h-fit w-full rounded-md font-bold transition-all duration-200 md:text-lg ${
@@ -343,10 +351,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
 
-                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
                                 {snapshotMint && (
                                     <>
-                                        <div className="flex flex-col gap-2 w-fit">
+                                        <div className="flex w-fit flex-col gap-2">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -360,11 +368,11 @@ export const AirdropPage = () => {
                                                 <span>{snapshotMint.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Decimals:</b>
                                             <Text> {snapshotMint.mint.decimals}</Text>
                                         </span>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Symbol:</b>
                                             <Text> {snapshotMint.symbol}</Text>
                                         </span>
@@ -377,10 +385,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Collection Info</FormLabel>
 
-                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
                                 {snapshotCollection && (
                                     <>
-                                        <div className="flex flex-col gap-2 w-fit">
+                                        <div className="flex w-fit flex-col gap-2">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -394,7 +402,7 @@ export const AirdropPage = () => {
                                                 <span>{snapshotCollection.collection.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Total Minted:</b>
                                             <Text> {snapshotCollection.collection.currentSize}</Text>
                                         </span>
@@ -414,6 +422,7 @@ export const AirdropPage = () => {
                         </FormControl>
                     )}
                     {/* Threshold Input */}
+                    {!holders.some(holder => holder.amount !== undefined) && (
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
                         <div className={styles.textLabelInput}>
@@ -427,8 +436,10 @@ export const AirdropPage = () => {
                             />
                         </div>
                     </FormControl>
+                    )}
 
                     {/* Distribution Type Selection */}
+                    {!holders.some(holder => holder.amount !== undefined) && (
                     <FormControl className="text-white">
                         <FormLabel className="min-w-[100px] text-lg text-white">Distribution Type</FormLabel>
                         <RadioGroup value={distributionType} onChange={(value: "fixed" | "even" | "proRata") => setDistributionType(value)}>
@@ -439,6 +450,8 @@ export const AirdropPage = () => {
                             </Stack>
                         </RadioGroup>
                     </FormControl>
+                    )}
+
 
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Airdrop Mint Address</FormLabel>
@@ -471,10 +484,10 @@ export const AirdropPage = () => {
                         <Box>
                             <FormLabel className="min-w-[100px] text-lg text-white">Token Info</FormLabel>
 
-                            <Box className="flex flex-col w-1/3 p-3 text-white bg-gray-800 rounded-md gap-y-2">
+                            <Box className="flex w-1/3 flex-col gap-y-2 rounded-md bg-gray-800 p-3 text-white">
                                 {airdroppedMint && (
                                     <>
-                                        <div className="flex flex-col gap-2 w-fit">
+                                        <div className="flex w-fit flex-col gap-2">
                                             <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                                 <div className="">
                                                     <Image
@@ -488,15 +501,15 @@ export const AirdropPage = () => {
                                                 <span>{airdroppedMint.name}</span>
                                             </button>
                                         </div>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Decimals:</b>
                                             <Text> {airdroppedMint.mint.decimals}</Text>
                                         </span>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Symbol:</b>
                                             <Text> {airdroppedMint.symbol}</Text>
                                         </span>
-                                        <span className="flex justify-between w-full">
+                                        <span className="flex w-full justify-between">
                                             <b>Token Balance:</b>
                                             <Text> {airdroppedMintTokenBalance}</Text>
                                         </span>
@@ -507,6 +520,7 @@ export const AirdropPage = () => {
                     )}
 
                     {/* Amount Input */}
+                    {!holders.some(holder => holder.amount !== undefined) && (
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">
                             {distributionType === "fixed" ? "Amount Per Holder" : "Total Amount to Distribute"}
@@ -522,7 +536,7 @@ export const AirdropPage = () => {
                             />
                         </div>
                     </FormControl>
-
+                    )}
                     {/* Holders Table */}
                     {holders.length > 0 && (
                         <Box overflowX="auto">
@@ -556,7 +570,7 @@ export const AirdropPage = () => {
                                             return (
                                                 <TableRow
                                                     key={holder.address}
-                                                    className="transition-colors cursor-pointer hover:bg-muted/50"
+                                                    className="hover:bg-muted/50 cursor-pointer transition-colors"
                                                 >
                                                     <TableCell className="font-mono text-sm">
                                                         {holder.address.slice(0, 4)}...{holder.address.slice(-4)}
@@ -598,7 +612,7 @@ export const AirdropPage = () => {
                             )}
 
                             {/* Airdrop Button */}
-                            <div className="flex justify-center w-full">
+                            <div className="flex w-full justify-center">
                                 <Button
                                     mt={4}
                                     colorScheme="green"

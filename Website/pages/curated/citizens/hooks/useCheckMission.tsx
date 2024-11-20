@@ -36,6 +36,17 @@ import {
     METAPLEX_META,
     CORE,
 } from "../../../../components/Solana/constants";
+import {
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getAssociatedTokenAddress,
+    getAssociatedTokenAddressSync,
+    unpackAccount,
+    Account,
+    getTransferHook,
+    resolveExtraAccountMeta,
+    ExtraAccountMetaAccountDataLayout,
+    TOKEN_2022_PROGRAM_ID,
+} from "@solana/spl-token";
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
@@ -51,23 +62,47 @@ function serialise_check_mission_instruction(): Buffer {
 }
 
 class CheckMission_Instruction {
-    constructor(
-        readonly instruction: number,
-    ) {}
+    constructor(readonly instruction: number) {}
 
     static readonly struct = new BeetStruct<CheckMission_Instruction>(
-        [
-            ["instruction", u8],
-        ],
+        [["instruction", u8]],
         (args) => new CheckMission_Instruction(args.instruction!),
         "CheckMission_Instruction",
     );
 }
 
-export const CheckMissionInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: string) => {
+export const CheckMissionInstructions = async (
+    launchData: CollectionData,
+    user: PublicKey,
+    randoms_account: PublicKey,
+    asset_key: string,
+) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];
 
+    console.log("pda acount", pda_account.toString());
     let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
+
+    let cook_user_data_account = PublicKey.findProgramAddressSync([pda_account.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+    let cook_pda = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+
+    let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Collection")], PROGRAM)[0];
+
+    let token_mint = launchData.keys[CollectionKeys.MintAddress];
+
+    let pda_token_account_key = await getAssociatedTokenAddress(
+        token_mint, // mint
+        pda_account, // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
+
+    let cook_token_account_key = await getAssociatedTokenAddress(
+        token_mint, // mint
+        cook_pda, // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
 
     const instruction_data = serialise_check_mission_instruction();
 
@@ -77,9 +112,28 @@ export const CheckMissionInstructions = async (launchData: CollectionData, user:
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: user_data_account, isSigner: false, isWritable: true },
         { pubkey: pda_account, isSigner: false, isWritable: true },
-    ];
+        { pubkey: randoms_account, isSigner: false, isWritable: true },
+        { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+        { pubkey: CORE, isSigner: false, isWritable: false },
+        { pubkey: PROGRAM, isSigner: false, isWritable: false },
 
-    account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
+        { pubkey: cook_user_data_account, isSigner: false, isWritable: true },
+
+        { pubkey: launch_data_account, isSigner: false, isWritable: true },
+
+        { pubkey: cook_pda, isSigner: false, isWritable: true },
+
+        { pubkey: token_mint, isSigner: false, isWritable: true },
+
+        { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+
+        { pubkey: cook_token_account_key, isSigner: false, isWritable: true },
+
+        { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+
+        { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+    ];
 
     const list_instruction = new TransactionInstruction({
         keys: account_vector,
@@ -140,7 +194,7 @@ const useCheckMission = (launchData: CollectionData) => {
         });
     }, []);
 
-    const CheckMission = async (asset_key: string) => {
+    const CheckMission = async (asset_key: string, randoms_account: PublicKey) => {
         console.log("in list nft");
 
         if (wallet.signTransaction === undefined) {
@@ -163,7 +217,7 @@ const useCheckMission = (launchData: CollectionData) => {
 
         setIsLoading(true);
 
-        let instructions = await CheckMissionInstructions(launchData, wallet.publicKey, asset_key);
+        let instructions = await CheckMissionInstructions(launchData, wallet.publicKey, randoms_account, asset_key);
 
         let txArgs = await get_current_blockhash("");
 

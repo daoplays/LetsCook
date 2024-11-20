@@ -4,8 +4,14 @@ import Papa from "papaparse";
 import { RiUploadLine } from "react-icons/ri";
 import styles from "../styles/Launch.module.css";
 
+interface TokenHolder {
+    address: string;
+    balance: string;
+    amount?: string;
+}
+
 interface CSVUploaderProps {
-    onHoldersUpdate: (holders: { address: string; balance: string }[]) => void;
+    onHoldersUpdate: (holders: TokenHolder[]) => void;
 }
 
 export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
@@ -30,11 +36,31 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     return;
                 }
 
+                const hasQuantityColumn = results.meta.fields.includes("quantity");
+
+
                 // Track unique addresses and duplicates
                 const addressSet = new Set<string>();
                 const duplicates = new Set<string>();
                 const invalidAddresses: string[] = [];
-                const validHolders: { address: string; balance: string }[] = [];
+                const validHolders: TokenHolder[] = [];
+
+                // Check for empty quantity values if quantity column exists
+                if (hasQuantityColumn) {
+                    const emptyQuantityRows = results.data.filter((row: any) => {
+                        return row.address?.trim() && (!row.quantity || row.quantity.trim() === '');
+                    });
+
+                    if (emptyQuantityRows.length > 0) {
+                        toast({
+                            title: "Error",
+                            description: `Found ${emptyQuantityRows.length} rows with empty quantity values. All quantity values must be filled when using the quantity column.`,
+                            status: "error",
+                        });
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
 
                 // Process each row
                 results.data.forEach((row: any) => {
@@ -56,9 +82,30 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
                     // Add to unique set and valid holders
                     addressSet.add(address);
+
+                    // Always set balance to "1", but use quantity for airdrop amount if available
+                    const balance = "1";
+                    let airdropAmount: string | undefined;
+
+                    if (hasQuantityColumn) {
+                        const quantity = parseFloat(row.quantity);
+                        if (!isNaN(quantity) && quantity > 0) {
+                            airdropAmount = quantity.toString();
+                        } else {
+                            toast({
+                                title: "Error",
+                                description: `Invalid quantity value for address ${address}. Quantity must be a positive number.`,
+                                status: "error",
+                            });
+                            setIsProcessing(false);
+                            return;
+                        }
+                    }
+
                     validHolders.push({
                         address,
-                        balance: "1", // Set balance to 1 for all addresses
+                        balance,
+                        amount: airdropAmount,
                     });
                 });
 
@@ -119,24 +166,22 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
     return (
         <Box className="w-full">
-            <div className="flex flex-col items-center justify-center p-6 rounded-lg cursor-pointer border-1" style={{backgroundColor: "#454444"}}>
+                        <label className="w-full cursor-pointer">
+
+            <div
+                className="border-1 flex cursor-pointer flex-col items-center justify-center rounded-lg p-6"
+                style={{ backgroundColor: "#454444" }}
+            >
                 <div className="flex flex-col items-center justify-center">
-                    <RiUploadLine className="w-8 h-8 mb-2 text-white" />
-                    <Text className="text-sm text-center text-white">
+                    <RiUploadLine className="mb-2 h-8 w-8 text-white" />
+                    <Text className="text-center text-sm text-white">
                         {isProcessing ? "Processing..." : "Click to upload token / collection addresses CSV"}
                     </Text>
-                    <Text className="mt-1 text-xs text-gray-500">
-                        CSV must contain an "address" column
-                    </Text>
+                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column and optional "quantity"</Text>
                 </div>
-                <input
-                    type="file"
-                    className="hidden"
-                    accept=".csv"
-                    onChange={handleFileUpload}
-                    disabled={isProcessing}
-                />
+                <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
             </div>
+            </label>
         </Box>
     );
 };

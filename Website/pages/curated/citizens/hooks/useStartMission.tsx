@@ -42,8 +42,8 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { CITIZENS } from "../../../../components/curated/citizens/state";
 
-function serialise_start_mission_instruction(difficulty: number): Buffer {
-    const data = new StartMission_Instruction(0, difficulty);
+function serialise_start_mission_instruction(difficulty: number, seed: number[]): Buffer {
+    const data = new StartMission_Instruction(0, difficulty, seed);
 
     const [buf] = StartMission_Instruction.struct.serialize(data);
 
@@ -54,24 +54,30 @@ class StartMission_Instruction {
     constructor(
         readonly instruction: number,
         readonly mission_difficulty: number,
+        readonly seed: number[],
     ) {}
 
     static readonly struct = new BeetStruct<StartMission_Instruction>(
         [
             ["instruction", u8],
             ["mission_difficulty", u8],
+            ["seed", uniformFixedSizeArray(u8, 32)],
         ],
-        (args) => new StartMission_Instruction(args.instruction!, args.mission_difficulty!),
+        (args) => new StartMission_Instruction(args.instruction!, args.mission_difficulty!, args.seed!),
         "StartMission_Instruction",
     );
 }
 
 export const StartMissionInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, difficulty: number) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];
-
+    console.log("Pda ", pda_account.toString());
     let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
 
-    const instruction_data = serialise_start_mission_instruction(difficulty);
+    let randomKey = new Keypair();
+    let key_bytes = randomKey.publicKey.toBytes();
+    let orao_random = PublicKey.findProgramAddressSync([Buffer.from("orao-vrf-randomness-request"), key_bytes], CITIZENS)[0];
+
+    const instruction_data = serialise_start_mission_instruction(difficulty, Array.from(key_bytes));
 
     var account_vector = [
         { pubkey: user, isSigner: true, isWritable: true },
@@ -79,9 +85,11 @@ export const StartMissionInstructions = async (launchData: CollectionData, user:
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: user_data_account, isSigner: false, isWritable: true },
         { pubkey: pda_account, isSigner: false, isWritable: true },
+        { pubkey: orao_random, isSigner: false, isWritable: true },
     ];
 
     account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
+    account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
 
     const list_instruction = new TransactionInstruction({
         keys: account_vector,

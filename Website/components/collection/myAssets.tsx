@@ -67,9 +67,8 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
         ? listedNFTs.filter((nft) => ownerListedNFTPubkeys.some((pubkey) => pubkey.equals(new PublicKey(nft.asset.publicKey))))
         : [];
 
-    const plugins : CollectionPluginData = getCollectionPlugins(collection);
+    const plugins: CollectionPluginData = getCollectionPlugins(collection);
     const mintOnly = plugins.mintOnly;
-
 
     return (
         <>
@@ -130,7 +129,9 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                                 </MenubarTrigger>
                                                                 <MenubarContent>
                                                                     {!mintOnly && (
-                                                                    <MenubarItem onClick={() => WrapNFT(nftAssetKey)}>Unwrap</MenubarItem>
+                                                                        <MenubarItem onClick={() => WrapNFT(nftAssetKey)}>
+                                                                            Unwrap
+                                                                        </MenubarItem>
                                                                     )}
                                                                     <MenubarItem onClick={() => handleTransferNFTClick(nft)}>
                                                                         Transfer
