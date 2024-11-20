@@ -80,10 +80,22 @@ export const AirdropPage = () => {
         error,
     } = useAirdrop();
 
+    // Modify this section in the distribution calculations
     const distributions = useMemo(() => {
+        // If holders have CSV amounts, use those directly and disable the distribution controls
+        const hasPresetAmounts = holders.some(holder => holder.amount !== undefined);
+        if (hasPresetAmounts) {
+            return holders.map(holder => ({
+                address: holder.address,
+                amount: holder.amount || "0"
+            }));
+        }
+        
+        // Otherwise use the original calculation
         if (!amount || !holders.length) return [];
         return calculateAirdropAmounts(amount, distributionType);
     }, [amount, holders, distributionType, calculateAirdropAmounts]);
+
 
     const handleMintInput = (value: string) => {
         setMintAddress(value);
@@ -410,6 +422,7 @@ export const AirdropPage = () => {
                         </FormControl>
                     )}
                     {/* Threshold Input */}
+                    {!holders.some(holder => holder.amount !== undefined) && (
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
                         <div className={styles.textLabelInput}>
@@ -423,8 +436,10 @@ export const AirdropPage = () => {
                             />
                         </div>
                     </FormControl>
+                    )}
 
                     {/* Distribution Type Selection */}
+                    {!holders.some(holder => holder.amount !== undefined) && (
                     <FormControl className="text-white">
                         <FormLabel className="min-w-[100px] text-lg text-white">Distribution Type</FormLabel>
                         <RadioGroup value={distributionType} onChange={(value: "fixed" | "even" | "proRata") => setDistributionType(value)}>
@@ -435,6 +450,8 @@ export const AirdropPage = () => {
                             </Stack>
                         </RadioGroup>
                     </FormControl>
+                    )}
+
 
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Airdrop Mint Address</FormLabel>
@@ -503,6 +520,7 @@ export const AirdropPage = () => {
                     )}
 
                     {/* Amount Input */}
+                    {!holders.some(holder => holder.amount !== undefined) && (
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">
                             {distributionType === "fixed" ? "Amount Per Holder" : "Total Amount to Distribute"}
@@ -518,7 +536,7 @@ export const AirdropPage = () => {
                             />
                         </div>
                     </FormControl>
-
+                    )}
                     {/* Holders Table */}
                     {holders.length > 0 && (
                         <Box overflowX="auto">
