@@ -52,9 +52,8 @@ export async function getMint(connection: Connection, mint_string: string): Prom
     }
 
     let result = await connection.getAccountInfo(mint_address, "confirmed");
-
     let mint: Mint;
-    if (result.owner.equals(TOKEN_PROGRAM_ID)) {
+    if (result?.owner.equals(TOKEN_PROGRAM_ID)) {
         try {
             mint = unpackMint(mint_address, result, TOKEN_PROGRAM_ID);
             console.log(mint);
