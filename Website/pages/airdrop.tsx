@@ -244,7 +244,7 @@ export const AirdropPage = () => {
                     address: holder.address,
                     currentBalance: holder.balance,
                     airdropAmount: distribution?.amount || "0",
-                    signature: "aaaaaaaa", //signatures.get(holder.address) || ''
+                    signature: signatures.get(holder.address) || ''
                 };
             });
 
