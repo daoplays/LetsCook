@@ -42,17 +42,16 @@ const modalStyle: ReceivedAssetModalStyle = {
 
 const AppRootPage = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
-
-    const [collectionObject, setCollectionObject] = useState<CollectionV1 | null>(null);
+    const pageName = "tissue";
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
-    const { collection, tokenMint } = useCollection({ pageName: "solar-badge" });
+    const { collection, tokenMint } = useCollection({ pageName: pageName });
 
     const { assignmentData, validRandoms, asset, assetMeta } = useAssignmentData({ collection: collection });
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
-    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, true);
+    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, true, tokenMint);
 
     const { userSOLBalance } = useAppRoot();
 
@@ -99,23 +98,6 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
 
     const enoughTokenBalance = userSOLBalance >= bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
 
-    const getCollectionObject = async () => {
-        if (!collection?.keys?.[CollectionKeys.CollectionMint]) {
-            return;
-        }
-
-        try {
-            const umi = createUmi(Config.RPC_NODE, "confirmed");
-            let collection_umiKey = publicKey(collection?.keys?.[CollectionKeys.CollectionMint]);
-            const collectionObject = await fetchCollectionV1(umi, collection_umiKey);
-            setCollectionObject(collectionObject);
-        } catch (error) {
-            console.log("Error: ", error);
-        }
-    };
-
-    getCollectionObject();
-
     return (
         <>
             <div className="flex min-h-screen flex-col items-center justify-center bg-gray-900 text-white">
@@ -132,10 +114,7 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
                                 className="rounded-xl"
                             />
                         </div>
-
-                        <div className="flex justify-center text-center">
-                            <h3 className="font-semibold">Total Minted: {collectionObject?.currentSize}</h3>
-                        </div>
+                        {wallet.connected && <div className="mx-auto w-fit">Your Badges: {nftBalance.toString()}</div>}
                     </div>
 
                     <div className="flex w-[87.5%] flex-col justify-center space-y-6">
@@ -210,9 +189,6 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
                                 </Button>
                             )}
                             <div className="mx-auto mt-2 w-fit text-sm text-gray-400">Unlimited supply • No maximum mint per wallet</div>
-                            {wallet.connected && (
-                                <div className="mx-auto mt-2 w-fit text-sm text-gray-400">Your Badges: {nftBalance.toString()}</div>
-                            )}
                         </div>
                     </div>
                 </main>

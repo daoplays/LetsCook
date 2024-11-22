@@ -9,6 +9,7 @@ import {
     request_raw_account_data,
     getRecentPrioritizationFees,
     bignum_to_num,
+    MintData,
 } from "../../components/Solana/state";
 import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
 import {
@@ -167,7 +168,7 @@ class ClaimNFT_Instruction {
     );
 }
 
-const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => {
+const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false, tokenMint: MintData) => {
     const wallet = useWallet();
     const { connection } = useConnection();
 
@@ -271,28 +272,26 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
-        let mint_info = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
-        let mint_account = mint_info.mint;
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
-            mint_info.token_program,
+            tokenMint.token_program,
         );
 
         let pda_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
-            mint_info.token_program,
+            tokenMint.token_program,
         );
 
         let team_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             launchData.keys[CollectionKeys.TeamWallet], // owner
             true, // allow owner off curve
-            mint_info.token_program,
+            tokenMint.token_program,
         );
 
         let token_destination_account = pda_token_account_key;
@@ -304,7 +303,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
-        let transfer_hook = getTransferHook(mint_account);
+        let transfer_hook = getTransferHook(tokenMint.mint);
 
         let transfer_hook_program_account: PublicKey | null = null;
         let transfer_hook_validation_account: PublicKey | null = null;
@@ -401,7 +400,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             { pubkey: launchData.keys[CollectionKeys.TeamWallet], isSigner: false, isWritable: true },
 
             { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
-            { pubkey: mint_info.token_program, isSigner: false, isWritable: false },
+            { pubkey: tokenMint.token_program, isSigner: false, isWritable: false },
 
             { pubkey: orao_random, isSigner: false, isWritable: true },
             { pubkey: orao_treasury, isSigner: false, isWritable: true },
