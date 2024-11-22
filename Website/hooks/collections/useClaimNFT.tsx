@@ -168,7 +168,7 @@ class ClaimNFT_Instruction {
     );
 }
 
-const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false, tokenMint: MintData) => {
+const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false, tokenMint?: MintData) => {
     const wallet = useWallet();
     const { connection } = useConnection();
 
