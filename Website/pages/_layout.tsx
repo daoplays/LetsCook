@@ -51,7 +51,7 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
     const { assignmentData, validRandoms, asset, assetMeta } = useAssignmentData({ collection: collection });
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
-    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, true, tokenMint);
+    const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, true);
 
     const { userSOLBalance } = useAppRoot();
 
@@ -114,7 +114,10 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
                                 className="rounded-xl"
                             />
                         </div>
-                        {wallet.connected && <div className="mx-auto w-fit">Your Badges: {nftBalance.toString()}</div>}
+
+                        {/* <div className="flex justify-center text-center">
+                            <h3 className="font-semibold">Total Minted: 0</h3>
+                        </div> */}
                     </div>
 
                     <div className="flex w-[87.5%] flex-col justify-center space-y-6">
@@ -189,6 +192,9 @@ const AppRootPage = ({ children }: PropsWithChildren) => {
                                 </Button>
                             )}
                             <div className="mx-auto mt-2 w-fit text-sm text-gray-400">Unlimited supply • No maximum mint per wallet</div>
+                            {wallet.connected && (
+                                <div className="mx-auto mt-2 w-fit text-sm text-gray-400">Your Badges: {nftBalance.toString()}</div>
+                            )}
                         </div>
                     </div>
                 </main>
