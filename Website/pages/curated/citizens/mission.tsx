@@ -240,7 +240,7 @@ export const MissionModal = ({
                         </div>
                         <h2 className="text-center font-serif text-2xl text-[#FF6B6B]">Mission Failed</h2>
                         <p className="text-center text-[#8B7355]">
-                            {firstName} was set upon by bandits on the way back to Old Town and didn't survive.
+                            {firstName} was set upon by bandits on the way back to Old Town and didnt survive.
                         </p>
                     </>
                 );

@@ -158,7 +158,7 @@ const LandingPage = () => {
                     openMissionModal(); // Reopen the modal when mission starts
                 }
             }
-        }, [collectionAssets, userData?.mission_status, selectedMercenary]);
+        }, [selectedMercenary, openMissionModal]);
 
         const handleMissionSelect = (difficulty: string) => {
             console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
