@@ -19,6 +19,7 @@ import useStartMission from "./hooks/useStartMission";
 import useCheckMission from "./hooks/useCheckMission";
 import useBetray from "./hooks/useBetray";
 import { PublicKey } from "@solana/web3.js";
+import BetrayalModal from "./betray";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -137,21 +138,50 @@ const LandingPage = () => {
     const NFTGrid = () => {
         const [selectedMercenary, setSelectedMercenary] = useState(null);
         const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
-        const { Betray } = useBetray(collection);
-        const { CheckMission } = useCheckMission(collection);
+        const { isOpen: isBetrayalModalOpen, onOpen: openBetrayalModal, onClose: closeBetrayalModal } = useDisclosure();
+        const showed_initial_status = useRef<boolean>(false);
+
+        const { Betray, isLoading: isBetrayLoading } = useBetray(collection);
+        const { CheckMission, isLoading: isCheckingMission } = useCheckMission(collection);
 
         let allUserAssets = [...ownedAssets];
 
+        // Watch for mission status changes
+        useEffect(() => {
+            if (!showed_initial_status.current && collectionAssets && userData?.mission_status === 1) {
+                let mission_asset = collectionAssets.get(userData.asset.toString());
+
+                console.log("in mssion modal use effects")
+                if (mission_asset) {
+                    setSelectedMercenary(mission_asset)
+                    showed_initial_status.current = true;
+                    openMissionModal(); // Reopen the modal when mission starts
+                }
+            }
+        }, [collectionAssets, userData?.mission_status, selectedMercenary]);
+
         const handleMissionSelect = (difficulty: string) => {
             console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
-            // Add your mission logic here
             StartMission(new PublicKey(selectedMercenary.asset.publicKey.toString()), 0);
-            closeMissionModal();
+        };
+
+        const handleBetrayalConfirm = async () => {
+            if (selectedMercenary) {
+                await Betray(selectedMercenary.asset.publicKey.toString());
+                closeBetrayalModal();
+                setSelectedMercenary(null);
+            }
+        };
+
+        const handleCheckMission = () => {
+            if (selectedMercenary && userData) {
+                CheckMission(selectedMercenary.asset.publicKey.toString(), userData?.randoms_address);
+            }
         };
 
         if (collectionAssets && userData && !userData.asset.equals(SYSTEM_KEY)) {
             let mission_asset = collectionAssets.get(userData.asset.toString());
-            console.log("User has asset on a mission", userData, mission_asset);
+            //console.log("User has asset on a mission", userData, mission_asset);
             // Check if mission_asset already exists in allUserAssets
             const assetExists = allUserAssets.some(
                 (asset) => asset && mission_asset && asset.asset.publicKey.toString() === mission_asset.asset.publicKey.toString(),
@@ -245,7 +275,8 @@ const LandingPage = () => {
                                                     <button
                                                         className="flex-1 transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
                                                         onClick={() => {
-                                                            Betray(nft.asset.publicKey.toString());
+                                                            setSelectedMercenary(nft);
+                                                            openBetrayalModal();
                                                         }}
                                                     >
                                                         Betray
@@ -265,6 +296,16 @@ const LandingPage = () => {
                     onClose={closeMissionModal}
                     mercenary={selectedMercenary}
                     onSelectMission={handleMissionSelect}
+                    onCheckMission={handleCheckMission}  // Add this
+                    userData={userData}                   // Add this
+                    isLoading={isCheckingMission}        // Add this
+                />
+                <BetrayalModal
+                    isOpen={isBetrayalModalOpen}
+                    onClose={closeBetrayalModal}
+                    onConfirm={handleBetrayalConfirm}
+                    mercenary={selectedMercenary}
+                    isLoading={isBetrayLoading}
                 />
             </>
         );
@@ -282,7 +323,7 @@ const LandingPage = () => {
                     src="/curatedLaunches/citizens/tavern.png"
                     alt="Background"
                     layout="fill"
-                    objectFit="cover"
+                    style={{ objectFit: 'cover' }}
                     priority
                     className="z-0"
                 />
@@ -348,6 +389,8 @@ const LandingPage = () => {
                         allListings={listedAssets || []}
                         ownedNFTs={ownedAssets}
                     />
+
+                
                 </div>
             )}
         </main>
