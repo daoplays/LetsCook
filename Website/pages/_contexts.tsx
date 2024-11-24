@@ -668,7 +668,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
 
         collections.forEach((collection, key) => {
-            //console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
+            //console.log("add ", collection.page_name, collection.keys[CollectionKeys.MintAddress].toString());
 
             if (!trade_mints.includes(collection.keys[CollectionKeys.MintAddress].toString()))
                 trade_mints.push(collection.keys[CollectionKeys.MintAddress].toString());

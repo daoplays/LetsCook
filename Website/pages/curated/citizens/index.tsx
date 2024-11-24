@@ -63,19 +63,9 @@ const LandingPage = () => {
     const [showInteractive, setShowInteractive] = useState(false);
     const wallet = useWallet();
     const { sm } = useResponsive();
-    const { handleConnectWallet } = UseWalletConnection();
 
-    const [isHomePage, setIsHomePage] = useState(true);
-    const [isTokenToNFT, setIsTokenToNFT] = useState(true);
     const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
     const [selectedMercenary, setSelectedMercenary] = useState(null);
-
-    const [nftAmount, setNFTAmount] = useState<number>(0);
-    const [token_amount, setTokenAmount] = useState<number>(0);
-
-    const [wrapSOL, setWrapSOL] = useState<number>(0);
-
-    const [activeTab, setActiveTab] = useState("Mint");
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
     const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
@@ -85,8 +75,6 @@ const LandingPage = () => {
 
     const [currentStatus, setCurrentStatus] = useState<string | null>(null);
     const prevUserData = useRef<CitizenUserData | null>(null);
-
-    const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
     const {
         collection,
@@ -106,8 +94,6 @@ const LandingPage = () => {
 
 
     const { tokenBalance } = useTokenBalance({ mintData: tokenMint });
-
-    const { tokenBalance: whiteListTokenBalance } = useTokenBalance({ mintData: whitelistMint });
 
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
@@ -170,6 +156,10 @@ const LandingPage = () => {
         if (!userData)
             return;
 
+        if (prevUserData.current && userData.slot <= prevUserData.current.slot) {
+            return;
+        }
+
         console.log("In use effect for status", prevUserData.current, userData)
 
         let mission_asset = undefined;
@@ -177,7 +167,7 @@ const LandingPage = () => {
             mission_asset = collectionAssets.get(userData.asset.toString());
 
         // if the status updates then open the modal
-        if (prevUserData.current && userData.slot > prevUserData.current.slot) { 
+        if (prevUserData.current) { 
             let new_status = getStatusString(userData.mission_status);
             prevUserData.current = userData;
             setCurrentStatus(new_status);
@@ -203,7 +193,7 @@ const LandingPage = () => {
                 openMissionModal(); // Reopen the modal when mission starts
             }
         }
-    }, [collectionAssets, userData, selectedMercenary, openMissionModal]);
+    }, [collectionAssets, userData, openMissionModal]);
 
     const NFTGrid = () => {
 
@@ -349,7 +339,7 @@ const LandingPage = () => {
                     mercenary={selectedMercenary}
                     onSelectMission={handleMissionSelect}
                     onCheckMission={handleCheckMission}  // Add this
-                    userData={userData}                   // Add this
+                    userData={prevUserData.current}                   // Add this
                     isLoading={isCheckingMission}        // Add this
                     missionState={currentStatus}
                 />

@@ -61,8 +61,19 @@ export const MissionModal = ({
 
 }: MissionModalProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    let mercenaryLevel = "";
+    let wealth = "";
+    let attributes = mercenary ? mercenary.asset.attributes.attributeList : []
+    for (let i = 0; i < attributes.length; i++) {
+        if (attributes[i].key === "Level") {
+            mercenaryLevel = attributes[i].value;
+        }
+        if (attributes[i].key === "Wealth") {
+            wealth = attributes[i].value;
+        }
+    }
     
-    const mercenaryLevel = parseInt(mercenary?.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1");
     const mercenaryName = mercenary?.metadata?.name || "Unknown Mercenary";
     const firstName = mercenaryName.split(' ')[0];
 
@@ -182,16 +193,7 @@ export const MissionModal = ({
             case 'success':
                 return (
                     <>
-                        <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
-                            <Image
-                                src="/curatedLaunches/citizens/mission-success.png"
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                alt="Mission Success"
-                                className="opacity-80"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1410] to-transparent" />
-                        </div>
+                       
                         <h2 className="text-center font-serif text-2xl text-[#C4A484]">Mission Successful!</h2>
                         <p className="text-center text-[#8B7355]">
                             The mission was a success! {firstName} has earned {userData?.reward || 'their'} marks.
@@ -233,6 +235,32 @@ export const MissionModal = ({
                             <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/warroom.png"
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    alt="Mission"
+                                    className="opacity-80"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1410] to-transparent" />
+                            </div>
+                        )}
+
+                        {(missionState === 'failed') && (
+                            <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
+                                <Image
+                                    src="/curatedLaunches/citizens/failed.png"
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    alt="Mission"
+                                    className="opacity-80"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#1C1410] to-transparent" />
+                            </div>
+                        )}
+
+                        {(missionState === 'success') && (
+                            <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
+                                <Image
+                                    src="/curatedLaunches/citizens/success.png"
                                     fill
                                     style={{ objectFit: 'cover' }}
                                     alt="Mission"
