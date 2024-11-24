@@ -46,6 +46,7 @@ interface MissionModalProps {
     onCheckMission: () => void;
     userData: any;
     isLoading?: boolean;
+    missionState: string | null;
 }
 
 export const MissionModal = ({ 
@@ -55,51 +56,24 @@ export const MissionModal = ({
     onSelectMission, 
     onCheckMission,
     userData,
-    isLoading = false 
+    isLoading = false,
+    missionState
+
 }: MissionModalProps) => {
-    const [missionState, setMissionState] = useState('select'); // 'select', 'ongoing', 'success', 'failure'
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const prevStatusRef = useRef(null);
+    
     const mercenaryLevel = parseInt(mercenary?.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1");
     const mercenaryName = mercenary?.metadata?.name || "Unknown Mercenary";
     const firstName = mercenaryName.split(' ')[0];
 
-    useEffect(() => {
-        const currentStatus = userData?.mission_status;
-        
-        if (prevStatusRef.current !== null && currentStatus !== null) {
-            if (prevStatusRef.current === 1 && currentStatus === 2) {
-                setMissionState('success');
-            } else if (prevStatusRef.current === 1 && currentStatus === 3) {
-                setMissionState('failure');
-            } else if (currentStatus === 1) {
-                setMissionState('ongoing');
-            } else {
-                setMissionState('select');
-            }
-        } else if (currentStatus === 1) {
-            setMissionState('ongoing');
-        } else {
-            setMissionState('select');
-        }
+    console.log("in mission modal", missionState, userData)
 
-        prevStatusRef.current = currentStatus;
-    }, [userData?.mission_status]);
-
-    // Reset state when modal is closed
-    useEffect(() => {
-        if (!isOpen) {
-            prevStatusRef.current = null;
-        }
-    }, [isOpen]);
-
-
+ 
     // Handler for mission selection
     const handleMissionSelect = async (difficulty: string) => {
         setIsSubmitting(true);
         try {
             await onSelectMission(difficulty);
-            setMissionState('ongoing');
         } catch (error) {
             console.error('Error starting mission:', error);
         } finally {
@@ -211,7 +185,7 @@ export const MissionModal = ({
                         <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                             <Image
                                 src="/curatedLaunches/citizens/mission-success.png"
-                                layout="fill"
+                                fill
                                 style={{ objectFit: 'cover' }}
                                 alt="Mission Success"
                                 className="opacity-80"
@@ -231,7 +205,7 @@ export const MissionModal = ({
                         <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                             <Image
                                 src="/curatedLaunches/citizens/mission-failure.png"
-                                layout="fill"
+                                fill
                                 style={{ objectFit: 'cover' }}
                                 alt="Mission Failed"
                                 className="opacity-80"
@@ -247,6 +221,7 @@ export const MissionModal = ({
         }
     };
 
+    console.log("state", missionState)
     return (
         <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="none" size="2xl">
             <ModalOverlay className="backdrop-blur-sm" />
@@ -254,11 +229,11 @@ export const MissionModal = ({
                 <ModalBody className="overflow-visible p-0">
                     <div className="relative flex flex-col gap-4 rounded-2xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-8 shadow-2xl backdrop-blur-md">
                         {/* Header Image - only show for select state */}
-                        {missionState === 'select' && (
+                        {(missionState === 'select' || missionState === 'ongoing') && (
                             <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/warroom.png"
-                                    layout="fill"
+                                    fill
                                     style={{ objectFit: 'cover' }}
                                     alt="Mission"
                                     className="opacity-80"

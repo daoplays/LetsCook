@@ -20,6 +20,8 @@ import useCheckMission from "./hooks/useCheckMission";
 import useBetray from "./hooks/useBetray";
 import { PublicKey } from "@solana/web3.js";
 import BetrayalModal from "./betray";
+import { set } from "date-fns";
+import { CitizenUserData } from "@/components/curated/citizens/state";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -42,6 +44,21 @@ const gridItemStyle: CSSProperties = {
     border: "2px solid #3A2618",
 };
 
+function getStatusString(status: number) {
+    switch (status) {
+        case 0:
+            return "select";
+        case 1:
+            return "ongoing";
+        case 2:
+            return "success";
+        case 3:
+            return "failed";
+        default:
+            return null;
+    }
+}
+
 const LandingPage = () => {
     const [showInteractive, setShowInteractive] = useState(false);
     const wallet = useWallet();
@@ -51,6 +68,7 @@ const LandingPage = () => {
     const [isHomePage, setIsHomePage] = useState(true);
     const [isTokenToNFT, setIsTokenToNFT] = useState(true);
     const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
+    const [selectedMercenary, setSelectedMercenary] = useState(null);
 
     const [nftAmount, setNFTAmount] = useState<number>(0);
     const [token_amount, setTokenAmount] = useState<number>(0);
@@ -63,6 +81,10 @@ const LandingPage = () => {
     const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
 
     const prevUserListedNFTsRef = useRef<string>("");
+    const showed_initial_status = useRef<boolean>(false);
+
+    const [currentStatus, setCurrentStatus] = useState<string | null>(null);
+    const prevUserData = useRef<CitizenUserData | null>(null);
 
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
 
@@ -75,6 +97,13 @@ const LandingPage = () => {
         listedAssets,
         error: collectionError,
     } = useCollection({ pageName: collection_name as string | null });
+
+    const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
+    const { isOpen: isBetrayalModalOpen, onOpen: openBetrayalModal, onClose: closeBetrayalModal } = useDisclosure();
+
+    const { Betray, isLoading: isBetrayLoading } = useBetray(collection);
+    const { CheckMission, isLoading: isCheckingMission } = useCheckMission(collection);
+
 
     const { tokenBalance } = useTokenBalance({ mintData: tokenMint });
 
@@ -135,30 +164,52 @@ const LandingPage = () => {
 
     // if (!pageName) return;
 
-    const NFTGrid = () => {
-        const [selectedMercenary, setSelectedMercenary] = useState(null);
-        const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
-        const { isOpen: isBetrayalModalOpen, onOpen: openBetrayalModal, onClose: closeBetrayalModal } = useDisclosure();
-        const showed_initial_status = useRef<boolean>(false);
+    // Watch for mission status changes
+    useEffect(() => {
 
-        const { Betray, isLoading: isBetrayLoading } = useBetray(collection);
-        const { CheckMission, isLoading: isCheckingMission } = useCheckMission(collection);
+        if (!userData)
+            return;
+
+        console.log("In use effect for status", prevUserData.current, userData)
+
+        let mission_asset = undefined;
+        if (collectionAssets)
+            mission_asset = collectionAssets.get(userData.asset.toString());
+
+        // if the status updates then open the modal
+        if (prevUserData.current && userData.slot > prevUserData.current.slot) { 
+            let new_status = getStatusString(userData.mission_status);
+            prevUserData.current = userData;
+            setCurrentStatus(new_status);
+            console.log("user updat ", new_status, userData)
+
+            // if we have an asset then update
+            if (mission_asset) {
+                setSelectedMercenary(mission_asset);
+            }
+            openMissionModal();
+            return;
+        }
+
+        prevUserData.current = userData;
+        if (!showed_initial_status.current &&  userData?.mission_status === 1) {
+
+            
+            if (mission_asset) {
+                console.log("in mission modal use effects", showed_initial_status.current)
+                setSelectedMercenary(mission_asset)
+                showed_initial_status.current = true;
+                setCurrentStatus("ongoing");
+                openMissionModal(); // Reopen the modal when mission starts
+            }
+        }
+    }, [collectionAssets, userData, selectedMercenary, openMissionModal]);
+
+    const NFTGrid = () => {
 
         let allUserAssets = [...ownedAssets];
 
-        // Watch for mission status changes
-        useEffect(() => {
-            if (!showed_initial_status.current && collectionAssets && userData?.mission_status === 1) {
-                let mission_asset = collectionAssets.get(userData.asset.toString());
 
-                console.log("in mssion modal use effects")
-                if (mission_asset) {
-                    setSelectedMercenary(mission_asset)
-                    showed_initial_status.current = true;
-                    openMissionModal(); // Reopen the modal when mission starts
-                }
-            }
-        }, [selectedMercenary, openMissionModal]);
 
         const handleMissionSelect = (difficulty: string) => {
             console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
@@ -265,6 +316,7 @@ const LandingPage = () => {
                                                             className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                             onClick={() => {
                                                                 setSelectedMercenary(nft);
+                                                                setCurrentStatus("select");
                                                                 openMissionModal();
                                                             }}
                                                         >
@@ -299,6 +351,7 @@ const LandingPage = () => {
                     onCheckMission={handleCheckMission}  // Add this
                     userData={userData}                   // Add this
                     isLoading={isCheckingMission}        // Add this
+                    missionState={currentStatus}
                 />
                 <BetrayalModal
                     isOpen={isBetrayalModalOpen}
@@ -322,7 +375,7 @@ const LandingPage = () => {
                 <Image
                     src="/curatedLaunches/citizens/tavern.png"
                     alt="Background"
-                    layout="fill"
+                    fill
                     style={{ objectFit: 'cover' }}
                     priority
                     className="z-0"
