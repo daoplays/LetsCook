@@ -22,6 +22,11 @@ import { PublicKey } from "@solana/web3.js";
 import BetrayalModal from "./betray";
 import { set } from "date-fns";
 import { CitizenUserData } from "@/components/curated/citizens/state";
+import useListNFT from "@/hooks/collections/useListNFT";
+import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
+import ContractModal from "./list";
+import { FaCoins } from "react-icons/fa";
+import { bignum_to_num } from "@/components/Solana/state";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -88,10 +93,12 @@ const LandingPage = () => {
 
     const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
     const { isOpen: isBetrayalModalOpen, onOpen: openBetrayalModal, onClose: closeBetrayalModal } = useDisclosure();
+    const { isOpen: isContractModalOpen, onOpen: openContractModal, onClose: closeContractModal } = useDisclosure();
 
     const { Betray, isLoading: isBetrayLoading } = useBetray(collection);
     const { CheckMission, isLoading: isCheckingMission } = useCheckMission(collection);
-
+    const { ListNFT, isLoading: isListingLoading } = useListNFT(collection);
+    const { UnlistNFT, isLoading: isUnlistingLoading } = useUnlistNFT(collection);
 
     const { tokenBalance } = useTokenBalance({ mintData: tokenMint });
 
@@ -121,11 +128,16 @@ const LandingPage = () => {
 
         let new_listings: AssetWithMetadata[] = [];
         let user_listings: string[] = [];
-        for (let i = 0; i < collectionPlugins.listings.length; i++) {
-            const asset_key = collectionPlugins.listings[i].asset;
-            const asset = collectionAssets.get(asset_key.toString());
+        for (let i = 0; i < listedAssets.length; i++) {
+            console.log(
+                "listed asset",
+                listedAssets[i].asset.toString(),
+                listedAssets[i].seller.toString(),
+                bignum_to_num(listedAssets[i].price),
+            );
+            const asset = collectionAssets.get(listedAssets[i].asset.toString());
             if (asset) new_listings.push(asset);
-            if (wallet && wallet.publicKey && collectionPlugins.listings[i].seller.equals(wallet.publicKey))
+            if (wallet && wallet.publicKey && listedAssets[i].seller.equals(wallet.publicKey))
                 user_listings.push(asset.asset.publicKey.toString());
         }
 
@@ -138,7 +150,7 @@ const LandingPage = () => {
             setUserListedNFTs(user_listings);
             prevUserListedNFTsRef.current = newUserListingsStr;
         }
-    }, [collectionPlugins, collectionAssets, wallet]);
+    }, [collectionPlugins, collectionAssets, listedAssets, wallet]);
 
     // 1. Effect for initial balance
     useEffect(() => {
@@ -160,18 +172,23 @@ const LandingPage = () => {
             return;
         }
 
-        console.log("In use effect for status", prevUserData.current, userData)
-
         let mission_asset = undefined;
         if (collectionAssets)
             mission_asset = collectionAssets.get(userData.asset.toString());
 
         // if the status updates then open the modal
         if (prevUserData.current) { 
+            // also check that the mission status is different
+            // otherwise this triggers on betray
+            if (prevUserData.current.mission_status === userData.mission_status) {
+                return;
+            }
+
             let new_status = getStatusString(userData.mission_status);
+
+            
             prevUserData.current = userData;
             setCurrentStatus(new_status);
-            console.log("user updat ", new_status, userData)
 
             // if we have an asset then update
             if (mission_asset) {
@@ -186,7 +203,6 @@ const LandingPage = () => {
 
             
             if (mission_asset) {
-                console.log("in mission modal use effects", showed_initial_status.current)
                 setSelectedMercenary(mission_asset)
                 showed_initial_status.current = true;
                 setCurrentStatus("ongoing");
@@ -202,7 +218,6 @@ const LandingPage = () => {
 
 
         const handleMissionSelect = (difficulty: string) => {
-            console.log(`Selected ${difficulty} mission for mercenary:`, selectedMercenary);
             StartMission(new PublicKey(selectedMercenary.asset.publicKey.toString()), 0);
         };
 
@@ -217,6 +232,16 @@ const LandingPage = () => {
         const handleCheckMission = () => {
             if (selectedMercenary && userData) {
                 CheckMission(selectedMercenary.asset.publicKey.toString(), userData?.randoms_address);
+            }
+        };
+
+        const handleContractSubmit = async (price: number) => {
+            if (selectedMercenary) {
+                // Your contract listing logic here
+                // Similar to your marketplace listing function
+                await ListNFT(new PublicKey(selectedMercenary.asset.publicKey.toString()), price);
+                closeContractModal();
+                setSelectedMercenary(null);
             }
         };
 
@@ -275,23 +300,22 @@ const LandingPage = () => {
 
                                         {/* Attributes Display */}
                                         <div className="rounded-xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 backdrop-blur-sm">
-                                            <h3 className="mb-2 border-b border-[#3A2618] pb-2 text-lg font-bold text-[#C4A484]">
+                                            <h3 className="mb-2 border-b border-[#3A2618] pb-2 text-lg font-bold text-[#C4A484] text-center">
                                                 {nft.metadata["name"] || nft.asset.name}
                                             </h3>
-                                            <div className="grid grid-cols-2 gap-2">
-                                            <div  className="rounded-lg bg-black/20 p-2">
-                                                <p className="text-sm text-[#8B7355]">Wealth</p>
-                                                <p className="text-[#C4A484]">{wealth}</p>
-                                            </div>
+                                            <div className="text-center flex items-center justify-center gap-2">
+                                                <span className="text-sm text-[#8B7355]">Wealth:</span>
+                                                <span className="text-[#C4A484]">{wealth}</span>
+                                                <FaCoins className="text-[#C4A484] text-sm" />
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="mt-4 flex gap-2">
+                                            <div className="mt-4 flex flex-col gap-2">
                                                 <VStack>
                                                     {nft.asset.publicKey.toString() === userData?.asset.toString() && (
                                                         <button
-                                                            className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
-                                                            onClick={() => {
+                                                        className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                        onClick={() => {
                                                                 CheckMission(nft.asset.publicKey.toString(), userData?.randoms_address);
                                                             }}
                                                         >
@@ -303,8 +327,8 @@ const LandingPage = () => {
                                                             nft.asset.publicKey.toString() !== userData?.asset.toString() &&
                                                             userData?.mission_status !== 1)) && (
                                                         <button
-                                                            className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
-                                                            onClick={() => {
+                                                        className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                        onClick={() => {
                                                                 setSelectedMercenary(nft);
                                                                 setCurrentStatus("select");
                                                                 openMissionModal();
@@ -314,15 +338,29 @@ const LandingPage = () => {
                                                         </button>
                                                     )}
 
+                                                    {nft.asset.publicKey.toString() !== userData?.asset.toString() && (
                                                     <button
-                                                        className="flex-1 transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
-                                                        onClick={() => {
+                                                    className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                    onClick={() => {
+                                                            setSelectedMercenary(nft);
+                                                            openContractModal();
+                                                        }}
+                                                    >
+                                                        Contract Out
+                                                    </button>
+                                                    )}
+
+                                                    {nft.asset.publicKey.toString() !== userData?.asset.toString() && (
+                                                    <button
+                                                    className="w-full transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
+                                                    onClick={() => {
                                                             setSelectedMercenary(nft);
                                                             openBetrayalModal();
                                                         }}
                                                     >
                                                         Betray
                                                     </button>
+                                                    )}
                                                 </VStack>
                                             </div>
                                         </div>
@@ -349,6 +387,14 @@ const LandingPage = () => {
                     onConfirm={handleBetrayalConfirm}
                     mercenary={selectedMercenary}
                     isLoading={isBetrayLoading}
+                />
+
+                <ContractModal
+                    isOpen={isContractModalOpen}
+                    onClose={closeContractModal}
+                    onConfirm={handleContractSubmit}
+                    mercenary={selectedMercenary}
+                    isLoading={isListingLoading} // If you have a loading state from your listing hook
                 />
             </>
         );
@@ -394,7 +440,7 @@ const LandingPage = () => {
                         ) : (
                             <div className="flex flex-col gap-8">
                                 <div className="rounded-xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-8 backdrop-blur-sm">
-                                    <h2 className="mb-6 text-center font-serif text-2xl text-[#C4A484]">Your Mercenary Company</h2>
+                                    <h2 className="mb-6 text-center font-serif text-2xl text-[#C4A484]">Your Company</h2>
                                     <NFTGrid />
                                 </div>
                                 <div className="flex justify-center">

@@ -15,7 +15,7 @@ import { Loader2Icon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CollectionKeys, SYSTEM_KEY } from "@/components/Solana/constants";
 import { useDisclosure } from "@chakra-ui/react";
-import ReceivedAssetModal from "../joy/receiveAssetModal";
+import ReceivedAssetModal from "./assetModal";
 import useAssignmentData from "@/hooks/data/useAssignmentData";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import Marketplace from "./marketplace";

@@ -62,12 +62,12 @@ export const MissionModal = ({
 }: MissionModalProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    let mercenaryLevel = "";
+    let mercenaryLevel = 1;
     let wealth = "";
     let attributes = mercenary ? mercenary.asset.attributes.attributeList : []
     for (let i = 0; i < attributes.length; i++) {
         if (attributes[i].key === "Level") {
-            mercenaryLevel = attributes[i].value;
+            mercenaryLevel = parseInt(attributes[i].value);
         }
         if (attributes[i].key === "Wealth") {
             wealth = attributes[i].value;
@@ -76,8 +76,6 @@ export const MissionModal = ({
     
     const mercenaryName = mercenary?.metadata?.name || "Unknown Mercenary";
     const firstName = mercenaryName.split(' ')[0];
-
-    console.log("in mission modal", missionState, userData)
 
  
     // Handler for mission selection
@@ -213,7 +211,6 @@ export const MissionModal = ({
         }
     };
 
-    console.log("state", missionState)
     return (
         <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="none" size="2xl">
             <ModalOverlay className="backdrop-blur-sm" />
@@ -222,7 +219,7 @@ export const MissionModal = ({
                     <div className="relative flex flex-col gap-4 rounded-2xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-8 shadow-2xl backdrop-blur-md">
                         {/* Header Image - only show for select state */}
                         {(missionState === 'select' || missionState === 'ongoing') && (
-                            <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
+                            <div className="relative h-64 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/warroom.png"
                                     fill
@@ -235,7 +232,7 @@ export const MissionModal = ({
                         )}
 
                         {(missionState === 'failed') && (
-                            <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
+                            <div className="relative h-64 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/failed.png"
                                     fill
@@ -248,7 +245,7 @@ export const MissionModal = ({
                         )}
 
                         {(missionState === 'success') && (
-                            <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
+                            <div className="relative h-64 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/success.png"
                                     fill

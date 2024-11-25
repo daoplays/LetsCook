@@ -152,7 +152,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         : "from-[#8B7355] to-[#3A2618] text-[#1C1410] hover:from-[#C4A484] hover:to-[#8B7355]"
                                                 } active:scale-95`}
                                             >
-                                                {isUserOwned ? "Withdraw Listing" : "Purchase Mercenary"}
+                                                {isUserOwned ? "Withdraw Contract" : "Purchase Mercenary"}
                                             </button>
                                         </div>
                                     );
