@@ -201,19 +201,9 @@ export const MissionModal = ({
                     </>
                 );
             
-            case 'failure':
+            case 'failed':
                 return (
                     <>
-                        <div className="relative h-48 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
-                            <Image
-                                src="/curatedLaunches/citizens/mission-failure.png"
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                alt="Mission Failed"
-                                className="opacity-80"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1410] to-transparent" />
-                        </div>
                         <h2 className="text-center font-serif text-2xl text-[#FF6B6B]">Mission Failed</h2>
                         <p className="text-center text-[#8B7355]">
                             {firstName} was set upon by bandits on the way back to Old Town and didnt survive.
@@ -274,7 +264,7 @@ export const MissionModal = ({
                         {renderContent()}
 
                         {/* Close Button - show for success/failure states */}
-                        {(missionState === 'success' || missionState === 'failure') && (
+                        {(missionState === 'success' || missionState === 'failed') && (
                             <button
                                 onClick={onClose}
                                 className="mx-auto mt-4 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-8 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"

@@ -383,6 +383,7 @@ const LandingPage = () => {
                                     <h2 className="font-serif text-2xl text-[#C4A484]">Welcome to the Old Town Tavern</h2>
                                     <p className="mt-2 text-[#8B7355]">Seeking desperate souls for perilous ventures...</p>
                                 </div>
+                                <NFTGrid/>
                                 <button
                                     onClick={() => setShowInteractive(true)}
                                     className="transform rounded-xl border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-12 py-6 text-3xl font-bold text-[#1C1410] transition-all hover:scale-105 hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
