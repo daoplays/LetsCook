@@ -26,24 +26,42 @@ export async function getCollectionAssets(collectionAddress: PublicKey) {
             .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
             .getDeserialized();
 
-        // Create an array of promises for all fetch requests
-        const fetchPromises = assets.map(async (asset) => {
-            const uri_json = await fetch(asset.uri).then((res) => res.json());
-            const entry: AssetWithMetadata = { asset, metadata: uri_json };
+        // Create a Map to store unique URIs and their corresponding metadata
+        const uriMap = new Map();
+        // Create a Map to store URI to multiple assets mapping
+        const uriToAssets = new Map();
 
-            // Return both the entry and whether it's owned
-            return {
-                entry,
-            };
+        // Group assets by URI
+        assets.forEach(asset => {
+            if (!uriToAssets.has(asset.uri)) {
+                uriToAssets.set(asset.uri, []);
+            }
+            uriToAssets.get(asset.uri).push(asset);
         });
 
-        // Wait for all promises to resolve simultaneously
-        const results = await Promise.all(fetchPromises);
+        // Create fetch promises only for unique URIs
+        const fetchPromises = Array.from(uriToAssets.keys()).map(async (uri) => {
+            try {
+                const uri_json = await fetch(uri).then((res) => res.json());
+                uriMap.set(uri, uri_json);
+            } catch (error) {
+                console.error(`Error fetching metadata for URI ${uri}:`, error);
+                uriMap.set(uri, null); // or some default metadata
+            }
+        });
+
+        // Wait for all unique fetches to complete
+        await Promise.all(fetchPromises);
 
         let all_assets: Map<string, AssetWithMetadata> = new Map();
-        // Process results
-        results.forEach(({ entry }) => {
-            all_assets.set(entry.asset.publicKey.toString(), entry);
+
+        // Process all assets using the cached metadata
+        assets.forEach(asset => {
+            const metadata = uriMap.get(asset.uri);
+            const entry: AssetWithMetadata = { asset, metadata };
+            
+            all_assets.set(asset.publicKey.toString(), entry);
+
         });
 
         return all_assets;
