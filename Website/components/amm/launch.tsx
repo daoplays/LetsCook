@@ -155,6 +155,7 @@ export async function getMintDataWithMint(connection: Connection, mint: Mint, to
         console.log(error);
         icon = placeholderIcon;
     }
+
     let mint_data: MintData = {
         mint: mint,
         uri: uri,
