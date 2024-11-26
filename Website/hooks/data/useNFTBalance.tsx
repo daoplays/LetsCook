@@ -101,8 +101,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
         // Mark that we're executing a fetch
         isExecutingRef.current = true;
-        console.log("CHECKING NFT BALANCE");
-
+       
         try {
             const umi = createUmi(Config.RPC_NODE, "confirmed");
 
@@ -113,27 +112,45 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
                 .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
                 .getDeserialized();
 
-            // Create an array of promises for all fetch requests
-            const fetchPromises = assets.map(async (asset) => {
-                const uri_json = await fetch(asset.uri).then((res) => res.json());
-                const entry: AssetWithMetadata = { asset, metadata: uri_json };
 
-                // Return both the entry and whether it's owned
-                return {
-                    entry,
-                    isOwned: wallet && wallet.publicKey && asset.owner.toString() === wallet.publicKey.toString(),
-                };
+            // Create a Map to store unique URIs and their corresponding metadata
+            const uriMap = new Map();
+            // Create a Map to store URI to multiple assets mapping
+            const uriToAssets = new Map();
+
+            // Group assets by URI
+            assets.forEach(asset => {
+                if (!uriToAssets.has(asset.uri)) {
+                    uriToAssets.set(asset.uri, []);
+                }
+                uriToAssets.get(asset.uri).push(asset);
             });
 
-            // Wait for all promises to resolve simultaneously
-            const results = await Promise.all(fetchPromises);
+            // Create fetch promises only for unique URIs
+            const fetchPromises = Array.from(uriToAssets.keys()).map(async (uri) => {
+                try {
+                    const uri_json = await fetch(uri).then((res) => res.json());
+                    uriMap.set(uri, uri_json);
+                } catch (error) {
+                    console.error(`Error fetching metadata for URI ${uri}:`, error);
+                    uriMap.set(uri, null); // or some default metadata
+                }
+            });
+
+            // Wait for all unique fetches to complete
+            await Promise.all(fetchPromises);
 
             let owned_assets: AssetWithMetadata[] = [];
             let all_assets: Map<string, AssetWithMetadata> = new Map();
-            // Process results
-            results.forEach(({ entry, isOwned }) => {
-                all_assets.set(entry.asset.publicKey.toString(), entry);
-                if (isOwned) {
+
+            // Process all assets using the cached metadata
+            assets.forEach(asset => {
+                const metadata = uriMap.get(asset.uri);
+                const entry: AssetWithMetadata = { asset, metadata };
+                
+                all_assets.set(asset.publicKey.toString(), entry);
+                
+                if (wallet && wallet.publicKey && asset.owner.toString() === wallet.publicKey.toString()) {
                     owned_assets.push(entry);
                 }
             });
