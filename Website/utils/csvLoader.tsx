@@ -8,6 +8,7 @@ interface TokenHolder {
     address: string;
     balance: string;
     amount?: string;
+    airdropAddress?: string;
 }
 
 interface CSVUploaderProps {
@@ -36,25 +37,44 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     return;
                 }
 
-                const hasQuantityColumn = results.meta.fields.includes("quantity");
+                const hasAirdropQuantityColumn = results.meta.fields.includes("airdropQuantity");
+                const hasAirdropAddressColumn = results.meta.fields.includes("airdropAddress");
 
 
                 // Track unique addresses and duplicates
                 const addressSet = new Set<string>();
                 const duplicates = new Set<string>();
                 const invalidAddresses: string[] = [];
+                const invalidAirdropAddresses: string[] = [];
                 const validHolders: TokenHolder[] = [];
 
                 // Check for empty quantity values if quantity column exists
-                if (hasQuantityColumn) {
+                if (hasAirdropQuantityColumn) {
                     const emptyQuantityRows = results.data.filter((row: any) => {
-                        return row.address?.trim() && (!row.quantity || row.quantity.trim() === '');
+                        return row.address?.trim() && (!row.airdropQuantity || row.airdropQuantity.trim() === '');
                     });
 
                     if (emptyQuantityRows.length > 0) {
                         toast({
                             title: "Error",
-                            description: `Found ${emptyQuantityRows.length} rows with empty quantity values. All quantity values must be filled when using the quantity column.`,
+                            description: `Found ${emptyQuantityRows.length} rows with empty airdropQuantity values. All quantity values must be filled when using the quantity column.`,
+                            status: "error",
+                        });
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+
+                // Check for empty quantity values if quantity column exists
+                if (hasAirdropAddressColumn) {
+                    const emptyAddressRows = results.data.filter((row: any) => {
+                        return row.address?.trim() && (!row.airdropAddress || row.airdropAddress.trim() === '');
+                    });
+
+                    if (emptyAddressRows.length > 0) {
+                        toast({
+                            title: "Error",
+                            description: `Found ${emptyAddressRows.length} rows with empty airdropAddress values. All airdropAddress values must be filled when using the airdropAddress column.`,
                             status: "error",
                         });
                         setIsProcessing(false);
@@ -67,10 +87,17 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     if (!row.address?.trim()) return;
 
                     const address = row.address.trim();
+                    const airdropAddress = row.airdropAddress?.trim();
 
                     // Check if address is valid Solana address
                     if (!address.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)) {
                         invalidAddresses.push(address);
+                        return;
+                    }
+
+                    // Check if airdrop address is valid when provided
+                    if (airdropAddress && !airdropAddress.match(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)) {
+                        invalidAirdropAddresses.push(airdropAddress);
                         return;
                     }
 
@@ -87,14 +114,14 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     const balance = "1";
                     let airdropAmount: string | undefined;
 
-                    if (hasQuantityColumn) {
-                        const quantity = parseFloat(row.quantity);
-                        if (!isNaN(quantity) && quantity > 0) {
-                            airdropAmount = quantity.toString();
+                    if (hasAirdropQuantityColumn) {
+                        const airdropQuantity = parseFloat(row.airdropQuantity);
+                        if (!isNaN(airdropQuantity) && airdropQuantity > 0) {
+                            airdropAmount = airdropQuantity.toString();
                         } else {
                             toast({
                                 title: "Error",
-                                description: `Invalid quantity value for address ${address}. Quantity must be a positive number.`,
+                                description: `Invalid airdropQuantity value for address ${address}. AirdropQuantity must be a positive number.`,
                                 status: "error",
                             });
                             setIsProcessing(false);
@@ -106,6 +133,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                         address,
                         balance,
                         amount: airdropAmount,
+                        airdropAddress: airdropAddress || undefined
                     });
                 });
 
@@ -114,6 +142,16 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     toast({
                         title: "Error",
                         description: `Found ${invalidAddresses.length} invalid Solana addresses`,
+                        status: "error",
+                    });
+                    setIsProcessing(false);
+                    return;
+                }
+
+                if (invalidAirdropAddresses.length > 0) {
+                    toast({
+                        title: "Error",
+                        description: `Found ${invalidAirdropAddresses.length} invalid airdrop token addresses`,
                         status: "error",
                     });
                     setIsProcessing(false);
@@ -177,7 +215,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                     <Text className="text-center text-sm text-white">
                         {isProcessing ? "Processing..." : "Click to upload token / collection addresses CSV"}
                     </Text>
-                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column and optional "quantity"</Text>
+                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column and optional "airdropQuantity" and "airdropAddress"</Text>
                 </div>
                 <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
             </div>

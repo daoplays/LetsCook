@@ -14,11 +14,13 @@ interface TokenHolder {
     address: string;
     balance: string;
     amount?: string;
+    airdropAddress?: string;
 }
 
 interface AirdropRecipient {
     address: string;
     amount: string;
+    airdropAddress?: string;
 }
 
 type DistributionType = "fixed" | "even" | "proRata";
@@ -38,6 +40,8 @@ export const useAirdrop = () => {
     const [airdroppedMint, setAirdroppedMint] = useState<MintData | null>(null);
 
     const [threshold, setThreshold] = useState<number>(0);
+
+    const mintDataCache = new Map<string, MintData>();
 
     const takeSnapshot = useCallback(
         async (
@@ -209,16 +213,15 @@ export const useAirdrop = () => {
                 return;
             }
 
-            if (!airdroppedMint) {
-                toast.error("Airdropped Mint data not set.");
-                return;
+            if (!recipients.some(r => r.airdropAddress)) {
+                toast.error("No airdrop token address set");
+                return false;
             }
 
             setIsLoading(true);
             setError(null);
 
             try {
-                const mintPubkey = airdroppedMint.mint.address;
 
                 // Process in batches of 8 to avoid hitting transaction size limits
                 const BATCH_SIZE = 8;
@@ -229,9 +232,6 @@ export const useAirdrop = () => {
                 }
 
                 // Get or create associated token accounts
-                const senderATA = await getAssociatedTokenAddress(mintPubkey, wallet.publicKey, false, airdroppedMint.token_program);
-
-                console.log("senderATA: ", senderATA.toString());
 
                 for (let i = 0; i < batches.length; i++) {
                     const batch = batches[i];
@@ -239,15 +239,34 @@ export const useAirdrop = () => {
                     const instructions: TransactionInstruction[] = [];
 
                     // Build transfer instructions for batch
-                    for (const { address, amount } of batch) {
-                        const recipientPubkey = new PublicKey(address);
-                        const airdropAmount = Math.floor(parseFloat(amount) * Math.pow(10, airdroppedMint.mint.decimals));
+                    for (const recipient of batch) {
+
+                        // Determine which mint to use
+                        const mintAddress = recipient.airdropAddress;
+                        if (!mintAddress) {
+                            toast.error(`No mint address available for recipient ${recipient.address}`);
+                            return false;
+                        }
+
+                        // Get or fetch mint data
+                        let mintData: MintData;
+                        if (!mintDataCache.has(mintAddress)) {
+                            mintData = await getMintData(mintAddress);
+                            mintDataCache.set(mintAddress, mintData);
+                        } else {
+                            mintData = mintDataCache.get(mintAddress)!;
+                        }
+
+                        const recipientPubkey = new PublicKey(recipient.address);
+                        const airdropAmount = Math.floor(parseFloat(recipient.amount) * Math.pow(10, mintData.mint.decimals));
+
+                        const senderATA = await getAssociatedTokenAddress(mintData.mint.address, wallet.publicKey, false, mintData.token_program);
 
                         const recipientATA = await getAssociatedTokenAddress(
-                            mintPubkey,
+                            mintData.mint.address,
                             recipientPubkey,
                             true,
-                            airdroppedMint.token_program,
+                            mintData.token_program,
                         );
 
                         console.log("recipientATA: ", recipientATA.toString());
@@ -260,8 +279,8 @@ export const useAirdrop = () => {
                                     wallet.publicKey,
                                     recipientATA,
                                     recipientPubkey,
-                                    mintPubkey,
-                                    airdroppedMint.token_program,
+                                    mintData.mint.address,
+                                    mintData.token_program,
                                 ),
                             );
                         }
@@ -273,7 +292,7 @@ export const useAirdrop = () => {
                                 wallet.publicKey,
                                 airdropAmount,
                                 [],
-                                airdroppedMint.token_program,
+                                mintData.token_program,
                             ),
                         );
                     }
@@ -314,7 +333,7 @@ export const useAirdrop = () => {
                 setIsLoading(false);
             }
         },
-        [connection, wallet, airdroppedMint],
+        [connection, wallet],
     );
 
     return {

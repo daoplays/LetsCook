@@ -39,6 +39,7 @@ import CSVUploader from "@/utils/csvLoader";
 interface AirdropRecord {
     address: string; // wallet address
     currentBalance: string; // their token balance
+    airdropAddress: string; // the token address they will receive
     airdropAmount: string; // what they'll receive
     signature?: string; // transaction signature if airdrop completed
 }
@@ -201,7 +202,16 @@ export const AirdropPage = () => {
             setIsAirdropping(true);
             const newSignatures = new Map<string, string>();
 
-            await executeAirdrop(distributions, (progress, signature, recipientAddresses) => {
+            // Create distributions with airdropAddress included
+            const distributionsWithToken = distributions.map(dist => {
+                const holder = holders.find(h => h.address === dist.address);
+                return {
+                    ...dist,
+                    airdropAddress: holder?.airdropAddress || airdroppedToken  // Use custom address or fallback to global
+                };
+            });
+
+            await executeAirdrop(distributionsWithToken, (progress, signature, recipientAddresses) => {
                 setAirdropProgress(progress * 100);
 
                 if (signature && recipientAddresses) {
@@ -234,6 +244,11 @@ export const AirdropPage = () => {
         setHolders(newHolders);
     };
 
+    // Helper function to check if using per-recipient airdrop addresses
+    const isUsingCustomAirdropAddresses = useMemo(() => {
+        return holders.some(holder => holder.airdropAddress);
+    }, [holders]);
+
     // The download handler function
     const handleDownloadCSV = () => {
         try {
@@ -244,6 +259,7 @@ export const AirdropPage = () => {
                     address: holder.address,
                     currentBalance: holder.balance,
                     airdropAmount: distribution?.amount || "0",
+                    airdropAddress: holder.airdropAddress || airdroppedToken || '',
                     signature: signatures.get(holder.address) || ''
                 };
             });
@@ -251,9 +267,15 @@ export const AirdropPage = () => {
             // 2. Create CSV header row and format data rows
             const csvRows = [
                 // Header row
-                ["Wallet Address", "Current Balance", "Airdrop Amount", "Transaction Signature"],
+                ["Wallet Address", "Current Balance", "Airdrop Amount", "Airdrop Token", "Transaction Signature"],
                 // Data rows
-                ...records.map((record) => [record.address, record.currentBalance, record.airdropAmount, record.signature]),
+                ...records.map((record) => [
+                    record.address,
+                    record.currentBalance,
+                    record.airdropAmount,
+                    record.airdropAddress,
+                    record.signature
+                ]),
             ];
 
             // 3. Convert to CSV string (handle potential commas in data)
@@ -452,6 +474,7 @@ export const AirdropPage = () => {
                     </FormControl>
                     )}
 
+                    {!isUsingCustomAirdropAddresses && (
 
                     <FormControl>
                         <FormLabel className="min-w-[100px] text-lg text-white">Airdrop Mint Address</FormLabel>
@@ -477,6 +500,7 @@ export const AirdropPage = () => {
                             </Button>
                         </HStack>
                     </FormControl>
+                    )}
 
                     {/* Token Info */}
 
@@ -556,6 +580,7 @@ export const AirdropPage = () => {
                                         <TableHead className="min-w-[140px]">Wallet</TableHead>
                                         <TableHead className="min-w-[140px]">Current Balance</TableHead>
                                         <TableHead className="min-w-[140px]">Will Receive</TableHead>
+                                        <TableHead className="min-w-[140px]">Airdrop Token</TableHead>
                                         <TableHead className="min-w-[140px]">Signature</TableHead>
                                         <TableHead className="min-w-[140px]">Remove</TableHead>
                                     </TableRow>
@@ -566,6 +591,8 @@ export const AirdropPage = () => {
                                         .map((holder) => {
                                             const distribution = distributions.find((d) => d.address === holder.address);
                                             const signature = signatures.get(holder.address);
+                                            // Use custom airdrop address if available, otherwise use the global token
+                                            const tokenAddress = holder.airdropAddress || airdroppedToken;
 
                                             return (
                                                 <TableRow
@@ -577,6 +604,11 @@ export const AirdropPage = () => {
                                                     </TableCell>
                                                     <TableCell>{holder.balance}</TableCell>
                                                     <TableCell>{distribution?.amount || "0"}</TableCell>
+                                                    <TableCell className="font-mono text-sm">
+                                                        {tokenAddress ? 
+                                                            `${tokenAddress.slice(0, 4)}...${tokenAddress.slice(-4)}` :
+                                                            ""}
+                                                    </TableCell>
                                                     <TableCell>
                                                         {signature && (
                                                             <a

@@ -11,6 +11,7 @@ import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
 import { MarketplaceProps } from "../joy/marketplace";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
+import { Config } from "@/components/Solana/constants";
 
 const gridItemStyle: CSSProperties = {
     position: "relative",
@@ -98,8 +99,17 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                     const isUserOwned = ownerListedNFTs.some(
                                         (ownedNFT) => ownedNFT.asset.publicKey === nft.asset.publicKey,
                                     );
-                                    const level = nft.metadata?.attributes?.find((attr) => attr.trait_type === "Level")?.value || "1";
-
+                                    let level = "";
+                                    let wealth = "";
+                                    let attributes = nft.asset.attributes.attributeList
+                                    for (let i = 0; i < attributes.length; i++) {
+                                        if (attributes[i].key === "Level") {
+                                            level = attributes[i].value;
+                                        }
+                                        if (attributes[i].key === "Wealth") {
+                                            wealth = attributes[i].value;
+                                        }
+                                    }
                                     return (
                                         <div key={`nft-${nftIndex}`} className="flex flex-col gap-4">
                                             <Box
@@ -115,8 +125,14 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
 
                                                 {/* Price Tag */}
                                                 <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-lg bg-black/60 px-3 py-2 backdrop-blur-sm">
-                                                    <FaCoins className="text-[#C4A484]" />
                                                     <span className="font-bold text-[#C4A484]">{lamportsToSol(price.toString())}</span>
+                                                    <Image
+                                                        src={Config.token_image}
+                                                        width={23}
+                                                        height={23}
+                                                        alt={Config.token}
+                                                        className="rounded-full"
+                                                    />
                                                 </div>
 
                                                 <Image
@@ -126,17 +142,18 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                     alt={nft.metadata["name"] || nft.asset.name}
                                                     className="rounded-xl"
                                                 />
-
-                                                {/* Hover Overlay */}
-                                                {hoveredIndex === nftIndex && (
-                                                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-black/60 backdrop-blur-sm">
-                                                        <p className="text-center text-lg font-bold text-[#C4A484]">
-                                                            {nft.metadata["name"] || nft.asset.name}
-                                                        </p>
-                                                        <FaEye className="text-[#C4A484]" />
-                                                    </div>
-                                                )}
                                             </Box>
+
+                                            <div className="rounded-xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 backdrop-blur-sm">
+                                                <h3 className="mb-2 border-b border-[#3A2618] pb-2 text-lg font-bold text-[#C4A484] text-center">
+                                                    {nft.metadata["name"] || nft.asset.name}
+                                                </h3>
+                                                <div className="text-center flex items-center justify-center gap-2">
+                                                    <span className="text-sm text-[#8B7355]">Wealth:</span>
+                                                    <span className="text-[#C4A484]">{wealth}</span>
+                                                    <FaCoins className="text-[#C4A484] text-sm" />
+                                                </div>
+                                            </div>
 
                                             <button
                                                 onClick={() => {
@@ -152,7 +169,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                                         : "from-[#8B7355] to-[#3A2618] text-[#1C1410] hover:from-[#C4A484] hover:to-[#8B7355]"
                                                 } active:scale-95`}
                                             >
-                                                {isUserOwned ? "Withdraw Contract" : "Purchase Mercenary"}
+                                                {isUserOwned ? "Withdraw Contract" : "Purchase Contract"}
                                             </button>
                                         </div>
                                     );

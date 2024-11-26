@@ -11,7 +11,7 @@ interface DifficultyOption {
     levelReq: number;
     successRate: number;
     deathRate: number;
-    reward: number;
+    multiplier: number;
 }
 
 const difficultyOptions: DifficultyOption[] = [
@@ -20,21 +20,21 @@ const difficultyOptions: DifficultyOption[] = [
         levelReq: 0,
         successRate: 75,
         deathRate: 25,
-        reward: 500,
+        multiplier: 1.0/3,
     },
     {
         name: "Medium",
         levelReq: 5,
         successRate: 50,
         deathRate: 50,
-        reward: 1500,
+        multiplier: 1,
     },
     {
         name: "Hard",
         levelReq: 10,
         successRate: 25,
         deathRate: 75,
-        reward: 5000,
+        multiplier: 3,
     },
 ];
 
@@ -63,14 +63,14 @@ export const MissionModal = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     let mercenaryLevel = 1;
-    let wealth = "";
+    let wealth = 1000;
     let attributes = mercenary ? mercenary.asset.attributes.attributeList : []
     for (let i = 0; i < attributes.length; i++) {
         if (attributes[i].key === "Level") {
             mercenaryLevel = parseInt(attributes[i].value);
         }
         if (attributes[i].key === "Wealth") {
-            wealth = attributes[i].value;
+            wealth = parseFloat(attributes[i].value);
         }
     }
     
@@ -157,7 +157,7 @@ export const MissionModal = ({
                                                     </div>
                                                     <div className="flex items-center gap-2 pt-2 text-[#C4A484]">
                                                         <FaCoins />
-                                                        <span>{difficulty.reward} Tarnished Marks</span>
+                                                        <span>{Math.floor(wealth * difficulty.multiplier)} Tarnished Marks</span>
                                                     </div>
                                                 </div>
                                             </TooltipContent>

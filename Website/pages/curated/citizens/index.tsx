@@ -258,6 +258,15 @@ const LandingPage = () => {
             }
         }
 
+        if (userListedNFTs.length > 0) {
+            for (let i = 0; i < listedNFTs.length; i++) {
+                let asset = collectionAssets.get(userListedNFTs[i]);
+                if (asset) {
+                    allUserAssets.push(asset);
+                }
+            }
+        }
+
         return (
             <>
                 <VStack h="100%" position="relative" overflowY="auto">
@@ -274,6 +283,12 @@ const LandingPage = () => {
                                     wealth = attributes[i].value;
                                 }
                             }
+
+                            let isListed = userListedNFTs.includes(nft.asset.publicKey.toString());
+                            let onMission = nft.asset.publicKey.toString() === userData?.asset.toString();
+                            let anyOnMission = (userData === null || (userData &&
+                                    nft.asset.publicKey.toString() !== userData?.asset.toString() &&
+                                    userData?.mission_status !== 1));
 
                             return (
                                 <GridItem key={`nft-${index}`}>
@@ -312,7 +327,7 @@ const LandingPage = () => {
                                             {/* Action Buttons */}
                                             <div className="mt-4 flex flex-col gap-2">
                                                 <VStack>
-                                                    {nft.asset.publicKey.toString() === userData?.asset.toString() && (
+                                                    {onMission && (
                                                         <button
                                                         className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                         onClick={() => {
@@ -322,10 +337,7 @@ const LandingPage = () => {
                                                             Check Mission Status
                                                         </button>
                                                     )}
-                                                    {(userData === null ||
-                                                        (userData &&
-                                                            nft.asset.publicKey.toString() !== userData?.asset.toString() &&
-                                                            userData?.mission_status !== 1)) && (
+                                                    {(!isListed && anyOnMission) && (
                                                         <button
                                                         className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                         onClick={() => {
@@ -338,7 +350,7 @@ const LandingPage = () => {
                                                         </button>
                                                     )}
 
-                                                    {nft.asset.publicKey.toString() !== userData?.asset.toString() && (
+                                                    {(!onMission && !isListed) && (
                                                     <button
                                                     className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                     onClick={() => {
@@ -350,7 +362,7 @@ const LandingPage = () => {
                                                     </button>
                                                     )}
 
-                                                    {nft.asset.publicKey.toString() !== userData?.asset.toString() && (
+                                                    {(!onMission && !isListed) && (
                                                     <button
                                                     className="w-full transform rounded-lg border-2 border-[#8B1818] bg-gradient-to-b from-[#A13333] to-[#8B1818] px-4 py-2 font-bold text-[#FFD7D7] transition-all hover:from-[#CC4444] hover:to-[#A13333] active:scale-95"
                                                     onClick={() => {
@@ -359,6 +371,17 @@ const LandingPage = () => {
                                                         }}
                                                     >
                                                         Betray
+                                                    </button>
+                                                    )}
+
+                                                    {(isListed) && (
+                                                    <button
+                                                    className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
+                                                    onClick={() => {
+                                                            UnlistNFT(new PublicKey(nft.asset.publicKey), 0);
+                                                        }}
+                                                    >
+                                                        Remove Contract
                                                     </button>
                                                     )}
                                                 </VStack>
