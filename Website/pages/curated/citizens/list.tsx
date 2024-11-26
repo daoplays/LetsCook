@@ -65,7 +65,7 @@ const ContractModal = ({
                             <div className="flex flex-col gap-2">
                                 <h2 className="font-serif text-xl text-[#C4A484]">Garrett Voss, The Broker</h2>
                                 <p className="font-serif italic text-[#8B7355]">
-                                    "I'll find a buyer for your blade. Just name your price, and I'll handle the rest... for a modest fee."
+                                &quot;I&apos;ll find a buyer for your blade. Just name your price, and I&apos;ll handle the rest...&quot;
                                 </p>
                             </div>
                         </div>
