@@ -20,7 +20,6 @@ import {
     getAMMKey,
     getAMMKeyFromMints,
     AMMPluginData,
-    getAMMPlugins,
 } from "../../components/Solana/jupiter_state";
 import { Order } from "@jup-ag/limit-order-sdk";
 import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
@@ -74,6 +73,8 @@ import Loader from "../../components/loader";
 import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
+import useAMM from "@/hooks/data/useAMM";
+import useTokenBalance from "@/hooks/data/useTokenBalance";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -128,11 +129,10 @@ async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_
     //return data;
 }
 
-function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData) {
+function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, plugins: AMMPluginData) {
     if (list === null || list === undefined) return null;
     if (amm === null || amm === undefined) return null;
 
-    let plugins: AMMPluginData = getAMMPlugins(amm);
     if (plugins.trade_reward_first_date === 0) return null;
 
     let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - plugins.trade_reward_first_date;
@@ -146,7 +146,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { ammData, mmLaunchData, SOLPrice, mintData, listingData } = useAppRoot();
+    const { mmLaunchData, SOLPrice, listingData } = useAppRoot();
 
     const { pageName } = router.query;
 
@@ -154,109 +154,69 @@ const TradePage = () => {
 
     const [additionalPixels, setAdditionalPixels] = useState(0);
 
-    const [selectedTab, setSelectedTab] = useState("Rewards");
-
     const [mobilePageContent, setMobilePageContent] = useState("Chart");
 
-    const handleClick = (tab: string) => {
-        setSelectedTab(tab);
-    };
+
+    const {
+        amm, ammPlugins, baseMint, quoteMint, lpMint, baseTokenAccount : ammBaseAddress, quoteTokenAccount: ammQuoteAddress, baseTokenBalance : ammBaseAmount, quoteTokenBalance : ammQuoteAmount, error : ammError
+    } = useAMM({ pageName: pageName as string | null });
+
+    console.log("AMM Balances", ammBaseAmount, ammQuoteAmount);
+
+    const { tokenBalance : userBaseAmount } = useTokenBalance({ mintData: baseMint });
+    const { tokenBalance : userQuoteAmount } = useTokenBalance({ mintData: quoteMint });
+    const { tokenBalance : userLPAmount } = useTokenBalance({ mintData: lpMint });
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
-    const [daily_data, setDailyData] = useState<MarketData[]>([]);
-
     const [last_day_volume, setLastDayVolume] = useState<number>(0);
 
-    const [base_address, setBaseAddress] = useState<PublicKey | null>(null);
-    const [quote_address, setQuoteAddress] = useState<PublicKey | null>(null);
     const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
-    const [user_base_address, setUserBaseAddress] = useState<PublicKey | null>(null);
-    const [user_lp_address, setUserLPAddress] = useState<PublicKey | null>(null);
     const [raydium_address, setRaydiumAddress] = useState<PublicKey | null>(null);
 
-    const [amm_base_amount, setBaseAmount] = useState<number | null>(null);
-    const [amm_quote_amount, setQuoteAmount] = useState<number | null>(null);
-    const [amm_lp_amount, setLPAmount] = useState<number | null>(null);
-
-    const [user_base_amount, setUserBaseAmount] = useState<number>(0);
-    const [user_lp_amount, setUserLPAmount] = useState<number>(0);
-
+    const [ammLPAmount, setLPAmount] = useState<number | null>(null);
     const [total_supply, setTotalSupply] = useState<number>(0);
 
     const [listing, setListing] = useState<ListingData | null>(null);
-    const [amm, setAMM] = useState<AMMData | null>(null);
-    const [base_mint, setBaseMint] = useState<MintData | null>(null);
     const [sol_is_quote, setSOLIsQuote] = useState<boolean>(true);
 
-    const base_ws_id = useRef<number | null>(null);
-    const quote_ws_id = useRef<number | null>(null);
     const price_ws_id = useRef<number | null>(null);
-    const user_base_token_ws_id = useRef<number | null>(null);
-    const user_lp_token_ws_id = useRef<number | null>(null);
     const raydium_ws_id = useRef<number | null>(null);
 
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
-
-    const check_user_data = useRef<boolean>(true);
     const check_market_data = useRef<boolean>(true);
 
-    // when page unloads unsub from any active websocket listeners
-    useEffect(() => {
-        return () => {
-            //console.log("in use effect return");
-            const unsub = async () => {
-                if (base_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(base_ws_id.current);
-                    base_ws_id.current = null;
-                }
-                if (quote_ws_id.current !== null) {
-                    await connection.removeAccountChangeListener(quote_ws_id.current);
-                    quote_ws_id.current = null;
-                }
-            };
-            unsub();
-        };
-    }, [connection]);
 
     useEffect(() => {
-        if (ammData === null || listingData === null || mintData === null) return;
+        if (!amm || !listingData) return;
 
-        let amm = ammData.get(pageName.toString());
-        setAMM(amm);
-
-        if (!amm) {
-            return;
-        }
         //console.log("accounts", amm.base_key.toString(), amm.quote_key.toString());
         let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
         let listing = listingData.get(listing_key.toString());
         setListing(listing);
 
-        let base_mint = mintData.get(amm.base_mint.toString());
-        setBaseMint(base_mint);
-    }, [ammData, mintData, pageName, listingData]);
+    }, [amm, listingData]);
 
     useEffect(() => {
-        if (amm_base_amount === null || amm_quote_amount === null) {
+        if (ammBaseAmount === null || ammQuoteAmount === null) {
             return;
         }
 
-        if (amm_base_amount === last_base_amount.current && amm_quote_amount === last_quote_amount.current) {
+        if (ammBaseAmount === last_base_amount.current && ammQuoteAmount === last_quote_amount.current) {
             return;
         }
 
-        last_base_amount.current = amm_base_amount;
-        last_quote_amount.current = amm_quote_amount;
+        last_base_amount.current = ammBaseAmount;
+        last_quote_amount.current = ammQuoteAmount;
 
         if (amm.provider === 0 || market_data.length === 0) {
             return;
         }
 
         // update market data using bid/ask
-        let price = amm_quote_amount / amm_base_amount;
+        let price = ammQuoteAmount / ammBaseAmount;
 
-        price = (price * Math.pow(10, base_mint.mint.decimals)) / Math.pow(10, 9);
+        price = (price * Math.pow(10, baseMint.mint.decimals)) / Math.pow(10, 9);
 
         let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
         let last_candle = market_data[market_data.length - 1];
@@ -288,36 +248,8 @@ const TradePage = () => {
             market_data[market_data.length - 1] = last_candle;
             setMarketData([...market_data]);
         }
-    }, [amm_base_amount, amm_quote_amount, amm, market_data, base_mint]);
+    }, [ammBaseAmount, ammQuoteAmount, amm, market_data, baseMint]);
 
-    const check_base_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-        //console.log(event_data)
-        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
-        let amount = parseFloat(amount_u64.value.toString());
-        console.log("base update", amount, amount_u64.value.toString());
-
-        //console.log("update base amount", amount);
-        setBaseAmount(amount);
-    }, []);
-
-    const check_quote_update = useCallback(async (result: any) => {
-        //console.log(result.owner);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-        const [amount_u64] = myU64.struct.deserialize(event_data.slice(64, 72));
-
-        let amount = parseFloat(amount_u64.value.toString());
-        console.log("quote update", amount, amount_u64.value.toString());
-
-        //console.log("update quote amount", amount);
-
-        setQuoteAmount(amount);
-    }, []);
 
     const check_price_update = useCallback(async (result: any) => {
         //console.log(result);
@@ -346,30 +278,6 @@ const TradePage = () => {
         setMarketData(data);
     }, []);
 
-    const check_user_token_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-        // console.log("update quote amount", amount);
-
-        setUserBaseAmount(amount);
-    }, []);
-
-    const check_user_lp_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-        const [token_account] = TokenAccount.struct.deserialize(event_data);
-        let amount = bignum_to_num(token_account.amount);
-        // console.log("update quote amount", amount);
-
-        setUserLPAmount(amount);
-    }, []);
-
     const check_raydium_update = useCallback(
         async (result: any) => {
             let event_data = result.data;
@@ -387,108 +295,31 @@ const TradePage = () => {
     );
 
     useEffect(() => {
-        if (base_ws_id.current === null && base_address !== null) {
-            //console.log("subscribe 1");
-
-            base_ws_id.current = connection.onAccountChange(base_address, check_base_update, "confirmed");
-        }
-
-        if (quote_ws_id.current === null && quote_address !== null) {
-            // console.log("subscribe 2");
-
-            quote_ws_id.current = connection.onAccountChange(quote_address, check_quote_update, "confirmed");
-        }
 
         if (price_ws_id.current === null && price_address !== null) {
             price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
-        }
-
-        if (user_base_token_ws_id.current === null && user_base_address !== null) {
-            user_base_token_ws_id.current = connection.onAccountChange(user_base_address, check_user_token_update, "confirmed");
-        }
-        if (user_lp_token_ws_id.current === null && user_lp_address !== null) {
-            user_lp_token_ws_id.current = connection.onAccountChange(user_lp_address, check_user_lp_update, "confirmed");
         }
         if (raydium_ws_id.current === null && raydium_address !== null) {
             raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
         }
     }, [
         connection,
-        base_address,
-        quote_address,
         price_address,
-        user_base_address,
-        user_lp_address,
         raydium_address,
         check_price_update,
-        check_base_update,
-        check_quote_update,
-        check_user_token_update,
-        check_user_lp_update,
         check_raydium_update,
     ]);
 
     const CheckMarketData = useCallback(async () => {
-        if (!amm || !base_mint) return;
+        if (!amm || !baseMint) return;
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
 
-        let base_amm_account = amm.base_key;
-        let quote_amm_account = amm.quote_key;
-        let lp_mint = amm.lp_mint;
-
-        //console.log("base key", base_amm_account.toString());
-
-        // console.log(base_amm_account.toString(), quote_amm_account.toString());
-
-        if (check_user_data.current === true) {
-            if (wallet !== null && wallet.publicKey !== null) {
-                let user_base_token_account_key = await getAssociatedTokenAddress(
-                    token_mint, // mint
-                    wallet.publicKey, // owner
-                    true, // allow owner off curve
-                    base_mint.token_program,
-                );
-
-                let user_lp_token_account_key = await getAssociatedTokenAddress(
-                    lp_mint, // mint
-                    wallet.publicKey, // owner
-                    true, // allow owner off curve
-                    amm.provider === 0 ? base_mint.token_program : TOKEN_PROGRAM_ID,
-                );
-
-                setUserBaseAddress(user_base_token_account_key);
-                setUserLPAddress(user_lp_token_account_key);
-
-                let user_base_amount = await request_token_amount("", user_base_token_account_key);
-                let user_lp_amount = await request_token_amount("", user_lp_token_account_key);
-                //console.log("user lp amount", user_lp_amount, user_lp_token_account_key.toString());
-                setUserBaseAmount(user_base_amount);
-                setUserLPAmount(user_lp_amount);
-
-                check_user_data.current = false;
-            }
-        }
-
         if (check_market_data.current === true) {
-            setBaseAddress(base_amm_account);
-            setQuoteAddress(quote_amm_account);
-
-            //console.log("base mint", base_mint.mint.address.toString(), wsol_mint.toString());
-            //console.log("base key", base_amm_account.toString(), quote_amm_account.toString());
-
-            let base_amount = await request_token_amount("", base_amm_account);
-            let quote_amount = await request_token_amount("", quote_amm_account);
-
-            //console.log("amm amounts", base_amount, quote_amount);
-            //console.log("amm internal amounts", amm.amm_base_amount.toString(), amm.amm_quote_amount.toString());
-            //console.log("price", (quote_amount/1e9) / (base_amount / Math.pow(10, base_mint.mint.decimals)));
-            setBaseAmount(base_amount);
-            setQuoteAmount(quote_amount);
 
             let total_supply = await request_token_supply("", token_mint);
-            setTotalSupply(total_supply / Math.pow(10, base_mint.mint.decimals));
+            setTotalSupply(total_supply / Math.pow(10, baseMint.mint.decimals));
 
             if (amm.provider > 0) {
                 let sol_is_quote: boolean = true;
@@ -590,11 +421,10 @@ const TradePage = () => {
                 }
             }
             setMarketData(data);
-            setDailyData(daily_data);
             setLastDayVolume(last_volume);
             check_market_data.current = false;
         }
-    }, [amm, base_mint, wallet, connection]);
+    }, [amm, baseMint, connection]);
 
     useEffect(() => {
         CheckMarketData();
@@ -612,11 +442,11 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (listing === null || amm === null || !base_mint || mmLaunchData === null) {
+    if (listing === null || amm === null || !baseMint || mmLaunchData === null) {
         return <Loader />;
     }
 
-    let latest_rewards = filterLaunchRewards(mmLaunchData, amm);
+    let latest_rewards = filterLaunchRewards(mmLaunchData, amm, ammPlugins);
 
     return (
         <>
@@ -642,22 +472,22 @@ const TradePage = () => {
                             >
                                 <Image
                                     alt="Launch icon"
-                                    src={base_mint.icon}
+                                    src={baseMint.icon}
                                     width={65}
                                     height={65}
                                     style={{ borderRadius: "8px", backgroundSize: "cover" }}
                                 />
                                 <VStack align="start" spacing={1}>
-                                    <p className="text-xl text-white">{base_mint.symbol}</p>
+                                    <p className="text-xl text-white">{baseMint.symbol}</p>
                                     <HStack spacing={3} align="start" justify="start">
-                                        <p className="text-lg text-white">{trimAddress(base_mint.mint.address.toString())}</p>
+                                        <p className="text-lg text-white">{trimAddress(baseMint.mint.address.toString())}</p>
 
                                         <Tooltip label="Copy Contract Address" hasArrow fontSize="large" offset={[0, 10]}>
                                             <div
                                                 style={{ cursor: "pointer" }}
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    navigator.clipboard.writeText(base_mint.mint.address.toString());
+                                                    navigator.clipboard.writeText(baseMint.mint.address.toString());
                                                 }}
                                             >
                                                 <MdOutlineContentCopy color="white" size={25} />
@@ -666,7 +496,7 @@ const TradePage = () => {
 
                                         <Tooltip label="View in explorer" hasArrow fontSize="large" offset={[0, 10]}>
                                             <Link
-                                                href={getSolscanLink(base_mint.mint.address, "Token")}
+                                                href={getSolscanLink(baseMint.mint.address, "Token")}
                                                 target="_blank"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
@@ -698,25 +528,25 @@ const TradePage = () => {
                                 <InfoContent
                                     listing={listing}
                                     amm={amm}
-                                    base_mint={base_mint}
+                                    base_mint={baseMint}
                                     volume={last_day_volume}
                                     mm_data={latest_rewards}
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
                                     total_supply={total_supply}
                                     sol_price={SOLPrice}
-                                    quote_amount={amm_quote_amount}
+                                    quote_amount={ammQuoteAmount}
                                 />
                             )}
 
                             {leftPanel === "Trade" && (
                                 <BuyAndSell
                                     amm={amm}
-                                    base_mint={base_mint}
-                                    base_balance={amm_base_amount}
-                                    quote_balance={amm_quote_amount}
-                                    amm_lp_balance={amm_lp_amount}
-                                    user_base_balance={user_base_amount}
-                                    user_lp_balance={user_lp_amount}
+                                    base_mint={baseMint}
+                                    base_balance={ammBaseAmount}
+                                    quote_balance={ammQuoteAmount}
+                                    amm_lp_balance={ammLPAmount}
+                                    user_base_balance={userBaseAmount}
+                                    user_lp_balance={userLPAmount}
                                 />
                             )}
                         </VStack>
@@ -994,10 +824,10 @@ const BuyAndSell = ({
                     {selected === "Buy"
                         ? userSOLBalance.toFixed(5)
                         : selected === "LP-"
-                          ? user_lp_balance / Math.pow(10, 9) < 1e-3
-                              ? (user_lp_balance / Math.pow(10, 9)).toExponential(3)
-                              : (user_lp_balance / Math.pow(10, 9)).toFixed(Math.min(3))
-                          : (user_base_balance / Math.pow(10, base_mint.mint.decimals)).toLocaleString("en-US", {
+                          ? user_lp_balance < 1e-3
+                              ? (user_lp_balance ).toExponential(3)
+                              : (user_lp_balance).toFixed(Math.min(3))
+                          : (user_base_balance).toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                             })}{" "}
                     {selected === "Buy" ? Config.token : selected === "LP-" ? "LP" : base_mint.symbol}

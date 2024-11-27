@@ -21,23 +21,26 @@ function getQuoteOutput(
     baseDecimals: number,
 ): number[] {
     let amm_base_fee = Math.ceil((base_input_amount * fee) / 100 / 100);
-    let input_ex_fees = base_input_amount - amm_base_fee;
+    let input_ex_fees = (base_input_amount - amm_base_fee) / Math.pow(10, baseDecimals);
 
-    let quote_output = (input_ex_fees * amm_quote_balance) / (amm_base_balance + input_ex_fees) / Math.pow(10, quoteDecimals);
+    let quote_output = (input_ex_fees * amm_quote_balance) / (amm_base_balance + input_ex_fees) ;
 
-    let price = amm_quote_balance / Math.pow(10, quoteDecimals) / (amm_base_balance / Math.pow(10, baseDecimals));
-    let quoteNoSlip = (input_ex_fees / Math.pow(10, baseDecimals)) * price;
+    let price = amm_quote_balance / (amm_base_balance );
+    let quoteNoSlip = (input_ex_fees) * price;
 
     return [quote_output, quoteNoSlip];
 }
 
 function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData): number {
-    let threshold = bignum_to_num(pluginData.liquidity_threshold);
+    let threshold = bignum_to_num(pluginData.liquidity_threshold) / Math.pow(10, 9);
+
     if (quoteAmount > threshold) {
         return 1.0;
     }
 
     let scaling = Math.min(1, ((pluginData.liquidity_scalar / 10) * quoteAmount) / threshold);
+    //console.log("Scaling factor", quoteAmount, threshold, scaling);
+
     if (scaling > 1) return 1;
 
     if (scaling < 0.0002) return 0.0002;
@@ -70,10 +73,15 @@ function CalculateChunkedOutput(
         let scaling = getScalingFactor(currentQuote, pluginData);
         let amm_fee = Math.ceil((chunkSize * fee) / 100 / 100);
         let input_ex_fees = chunkSize - amm_fee;
-        let scaledInput = input_ex_fees / scaling;
+        let scaledInput = (input_ex_fees / scaling) / Math.pow(10, baseDecimals);
+
+
         let output = (scaledInput * currentQuote) / (currentBase + scaledInput);
 
-        let price = currentQuote / Math.pow(10, quoteDecimals) / (currentBase / Math.pow(10, baseDecimals));
+        //console.log("chunk", i, "input", scaledInput, "base", currentBase, "quote", currentQuote, "output", output);
+
+
+        let price = currentQuote / currentBase;
         let quoteNoSlip = (scaledInput / Math.pow(10, baseDecimals)) * price;
 
         //console.log("chunk", i, "input", chunkSize, "output", output / Math.pow(10, quoteDecimals), "quoteNoSlip", quoteNoSlip, "slippage", 100 * (quoteNoSlip / (output / Math.pow(10, 9)) - 1));
@@ -81,12 +89,12 @@ function CalculateChunkedOutput(
         noSlipOutput += quoteNoSlip;
         totalOutput += output;
         currentQuote -= output;
-        currentBase += chunkSize;
+        currentBase += chunkSize / Math.pow(10, baseDecimals);
     }
 
     //console.log("Final", totalOutput / Math.pow(10, quoteDecimals), noSlipOutput);
 
-    return [totalOutput / Math.pow(10, quoteDecimals), noSlipOutput];
+    return [totalOutput, noSlipOutput];
 }
 
 const SellPanel = ({
@@ -154,7 +162,7 @@ const SellPanel = ({
                         <p
                             className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
-                                setTokenAmount(user_base_balance / Math.pow(10, base_mint.mint.decimals) / 2);
+                                setTokenAmount(user_base_balance / 2);
                             }}
                         >
                             Half
@@ -165,7 +173,7 @@ const SellPanel = ({
                         <p
                             className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
-                                setTokenAmount(user_base_balance / Math.pow(10, base_mint.mint.decimals));
+                                setTokenAmount(user_base_balance);
                             }}
                         >
                             Max

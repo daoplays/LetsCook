@@ -120,8 +120,18 @@ export async function getMintDataWithMint(connection: Connection, mint: Mint, to
         )[0];
         let raw_meta_data = await connection.getAccountInfo(token_meta_key);
 
+        // if we also dont have metaplex metadata then just return with unknown metadata
         if (raw_meta_data === null) {
-            return null;
+            let mint_data: MintData = {
+                mint: mint,
+                uri: "",
+                name: "Unknown",
+                symbol: "Unknown",
+                icon: placeholderIcon,
+                extensions: 0,
+                token_program: token_program,
+            };
+            return mint_data;
         }
 
         let meta_data = Metadata.deserialize(raw_meta_data.data);

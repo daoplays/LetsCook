@@ -1,12 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { CollectionData, CollectionPluginData, getCollectionPlugins } from "../../components/collection/collectionState";
-import { CollectionKeys, PROGRAM } from "../../components/Solana/constants";
-import { getTransferFeeConfig, calculateFee } from "@solana/spl-token";
-import { ListingData, MintData, bignum_to_num, request_raw_account_data } from "../../components/Solana/state";
+import { MintData, request_raw_account_data } from "../../components/Solana/state";
 import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { getMintData } from "@/components/amm/launch";
 import { AMMData, AMMPluginData, getAMMPlugins } from "@/components/Solana/jupiter_state";
+import useTokenBalance from "./useTokenBalance";
 
 interface useAMMProps {
     pageName: string | null;
@@ -17,10 +15,22 @@ const useAMM = (props: useAMMProps | null) => {
     // State to store the token balance and any error messages
     const [amm, setAMM] = useState<AMMData | null>(null);
     const [ammPlugins, setAMMPlugins] = useState<AMMPluginData | null>(null);
-    const [listing, setListing] = useState<ListingData | null>(null);
+    const [ammAddress, setAMMAddress] = useState<PublicKey | null>(null);
+
+    // the mint data
     const [baseMint, setBaseMint] = useState<MintData | null>(null);
     const [quoteMint, setQuoteMint] = useState<MintData | null>(null);
     const [lpMint, setLPMint] = useState<MintData | null>(null);
+
+    // the token accounts
+    const [baseTokenAccount, setBaseTokenAccount] = useState<PublicKey | null>(null);
+    const [quoteTokenAccount, setQuoteTokenAccount] = useState<PublicKey | null>(null);
+
+    // token balances
+    const { tokenBalance : baseTokenBalance } = useTokenBalance({ mintData: baseMint, walletAddress: ammAddress });
+    const { tokenBalance : quoteTokenBalance } = useTokenBalance({ mintData: quoteMint, walletAddress: ammAddress });
+
+
     const [error, setError] = useState<string | null>(null);
 
     const check_initial_data = useRef<boolean>(true);
@@ -52,6 +62,9 @@ const useAMM = (props: useAMMProps | null) => {
         if (!amm_account) {
             return;
         }
+
+        setAMMAddress(amm_account);
+
         check_initial_data.current = false;
 
         let amm_data = await request_raw_account_data("", amm_account);
@@ -66,11 +79,8 @@ const useAMM = (props: useAMMProps | null) => {
         let plugins: AMMPluginData = getAMMPlugins(amm);
         setAMMPlugins(plugins);
 
-        let listing_account = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-        let listing_data = await request_raw_account_data("", listing_account);
-
-        const [listing] = ListingData.struct.deserialize(listing_data);
-        setListing(listing);
+        setBaseTokenAccount(amm.base_key);
+        setQuoteTokenAccount(amm.quote_key);
 
         let baseMint = await getMintData(amm.base_mint.toString());
         let quoteMint = await getMintData(amm.quote_mint.toString());
@@ -139,7 +149,7 @@ const useAMM = (props: useAMMProps | null) => {
     }, [connection, pageName, fetchInitialAMMData, getAMMDataAccount, handleAMMAccountChange]);
 
     // Return the current token balance and any error message
-    return { amm, ammPlugins, listing, baseMint, quoteMint, lpMint, error };
+    return { amm, ammPlugins, baseMint, quoteMint, lpMint, baseTokenAccount, quoteTokenAccount, baseTokenBalance, quoteTokenBalance, error };
 };
 
 export default useAMM;

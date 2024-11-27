@@ -9,6 +9,7 @@ import { getMintData } from "../../components/amm/launch";
 interface UseTokenBalanceProps {
     mintAddress?: PublicKey | null;
     mintData?: MintData | null;
+    walletAddress?: PublicKey | null;
 }
 
 const useTokenBalance = (props: UseTokenBalanceProps | null) => {
@@ -21,9 +22,6 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
     const { connection } = useConnection();
     const wallet = useWallet();
 
-    // Get the mintData from the app's root context
-    const { mintData: mintDataMap } = useAppRoot();
-
     // Ref to store the subscription ID, persists across re-renders
     const subscriptionRef = useRef<number | null>(null);
 
@@ -31,6 +29,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
 
     const mintAddress = props?.mintAddress || null;
     const mintData = props?.mintData || null;
+    const walletAddress = props?.walletAddress || null;
 
     // Function to get mint data for the given mint address
     const fetchMintData = useCallback(async () => {
@@ -49,40 +48,38 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
             return;
         }
 
-        if (!mintDataMap || !mintAddress) {
+        if (!mintAddress) {
             setError("Mint data is not available");
             setTokenMint(null);
             return;
         }
-        const mint = mintDataMap.get(mintAddress.toString());
-        if (!mint) {
-            // if we dont have the mint data, we should fetch it
-            let newMintData = await getMintData(mintAddress.toString());
-            if (newMintData) {
-                setTokenMint(newMintData);
-                haveMintData.current = true;
-            }
-            return;
+
+        // fetch the mint data
+        let newMintData = await getMintData(mintAddress.toString());
+        if (newMintData) {
+            setTokenMint(newMintData);
+            haveMintData.current = true;
         }
-        setTokenMint(mint);
-        haveMintData.current = true;
-    }, [mintDataMap, mintData, mintAddress]);
+        return;
+        
+    }, [mintData, mintAddress]);
 
     // Function to get the user's token account address
     const getUserTokenAccount = useCallback(() => {
-        if (!wallet.publicKey) return null;
+        if (!wallet.publicKey && !walletAddress) return null;
         if (!tokenMint) return null;
 
-        return getAssociatedTokenAddressSync(tokenMint.mint.address, wallet.publicKey, true, tokenMint.token_program);
-    }, [wallet.publicKey, tokenMint]);
+        let userAddress = walletAddress || wallet.publicKey;
+
+        return getAssociatedTokenAddressSync(tokenMint.mint.address, userAddress, true, tokenMint.token_program);
+    }, [wallet.publicKey, walletAddress, tokenMint]);
 
     // Function to fetch the current token balance
     const fetchTokenBalance = useCallback(async () => {
         const userTokenAccount = getUserTokenAccount();
         if (!userTokenAccount) return;
-
-        await fetchMintData();
         if (!tokenMint) return;
+
         try {
             const userAmount = await request_token_amount("", userTokenAccount);
             setTokenBalance(userAmount / Math.pow(10, tokenMint.mint.decimals));
@@ -134,7 +131,7 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
                 subscriptionRef.current = null;
             }
         };
-    }, [connection, mintDataMap, tokenMint, fetchTokenBalance, getUserTokenAccount, handleAccountChange]);
+    }, [connection, tokenMint, fetchMintData, fetchTokenBalance, getUserTokenAccount, handleAccountChange]);
 
     // Return the current token balance and any error message
     return { tokenBalance, error };

@@ -26,8 +26,8 @@ const RemoveLiquidityPanel = ({
     let isLoading = removeLiquidityRaydiumLoading || updateCookLiquidityLoading;
 
     let lp_raw = Math.floor(token_amount * Math.pow(10, 9));
-    let lp_quote_output = (amm_quote_balance * lp_raw) / amm_lp_balance / Math.pow(10, 9);
-    let lp_base_output = (amm_base_balance * lp_raw) / amm_lp_balance / Math.pow(10, base_mint.mint.decimals);
+    let lp_quote_output = (amm_quote_balance * lp_raw) / amm_lp_balance;
+    let lp_base_output = (amm_base_balance * lp_raw) / amm_lp_balance;
 
     let quote_output_string = formatPrice(lp_quote_output, 5);
     let base_output_string = formatPrice(lp_base_output, base_mint.mint.decimals);
@@ -42,7 +42,7 @@ const RemoveLiquidityPanel = ({
                         <p
                             className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
-                                setTokenAmount(user_lp_balance / 2 / Math.pow(10, 9));
+                                setTokenAmount(user_lp_balance / 2 );
                             }}
                         >
                             Half
@@ -53,7 +53,7 @@ const RemoveLiquidityPanel = ({
                         <p
                             className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
-                                setTokenAmount(user_lp_balance / Math.pow(10, 9));
+                                setTokenAmount(user_lp_balance );
                             }}
                         >
                             Max

@@ -41,18 +41,18 @@ function getBaseOutput(
     baseDecimals: number,
 ): number[] {
     let amm_quote_fee = Math.ceil((quote_input_amount * fee) / 100 / 100);
-    let input_ex_fees = quote_input_amount - amm_quote_fee;
+    let input_ex_fees = (quote_input_amount - amm_quote_fee) / Math.pow(10, 9);
 
-    let base_output = (input_ex_fees * amm_base_balance) / (amm_quote_balance + input_ex_fees) / Math.pow(10, baseDecimals);
+    let base_output = (input_ex_fees * amm_base_balance) / (amm_quote_balance + input_ex_fees);
 
-    let price = amm_quote_balance / Math.pow(10, 9) / (amm_base_balance / Math.pow(10, baseDecimals));
-    let base_no_slip = input_ex_fees / Math.pow(10, 9) / price;
+    let price = amm_quote_balance / amm_base_balance;
+    let base_no_slip = input_ex_fees / price;
 
     return [base_output, base_no_slip];
 }
 
 function getScalingFactor(quoteAmount: number, pluginData: AMMPluginData): number {
-    let threshold = bignum_to_num(pluginData.liquidity_threshold);
+    let threshold = bignum_to_num(pluginData.liquidity_threshold) / Math.pow(10, 9);
     //console.log("Scaling factor", quoteAmount, threshold,  Math.min(1, ((pluginData.liquidity_scalar / 10) * quoteAmount) / threshold));
     if (quoteAmount > threshold) {
         return 1.0;
@@ -89,24 +89,24 @@ function CalculateChunkedOutput(
     for (let i = 0; i < chunks; i++) {
         let scaling = getScalingFactor(currentQuote, pluginData);
         let amm_quote_fee = (chunkSize * fee) / 100 / 100;
-        let input_ex_fees = chunkSize - amm_quote_fee;
-        let scaledInput = input_ex_fees * scaling;
-        //console.log("chunk", i, "input", chunkSize, "fee", amm_quote_fee, "ex", input_ex_fees);
+        let input_ex_fees = (chunkSize - amm_quote_fee);
+        let scaledInput = input_ex_fees * scaling / Math.pow(10, 9);
+        //console.log("chunk", i, "input", scaledInput, "base", currentBase, "quote", currentQuote);
         let output = (scaledInput * currentBase) / (currentQuote + scaledInput);
 
-        let price = currentQuote / Math.pow(10, 9) / (currentBase / Math.pow(10, baseDecimals));
-        let base_no_slip = scaledInput / Math.pow(10, 9) / price;
+        let price = currentQuote / (currentBase);
+        let base_no_slip = scaledInput / price;
 
         //console.log("chunk", i, "input", chunkSize, "output", output / Math.pow(10, baseDecimals), "NoSlip", base_no_slip, "slippage", 100 * (base_no_slip / (output / Math.pow(10, baseDecimals)) - 1));
 
         noSlipOutput += base_no_slip;
 
         totalOutput += output;
-        currentQuote += chunkSize;
+        currentQuote += chunkSize / Math.pow(10, 9);
         currentBase -= output;
     }
 
-    return [totalOutput / Math.pow(10, baseDecimals), noSlipOutput];
+    return [totalOutput, noSlipOutput];
 }
 
 const BuyPanel = ({
