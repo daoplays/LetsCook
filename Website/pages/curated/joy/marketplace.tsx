@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import ViewNFTDetails from "./viewNftDetails";
 import useResponsive from "@/hooks/useResponsive";
 
-interface MarketplaceProps {
+export interface MarketplaceProps {
     ownedNFTs?: AssetWithMetadata[];
     listedNFTs: AssetWithMetadata[];
     allListings?: NFTListingData[];

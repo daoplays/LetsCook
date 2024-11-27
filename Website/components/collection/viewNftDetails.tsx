@@ -45,21 +45,23 @@ function ViewNFTDetails({
 
     let asset_name;
     let offchain_attributes = [];
-    let onchain_attributes : Attribute[] = [];
+    let onchain_attributes: Attribute[] = [];
+
     let asset_key: PublicKey | null = null;
     if (nft !== undefined) {
         asset_name = nft.metadata["name"] ? nft.metadata["name"] : nft.asset.name;
-        offchain_attributes = nft.metadata["attributes"] ? nft.metadata["attributes"] : [];
         asset_key = nft ? new PublicKey(nft.asset.publicKey.toString()) : null;
-        onchain_attributes = nft.asset.attributes.attributeList;
-        const index = onchain_attributes.findIndex(attr => attr.key === 'CookWrapIndex');
+
+        offchain_attributes = nft.metadata["attributes"] ? nft.metadata["attributes"] : [];
+        onchain_attributes = nft.asset.attributes ? nft.asset.attributes.attributeList : [];
+        const index = onchain_attributes.findIndex((attr) => attr.key === "CookWrapIndex");
         if (index > -1) {
             onchain_attributes.splice(index, 1);
         }
     }
 
     return (
-        <Modal size="lg" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
+        <Modal size="2xl" isCentered isOpen={isOpened} onClose={onClose} motionPreset="slideInBottom">
             <ModalOverlay />
 
             <ModalContent w={xs ? 380 : 800} style={{ background: "transparent" }}>
@@ -80,25 +82,32 @@ function ViewNFTDetails({
                             <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">{nft.metadata["name"]}</Text>
                         </div>
                         {nft !== undefined && (
-                            <div className="flex w-full items-start justify-center gap-4 text-white">
-                                <Image
-                                    src={nft.metadata["image"]}
-                                    width={200}
-                                    height={200}
-                                    style={{ borderRadius: "8px" }}
-                                    alt="nftImage"
-                                />
-                                <div className="flex flex-col gap-3">
-                                    {offchain_attributes.map((value, index) => (
-                                            <span key={index}>
-                                                {value.trait_type}: {value["value"]}
-                                            </span>
-                                    ))}
-                                    {onchain_attributes.map((value, index) => (
-                                        <span key={index}>
-                                            {value.key}: {value.value}
-                                        </span>
-                                    ))}
+                            <div className="flex flex-col gap-4 lg:flex-row">
+                                <div className="aspect-square rounded-xl">
+                                    <Image
+                                        src={nft?.metadata?.image}
+                                        width={300}
+                                        height={300}
+                                        alt={nft?.metadata?.name || "NFT Image"}
+                                        className="rounded-lg"
+                                    />
+                                </div>
+
+                                <div className="flex-grow">
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {offchain_attributes.map((attr, index) => (
+                                            <div key={index} className="rounded-xl bg-slate-700/50 px-3 py-[1.3rem] backdrop-blur-sm">
+                                                <div className="text-sm text-white/70">{attr.trait_type}</div>
+                                                <div className="mt-1 text-lg font-semibold text-white">{attr.value}</div>
+                                            </div>
+                                        ))}
+                                        {onchain_attributes.map((attr, index) => (
+                                            <div key={index} className="rounded-xl bg-slate-700/50 px-3 py-[1.3rem] backdrop-blur-sm">
+                                                <div className="text-sm text-white/70">{attr.key}</div>
+                                                <div className="mt-1 text-lg font-semibold text-white">{attr.value}</div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -136,7 +145,7 @@ function ViewNFTDetails({
                                 />
                             </div>
                             <Button
-                                className="mt-2 w-fit transition-all hover:opacity-90"
+                                className="mt-2 w-fit rounded-md transition-all hover:opacity-90"
                                 size="lg"
                                 onClick={async (e) => {
                                     if (isUserOwned) {

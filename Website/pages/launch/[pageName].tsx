@@ -112,6 +112,8 @@ const TokenMintPage = () => {
         if (listingData === null || launchList === null) return;
 
         let launch = launchList.get(pageName.toString());
+        if (!launch) return;
+        
         setLaunchData(launch);
         setListing(listingData.get(launch.listing.toString()));
     }, [listingData, launchList, pageName]);

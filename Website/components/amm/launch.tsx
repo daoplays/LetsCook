@@ -29,6 +29,7 @@ import { fetchWithTimeout } from "../../utils/fetchWithTimeout";
 import { useConnection } from "@solana/wallet-adapter-react";
 import useInitExternalAMM from "../../hooks/cookAMM/useInitExternalAMM";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
+import { placeholderIcon } from "@/constant/root";
 
 export async function getMint(connection: Connection, mint_string: string): Promise<[Mint, PublicKey] | null> {
     if (mint_string === "" || !mint_string) {
@@ -51,9 +52,8 @@ export async function getMint(connection: Connection, mint_string: string): Prom
     }
 
     let result = await connection.getAccountInfo(mint_address, "confirmed");
-
     let mint: Mint;
-    if (result.owner.equals(TOKEN_PROGRAM_ID)) {
+    if (result?.owner.equals(TOKEN_PROGRAM_ID)) {
         try {
             mint = unpackMint(mint_address, result, TOKEN_PROGRAM_ID);
             console.log(mint);
@@ -120,8 +120,18 @@ export async function getMintDataWithMint(connection: Connection, mint: Mint, to
         )[0];
         let raw_meta_data = await connection.getAccountInfo(token_meta_key);
 
+        // if we also dont have metaplex metadata then just return with unknown metadata
         if (raw_meta_data === null) {
-            return null;
+            let mint_data: MintData = {
+                mint: mint,
+                uri: "",
+                name: "Unknown",
+                symbol: "Unknown",
+                icon: placeholderIcon,
+                extensions: 0,
+                token_program: token_program,
+            };
+            return mint_data;
         }
 
         let meta_data = Metadata.deserialize(raw_meta_data.data);
@@ -150,11 +160,12 @@ export async function getMintDataWithMint(connection: Connection, mint: Mint, to
         //console.log(uri_json)
         icon = uri_json["image"];
     } catch (error) {
-        console.log("error getting uri, using SOL icon");
+        console.log("error getting uri, using placeholder icon");
         console.log("name", name, uri, mint.address.toString());
         console.log(error);
-        icon = Config.token_image;
+        icon = placeholderIcon;
     }
+
     let mint_data: MintData = {
         mint: mint,
         uri: uri,

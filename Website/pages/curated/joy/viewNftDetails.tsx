@@ -76,7 +76,7 @@ function ViewNFTDetails({
                                     src={nft?.metadata?.image}
                                     width={300}
                                     height={300}
-                                    alt={nft?.metadata?.name}
+                                    alt={nft?.metadata?.name || "NFT Image"}
                                     className="rounded-lg"
                                 />
                             </div>

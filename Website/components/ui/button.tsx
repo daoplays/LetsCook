@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -10,7 +10,7 @@ const buttonVariants = cva(
         variants: {
             variant: {
                 default:
-                    " bg-custom-gradient text-neutral-50 shadow hover:bg-neutral-900/90 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50/90",
+                    "bg-custom-gradient text-neutral-50 shadow hover:bg-neutral-900/90 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50/90",
                 destructive:
                     "bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90",
                 outline:
@@ -22,8 +22,8 @@ const buttonVariants = cva(
             },
             size: {
                 default: "h-9 px-4 py-2",
-                sm: "h-8  px-3 text-xs",
-                lg: "h-10  px-8 text-lg pb-1",
+                sm: "h-8 px-3 text-xs",
+                lg: "h-10 px-8 text-lg pb-1",
                 xl: "h-14 px-12",
                 icon: "h-9 w-9",
             },
@@ -37,12 +37,27 @@ const buttonVariants = cva(
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
     asChild?: boolean;
+    isLoading?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, ...props }, ref) => {
-    const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
-});
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+    ({ className, variant, size, asChild = false, isLoading = false, children, disabled, ...props }, ref) => {
+        const Comp = asChild ? Slot : "button";
+        return (
+            <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} disabled={disabled || isLoading} {...props}>
+                {isLoading ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {children}
+                    </>
+                ) : (
+                    children
+                )}
+            </Comp>
+        );
+    },
+);
+
 Button.displayName = "Button";
 
 export { Button, buttonVariants };

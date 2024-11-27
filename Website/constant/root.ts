@@ -18,3 +18,5 @@ export const distributionLabels = {
         { title: "Others", color: "#FD98FE" },
     ],
 };
+
+export const placeholderIcon = "https://snipboard.io/FdHf7J.jpg";

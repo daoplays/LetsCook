@@ -76,8 +76,6 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
     const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
 
-    console.log("launch type", getLaunchType(newLaunchData.current.launch_type));
-
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
     // token extensions
@@ -276,7 +274,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
             return false;
         }
 
-        if (launch_type !== "Instant" && parseFloat(ticketPrice) < 0.00001) {
+        if (launch_type !== "None" && launch_type !== "Instant" && parseFloat(ticketPrice) < 0.00001) {
             toast.error("Minimum ticket price is 0.00001 SOL");
             return false;
         }
@@ -585,6 +583,18 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                             </Text>
                                         </Tooltip>
                                     </Radio>
+                                    <Radio value="None">
+                                        <Tooltip
+                                            label="No Launch, the token is created and sent to your wallet."
+                                            hasArrow
+                                            fontSize="large"
+                                            offset={[0, 10]}
+                                        >
+                                            <Text color="white" m={0} className="font-face-rk" fontSize={lg ? "medium" : "lg"}>
+                                                None
+                                            </Text>
+                                        </Tooltip>
+                                    </Radio>
                                 </Stack>
                             </RadioGroup>
                         </HStack>
@@ -601,7 +611,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <div className={styles.textLabelInput}>
                                             <Input
-                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
+                                                disabled={
+                                                    launch_type === "None" ||
+                                                    launch_type === "Instant" ||
+                                                    newLaunchData.current.edit_mode === true
+                                                }
                                                 size={lg ? "md" : "lg"}
                                                 placeholder="Enter Transfer Fee in bps (Ex. 100 = 1%)"
                                                 value={transferFee}
@@ -617,7 +631,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
 
                                         <div className={styles.textLabelInput}>
                                             <Input
-                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
+                                                disabled={
+                                                    launch_type === "None" ||
+                                                    launch_type === "Instant" ||
+                                                    newLaunchData.current.edit_mode === true
+                                                }
                                                 size={lg ? "md" : "lg"}
                                                 placeholder="Max number of tokens taxed in a single transaction"
                                                 value={maxTransferFee}
@@ -635,7 +653,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <HStack spacing={0} style={{ flexGrow: 1 }}>
                                             <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                 <Input
-                                                    disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
+                                                    disabled={
+                                                        launch_type === "None" ||
+                                                        launch_type === "Instant" ||
+                                                        newLaunchData.current.edit_mode === true
+                                                    }
                                                     size={lg ? "md" : "lg"}
                                                     placeholder="Enter Permanent Delegate ID"
                                                     value={permanentDelegate}
@@ -662,7 +684,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <HStack spacing={0} style={{ flexGrow: 1 }}>
                                             <div className={styles.textLabelInput} style={{ width: "95%", marginRight: "12px" }}>
                                                 <Input
-                                                    disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
+                                                    disabled={
+                                                        launch_type === "None" ||
+                                                        launch_type === "Instant" ||
+                                                        newLaunchData.current.edit_mode === true
+                                                    }
                                                     size={lg ? "md" : "lg"}
                                                     placeholder="Enter Transfer Hook Program ID"
                                                     value={transferHookID}
@@ -696,7 +722,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <div className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Total Number of Winning Tickets"}
-                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
+                                                disabled={
+                                                    launch_type === "None" ||
+                                                    launch_type === "Instant" ||
+                                                    newLaunchData.current.edit_mode === true
+                                                }
                                                 size={lg ? "md" : "lg"}
                                                 required
                                                 value={mints}
@@ -712,7 +742,11 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Price Per Ticket"}
-                                                disabled={launch_type === "Instant" || newLaunchData.current.edit_mode === true}
+                                                disabled={
+                                                    launch_type === "None" ||
+                                                    launch_type === "Instant" ||
+                                                    newLaunchData.current.edit_mode === true
+                                                }
                                                 size={lg ? "md" : "lg"}
                                                 required
                                                 value={ticketPrice}
@@ -788,6 +822,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                             handleDistributionChange(e, Distribution.Raffle);
                                                         }}
                                                         disabled={
+                                                            launch_type === "None" ||
                                                             launch_type === "Instant" ||
                                                             (totalPercentage === 100 && distribution[Distribution.Raffle] === 0
                                                                 ? true
@@ -819,6 +854,7 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                                             handleDistributionChange(e, Distribution.LP);
                                                         }}
                                                         disabled={
+                                                            launch_type === "None" ||
                                                             launch_type === "Instant" ||
                                                             (totalPercentage === 100 && distribution[Distribution.LP] === 0 ? true : false)
                                                         }

@@ -127,6 +127,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
         console.log("Token mint not found");
         return <></>;
     }
+
     return (
         <TableRow
             style={{

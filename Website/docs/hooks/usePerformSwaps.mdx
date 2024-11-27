@@ -1,0 +1,59 @@
+# usePerformSwap Hook
+
+## Overview
+
+A hook for executing swaps on our AMM. Handles all aspects of creating and submitting
+Solana transactions for token swaps.
+
+## Installation
+
+No additional installation required. Uses internal AMM contracts and Solana web3 libraries.
+
+## Parameters
+
+| Name | Type    | Description                                  |
+| ---- | ------- | -------------------------------------------- |
+| amm  | AMMData | AMM instance containing base/quote mint info |
+
+## Returns
+
+| Name        | Type     | Description           |
+| ----------- | -------- | --------------------- |
+| PerformSwap | Function | Executes market order |
+| isLoading   | boolean  | Transaction status    |
+
+## PerformSwap Parameters
+
+| Name        | Type   | Description           |
+| ----------- | ------ | --------------------- |
+| tokenAmount | number | Amount of base token  |
+| solAmount   | number | Amount of SOL         |
+| orderType   | 0 \| 1 | 0 for buy, 1 for sell |
+
+## Usage Notes
+
+-   Requires connected wallet
+-   Handles SOL wrapping automatically
+-   Includes priority fees optimization
+-   20 second timeout for transaction confirmation
+
+## Example
+
+```tsx
+const Trading = ({ amm }) => {
+    const { PerformSwap, isLoading } = usePerformSwap(amm);
+
+    const handleBuy = async () => {
+        // Buy 1 token for 0.1 SOL
+        await PerformSwap(1, 0.1, 0);
+    };
+
+    return <Button onClick={handleBuy}>Buy</Button>;
+};
+```
+
+## Error Handling
+
+-   Displays toast notifications for transaction status
+-   Handles wallet connection errors
+-   Manages transaction timeouts

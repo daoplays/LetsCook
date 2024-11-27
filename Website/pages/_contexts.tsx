@@ -196,13 +196,12 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
             if (event_data[0] === 0) {
                 try {
+                    const [launch] = LaunchData.struct.deserialize(event_data);
                     setLaunchData((currentData) => {
-                        const [launch] = LaunchData.struct.deserialize(event_data);
                         const newData = new Map(currentData);
                         newData.set(launch.page_name, launch);
                         return newData;
                     });
-
                     return;
                 } catch (error) {
                     //console.log("bad launch data", data);
@@ -511,6 +510,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     launch_data.set(launch.page_name, launch);
+
                 } catch (error) {
                     //console.log("bad launch data", data);
                 }
@@ -668,7 +668,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         });
 
         collections.forEach((collection, key) => {
-            //console.log("add ", collections[i].keys[CollectionKeys.MintAddress].toString());
+            //console.log("add ", collection.page_name, collection.keys[CollectionKeys.MintAddress].toString());
 
             if (!trade_mints.includes(collection.keys[CollectionKeys.MintAddress].toString()))
                 trade_mints.push(collection.keys[CollectionKeys.MintAddress].toString());

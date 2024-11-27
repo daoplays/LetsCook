@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import { CollectionData, NFTListingData } from "./collectionState";
+import { CollectionData, CollectionPluginData, NFTListingData, getCollectionPlugins } from "./collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";
@@ -16,6 +16,9 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import { Config } from "../Solana/constants";
 import { lamportsToSol } from "@/utils/lamportToSol";
+import { SlOptionsVertical } from "react-icons/sl";
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarTrigger } from "../ui/menubar";
+import TransferNft from "./transferNFT";
 
 interface MyNFTsPanelProps {
     ownedNFTs?: AssetWithMetadata[];
@@ -25,6 +28,7 @@ interface MyNFTsPanelProps {
 }
 
 function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsPanelProps) {
+    const { sm } = useResponsive();
     const wallet = useWallet();
     const [selectedNFT, setSelectedNFT] = useState<AssetWithMetadata | null>(null);
     const [isNFTListed, setIsNFTListed] = useState(false);
@@ -38,7 +42,9 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
 
     const { UnlistNFT } = useUnlistNFT(collection);
     const { isOpen: isViewDetailsOpened, onOpen: openViewDetailsModal, onClose: closeViewDetailsModal } = useDisclosure();
+    const { isOpen: isTransferNftOpened, onOpen: openTransferNftModal, onClose: closeTransferNftModal } = useDisclosure();
 
+    const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
     const handleNFTClick = (nft: AssetWithMetadata, isListed: boolean, price?: number, index?: number) => {
         setNftIndex(index);
         setNftPrice(price);
@@ -47,6 +53,10 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
         openViewDetailsModal();
     };
 
+    const handleTransferNFTClick = (nft: AssetWithMetadata) => {
+        setSelectedNFT(nft);
+        openTransferNftModal();
+    };
     // Extract public keys of NFTs listed by the owner
     const ownerListedNFTPubkeys = wallet.connected
         ? allListings?.filter((listing) => listing?.seller.equals(wallet.publicKey)).map((listing) => listing.asset) || []
@@ -56,6 +66,9 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
     const ownerListedNFTs = wallet.connected
         ? listedNFTs.filter((nft) => ownerListedNFTPubkeys.some((pubkey) => pubkey.equals(new PublicKey(nft.asset.publicKey))))
         : [];
+
+    const plugins: CollectionPluginData = getCollectionPlugins(collection);
+    const mintOnly = plugins.mintOnly;
 
     return (
         <>
@@ -98,6 +111,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
 
                                 const nftIndex = listedNFTs.indexOf(nft);
 
+                                const nftAssetKey = new PublicKey(nft.asset.publicKey);
                                 return (
                                     <GridItem key={`nft-${index}`}>
                                         <VStack>
@@ -106,13 +120,54 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                 onMouseEnter={() => handleMouseEnter(index)}
                                                 onMouseLeave={handleMouseLeave}
                                             >
-                                                <Image
-                                                    src={nft.metadata["image"]}
-                                                    width={180}
-                                                    height={180}
-                                                    style={{ borderRadius: "8px" }}
-                                                    alt="nftImage"
-                                                />
+                                                <div className="relative">
+                                                    {!isListed && (
+                                                        <Menubar className="absolute right-0 top-0 z-10 m-2 cursor-pointer rounded-md bg-[rgba(0,0,0,0.5)] text-white">
+                                                            <MenubarMenu>
+                                                                <MenubarTrigger>
+                                                                    <SlOptionsVertical className="text-sm" />
+                                                                </MenubarTrigger>
+                                                                <MenubarContent>
+                                                                    {!mintOnly && (
+                                                                        <MenubarItem onClick={() => WrapNFT(nftAssetKey)}>
+                                                                            Unwrap
+                                                                        </MenubarItem>
+                                                                    )}
+                                                                    <MenubarItem onClick={() => handleTransferNFTClick(nft)}>
+                                                                        Transfer
+                                                                    </MenubarItem>
+                                                                </MenubarContent>
+                                                            </MenubarMenu>
+                                                        </Menubar>
+                                                    )}
+                                                    <Image
+                                                        src={nft.metadata["image"]}
+                                                        width={180}
+                                                        height={180}
+                                                        style={{ borderRadius: "8px" }}
+                                                        alt="nftImage"
+                                                    />
+                                                    {isListed && (
+                                                        <div className="absolute bottom-0 right-0">
+                                                            <span className="absolute bottom-2 right-2 mt-2 flex items-center justify-center gap-1 rounded-lg bg-black/50 px-2 py-1 shadow-lg ring-1 ring-white/10 backdrop-blur-sm md:px-3 md:py-2">
+                                                                <p className="text-sm font-semibold text-white md:text-[1rem]">
+                                                                    {lamportsToSol(price)}
+                                                                </p>
+                                                                <div className="flex items-center text-white">
+                                                                    <div className="w-4 drop-shadow-md md:w-6">
+                                                                        <Image
+                                                                            src={Config.token_image}
+                                                                            width={sm ? 18 : 23}
+                                                                            height={sm ? 18 : 23}
+                                                                            alt={Config.token}
+                                                                            className="rounded-full"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <VStack
                                                     style={{
                                                         ...overlayVisibleStyle,
@@ -138,28 +193,11 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                     <FaEye />
                                                 </VStack>
                                             </Box>
-                                            {isListed && (
-                                                <span className="mt-2 flex items-center justify-center font-semibold">
-                                                    <p className="text-white">{lamportsToSol(price)}</p>
-                                                    <div className="flex flex-col gap-2 text-white">
-                                                        <button className="flex items-center gap-1 rounded-lg px-2.5">
-                                                            <div className="w-6">
-                                                                <Image
-                                                                    src={Config.token_image}
-                                                                    width={25}
-                                                                    height={25}
-                                                                    alt="$JOY Icon"
-                                                                    className="rounded-full"
-                                                                />
-                                                            </div>
-                                                        </button>
-                                                    </div>
-                                                </span>
-                                            )}
+
                                             {isListed ? (
                                                 // Unlist button if the NFT is listed
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={async () => {
                                                         await UnlistNFT(new PublicKey(nft.asset.publicKey), nftIndex);
@@ -170,7 +208,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                             ) : (
                                                 // List button if the NFT is not listed
                                                 <Button
-                                                    className="mt-2 transition-all hover:opacity-90"
+                                                    className="mt-2 w-full rounded-md transition-all hover:opacity-90"
                                                     size="lg"
                                                     onClick={() => {
                                                         handleNFTClick(nft, isListed);
@@ -210,6 +248,14 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                     nftIndex={nftIndex}
                 />
             )}
+            <TransferNft
+                isOpened={isTransferNftOpened}
+                onClose={() => {
+                    closeTransferNftModal();
+                }}
+                collection={collection}
+                nft={selectedNFT}
+            />
         </>
     );
 }

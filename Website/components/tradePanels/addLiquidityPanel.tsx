@@ -34,16 +34,16 @@ const AddLiquidityPanel = ({
         total_base_fee += Number(calculateFee(base_transfer_fee_config.newerTransferFee, BigInt(base_raw)));
     }
 
-    let base_input_amount = base_raw - total_base_fee;
+    let base_input_amount = (base_raw - total_base_fee) / Math.pow(10, base_mint.mint.decimals);
 
-    let quote_output = (base_input_amount * amm_quote_balance) / (base_input_amount + amm_base_balance) / Math.pow(10, 9);
-    let max_sol_amount = Math.floor(quote_output * Math.pow(10, 9));
+    let quote_output = (base_input_amount * amm_quote_balance) / (base_input_amount + amm_base_balance);
+    let max_sol_amount = Math.floor(quote_output);
     let quote_string = formatPrice(quote_output, 5);
 
-    let lp_generated = (base_raw * (amm_lp_balance / amm_base_balance)) / Math.pow(10, 9);
+    let lp_generated = ((base_raw / Math.pow(10, base_mint.mint.decimals)) * (amm_lp_balance / amm_base_balance)) / Math.pow(10, 9);
     let lp_string = formatPrice(lp_generated, 5);
 
-    console.log(base_input_amount, amm_quote_balance, amm_base_balance);
+    //console.log(token_amount, base_input_amount, amm_quote_balance, amm_base_balance);
 
     return (
         <div className="flex w-full flex-col gap-2 px-4 pb-6">

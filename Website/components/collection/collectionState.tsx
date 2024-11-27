@@ -33,6 +33,36 @@ import bs58 from "bs58";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
+export class MarketplaceSummary {
+    constructor(readonly num_listings: number) {}
+
+    static readonly struct = new BeetStruct<MarketplaceSummary>(
+        [["num_listings", u32]],
+        (args) => new MarketplaceSummary(args.num_listings!),
+        "MarketplaceSummary",
+    );
+}
+
+export class NewNFTListingData {
+    constructor(
+        readonly collection: PublicKey,
+        readonly asset: PublicKey,
+        readonly seller: PublicKey,
+        readonly price: bignum,
+    ) {}
+
+    static readonly struct = new BeetStruct<NewNFTListingData>(
+        [
+            ["collection", publicKey],
+            ["asset", publicKey],
+            ["seller", publicKey],
+            ["price", u64],
+        ],
+        (args) => new NewNFTListingData(args.collection!, args.asset!, args.seller!, args.price!),
+        "NewNFTListingData",
+    );
+}
+
 export class NFTListingData {
     constructor(
         readonly asset: PublicKey,

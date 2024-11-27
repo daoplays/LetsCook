@@ -121,6 +121,13 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             mint_account.token_program,
         );
 
+        let team_token_account_key = await getAssociatedTokenAddress(
+            token_mint, // mint
+            launchData.keys[CollectionKeys.TeamWallet], // owner
+            true, // allow owner off curve
+            mint_account.token_program,
+        );
+
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
             PROGRAM,
@@ -129,11 +136,16 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         //console.log("get assignment data");
         let assignment_data = await request_assignment_data(nft_assignment_account);
 
-        console.log("assignment randoms", assignment_data.random_address.toString());
         if (assignment_data === null) {
-            // console.log("no assignment data found");
+            toast.error("Unable to retrieve nft assignment data, please try again later", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            setIsLoading(false);
             return;
         }
+        console.log("assignment randoms", assignment_data.random_address.toString());
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -179,16 +191,25 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
 
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
+
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
-            { pubkey: nft_assignment_account, isSigner: false, isWritable: true },
-            { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
-            { pubkey: nft_mint_account, isSigner: true, isWritable: true },
 
-            { pubkey: CORE, isSigner: false, isWritable: false },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
-            { pubkey: assignment_data.random_address, isSigner: false, isWritable: false },
+            { pubkey: nft_mint_account, isSigner: true, isWritable: true },
+            { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
+
+            { pubkey: launchData.keys[CollectionKeys.TeamWallet], isSigner: false, isWritable: true },
+            { pubkey: token_mint, isSigner: false, isWritable: false },
+            { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: user_token_account_key, isSigner: false, isWritable: true },
+            { pubkey: team_token_account_key, isSigner: false, isWritable: true },
         ];
+
+        account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: CORE, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
+        account_vector.push({ pubkey: mint_account.token_program, isSigner: false, isWritable: false });
 
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
