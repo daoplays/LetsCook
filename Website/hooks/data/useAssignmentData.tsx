@@ -87,15 +87,13 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
         }
 
         setAssignmentData(assignment_data);
-    }, [wallet]);
+    }, [wallet, getAssignmentDataAccount]);
 
     // Function to update asset information
     const updateAsset = useCallback(async () => {
         if (!collection || !assignmentData) {
             return;
         }
-
-        //console.log("update assignment", assignmentData);
 
         if (assignmentData.status < 2) {
             setAsset(null);
@@ -108,7 +106,6 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
 
             try {
                 metadata = await fetch(json_url).then((res) => res.json());
-                //console.log("json:", metadata);
 
                 const umi = createUmi(Config.RPC_NODE, "confirmed");
 
@@ -117,10 +114,8 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
 
                 if (myAccount.exists) {
                     asset = await deserializeAssetV1(myAccount as RpcAccount);
-                    //console.log("new asset", asset);
 
                     metadata = await fetch(asset.uri).then((res) => res.json());
-                    //console.log("json2:", metadata);
                 } else {
                     asset = null;
                 }
@@ -154,8 +149,8 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
             setError(null);
             return;
         }
-
         const userAccount = getAssignmentDataAccount();
+
         if (!userAccount) return;
 
         // Fetch the initial account data
@@ -174,12 +169,11 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
                 subscriptionRef.current = null;
             }
         };
-    }, [connection, collectionMint, fetchAssignmentData, getAssignmentDataAccount, handleAccountChange]);
+    }, [connection, wallet, collectionMint, fetchAssignmentData, getAssignmentDataAccount, handleAccountChange]);
 
     // Callback function to handle randoms account changes
     const handleRandomsChange = useCallback((accountInfo: any) => {
         let account_data = Buffer.from(accountInfo.data, "base64");
-        console.log("randoms account update", account_data);
         if (account_data.length === 0) {
             setValidRandoms(false);
             return;
@@ -200,7 +194,6 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
 
     // poll the randoms account slowly as a fallback for the WS
     const pollRandomsAccount = useCallback(async () => {
-        console.log("Poll randoms account");
         if (!randomsAccount.current) return;
 
         try {
@@ -234,7 +227,6 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
         }
 
         randomsAccount.current = random_address;
-        console.log("randoms account", randomsAccount.current.toString());
 
         // we now set up both a WS and a slow poll to monitor the randoms account
 
@@ -281,7 +273,6 @@ const useAssignmentData = (props: UseAssignmentDataProps | null) => {
     // Effect to stop polling when randoms become valid
     useEffect(() => {
         if (validRandoms && pollIntervalRef.current) {
-            console.log("clear the poll");
             clearInterval(pollIntervalRef.current);
             pollIntervalRef.current = null;
         }

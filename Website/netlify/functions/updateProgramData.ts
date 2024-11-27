@@ -1,7 +1,8 @@
 import { ListingData, RunGPA, GPAccount, MintData } from "../../components/Solana/state";
-import { Config } from "../../components/Solana/constants";
+import { CollectionKeys, Config } from "../../components/Solana/constants";
 import { getTradeMintData, serializeMintData } from "../../utils/getTokenMintData";
 import admin from "firebase-admin";
+import { CollectionData } from "@/components/collection/collectionState";
 
 // Initialize Firebase Admin SDK
 let firebaseApp = null;
@@ -72,6 +73,13 @@ exports.handler = async function (event, context) {
             } catch (error) {
                 console.log("Failed to deserialize listing data:", error);
             }
+            continue;
+        }
+
+        if (data[0] === 8) {
+            const [collection] = CollectionData.struct.deserialize(data);
+            if (!mintKeys.includes(collection.keys[CollectionKeys.MintAddress].toString()))
+                mintKeys.push(collection.keys[CollectionKeys.MintAddress].toString());
             continue;
         }
     }

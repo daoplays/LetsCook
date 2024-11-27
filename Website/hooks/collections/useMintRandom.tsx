@@ -136,11 +136,16 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         //console.log("get assignment data");
         let assignment_data = await request_assignment_data(nft_assignment_account);
 
-        console.log("assignment randoms", assignment_data.random_address.toString());
         if (assignment_data === null) {
-            // console.log("no assignment data found");
+            toast.error("Unable to retrieve nft assignment data, please try again later", {
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+            setIsLoading(false);
             return;
         }
+        console.log("assignment randoms", assignment_data.random_address.toString());
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 

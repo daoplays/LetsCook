@@ -53,7 +53,7 @@ function ViewNFTDetails({
         asset_key = nft ? new PublicKey(nft.asset.publicKey.toString()) : null;
 
         offchain_attributes = nft.metadata["attributes"] ? nft.metadata["attributes"] : [];
-        onchain_attributes = nft.asset.attributes.attributeList;
+        onchain_attributes = nft.asset.attributes ? nft.asset.attributes.attributeList : [];
         const index = onchain_attributes.findIndex((attr) => attr.key === "CookWrapIndex");
         if (index > -1) {
             onchain_attributes.splice(index, 1);
