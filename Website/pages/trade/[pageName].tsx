@@ -135,7 +135,7 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { mmLaunchData, listingData } = useAppRoot();
+    const { mmLaunchData } = useAppRoot();
 
     const { SOLPrice } = useSOLPrice();
 
