@@ -1,9 +1,9 @@
-import React from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalBody } from '@chakra-ui/react';
-import Image from 'next/image';
+import React from "react";
+import { Modal, ModalOverlay, ModalContent, ModalBody } from "@chakra-ui/react";
+import Image from "next/image";
 import { FaCoins } from "react-icons/fa";
-import { Loader2Icon } from 'lucide-react';
-import { AssetWithMetadata } from '@/pages/collection/[pageName]';
+import { Loader2Icon } from "lucide-react";
+import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 
 interface ContractModalProps {
     isOpen: boolean;
@@ -13,22 +13,16 @@ interface ContractModalProps {
     isLoading?: boolean;
 }
 
-const ContractModal = ({ 
-    isOpen, 
-    onClose, 
-    onConfirm, 
-    mercenary, 
-    isLoading = false 
-}: ContractModalProps) => {
+const ContractModal = ({ isOpen, onClose, onConfirm, mercenary, isLoading = false }: ContractModalProps) => {
     const [price, setPrice] = React.useState<string>("");
-    
+
     if (!mercenary) return null;
 
     const name = mercenary.metadata["name"];
-    
+
     const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         // Only allow numbers and decimals
-        const value = e.target.value.replace(/[^0-9.]/g, '');
+        const value = e.target.value.replace(/[^0-9.]/g, "");
         setPrice(value);
     };
 
@@ -40,13 +34,7 @@ const ContractModal = ({
     };
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onClose={onClose} 
-            isCentered 
-            motionPreset="none" 
-            size="2xl"
-        >
+        <Modal isOpen={isOpen} onClose={onClose} isCentered motionPreset="none" size="2xl">
             <ModalOverlay className="backdrop-blur-sm" />
             <ModalContent className="bg-transparent">
                 <ModalBody className="overflow-visible p-0">
@@ -65,7 +53,8 @@ const ContractModal = ({
                             <div className="flex flex-col gap-2">
                                 <h2 className="font-serif text-xl text-[#C4A484]">Garrett Voss, The Broker</h2>
                                 <p className="font-serif italic text-[#8B7355]">
-                                &quot;I&apos;ll find a buyer for your blade. Just name your price, and I&apos;ll handle the rest...&quot;
+                                    &quot;I&apos;ll find a buyer for your blade. Just name your price, and I&apos;ll handle the
+                                    rest...&quot;
                                 </p>
                             </div>
                         </div>
@@ -76,7 +65,7 @@ const ContractModal = ({
                                 <Image
                                     src={mercenary.metadata["image"]}
                                     fill
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ objectFit: "cover" }}
                                     alt={name}
                                     className="opacity-80"
                                 />
@@ -116,11 +105,7 @@ const ContractModal = ({
                                 disabled={!price || isLoading}
                                 className="flex-1 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-8 py-3 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95 disabled:opacity-50"
                             >
-                                {isLoading ? (
-                                    <Loader2Icon className="mx-auto animate-spin" />
-                                ) : (
-                                    "Set Contract"
-                                )}
+                                {isLoading ? <Loader2Icon className="mx-auto animate-spin" /> : "Set Contract"}
                             </button>
                         </div>
                     </div>

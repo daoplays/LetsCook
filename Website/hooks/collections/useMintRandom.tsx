@@ -211,7 +211,6 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         account_vector.push({ pubkey: assignment_data.random_address, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: mint_account.token_program, isSigner: false, isWritable: false });
 
-
         if (transfer_hook_program_account !== null) {
             account_vector.push({ pubkey: transfer_hook_program_account, isSigner: false, isWritable: true });
             account_vector.push({ pubkey: transfer_hook_validation_account, isSigner: false, isWritable: true });

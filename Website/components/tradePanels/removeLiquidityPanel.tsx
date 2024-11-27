@@ -42,7 +42,7 @@ const RemoveLiquidityPanel = ({
                         <p
                             className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
-                                setTokenAmount(user_lp_balance / 2 );
+                                setTokenAmount(user_lp_balance / 2);
                             }}
                         >
                             Half
@@ -53,7 +53,7 @@ const RemoveLiquidityPanel = ({
                         <p
                             className="text-md cursor-pointer text-white text-opacity-50"
                             onClick={() => {
-                                setTokenAmount(user_lp_balance );
+                                setTokenAmount(user_lp_balance);
                             }}
                         >
                             Max

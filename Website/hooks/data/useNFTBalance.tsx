@@ -32,7 +32,7 @@ export async function getCollectionAssets(collectionAddress: PublicKey) {
         const uriToAssets = new Map();
 
         // Group assets by URI
-        assets.forEach(asset => {
+        assets.forEach((asset) => {
             if (!uriToAssets.has(asset.uri)) {
                 uriToAssets.set(asset.uri, []);
             }
@@ -56,12 +56,11 @@ export async function getCollectionAssets(collectionAddress: PublicKey) {
         let all_assets: Map<string, AssetWithMetadata> = new Map();
 
         // Process all assets using the cached metadata
-        assets.forEach(asset => {
+        assets.forEach((asset) => {
             const metadata = uriMap.get(asset.uri);
             const entry: AssetWithMetadata = { asset, metadata };
-            
-            all_assets.set(asset.publicKey.toString(), entry);
 
+            all_assets.set(asset.publicKey.toString(), entry);
         });
 
         return all_assets;
@@ -119,7 +118,7 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
         // Mark that we're executing a fetch
         isExecutingRef.current = true;
-       
+
         try {
             const umi = createUmi(Config.RPC_NODE, "confirmed");
 
@@ -130,14 +129,13 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
                 .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
                 .getDeserialized();
 
-
             // Create a Map to store unique URIs and their corresponding metadata
             const uriMap = new Map();
             // Create a Map to store URI to multiple assets mapping
             const uriToAssets = new Map();
 
             // Group assets by URI
-            assets.forEach(asset => {
+            assets.forEach((asset) => {
                 if (!uriToAssets.has(asset.uri)) {
                     uriToAssets.set(asset.uri, []);
                 }
@@ -162,12 +160,12 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
             let all_assets: Map<string, AssetWithMetadata> = new Map();
 
             // Process all assets using the cached metadata
-            assets.forEach(asset => {
+            assets.forEach((asset) => {
                 const metadata = uriMap.get(asset.uri);
                 const entry: AssetWithMetadata = { asset, metadata };
-                
+
                 all_assets.set(asset.publicKey.toString(), entry);
-                
+
                 if (wallet && wallet.publicKey && asset.owner.toString() === wallet.publicKey.toString()) {
                     owned_assets.push(entry);
                 }

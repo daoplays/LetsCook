@@ -20,7 +20,7 @@ const difficultyOptions: DifficultyOption[] = [
         levelReq: 0,
         successRate: 75,
         deathRate: 25,
-        multiplier: 1.0/3,
+        multiplier: 1.0 / 3,
     },
     {
         name: "Medium",
@@ -49,22 +49,21 @@ interface MissionModalProps {
     missionState: string | null;
 }
 
-export const MissionModal = ({ 
-    isOpen, 
-    onClose, 
-    mercenary, 
-    onSelectMission, 
+export const MissionModal = ({
+    isOpen,
+    onClose,
+    mercenary,
+    onSelectMission,
     onCheckMission,
     userData,
     isLoading = false,
-    missionState
-
+    missionState,
 }: MissionModalProps) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     let mercenaryLevel = 1;
     let wealth = 1000;
-    let attributes = mercenary ? mercenary.asset.attributes.attributeList : []
+    let attributes = mercenary ? mercenary.asset.attributes.attributeList : [];
     for (let i = 0; i < attributes.length; i++) {
         if (attributes[i].key === "Level") {
             mercenaryLevel = parseInt(attributes[i].value);
@@ -73,18 +72,17 @@ export const MissionModal = ({
             wealth = parseFloat(attributes[i].value);
         }
     }
-    
-    const mercenaryName = mercenary?.metadata?.name || "Unknown Mercenary";
-    const firstName = mercenaryName.split(' ')[0];
 
- 
+    const mercenaryName = mercenary?.metadata?.name || "Unknown Mercenary";
+    const firstName = mercenaryName.split(" ")[0];
+
     // Handler for mission selection
     const handleMissionSelect = async (difficulty: string) => {
         setIsSubmitting(true);
         try {
             await onSelectMission(difficulty);
         } catch (error) {
-            console.error('Error starting mission:', error);
+            console.error("Error starting mission:", error);
         } finally {
             setIsSubmitting(false);
         }
@@ -92,7 +90,7 @@ export const MissionModal = ({
 
     const renderContent = () => {
         switch (missionState) {
-            case 'select':
+            case "select":
                 return (
                     <>
                         <h2 className="text-center font-serif text-2xl text-[#C4A484]">Select Mission Difficulty</h2>
@@ -124,8 +122,8 @@ export const MissionModal = ({
                                                                         difficulty.name === "Easy"
                                                                             ? "text-green-500"
                                                                             : difficulty.name === "Medium"
-                                                                            ? "text-yellow-500"
-                                                                            : "text-red-500"
+                                                                              ? "text-yellow-500"
+                                                                              : "text-red-500"
                                                                     }`}
                                                                 />
                                                                 <span className="text-lg font-bold text-[#C4A484]">{difficulty.name}</span>
@@ -139,7 +137,10 @@ export const MissionModal = ({
                                                     </div>
                                                 </TooltipTrigger>
                                             </div>
-                                            <TooltipContent side="right" className="z-[1500] w-64 rounded-lg border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 shadow-xl">
+                                            <TooltipContent
+                                                side="right"
+                                                className="z-[1500] w-64 rounded-lg border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 shadow-xl"
+                                            >
                                                 <div className="space-y-3">
                                                     <div>
                                                         <div className="flex items-center justify-between text-sm text-[#C4A484]">
@@ -168,38 +169,35 @@ export const MissionModal = ({
                         </div>
                     </>
                 );
-            
-            case 'ongoing':
+
+            case "ongoing":
                 return (
                     <>
                         <h2 className="text-center font-serif text-2xl text-[#C4A484]">{mercenaryName} is on a Mission</h2>
-                        <p className="text-center text-[#8B7355]">Your mercenary is currently away. Check their status to learn of their fate.</p>
+                        <p className="text-center text-[#8B7355]">
+                            Your mercenary is currently away. Check their status to learn of their fate.
+                        </p>
                         <button
                             onClick={onCheckMission}
                             disabled={isLoading}
                             className="mx-auto mt-4 w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-8 py-3 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                         >
-                            {isLoading ? (
-                                <Loader2Icon className="mx-auto animate-spin" />
-                            ) : (
-                                "Check Mission Status"
-                            )}
+                            {isLoading ? <Loader2Icon className="mx-auto animate-spin" /> : "Check Mission Status"}
                         </button>
                     </>
                 );
-            
-            case 'success':
+
+            case "success":
                 return (
                     <>
-                       
                         <h2 className="text-center font-serif text-2xl text-[#C4A484]">Mission Successful!</h2>
                         <p className="text-center text-[#8B7355]">
-                            The mission was a success! {firstName} has earned {userData?.reward || 'their'} marks.
+                            The mission was a success! {firstName} has earned {userData?.reward || "their"} marks.
                         </p>
                     </>
                 );
-            
-            case 'failed':
+
+            case "failed":
                 return (
                     <>
                         <h2 className="text-center font-serif text-2xl text-[#FF6B6B]">Mission Failed</h2>
@@ -218,12 +216,12 @@ export const MissionModal = ({
                 <ModalBody className="overflow-visible p-0">
                     <div className="relative flex flex-col gap-4 rounded-2xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-8 shadow-2xl backdrop-blur-md">
                         {/* Header Image - only show for select state */}
-                        {(missionState === 'select' || missionState === 'ongoing') && (
+                        {(missionState === "select" || missionState === "ongoing") && (
                             <div className="relative h-64 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/warroom.png"
                                     fill
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ objectFit: "cover" }}
                                     alt="Mission"
                                     className="opacity-80"
                                 />
@@ -231,12 +229,12 @@ export const MissionModal = ({
                             </div>
                         )}
 
-                        {(missionState === 'failed') && (
+                        {missionState === "failed" && (
                             <div className="relative h-64 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/failed.png"
                                     fill
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ objectFit: "cover" }}
                                     alt="Mission"
                                     className="opacity-80"
                                 />
@@ -244,12 +242,12 @@ export const MissionModal = ({
                             </div>
                         )}
 
-                        {(missionState === 'success') && (
+                        {missionState === "success" && (
                             <div className="relative h-64 w-full overflow-hidden rounded-xl border-2 border-[#3A2618]">
                                 <Image
                                     src="/curatedLaunches/citizens/success.png"
                                     fill
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ objectFit: "cover" }}
                                     alt="Mission"
                                     className="opacity-80"
                                 />
@@ -261,7 +259,7 @@ export const MissionModal = ({
                         {renderContent()}
 
                         {/* Close Button - show for success/failure states */}
-                        {(missionState === 'success' || missionState === 'failed') && (
+                        {(missionState === "success" || missionState === "failed") && (
                             <button
                                 onClick={onClose}
                                 className="mx-auto mt-4 transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-8 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
@@ -271,7 +269,7 @@ export const MissionModal = ({
                         )}
 
                         {/* Cancel Button - only show for select state */}
-                        {missionState === 'select' && (
+                        {missionState === "select" && (
                             <button
                                 onClick={onClose}
                                 className="mx-auto transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-8 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"

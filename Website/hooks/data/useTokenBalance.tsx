@@ -61,7 +61,6 @@ const useTokenBalance = (props: UseTokenBalanceProps | null) => {
             haveMintData.current = true;
         }
         return;
-        
     }, [mintData, mintAddress]);
 
     // Function to get the user's token account address

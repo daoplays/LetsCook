@@ -23,10 +23,10 @@ function getQuoteOutput(
     let amm_base_fee = Math.ceil((base_input_amount * fee) / 100 / 100);
     let input_ex_fees = (base_input_amount - amm_base_fee) / Math.pow(10, baseDecimals);
 
-    let quote_output = (input_ex_fees * amm_quote_balance) / (amm_base_balance + input_ex_fees) ;
+    let quote_output = (input_ex_fees * amm_quote_balance) / (amm_base_balance + input_ex_fees);
 
-    let price = amm_quote_balance / (amm_base_balance );
-    let quoteNoSlip = (input_ex_fees) * price;
+    let price = amm_quote_balance / amm_base_balance;
+    let quoteNoSlip = input_ex_fees * price;
 
     return [quote_output, quoteNoSlip];
 }
@@ -73,13 +73,11 @@ function CalculateChunkedOutput(
         let scaling = getScalingFactor(currentQuote, pluginData);
         let amm_fee = Math.ceil((chunkSize * fee) / 100 / 100);
         let input_ex_fees = chunkSize - amm_fee;
-        let scaledInput = (input_ex_fees / scaling) / Math.pow(10, baseDecimals);
-
+        let scaledInput = input_ex_fees / scaling / Math.pow(10, baseDecimals);
 
         let output = (scaledInput * currentQuote) / (currentBase + scaledInput);
 
         //console.log("chunk", i, "input", scaledInput, "base", currentBase, "quote", currentQuote, "output", output);
-
 
         let price = currentQuote / currentBase;
         let quoteNoSlip = (scaledInput / Math.pow(10, baseDecimals)) * price;

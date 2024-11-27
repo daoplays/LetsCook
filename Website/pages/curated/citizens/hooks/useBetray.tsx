@@ -106,7 +106,6 @@ export const BetrayInstructions = async (launchData: CollectionData, user: Publi
         TOKEN_2022_PROGRAM_ID,
     );
 
-
     const instruction_data = serialise_betray_instruction();
 
     var account_vector = [

@@ -40,7 +40,6 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 const hasAirdropQuantityColumn = results.meta.fields.includes("airdropQuantity");
                 const hasAirdropAddressColumn = results.meta.fields.includes("airdropAddress");
 
-
                 // Track unique addresses and duplicates
                 const addressSet = new Set<string>();
                 const duplicates = new Set<string>();
@@ -51,7 +50,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 // Check for empty quantity values if quantity column exists
                 if (hasAirdropQuantityColumn) {
                     const emptyQuantityRows = results.data.filter((row: any) => {
-                        return row.address?.trim() && (!row.airdropQuantity || row.airdropQuantity.trim() === '');
+                        return row.address?.trim() && (!row.airdropQuantity || row.airdropQuantity.trim() === "");
                     });
 
                     if (emptyQuantityRows.length > 0) {
@@ -68,7 +67,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                 // Check for empty quantity values if quantity column exists
                 if (hasAirdropAddressColumn) {
                     const emptyAddressRows = results.data.filter((row: any) => {
-                        return row.address?.trim() && (!row.airdropAddress || row.airdropAddress.trim() === '');
+                        return row.address?.trim() && (!row.airdropAddress || row.airdropAddress.trim() === "");
                     });
 
                     if (emptyAddressRows.length > 0) {
@@ -133,7 +132,7 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
                         address,
                         balance,
                         amount: airdropAmount,
-                        airdropAddress: airdropAddress || undefined
+                        airdropAddress: airdropAddress || undefined,
                     });
                 });
 
@@ -204,21 +203,22 @@ export const CSVUploader = ({ onHoldersUpdate }: CSVUploaderProps) => {
 
     return (
         <Box className="w-full">
-                        <label className="w-full cursor-pointer">
-
-            <div
-                className="border-1 flex cursor-pointer flex-col items-center justify-center rounded-lg p-6"
-                style={{ backgroundColor: "#454444" }}
-            >
-                <div className="flex flex-col items-center justify-center">
-                    <RiUploadLine className="mb-2 h-8 w-8 text-white" />
-                    <Text className="text-center text-sm text-white">
-                        {isProcessing ? "Processing..." : "Click to upload token / collection addresses CSV"}
-                    </Text>
-                    <Text className="mt-1 text-xs text-gray-500">CSV must contain an "address" column and optional "airdropQuantity" and "airdropAddress"</Text>
+            <label className="w-full cursor-pointer">
+                <div
+                    className="border-1 flex cursor-pointer flex-col items-center justify-center rounded-lg p-6"
+                    style={{ backgroundColor: "#454444" }}
+                >
+                    <div className="flex flex-col items-center justify-center">
+                        <RiUploadLine className="mb-2 h-8 w-8 text-white" />
+                        <Text className="text-center text-sm text-white">
+                            {isProcessing ? "Processing..." : "Click to upload token / collection addresses CSV"}
+                        </Text>
+                        <Text className="mt-1 text-xs text-gray-500">
+                            CSV must contain an "address" column and optional "airdropQuantity" and "airdropAddress"
+                        </Text>
+                    </div>
+                    <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
                 </div>
-                <input type="file" className="hidden" accept=".csv" onChange={handleFileUpload} disabled={isProcessing} />
-            </div>
             </label>
         </Box>
     );

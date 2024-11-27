@@ -78,7 +78,7 @@ export default function ReceivedAssetModal({
                                 <Image
                                     src="/curatedLaunches/citizens/tavern.png"
                                     fill
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ objectFit: "cover" }}
                                     alt="Recruitment"
                                     className="opacity-80"
                                 />
@@ -107,16 +107,10 @@ export default function ReceivedAssetModal({
 
                         {success && <h3 className="text-center text-xl text-[#C4A484]">{asset_name}</h3>}
 
-                        {(success && image_url) ? (
+                        {success && image_url ? (
                             <div className="flex justify-center">
                                 <div className="relative h-64 w-64 overflow-hidden rounded-xl border-2 border-[#3A2618]">
-                                    <Image
-                                        src={image_url}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                        alt={asset_name}
-                                        className="opacity-80"
-                                    />
+                                    <Image src={image_url} fill style={{ objectFit: "cover" }} alt={asset_name} className="opacity-80" />
                                 </div>
                             </div>
                         ) : (
@@ -124,7 +118,7 @@ export default function ReceivedAssetModal({
                                 <Image
                                     src="/curatedLaunches/citizens/select.png"
                                     fill
-                                    style={{ objectFit: 'cover' }}
+                                    style={{ objectFit: "cover" }}
                                     alt="Potential Recruit"
                                     className="opacity-80"
                                 />
@@ -137,7 +131,10 @@ export default function ReceivedAssetModal({
                         {attributes.length > 0 && (
                             <div className="grid grid-cols-2 gap-2">
                                 {attributes.map((attribute, index) => (
-                                    <div key={index} className="flex flex-col items-center rounded-lg border border-[#3A2618] bg-black/20 p-3 text-center">
+                                    <div
+                                        key={index}
+                                        className="flex flex-col items-center rounded-lg border border-[#3A2618] bg-black/20 p-3 text-center"
+                                    >
                                         <p className="text-sm text-[#8B7355]">{attribute.key}</p>
                                         <p className="text-lg font-bold text-[#C4A484]">{attribute.value}</p>
                                     </div>
@@ -158,11 +155,7 @@ export default function ReceivedAssetModal({
                                 disabled={globalLoading}
                                 className="mx-auto mt-4 w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-8 py-3 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                             >
-                                {globalLoading ? (
-                                    <Loader2Icon className="mx-auto animate-spin" />
-                                ) : (
-                                    "Meet Your Recruit"
-                                )}
+                                {globalLoading ? <Loader2Icon className="mx-auto animate-spin" /> : "Meet Your Recruit"}
                             </button>
                         )}
 

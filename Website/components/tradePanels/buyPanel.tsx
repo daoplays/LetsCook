@@ -89,12 +89,12 @@ function CalculateChunkedOutput(
     for (let i = 0; i < chunks; i++) {
         let scaling = getScalingFactor(currentQuote, pluginData);
         let amm_quote_fee = (chunkSize * fee) / 100 / 100;
-        let input_ex_fees = (chunkSize - amm_quote_fee);
-        let scaledInput = input_ex_fees * scaling / Math.pow(10, 9);
+        let input_ex_fees = chunkSize - amm_quote_fee;
+        let scaledInput = (input_ex_fees * scaling) / Math.pow(10, 9);
         //console.log("chunk", i, "input", scaledInput, "base", currentBase, "quote", currentQuote);
         let output = (scaledInput * currentBase) / (currentQuote + scaledInput);
 
-        let price = currentQuote / (currentBase);
+        let price = currentQuote / currentBase;
         let base_no_slip = scaledInput / price;
 
         //console.log("chunk", i, "input", chunkSize, "output", output / Math.pow(10, baseDecimals), "NoSlip", base_no_slip, "slippage", 100 * (base_no_slip / (output / Math.pow(10, baseDecimals)) - 1));

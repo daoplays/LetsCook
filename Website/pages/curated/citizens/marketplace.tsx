@@ -101,7 +101,7 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                     );
                                     let level = "";
                                     let wealth = "";
-                                    let attributes = nft.asset.attributes.attributeList
+                                    let attributes = nft.asset.attributes.attributeList;
                                     for (let i = 0; i < attributes.length; i++) {
                                         if (attributes[i].key === "Level") {
                                             level = attributes[i].value;
@@ -145,13 +145,13 @@ function Marketplace({ ownedNFTs, listedNFTs, allListings, collection, tab }: Ma
                                             </Box>
 
                                             <div className="rounded-xl border-2 border-[#3A2618] bg-[#1C1410]/95 p-4 backdrop-blur-sm">
-                                                <h3 className="mb-2 border-b border-[#3A2618] pb-2 text-lg font-bold text-[#C4A484] text-center">
+                                                <h3 className="mb-2 border-b border-[#3A2618] pb-2 text-center text-lg font-bold text-[#C4A484]">
                                                     {nft.metadata["name"] || nft.asset.name}
                                                 </h3>
-                                                <div className="text-center flex items-center justify-center gap-2">
+                                                <div className="flex items-center justify-center gap-2 text-center">
                                                     <span className="text-sm text-[#8B7355]">Wealth:</span>
                                                     <span className="text-[#C4A484]">{wealth}</span>
-                                                    <FaCoins className="text-[#C4A484] text-sm" />
+                                                    <FaCoins className="text-sm text-[#C4A484]" />
                                                 </div>
                                             </div>
 

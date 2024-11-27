@@ -84,19 +84,18 @@ export const AirdropPage = () => {
     // Modify this section in the distribution calculations
     const distributions = useMemo(() => {
         // If holders have CSV amounts, use those directly and disable the distribution controls
-        const hasPresetAmounts = holders.some(holder => holder.amount !== undefined);
+        const hasPresetAmounts = holders.some((holder) => holder.amount !== undefined);
         if (hasPresetAmounts) {
-            return holders.map(holder => ({
+            return holders.map((holder) => ({
                 address: holder.address,
-                amount: holder.amount || "0"
+                amount: holder.amount || "0",
             }));
         }
-        
+
         // Otherwise use the original calculation
         if (!amount || !holders.length) return [];
         return calculateAirdropAmounts(amount, distributionType);
     }, [amount, holders, distributionType, calculateAirdropAmounts]);
-
 
     const handleMintInput = (value: string) => {
         setMintAddress(value);
@@ -203,11 +202,11 @@ export const AirdropPage = () => {
             const newSignatures = new Map<string, string>();
 
             // Create distributions with airdropAddress included
-            const distributionsWithToken = distributions.map(dist => {
-                const holder = holders.find(h => h.address === dist.address);
+            const distributionsWithToken = distributions.map((dist) => {
+                const holder = holders.find((h) => h.address === dist.address);
                 return {
                     ...dist,
-                    airdropAddress: holder?.airdropAddress || airdroppedToken  // Use custom address or fallback to global
+                    airdropAddress: holder?.airdropAddress || airdroppedToken, // Use custom address or fallback to global
                 };
             });
 
@@ -246,7 +245,7 @@ export const AirdropPage = () => {
 
     // Helper function to check if using per-recipient airdrop addresses
     const isUsingCustomAirdropAddresses = useMemo(() => {
-        return holders.some(holder => holder.airdropAddress);
+        return holders.some((holder) => holder.airdropAddress);
     }, [holders]);
 
     // The download handler function
@@ -259,8 +258,8 @@ export const AirdropPage = () => {
                     address: holder.address,
                     currentBalance: holder.balance,
                     airdropAmount: distribution?.amount || "0",
-                    airdropAddress: holder.airdropAddress || airdroppedToken || '',
-                    signature: signatures.get(holder.address) || ''
+                    airdropAddress: holder.airdropAddress || airdroppedToken || "",
+                    signature: signatures.get(holder.address) || "",
                 };
             });
 
@@ -274,7 +273,7 @@ export const AirdropPage = () => {
                     record.currentBalance,
                     record.airdropAmount,
                     record.airdropAddress,
-                    record.signature
+                    record.signature,
                 ]),
             ];
 
@@ -444,62 +443,64 @@ export const AirdropPage = () => {
                         </FormControl>
                     )}
                     {/* Threshold Input */}
-                    {!holders.some(holder => holder.amount !== undefined) && (
-                    <FormControl>
-                        <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
-                        <div className={styles.textLabelInput}>
-                            <Input
-                                className="text-white"
-                                size={lg ? "md" : "lg"}
-                                type="number"
-                                value={threshold}
-                                onChange={(e) => handleThresholdChange(e.target.value)}
-                                min={0}
-                            />
-                        </div>
-                    </FormControl>
-                    )}
-
-                    {/* Distribution Type Selection */}
-                    {!holders.some(holder => holder.amount !== undefined) && (
-                    <FormControl className="text-white">
-                        <FormLabel className="min-w-[100px] text-lg text-white">Distribution Type</FormLabel>
-                        <RadioGroup value={distributionType} onChange={(value: "fixed" | "even" | "proRata") => setDistributionType(value)}>
-                            <Stack direction="row">
-                                <Radio value="fixed">Fixed Amount Per Holder</Radio>
-                                <Radio value="even">Even Split Per Holder</Radio>
-                                <Radio value="proRata">Pro Rata Split</Radio>
-                            </Stack>
-                        </RadioGroup>
-                    </FormControl>
-                    )}
-
-                    {!isUsingCustomAirdropAddresses && (
-
-                    <FormControl>
-                        <FormLabel className="min-w-[100px] text-lg text-white">Airdrop Mint Address</FormLabel>
-                        <HStack>
+                    {!holders.some((holder) => holder.amount !== undefined) && (
+                        <FormControl>
+                            <FormLabel className="min-w-[100px] text-lg text-white">Minimum Balance Threshold</FormLabel>
                             <div className={styles.textLabelInput}>
                                 <Input
                                     className="text-white"
-                                    placeholder="Enter airdrop mint address"
                                     size={lg ? "md" : "lg"}
-                                    required
-                                    type="text"
-                                    value={airdroppedToken}
-                                    onChange={(e) => setAirdroppedToken(e.target.value)}
+                                    type="number"
+                                    value={threshold}
+                                    onChange={(e) => handleThresholdChange(e.target.value)}
+                                    min={0}
                                 />
                             </div>
-                            <Button
-                                className="!bg-custom-gradient text-white"
-                                onClick={() => handleAirdropInput()}
-                                isLoading={isLoading}
-                                loadingText="Loading"
+                        </FormControl>
+                    )}
+
+                    {/* Distribution Type Selection */}
+                    {!holders.some((holder) => holder.amount !== undefined) && (
+                        <FormControl className="text-white">
+                            <FormLabel className="min-w-[100px] text-lg text-white">Distribution Type</FormLabel>
+                            <RadioGroup
+                                value={distributionType}
+                                onChange={(value: "fixed" | "even" | "proRata") => setDistributionType(value)}
                             >
-                                Set
-                            </Button>
-                        </HStack>
-                    </FormControl>
+                                <Stack direction="row">
+                                    <Radio value="fixed">Fixed Amount Per Holder</Radio>
+                                    <Radio value="even">Even Split Per Holder</Radio>
+                                    <Radio value="proRata">Pro Rata Split</Radio>
+                                </Stack>
+                            </RadioGroup>
+                        </FormControl>
+                    )}
+
+                    {!isUsingCustomAirdropAddresses && (
+                        <FormControl>
+                            <FormLabel className="min-w-[100px] text-lg text-white">Airdrop Mint Address</FormLabel>
+                            <HStack>
+                                <div className={styles.textLabelInput}>
+                                    <Input
+                                        className="text-white"
+                                        placeholder="Enter airdrop mint address"
+                                        size={lg ? "md" : "lg"}
+                                        required
+                                        type="text"
+                                        value={airdroppedToken}
+                                        onChange={(e) => setAirdroppedToken(e.target.value)}
+                                    />
+                                </div>
+                                <Button
+                                    className="!bg-custom-gradient text-white"
+                                    onClick={() => handleAirdropInput()}
+                                    isLoading={isLoading}
+                                    loadingText="Loading"
+                                >
+                                    Set
+                                </Button>
+                            </HStack>
+                        </FormControl>
                     )}
 
                     {/* Token Info */}
@@ -544,22 +545,22 @@ export const AirdropPage = () => {
                     )}
 
                     {/* Amount Input */}
-                    {!holders.some(holder => holder.amount !== undefined) && (
-                    <FormControl>
-                        <FormLabel className="min-w-[100px] text-lg text-white">
-                            {distributionType === "fixed" ? "Amount Per Holder" : "Total Amount to Distribute"}
-                        </FormLabel>
-                        <div className={styles.textLabelInput}>
-                            <Input
-                                className="text-white"
-                                size={lg ? "md" : "lg"}
-                                type="number"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                min={0}
-                            />
-                        </div>
-                    </FormControl>
+                    {!holders.some((holder) => holder.amount !== undefined) && (
+                        <FormControl>
+                            <FormLabel className="min-w-[100px] text-lg text-white">
+                                {distributionType === "fixed" ? "Amount Per Holder" : "Total Amount to Distribute"}
+                            </FormLabel>
+                            <div className={styles.textLabelInput}>
+                                <Input
+                                    className="text-white"
+                                    size={lg ? "md" : "lg"}
+                                    type="number"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    min={0}
+                                />
+                            </div>
+                        </FormControl>
                     )}
                     {/* Holders Table */}
                     {holders.length > 0 && (
@@ -605,9 +606,7 @@ export const AirdropPage = () => {
                                                     <TableCell>{holder.balance}</TableCell>
                                                     <TableCell>{distribution?.amount || "0"}</TableCell>
                                                     <TableCell className="font-mono text-sm">
-                                                        {tokenAddress ? 
-                                                            `${tokenAddress.slice(0, 4)}...${tokenAddress.slice(-4)}` :
-                                                            ""}
+                                                        {tokenAddress ? `${tokenAddress.slice(0, 4)}...${tokenAddress.slice(-4)}` : ""}
                                                     </TableCell>
                                                     <TableCell>
                                                         {signature && (

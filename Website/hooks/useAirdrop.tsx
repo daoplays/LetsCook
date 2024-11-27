@@ -160,14 +160,14 @@ export const useAirdrop = () => {
             if (filteredHolders.length === 0) return [];
 
             // Check if holders have predefined amounts from CSV
-            const hasPresetAmounts = filteredHolders.some(holder => holder.amount !== undefined);
+            const hasPresetAmounts = filteredHolders.some((holder) => holder.amount !== undefined);
             let newDistributions: AirdropRecipient[];
 
             if (hasPresetAmounts) {
                 // If we have preset amounts from CSV, use those
-                newDistributions = filteredHolders.map(holder => ({
+                newDistributions = filteredHolders.map((holder) => ({
                     address: holder.address,
-                    amount: holder.amount || totalAmountInput // Fallback to totalAmountInput if amount not defined
+                    amount: holder.amount || totalAmountInput, // Fallback to totalAmountInput if amount not defined
                 }));
             } else {
                 const totalAmount = parseFloat(totalAmountInput);
@@ -213,7 +213,7 @@ export const useAirdrop = () => {
                 return;
             }
 
-            if (!recipients.some(r => r.airdropAddress)) {
+            if (!recipients.some((r) => r.airdropAddress)) {
                 toast.error("No airdrop token address set");
                 return false;
             }
@@ -222,7 +222,6 @@ export const useAirdrop = () => {
             setError(null);
 
             try {
-
                 // Process in batches of 8 to avoid hitting transaction size limits
                 const BATCH_SIZE = 8;
                 const batches = [];
@@ -240,7 +239,6 @@ export const useAirdrop = () => {
 
                     // Build transfer instructions for batch
                     for (const recipient of batch) {
-
                         // Determine which mint to use
                         const mintAddress = recipient.airdropAddress;
                         if (!mintAddress) {
@@ -260,7 +258,12 @@ export const useAirdrop = () => {
                         const recipientPubkey = new PublicKey(recipient.address);
                         const airdropAmount = Math.floor(parseFloat(recipient.amount) * Math.pow(10, mintData.mint.decimals));
 
-                        const senderATA = await getAssociatedTokenAddress(mintData.mint.address, wallet.publicKey, false, mintData.token_program);
+                        const senderATA = await getAssociatedTokenAddress(
+                            mintData.mint.address,
+                            wallet.publicKey,
+                            false,
+                            mintData.token_program,
+                        );
 
                         const recipientATA = await getAssociatedTokenAddress(
                             mintData.mint.address,
@@ -286,14 +289,7 @@ export const useAirdrop = () => {
                         }
 
                         instructions.push(
-                            createTransferInstruction(
-                                senderATA,
-                                recipientATA,
-                                wallet.publicKey,
-                                airdropAmount,
-                                [],
-                                mintData.token_program,
-                            ),
+                            createTransferInstruction(senderATA, recipientATA, wallet.publicKey, airdropAmount, [], mintData.token_program),
                         );
                     }
 

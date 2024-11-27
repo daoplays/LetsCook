@@ -27,9 +27,8 @@ const useAMM = (props: useAMMProps | null) => {
     const [quoteTokenAccount, setQuoteTokenAccount] = useState<PublicKey | null>(null);
 
     // token balances
-    const { tokenBalance : baseTokenBalance } = useTokenBalance({ mintData: baseMint, walletAddress: ammAddress });
-    const { tokenBalance : quoteTokenBalance } = useTokenBalance({ mintData: quoteMint, walletAddress: ammAddress });
-
+    const { tokenBalance: baseTokenBalance } = useTokenBalance({ mintData: baseMint, walletAddress: ammAddress });
+    const { tokenBalance: quoteTokenBalance } = useTokenBalance({ mintData: quoteMint, walletAddress: ammAddress });
 
     const [error, setError] = useState<string | null>(null);
 
@@ -149,7 +148,18 @@ const useAMM = (props: useAMMProps | null) => {
     }, [connection, pageName, fetchInitialAMMData, getAMMDataAccount, handleAMMAccountChange]);
 
     // Return the current token balance and any error message
-    return { amm, ammPlugins, baseMint, quoteMint, lpMint, baseTokenAccount, quoteTokenAccount, baseTokenBalance, quoteTokenBalance, error };
+    return {
+        amm,
+        ammPlugins,
+        baseMint,
+        quoteMint,
+        lpMint,
+        baseTokenAccount,
+        quoteTokenAccount,
+        baseTokenBalance,
+        quoteTokenBalance,
+        error,
+    };
 };
 
 export default useAMM;

@@ -1,16 +1,7 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import {
-    request_raw_account_data,
-    UserData,
-    request_current_balance,
-    request_token_supply,
-    uInt32ToLEBytes,
-    MintData,
-    ListingData,
-    myU64,
-} from "../../components/Solana/state";
+import { request_raw_account_data, uInt32ToLEBytes, MintData, ListingData } from "../../components/Solana/state";
 import {
     TimeSeriesData,
     MMLaunchData,
@@ -18,15 +9,13 @@ import {
     AMMData,
     RaydiumAMM,
     getAMMKey,
-    getAMMKeyFromMints,
     AMMPluginData,
 } from "../../components/Solana/jupiter_state";
-import { Order } from "@jup-ag/limit-order-sdk";
-import { bignum_to_num, request_token_amount, TokenAccount, RequestTokenHolders } from "../../components/Solana/state";
-import { Config, PROGRAM, WRAPPED_SOL } from "../../components/Solana/constants";
+import { bignum_to_num } from "../../components/Solana/state";
+import { Config, PROGRAM } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";
-import { PublicKey, Connection } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, Mint, getTransferFeeConfig } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
+import { getTransferFeeConfig } from "@solana/spl-token";
 
 import {
     HStack,
@@ -46,11 +35,10 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
-import WoodenButton from "../../components/Buttons/woodenButton";
 import useAppRoot from "../../context/useAppRoot";
-import { ColorType, createChart, CrosshairMode, LineStyle, UTCTimestamp } from "lightweight-charts";
+import { createChart, CrosshairMode, UTCTimestamp } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
-import { FaChartLine, FaInfo, FaPowerOff } from "react-icons/fa";
+import { FaChartLine, FaInfo } from "react-icons/fa";
 
 import MyRewardsTable from "../../components/tables/myRewards";
 import Links from "../../components/Buttons/links";
@@ -63,7 +51,6 @@ import { FaPlusCircle } from "react-icons/fa";
 import styles from "../../styles/Launch.module.css";
 
 import { RaydiumCPMM } from "../../hooks/raydium/utils";
-import useCreateCP, { getPoolStateAccount } from "../../hooks/raydium/useCreateCP";
 import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
@@ -75,6 +62,8 @@ import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import useAMM from "@/hooks/data/useAMM";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
+import { useSOLPrice } from "@/hooks/data/useSOLPrice";
+import useListing from "@/hooks/data/useListing";
 
 interface MarketData {
     time: UTCTimestamp;
@@ -146,7 +135,9 @@ const TradePage = () => {
     const router = useRouter();
     const { xs, sm, lg } = useResponsive();
 
-    const { mmLaunchData, SOLPrice, listingData } = useAppRoot();
+    const { mmLaunchData, listingData } = useAppRoot();
+
+    const { SOLPrice } = useSOLPrice();
 
     const { pageName } = router.query;
 
@@ -156,16 +147,24 @@ const TradePage = () => {
 
     const [mobilePageContent, setMobilePageContent] = useState("Chart");
 
-
     const {
-        amm, ammPlugins, baseMint, quoteMint, lpMint, baseTokenAccount : ammBaseAddress, quoteTokenAccount: ammQuoteAddress, baseTokenBalance : ammBaseAmount, quoteTokenBalance : ammQuoteAmount, error : ammError
+        amm,
+        ammPlugins,
+        baseMint,
+        quoteMint,
+        lpMint,
+        baseTokenAccount: ammBaseAddress,
+        quoteTokenAccount: ammQuoteAddress,
+        baseTokenBalance: ammBaseAmount,
+        quoteTokenBalance: ammQuoteAmount,
+        error: ammError,
     } = useAMM({ pageName: pageName as string | null });
 
-    console.log("AMM Balances", ammBaseAmount, ammQuoteAmount);
+    const { listing, error: listingError } = useListing({ tokenMintAddress: baseMint?.mint.address });
 
-    const { tokenBalance : userBaseAmount } = useTokenBalance({ mintData: baseMint });
-    const { tokenBalance : userQuoteAmount } = useTokenBalance({ mintData: quoteMint });
-    const { tokenBalance : userLPAmount } = useTokenBalance({ mintData: lpMint });
+    const { tokenBalance: userBaseAmount } = useTokenBalance({ mintData: baseMint });
+    const { tokenBalance: userQuoteAmount } = useTokenBalance({ mintData: quoteMint });
+    const { tokenBalance: userLPAmount } = useTokenBalance({ mintData: lpMint });
 
     const [market_data, setMarketData] = useState<MarketData[]>([]);
     const [last_day_volume, setLastDayVolume] = useState<number>(0);
@@ -174,10 +173,6 @@ const TradePage = () => {
     const [raydium_address, setRaydiumAddress] = useState<PublicKey | null>(null);
 
     const [ammLPAmount, setLPAmount] = useState<number | null>(null);
-    const [total_supply, setTotalSupply] = useState<number>(0);
-
-    const [listing, setListing] = useState<ListingData | null>(null);
-    const [sol_is_quote, setSOLIsQuote] = useState<boolean>(true);
 
     const price_ws_id = useRef<number | null>(null);
     const raydium_ws_id = useRef<number | null>(null);
@@ -185,17 +180,6 @@ const TradePage = () => {
     const last_base_amount = useRef<number>(0);
     const last_quote_amount = useRef<number>(0);
     const check_market_data = useRef<boolean>(true);
-
-
-    useEffect(() => {
-        if (!amm || !listingData) return;
-
-        //console.log("accounts", amm.base_key.toString(), amm.quote_key.toString());
-        let listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-        let listing = listingData.get(listing_key.toString());
-        setListing(listing);
-
-    }, [amm, listingData]);
 
     useEffect(() => {
         if (ammBaseAmount === null || ammQuoteAmount === null) {
@@ -250,7 +234,6 @@ const TradePage = () => {
         }
     }, [ammBaseAmount, ammQuoteAmount, amm, market_data, baseMint]);
 
-
     const check_price_update = useCallback(async (result: any) => {
         //console.log(result);
         // if we have a subscription field check against ws_id
@@ -295,20 +278,13 @@ const TradePage = () => {
     );
 
     useEffect(() => {
-
         if (price_ws_id.current === null && price_address !== null) {
             price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
         }
         if (raydium_ws_id.current === null && raydium_address !== null) {
             raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
         }
-    }, [
-        connection,
-        price_address,
-        raydium_address,
-        check_price_update,
-        check_raydium_update,
-    ]);
+    }, [connection, price_address, raydium_address, check_price_update, check_raydium_update]);
 
     const CheckMarketData = useCallback(async () => {
         if (!amm || !baseMint) return;
@@ -317,10 +293,6 @@ const TradePage = () => {
         const wsol_mint = amm.quote_mint;
 
         if (check_market_data.current === true) {
-
-            let total_supply = await request_token_supply("", token_mint);
-            setTotalSupply(total_supply / Math.pow(10, baseMint.mint.decimals));
-
             if (amm.provider > 0) {
                 let sol_is_quote: boolean = true;
                 let pool_account = amm.pool;
@@ -337,14 +309,6 @@ const TradePage = () => {
                 if (amm.provider === 2) {
                     let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
-
-                    if (ray_pool.quoteMint.equals(WRAPPED_SOL)) {
-                        setSOLIsQuote(true);
-                    } else {
-                        sol_is_quote = false;
-                        setSOLIsQuote(false);
-                    }
-
                     setLPAmount(bignum_to_num(ray_pool.lpReserve));
                 }
                 //console.log("pool state", pool_state.toString())
@@ -532,7 +496,6 @@ const TradePage = () => {
                                     volume={last_day_volume}
                                     mm_data={latest_rewards}
                                     price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
-                                    total_supply={total_supply}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
                                 />
@@ -825,9 +788,9 @@ const BuyAndSell = ({
                         ? userSOLBalance.toFixed(5)
                         : selected === "LP-"
                           ? user_lp_balance < 1e-3
-                              ? (user_lp_balance ).toExponential(3)
-                              : (user_lp_balance).toFixed(Math.min(3))
-                          : (user_base_balance).toLocaleString("en-US", {
+                              ? user_lp_balance.toExponential(3)
+                              : user_lp_balance.toFixed(Math.min(3))
+                          : user_base_balance.toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                             })}{" "}
                     {selected === "Buy" ? Config.token : selected === "LP-" ? "LP" : base_mint.symbol}
@@ -929,7 +892,6 @@ const InfoContent = ({
     sol_price,
     quote_amount,
     volume,
-    total_supply,
     mm_data,
 }: {
     listing: ListingData;
@@ -939,7 +901,6 @@ const InfoContent = ({
     sol_price: number;
     quote_amount: number;
     volume: number;
-    total_supply: number;
     mm_data: MMLaunchData | null;
 }) => {
     const { isOpen: isRewardsOpen, onOpen: onRewardsOpen, onClose: onRewardsClose } = useDisclosure();
@@ -950,6 +911,7 @@ const InfoContent = ({
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
 
+    let total_supply = Number(base_mint.mint.supply) / Math.pow(10, base_mint.mint.decimals);
     let market_cap = total_supply * price * sol_price;
     let liquidity = Math.min(market_cap, 2 * (quote_amount / Math.pow(10, 9)) * sol_price);
 
