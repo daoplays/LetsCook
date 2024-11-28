@@ -50,7 +50,6 @@ import { IoMdSwap } from "react-icons/io";
 import { FaPlusCircle } from "react-icons/fa";
 import styles from "../../styles/Launch.module.css";
 
-import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
@@ -60,54 +59,11 @@ import Loader from "../../components/loader";
 import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
-import useAMM, { MarketData } from "@/hooks/data/useAMM";
+import useAMM from "@/hooks/data/useAMM";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
 
-async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_address: string, setLastVolume: any) {
-    // Default options are marked with *
-    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-
-    let today_seconds = Math.floor(new Date().getTime() / 1000);
-
-    let start_time = new Date(2024, 0, 1).getTime() / 1000;
-
-    let url =
-        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
-        market_address +
-        "&type=15m" +
-        "&time_from=" +
-        start_time +
-        "&time_to=" +
-        today_seconds;
-
-    //console.log(url);
-    let result = await fetch(url, options).then((response) => response.json());
-    let items = result["data"]["items"];
-
-    let now = new Date().getTime() / 1000;
-    let last_volume = 0;
-    let data: MarketData[] = [];
-    for (let i = 0; i < items.length; i++) {
-        let item = items[i];
-
-        let open = sol_is_quote ? item.o : 1.0 / item.o;
-        let high = sol_is_quote ? item.h : 1.0 / item.l;
-        let low = sol_is_quote ? item.l : 1.0 / item.h;
-        let close = sol_is_quote ? item.c : 1.0 / item.c;
-        let volume = sol_is_quote ? item.v : item.v / close;
-        data.push({ time: item.unixTime as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-
-        if (now - item.unixTime < 24 * 60 * 60) {
-            last_volume += volume;
-        }
-    }
-    //console.log(result, "last volume", last_volume);
-    setMarketData(data);
-    setLastVolume(last_volume);
-    //return data;
-}
 
 function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, plugins: AMMPluginData) {
     if (list === null || list === undefined) return null;
@@ -159,127 +115,6 @@ const TradePage = () => {
     const { tokenBalance: userBaseAmount } = useTokenBalance({ mintData: baseMint });
     const { tokenBalance: userQuoteAmount } = useTokenBalance({ mintData: quoteMint });
     const { tokenBalance: userLPAmount } = useTokenBalance({ mintData: lpMint });
-
-    const [raydium_address, setRaydiumAddress] = useState<PublicKey | null>(null);
-    const raydium_ws_id = useRef<number | null>(null);
-
-    const last_base_amount = useRef<number>(0);
-    const last_quote_amount = useRef<number>(0);
-    const check_market_data = useRef<boolean>(true);
-
-    useEffect(() => {
-        if (ammBaseAmount === null || ammQuoteAmount === null) {
-            return;
-        }
-
-        if (ammBaseAmount === last_base_amount.current && ammQuoteAmount === last_quote_amount.current) {
-            return;
-        }
-
-        last_base_amount.current = ammBaseAmount;
-        last_quote_amount.current = ammQuoteAmount;
-
-        if (amm.provider === 0 || marketData.length === 0) {
-            return;
-        }
-
-        // update market data using bid/ask
-        let price = ammQuoteAmount / ammBaseAmount;
-
-        price = (price * Math.pow(10, baseMint.mint.decimals)) / Math.pow(10, 9);
-
-        let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
-        let last_candle = marketData[marketData.length - 1];
-        let last_minute = last_candle.time / 15 / 60;
-        //console.log("update price", price, last_minute, now_minute)
-
-        if (now_minute > last_minute) {
-            let new_candle: MarketData = {
-                time: (now_minute * 15 * 60) as UTCTimestamp,
-                open: price,
-                high: price,
-                low: price,
-                close: price,
-                volume: 0,
-            };
-            //console.log("new candle", now_minute, last_minute, new_candle)
-
-            marketData.push(new_candle);
-            //setMarketData([...marketData]);
-        } else {
-            last_candle.close = price;
-            if (price > last_candle.high) {
-                last_candle.high = price;
-            }
-            if (price < last_candle.low) {
-                last_candle.low = price;
-            }
-            //console.log("update old candle", last_candle)
-            marketData[marketData.length - 1] = last_candle;
-            //setMarketData([...marketData]);
-        }
-    }, [ammBaseAmount, ammQuoteAmount, amm, marketData, baseMint]);
-
-    const check_raydium_update = useCallback(
-        async (result: any) => {
-            let event_data = result.data;
-            if (amm.provider === 1) {
-                const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
-
-                //setLPAmount(bignum_to_num(poolState.lp_supply));
-            }
-            if (amm.provider === 2) {
-                const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
-                //setLPAmount(bignum_to_num(ray_pool.lpReserve));
-            }
-        },
-        [amm],
-    );
-
-    useEffect(() => {
-        if (raydium_ws_id.current === null && raydium_address !== null) {
-            raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
-        }
-    }, [connection, raydium_address, check_raydium_update]);
-
-    const CheckMarketData = useCallback(async () => {
-        if (!amm || !baseMint) return;
-
-        const token_mint = amm.base_mint;
-        const wsol_mint = amm.quote_mint;
-
-        if (check_market_data.current === true) {
-            if (amm.provider > 0) {
-                let sol_is_quote: boolean = true;
-                let pool_account = amm.pool;
-                setRaydiumAddress(pool_account);
-
-                if (amm.provider === 1) {
-                    let pool_state_account = await connection.getAccountInfo(pool_account);
-                    //console.log(pool_state_account);
-                    const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
-                    //console.log(poolState);
-                    //setLPAmount(bignum_to_num(poolState.lp_supply));
-                }
-
-                if (amm.provider === 2) {
-                    let pool_data = await request_raw_account_data("", pool_account);
-                    const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
-                    //setLPAmount(bignum_to_num(ray_pool.lpReserve));
-                }
-                //console.log("pool state", pool_state.toString())
-                if (Config.PROD) {
-                    //await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
-                }
-                check_market_data.current = false;
-
-                return;
-            }
-
-            
-            check_market_data.current = false;
-        }
-    }, [amm, baseMint, connection]);
 
     const handleMouseDown = () => {
         document.addEventListener("mousemove", handleMouseMove);

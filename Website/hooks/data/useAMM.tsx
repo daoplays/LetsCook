@@ -3,10 +3,11 @@ import { MintData, bignum_to_num, request_raw_account_data, uInt32ToLEBytes } fr
 import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { getMintData } from "@/components/amm/launch";
-import { AMMData, AMMPluginData, TimeSeriesData, getAMMPlugins } from "@/components/Solana/jupiter_state";
+import { AMMData, AMMPluginData, RaydiumAMM, TimeSeriesData, getAMMPlugins } from "@/components/Solana/jupiter_state";
 import useTokenBalance from "./useTokenBalance";
 import { PROGRAM } from "@/components/Solana/constants";
 import { UTCTimestamp } from "lightweight-charts";
+import { RaydiumCPMM } from "../raydium/utils";
 
 interface useAMMProps {
     pageName: string | null;
@@ -21,6 +22,51 @@ export interface MarketData {
     volume: number;
 }
 
+async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_address: string, setLastVolume: any) {
+    // Default options are marked with *
+    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
+
+    let today_seconds = Math.floor(new Date().getTime() / 1000);
+
+    let start_time = new Date(2024, 0, 1).getTime() / 1000;
+
+    let url =
+        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
+        market_address +
+        "&type=15m" +
+        "&time_from=" +
+        start_time +
+        "&time_to=" +
+        today_seconds;
+
+    //console.log(url);
+    let result = await fetch(url, options).then((response) => response.json());
+    let items = result["data"]["items"];
+
+    let now = new Date().getTime() / 1000;
+    let last_volume = 0;
+    let data: MarketData[] = [];
+    for (let i = 0; i < items.length; i++) {
+        let item = items[i];
+
+        let open = sol_is_quote ? item.o : 1.0 / item.o;
+        let high = sol_is_quote ? item.h : 1.0 / item.l;
+        let low = sol_is_quote ? item.l : 1.0 / item.h;
+        let close = sol_is_quote ? item.c : 1.0 / item.c;
+        let volume = sol_is_quote ? item.v : item.v / close;
+        data.push({ time: item.unixTime as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
+
+        if (now - item.unixTime < 24 * 60 * 60) {
+            last_volume += volume;
+        }
+    }
+    //console.log(result, "last volume", last_volume);
+    setMarketData(data);
+    setLastVolume(last_volume);
+    //return data;
+}
+
+
 // Collections are already streamed via _contexts so we dont need to have a websocket here aswell
 const useAMM = (props: useAMMProps | null) => {
     // State to store the token balance and any error messages
@@ -28,6 +74,7 @@ const useAMM = (props: useAMMProps | null) => {
     const [ammPlugins, setAMMPlugins] = useState<AMMPluginData | null>(null);
     const [ammAddress, setAMMAddress] = useState<PublicKey | null>(null);
     const [currentMarketDataAddress, setCurrentMarketDataAddress] = useState<PublicKey | null>(null);
+    const [raydiumPoolAddress, setRaydiumPoolAddress] = useState<PublicKey | null>(null);
 
     // the mint data
     const [baseMint, setBaseMint] = useState<MintData | null>(null);
@@ -54,6 +101,7 @@ const useAMM = (props: useAMMProps | null) => {
     // Ref to store the subscription ID, persists across re-renders
     const ammSubscriptionRef = useRef<number | null>(null);
     const marketDataSubscriptionRef = useRef<number | null>(null);
+    const raydiumPoolSubscriptionRef = useRef<number | null>(null);
 
     // refs for last balances in case we are streaming the price from that method
     const lastBaseAmount = useRef<number>(0);
@@ -122,7 +170,28 @@ const useAMM = (props: useAMMProps | null) => {
         setQuoteMint(quoteMint);
         setLPMint(lpMint);
 
-        if (amm.provider > 0) return;
+        if (amm.provider > 0) {
+            
+            let pool_account = amm.pool;
+            setRaydiumPoolAddress(pool_account);
+
+            if (amm.provider === 1) {
+                let pool_state_account = await connection.getAccountInfo(pool_account);
+                const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
+                setLPAmount(bignum_to_num(poolState.lp_supply));
+            }
+
+            if (amm.provider === 2) {
+                let pool_data = await request_raw_account_data("", pool_account);
+                const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
+                setLPAmount(bignum_to_num(ray_pool.lpReserve));
+            }
+            
+            //await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
+            
+            
+            return
+        };
 
         // get the market data
         setLPAmount(amm.lp_amount);
@@ -163,6 +232,21 @@ const useAMM = (props: useAMMProps | null) => {
         setLastDayVolume(last_volume);
 
     }, [getAMMDataAccount]);
+
+    const handleRaydiumAccountChange = useCallback(
+        async (result: any) => {
+            let event_data = result.data;
+            if (amm.provider === 1) {
+                const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
+                setLPAmount(bignum_to_num(poolState.lp_supply));
+            }
+            if (amm.provider === 2) {
+                const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
+                setLPAmount(bignum_to_num(ray_pool.lpReserve));
+            }
+        },
+        [amm],
+    );
 
     // Callback function to handle account changes
     const handleAMMAccountChange = useCallback((accountInfo: any) => {
@@ -279,6 +363,10 @@ const useAMM = (props: useAMMProps | null) => {
             marketDataSubscriptionRef.current = connection.onAccountChange(currentMarketDataAddress, handleMarketDataUpdate);
         }
 
+        if (raydiumPoolAddress && raydiumPoolSubscriptionRef.current === null) {
+            raydiumPoolSubscriptionRef.current = connection.onAccountChange(raydiumPoolAddress, handleRaydiumAccountChange);
+        }
+
         // Cleanup function to remove the subscription when the component unmounts
         // or when the dependencies change
         return () => {
@@ -290,8 +378,12 @@ const useAMM = (props: useAMMProps | null) => {
                 connection.removeAccountChangeListener(marketDataSubscriptionRef.current);
                 marketDataSubscriptionRef.current = null;
             }
+            if (raydiumPoolSubscriptionRef.current !== null) {
+                connection.removeAccountChangeListener(raydiumPoolSubscriptionRef.current);
+                raydiumPoolSubscriptionRef.current = null;
+            }
         };
-    }, [connection, pageName, currentMarketDataAddress, fetchInitialAMMData, getAMMDataAccount, handleAMMAccountChange, handleMarketDataUpdate]);
+    }, [connection, pageName, currentMarketDataAddress, raydiumPoolAddress, fetchInitialAMMData, getAMMDataAccount, handleAMMAccountChange, handleMarketDataUpdate, handleRaydiumAccountChange]);
 
     // Return the current token balance and any error message
     return {
