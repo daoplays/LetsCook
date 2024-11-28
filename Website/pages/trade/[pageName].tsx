@@ -60,19 +60,10 @@ import Loader from "../../components/loader";
 import useAddTradeRewards from "../../hooks/cookAMM/useAddTradeRewards";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
-import useAMM from "@/hooks/data/useAMM";
+import useAMM, { MarketData } from "@/hooks/data/useAMM";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
-
-interface MarketData {
-    time: UTCTimestamp;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-}
 
 async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_address: string, setLastVolume: any) {
     // Default options are marked with *
@@ -157,6 +148,9 @@ const TradePage = () => {
         quoteTokenAccount: ammQuoteAddress,
         baseTokenBalance: ammBaseAmount,
         quoteTokenBalance: ammQuoteAmount,
+        lpAmount: ammLPAmount,
+        marketData,
+        lastDayVolume,
         error: ammError,
     } = useAMM({ pageName: pageName as string | null });
 
@@ -166,15 +160,7 @@ const TradePage = () => {
     const { tokenBalance: userQuoteAmount } = useTokenBalance({ mintData: quoteMint });
     const { tokenBalance: userLPAmount } = useTokenBalance({ mintData: lpMint });
 
-    const [market_data, setMarketData] = useState<MarketData[]>([]);
-    const [last_day_volume, setLastDayVolume] = useState<number>(0);
-
-    const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
     const [raydium_address, setRaydiumAddress] = useState<PublicKey | null>(null);
-
-    const [ammLPAmount, setLPAmount] = useState<number | null>(null);
-
-    const price_ws_id = useRef<number | null>(null);
     const raydium_ws_id = useRef<number | null>(null);
 
     const last_base_amount = useRef<number>(0);
@@ -193,7 +179,7 @@ const TradePage = () => {
         last_base_amount.current = ammBaseAmount;
         last_quote_amount.current = ammQuoteAmount;
 
-        if (amm.provider === 0 || market_data.length === 0) {
+        if (amm.provider === 0 || marketData.length === 0) {
             return;
         }
 
@@ -203,7 +189,7 @@ const TradePage = () => {
         price = (price * Math.pow(10, baseMint.mint.decimals)) / Math.pow(10, 9);
 
         let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
-        let last_candle = market_data[market_data.length - 1];
+        let last_candle = marketData[marketData.length - 1];
         let last_minute = last_candle.time / 15 / 60;
         //console.log("update price", price, last_minute, now_minute)
 
@@ -218,8 +204,8 @@ const TradePage = () => {
             };
             //console.log("new candle", now_minute, last_minute, new_candle)
 
-            market_data.push(new_candle);
-            setMarketData([...market_data]);
+            marketData.push(new_candle);
+            //setMarketData([...marketData]);
         } else {
             last_candle.close = price;
             if (price > last_candle.high) {
@@ -229,37 +215,10 @@ const TradePage = () => {
                 last_candle.low = price;
             }
             //console.log("update old candle", last_candle)
-            market_data[market_data.length - 1] = last_candle;
-            setMarketData([...market_data]);
+            marketData[marketData.length - 1] = last_candle;
+            //setMarketData([...marketData]);
         }
-    }, [ammBaseAmount, ammQuoteAmount, amm, market_data, baseMint]);
-
-    const check_price_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-        const [price_data] = TimeSeriesData.struct.deserialize(event_data);
-        //console.log("updated price data", price_data);
-
-        let data: MarketData[] = [];
-
-        for (let i = 0; i < price_data.data.length; i++) {
-            let item = price_data.data[i];
-            let time = bignum_to_num(item.timestamp) * 60;
-
-            let open = Buffer.from(item.open).readFloatLE(0);
-            let high = Buffer.from(item.high).readFloatLE(0);
-            let low = Buffer.from(item.low).readFloatLE(0);
-            let close = Buffer.from(item.close).readFloatLE(0);
-            let volume = Buffer.from(item.volume).readFloatLE(0) * open;
-            //console.log("price data", time, open, high, low, close, volume);
-
-            data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-            //console.log("new data", data);
-        }
-        setMarketData(data);
-    }, []);
+    }, [ammBaseAmount, ammQuoteAmount, amm, marketData, baseMint]);
 
     const check_raydium_update = useCallback(
         async (result: any) => {
@@ -267,24 +226,21 @@ const TradePage = () => {
             if (amm.provider === 1) {
                 const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
 
-                setLPAmount(bignum_to_num(poolState.lp_supply));
+                //setLPAmount(bignum_to_num(poolState.lp_supply));
             }
             if (amm.provider === 2) {
                 const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
-                setLPAmount(bignum_to_num(ray_pool.lpReserve));
+                //setLPAmount(bignum_to_num(ray_pool.lpReserve));
             }
         },
         [amm],
     );
 
     useEffect(() => {
-        if (price_ws_id.current === null && price_address !== null) {
-            price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
-        }
         if (raydium_ws_id.current === null && raydium_address !== null) {
             raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
         }
-    }, [connection, price_address, raydium_address, check_price_update, check_raydium_update]);
+    }, [connection, raydium_address, check_raydium_update]);
 
     const CheckMarketData = useCallback(async () => {
         if (!amm || !baseMint) return;
@@ -303,96 +259,27 @@ const TradePage = () => {
                     //console.log(pool_state_account);
                     const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
                     //console.log(poolState);
-                    setLPAmount(bignum_to_num(poolState.lp_supply));
+                    //setLPAmount(bignum_to_num(poolState.lp_supply));
                 }
 
                 if (amm.provider === 2) {
                     let pool_data = await request_raw_account_data("", pool_account);
                     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
-                    setLPAmount(bignum_to_num(ray_pool.lpReserve));
+                    //setLPAmount(bignum_to_num(ray_pool.lpReserve));
                 }
                 //console.log("pool state", pool_state.toString())
                 if (Config.PROD) {
-                    await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
+                    //await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
                 }
+                check_market_data.current = false;
 
                 return;
             }
 
-            let amm_seed_keys = [];
-            if (token_mint.toString() < wsol_mint.toString()) {
-                amm_seed_keys.push(token_mint);
-                amm_seed_keys.push(wsol_mint);
-            } else {
-                amm_seed_keys.push(wsol_mint);
-                amm_seed_keys.push(token_mint);
-            }
-
-            let amm_data_account = PublicKey.findProgramAddressSync(
-                [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
-                PROGRAM,
-            )[0];
-
-            setLPAmount(amm.lp_amount);
-
-            let index_buffer = uInt32ToLEBytes(0);
-            let price_data_account = PublicKey.findProgramAddressSync(
-                [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
-                PROGRAM,
-            )[0];
-
-            setPriceAddress(price_data_account);
-
-            let price_data_buffer = await request_raw_account_data("", price_data_account);
-            //console.log(price_data_buffer);
-            const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
-
-            //console.log(price_data.data);
-            let data: MarketData[] = [];
-            let daily_data: MarketData[] = [];
-
-            let now = new Date().getTime() / 1000;
-            let last_volume = 0;
-
-            let last_date = -1;
-            for (let i = 0; i < price_data.data.length; i++) {
-                let item = price_data.data[i];
-                let time = bignum_to_num(item.timestamp) * 60;
-                let date = Math.floor(time / 24 / 60 / 60) * 24 * 60 * 60;
-
-                let open = Buffer.from(item.open).readFloatLE(0);
-                let high = Buffer.from(item.high).readFloatLE(0);
-                let low = Buffer.from(item.low).readFloatLE(0);
-                let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = Buffer.from(item.volume).readFloatLE(0) * open;
-                //console.log("price data", time, open, high, low, close, volume);
-                if (now - time < 24 * 60 * 60) {
-                    last_volume += volume;
-                }
-
-                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-
-                if (date !== last_date) {
-                    daily_data.push({ time: date as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-                    last_date = date;
-                } else {
-                    daily_data[daily_data.length - 1].high =
-                        high > daily_data[daily_data.length - 1].high ? high : daily_data[daily_data.length - 1].high;
-                    daily_data[daily_data.length - 1].low =
-                        low < daily_data[daily_data.length - 1].low ? low : daily_data[daily_data.length - 1].low;
-                    daily_data[daily_data.length - 1].close = close;
-                    daily_data[daily_data.length - 1].volume += volume;
-                }
-            }
-            setMarketData(data);
-            setLastDayVolume(last_volume);
+            
             check_market_data.current = false;
         }
     }, [amm, baseMint, connection]);
-
-    useEffect(() => {
-        CheckMarketData();
-    }, [CheckMarketData]);
 
     const handleMouseDown = () => {
         document.addEventListener("mousemove", handleMouseMove);
@@ -493,9 +380,9 @@ const TradePage = () => {
                                     listing={listing}
                                     amm={amm}
                                     base_mint={baseMint}
-                                    volume={last_day_volume}
+                                    volume={lastDayVolume}
                                     mm_data={latest_rewards}
-                                    price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
+                                    price={marketData.length > 0 ? marketData[marketData.length - 1].close : 0}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
                                 />
@@ -527,7 +414,7 @@ const TradePage = () => {
                             }}
                         >
                             {/* <div className="w-full overflow-auto rounded-lg bg-[#161616] bg-opacity-75 bg-clip-padding p-3 shadow-2xl backdrop-blur-sm backdrop-filter"> */}
-                            <ChartComponent data={market_data} additionalPixels={additionalPixels} />
+                            <ChartComponent data={marketData} additionalPixels={additionalPixels} />
                             {/* </div> */}
                             <div
                                 style={{
