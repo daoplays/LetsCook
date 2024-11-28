@@ -53,8 +53,7 @@ const ContractModal = ({ isOpen, onClose, onConfirm, mercenary, isLoading = fals
                             <div className="flex flex-col gap-2">
                                 <h2 className="font-serif text-xl text-[#C4A484]">Garrett Voss, The Broker</h2>
                                 <p className="font-serif italic text-[#8B7355]">
-                                    &quot;I&apos;ll find a buyer for your blade. Just name your price, and I&apos;ll handle the
-                                    rest...&quot;
+                                &quot;I&apos;ll find a buyer for your blade. Just name your price, and I&apos;ll handle the rest...&quot;
                                 </p>
                             </div>
                         </div>
