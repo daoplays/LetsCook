@@ -3,7 +3,7 @@ import { MintData, bignum_to_num, request_raw_account_data, uInt32ToLEBytes } fr
 import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
 import { getMintData } from "@/components/amm/launch";
-import { AMMData, AMMPluginData, RaydiumAMM, TimeSeriesData, getAMMPlugins } from "@/components/Solana/jupiter_state";
+import { AMMData, AMMPluginData, MMLaunchData, RaydiumAMM, TimeSeriesData, getAMMPlugins } from "@/components/Solana/jupiter_state";
 import useTokenBalance from "./useTokenBalance";
 import { PROGRAM } from "@/components/Solana/constants";
 import { UTCTimestamp } from "lightweight-charts";
@@ -66,7 +66,6 @@ async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_
     //return data;
 }
 
-
 // Collections are already streamed via _contexts so we dont need to have a websocket here aswell
 const useAMM = (props: useAMMProps | null) => {
     // State to store the token balance and any error messages
@@ -75,6 +74,7 @@ const useAMM = (props: useAMMProps | null) => {
     const [ammAddress, setAMMAddress] = useState<PublicKey | null>(null);
     const [currentMarketDataAddress, setCurrentMarketDataAddress] = useState<PublicKey | null>(null);
     const [raydiumPoolAddress, setRaydiumPoolAddress] = useState<PublicKey | null>(null);
+    const [currentRewardsAddress, setCurrentRewardsAddress] = useState<PublicKey | null>(null);
 
     // the mint data
     const [baseMint, setBaseMint] = useState<MintData | null>(null);
@@ -94,6 +94,9 @@ const useAMM = (props: useAMMProps | null) => {
     const [marketData, setMarketData] = useState<MarketData[] | null>(null);
     const [lastDayVolume, setLastDayVolume] = useState<number | null>(null);
 
+    // current rewards data
+    const [currentRewards, setCurrentRewards] = useState<MMLaunchData | null>(null);
+
     const [error, setError] = useState<string | null>(null);
 
     const check_initial_data = useRef<boolean>(true);
@@ -102,6 +105,7 @@ const useAMM = (props: useAMMProps | null) => {
     const ammSubscriptionRef = useRef<number | null>(null);
     const marketDataSubscriptionRef = useRef<number | null>(null);
     const raydiumPoolSubscriptionRef = useRef<number | null>(null);
+    const currentRewardsSubscriptionRef = useRef<number | null>(null);
 
     // refs for last balances in case we are streaming the price from that method
     const lastBaseAmount = useRef<number>(0);
@@ -151,6 +155,24 @@ const useAMM = (props: useAMMProps | null) => {
         setBaseTokenAccount(amm.base_key);
         setQuoteTokenAccount(amm.quote_key);
 
+        // get todays reward data
+        let currentDate = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - plugins.trade_reward_first_date;
+        let dateBytes = uInt32ToLEBytes(currentDate);
+
+        let currentRewardsAddress = PublicKey.findProgramAddressSync(
+            [amm_account.toBytes(), dateBytes, Buffer.from("LaunchDate")],
+            PROGRAM,
+        )[0];
+
+        setCurrentRewardsAddress(currentRewardsAddress);
+
+        let rewardsData = await request_raw_account_data("", currentRewardsAddress);
+        if (rewardsData) {
+            const [rewards] = MMLaunchData.struct.deserialize(rewardsData);
+            setCurrentRewards(rewards);
+            console.log("Have current rewards", rewards);
+        }
+
         let baseMint = await getMintData(amm.base_mint.toString());
         let quoteMint = await getMintData(amm.quote_mint.toString());
         let lpMint = await getMintData(amm.lp_mint.toString());
@@ -171,7 +193,6 @@ const useAMM = (props: useAMMProps | null) => {
         setLPMint(lpMint);
 
         if (amm.provider > 0) {
-            
             let pool_account = amm.pool;
             setRaydiumPoolAddress(pool_account);
 
@@ -186,12 +207,11 @@ const useAMM = (props: useAMMProps | null) => {
                 const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
                 setLPAmount(bignum_to_num(ray_pool.lpReserve));
             }
-            
+
             //await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
-            
-            
-            return
-        };
+
+            return;
+        }
 
         // get the market data
         setLPAmount(amm.lp_amount);
@@ -230,7 +250,6 @@ const useAMM = (props: useAMMProps | null) => {
         }
         setMarketData(data);
         setLastDayVolume(last_volume);
-
     }, [getAMMDataAccount]);
 
     const handleRaydiumAccountChange = useCallback(
@@ -262,6 +281,20 @@ const useAMM = (props: useAMMProps | null) => {
 
         setAMM(updated_data);
         setAMMPlugins(updated_plugins);
+    }, []);
+
+    // Callback function to handle account changes
+    const handleRewardsAccountChange = useCallback((accountInfo: any) => {
+        let account_data = Buffer.from(accountInfo.data, "base64");
+
+        if (account_data.length === 0) {
+            setCurrentRewards(null);
+            return;
+        }
+
+        const [updated_data] = MMLaunchData.struct.deserialize(account_data);
+
+        setCurrentRewards(updated_data);
     }, []);
 
     const handleMarketDataUpdate = useCallback(async (result: any) => {
@@ -367,6 +400,10 @@ const useAMM = (props: useAMMProps | null) => {
             raydiumPoolSubscriptionRef.current = connection.onAccountChange(raydiumPoolAddress, handleRaydiumAccountChange);
         }
 
+        if (currentRewardsAddress && currentRewardsSubscriptionRef.current === null) {
+            currentRewardsSubscriptionRef.current = connection.onAccountChange(currentRewardsAddress, handleRewardsAccountChange);
+        }
+
         // Cleanup function to remove the subscription when the component unmounts
         // or when the dependencies change
         return () => {
@@ -382,8 +419,22 @@ const useAMM = (props: useAMMProps | null) => {
                 connection.removeAccountChangeListener(raydiumPoolSubscriptionRef.current);
                 raydiumPoolSubscriptionRef.current = null;
             }
+            if (currentRewardsSubscriptionRef.current !== null) {
+                connection.removeAccountChangeListener(currentRewardsSubscriptionRef.current);
+                currentRewardsSubscriptionRef.current = null;
+            }
         };
-    }, [connection, pageName, currentMarketDataAddress, raydiumPoolAddress, fetchInitialAMMData, getAMMDataAccount, handleAMMAccountChange, handleMarketDataUpdate, handleRaydiumAccountChange]);
+    }, [
+        connection,
+        pageName,
+        currentMarketDataAddress,
+        raydiumPoolAddress,
+        fetchInitialAMMData,
+        getAMMDataAccount,
+        handleAMMAccountChange,
+        handleMarketDataUpdate,
+        handleRaydiumAccountChange,
+    ]);
 
     // Return the current token balance and any error message
     return {
@@ -399,6 +450,7 @@ const useAMM = (props: useAMMProps | null) => {
         lpAmount,
         marketData,
         lastDayVolume,
+        currentRewards,
         error,
     };
 };

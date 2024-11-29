@@ -23,7 +23,6 @@ import { useDisclosure, VStack, HStack, Text, Box } from "@chakra-ui/react";
 import { ReceivedAssetModalStyle } from "@/components/Solana/modals";
 import PageNotFound from "@/components/pageNotFound";
 import { bignum_to_num } from "@/components/Solana/state";
-import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "../../collection/collectionReleaseModal";
 import formatPrice from "@/utils/formatPrice";
 import useResponsive from "@/hooks/useResponsive";
@@ -31,6 +30,7 @@ import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import MyNFTsPanel from "./myAssets";
 import Marketplace from "./marketplace";
 import ReceivedAssetModal from "./receiveAssetModal";
+import useGetUserBalance from "@/hooks/data/useGetUserBalance";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -78,7 +78,7 @@ const Joy = () => {
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
-    const { userSOLBalance } = useAppRoot();
+    const { userBalance: userSOLBalance } = useGetUserBalance();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);

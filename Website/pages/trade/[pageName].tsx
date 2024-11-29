@@ -1,20 +1,11 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data, uInt32ToLEBytes, MintData, ListingData } from "../../components/Solana/state";
-import {
-    TimeSeriesData,
-    MMLaunchData,
-    reward_schedule,
-    AMMData,
-    RaydiumAMM,
-    getAMMKey,
-    AMMPluginData,
-} from "../../components/Solana/jupiter_state";
+import { MintData, ListingData } from "../../components/Solana/state";
+import { MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
 import { bignum_to_num } from "../../components/Solana/state";
-import { Config, PROGRAM } from "../../components/Solana/constants";
-import { useCallback, useEffect, useState, useRef } from "react";
-import { PublicKey } from "@solana/web3.js";
+import { Config } from "../../components/Solana/constants";
+import { useEffect, useState, useRef } from "react";
 import { getTransferFeeConfig } from "@solana/spl-token";
 
 import {
@@ -35,8 +26,7 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
-import useAppRoot from "../../context/useAppRoot";
-import { createChart, CrosshairMode, UTCTimestamp } from "lightweight-charts";
+import { createChart, CrosshairMode } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaChartLine, FaInfo } from "react-icons/fa";
 
@@ -63,28 +53,17 @@ import useAMM from "@/hooks/data/useAMM";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
-
-
-function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, plugins: AMMPluginData) {
-    if (list === null || list === undefined) return null;
-    if (amm === null || amm === undefined) return null;
-
-    if (plugins.trade_reward_first_date === 0) return null;
-
-    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - plugins.trade_reward_first_date;
-    let key = getAMMKey(amm, amm.provider);
-    return list.get(key.toString() + "_" + current_date);
-}
+import useGetUserBalance from "@/hooks/data/useGetUserBalance";
 
 const TradePage = () => {
     const wallet = useWallet();
-    const { connection } = useConnection();
     const router = useRouter();
+
     const { xs, sm, lg } = useResponsive();
 
-    const { mmLaunchData } = useAppRoot();
-
     const { SOLPrice } = useSOLPrice();
+
+    const { userBalance: userSOLBalance } = useGetUserBalance();
 
     const { pageName } = router.query;
 
@@ -107,6 +86,7 @@ const TradePage = () => {
         lpAmount: ammLPAmount,
         marketData,
         lastDayVolume,
+        currentRewards,
         error: ammError,
     } = useAMM({ pageName: pageName as string | null });
 
@@ -128,11 +108,9 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (listing === null || amm === null || !baseMint || mmLaunchData === null) {
+    if (listing === null || amm === null || !baseMint) {
         return <Loader />;
     }
-
-    let latest_rewards = filterLaunchRewards(mmLaunchData, amm, ammPlugins);
 
     return (
         <>
@@ -216,7 +194,7 @@ const TradePage = () => {
                                     amm={amm}
                                     base_mint={baseMint}
                                     volume={lastDayVolume}
-                                    mm_data={latest_rewards}
+                                    mm_data={currentRewards}
                                     price={marketData.length > 0 ? marketData[marketData.length - 1].close : 0}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
@@ -232,6 +210,7 @@ const TradePage = () => {
                                     amm_lp_balance={ammLPAmount}
                                     user_base_balance={userBaseAmount}
                                     user_lp_balance={userLPAmount}
+                                    userSOLBalance={userSOLBalance}
                                 />
                             )}
                         </VStack>
@@ -431,6 +410,7 @@ const BuyAndSell = ({
     amm_lp_balance,
     user_base_balance,
     user_lp_balance,
+    userSOLBalance,
 }: {
     amm: AMMData;
     base_mint: MintData;
@@ -439,6 +419,7 @@ const BuyAndSell = ({
     amm_lp_balance: number;
     user_base_balance: number;
     user_lp_balance: number;
+    userSOLBalance: number;
 }) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
@@ -446,8 +427,6 @@ const BuyAndSell = ({
     const [selected, setSelected] = useState("Buy");
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [sol_amount, setSOLAmount] = useState<number>(0);
-
-    const { userSOLBalance } = useAppRoot();
 
     const handleClick = (tab: string) => {
         setSelected(tab);

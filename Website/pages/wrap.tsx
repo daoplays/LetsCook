@@ -56,8 +56,8 @@ export const WrapToken = () => {
     const toast = useToast();
     const [amount, setAmount] = useState("");
 
-    const {WrapSOL} = useWrapSOL();
-    const {UnWrapSOL} = useUnWrapSOL();
+    const { WrapSOL } = useWrapSOL();
+    const { UnWrapSOL } = useUnWrapSOL();
 
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
@@ -69,28 +69,26 @@ export const WrapToken = () => {
             <Box w={"100%"} mx="auto" className="mt-4">
                 <VStack spacing={6} align="stretch">
                     {/* Input Section */}
-                        <FormControl>
-                            <HStack>
-                              
-                                <Button
-                                    className="!bg-custom-gradient text-white"
-                                    onClick={() => WrapSOL(0.0001 * 1e9)}
-                                    isLoading={false}
-                                    loadingText="Loading"
-                                >
-                                    Wrap
-                                </Button>
-                                <Button
-                                    className="!bg-custom-gradient text-white"
-                                    onClick={() => UnWrapSOL(0.0001 * 1e9)}
-                                    isLoading={false}
-                                    loadingText="Loading"
-                                >
-                                    UnWrap
-                                </Button>
-                            </HStack>
-                        </FormControl>
-                    
+                    <FormControl>
+                        <HStack>
+                            <Button
+                                className="!bg-custom-gradient text-white"
+                                onClick={() => WrapSOL(0.0001 * 1e9)}
+                                isLoading={false}
+                                loadingText="Loading"
+                            >
+                                Wrap
+                            </Button>
+                            <Button
+                                className="!bg-custom-gradient text-white"
+                                onClick={() => UnWrapSOL(0.0001 * 1e9)}
+                                isLoading={false}
+                                loadingText="Loading"
+                            >
+                                UnWrap
+                            </Button>
+                        </HStack>
+                    </FormControl>
                 </VStack>
             </Box>
         </form>

@@ -50,13 +50,13 @@ import useCollection from "../../hooks/data/useCollection";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
 import styles from "../../styles/Launch.module.css";
-import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
 import { PublicKey } from "@solana/web3.js";
 import { set } from "date-fns";
 import { NFTListingData } from "@/components/collection/collectionState";
+import useGetUserBalance from "@/hooks/data/useGetUserBalance";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -94,7 +94,7 @@ const CollectionSwapPage = () => {
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
-    const { userSOLBalance } = useAppRoot();
+    const { userBalance: userSOLBalance } = useGetUserBalance();
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);

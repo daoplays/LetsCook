@@ -69,11 +69,10 @@ const useUnWrapSOL = () => {
         });
     }, []);
 
-    const getUnWrapInstruction = async (sol_amount: number, temp_account : PublicKey): Promise<TransactionInstruction[]> => {
+    const getUnWrapInstruction = async (sol_amount: number, temp_account: PublicKey): Promise<TransactionInstruction[]> => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        if (!wallet || !wallet.publicKey)
-            return [];
+        if (!wallet || !wallet.publicKey) return [];
 
         // 1) Create new token account
         // 2) Initialize the token account
@@ -89,14 +88,9 @@ const useUnWrapSOL = () => {
             lamports,
             space: 165,
             programId: TOKEN_PROGRAM_ID,
-        })
+        });
 
-        let initialise_temp_account =  createInitializeAccountInstruction(
-            temp_account,
-            NATIVE_MINT,
-            wallet.publicKey,
-            TOKEN_PROGRAM_ID
-        )
+        let initialise_temp_account = createInitializeAccountInstruction(temp_account, NATIVE_MINT, wallet.publicKey, TOKEN_PROGRAM_ID);
 
         let transfer_idx = createTransferInstruction(
             associatedTokenAccount, // source
@@ -104,23 +98,12 @@ const useUnWrapSOL = () => {
             wallet.publicKey, // owner
             BigInt(sol_amount), // amount
             [], // multisigners
-            TOKEN_PROGRAM_ID
-        )
+            TOKEN_PROGRAM_ID,
+        );
 
-        let close_idx = createCloseAccountInstruction(
-            temp_account,
-            wallet.publicKey,
-            wallet.publicKey,
-            [],
-            TOKEN_PROGRAM_ID
-          )
+        let close_idx = createCloseAccountInstruction(temp_account, wallet.publicKey, wallet.publicKey, [], TOKEN_PROGRAM_ID);
 
-          return [
-            create_temp_account,
-            initialise_temp_account,
-            transfer_idx,
-            close_idx
-        ];
+        return [create_temp_account, initialise_temp_account, transfer_idx, close_idx];
     };
 
     const UnWrapSOL = async (sol_amount: number) => {
@@ -128,8 +111,7 @@ const useUnWrapSOL = () => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        if (!wallet || !wallet.publicKey || !wallet.signTransaction)
-            return;
+        if (!wallet || !wallet.publicKey || !wallet.signTransaction) return;
 
         const temp_token_account = new Keypair();
 

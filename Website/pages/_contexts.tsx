@@ -150,8 +150,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const [current_user_data, setCurrentUserData] = useState<UserData | null>(null);
     const [home_page_data, setHomePageData] = useState<Map<string, LaunchData> | null>(null);
 
-    const [userSOLBalance, setUserSOLBalance] = useState<number>(0);
-
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
     const [databaseLoaded, setDatabaseLoaded] = useState<boolean>(false);
@@ -314,39 +312,14 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         [wallet],
     );
 
-    const checkUserBalance = useCallback(async () => {
-        if (wallet === null || wallet.publicKey === null) {
-            return;
-        }
-
-        let balance = await request_current_balance("", wallet.publicKey);
-        setUserSOLBalance(balance);
-    }, [wallet]);
-
-    const check_user_balance = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        try {
-            let balance = result["lamports"] / 1e9;
-            //console.log("have user balance event data", balance);
-            setUserSOLBalance(balance);
-        } catch (error) {}
-    }, []);
-
     // launch account subscription handler
     useEffect(() => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        if (user_balance_ws_id.current === null && wallet !== null && wallet.publicKey !== null) {
-            checkUserBalance();
-            user_balance_ws_id.current = connection.onAccountChange(wallet.publicKey, check_user_balance, "confirmed");
-        }
-
         if (program_ws_id.current === null) {
             program_ws_id.current = connection.onProgramAccountChange(PROGRAM, check_program_update, "confirmed");
         }
-    }, [wallet, check_user_balance, checkUserBalance, check_program_update]);
+    }, [wallet, check_program_update]);
 
     const CloseAccount = useCallback(
         async ({ accounts }: { accounts: PublicKey[] }) => {
@@ -723,7 +696,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             checkProgramData={ReGetProgramData}
             newLaunchData={newLaunchData}
             ammData={amm_data}
-            userSOLBalance={userSOLBalance}
             SOLPrice={SOLPrice}
             mintData={mintData}
             newCollectionData={newCollectionData}
