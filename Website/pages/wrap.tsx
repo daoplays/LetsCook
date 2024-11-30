@@ -111,7 +111,7 @@ export const WrapToken = () => {
                                 </div>
                                 <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
                                     <div className="flex flex-col gap-2">
-                                        <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
+                                        <div className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                             <div className="w-6">
                                                 <Image
                                                     src={Config.token_image}
@@ -122,7 +122,7 @@ export const WrapToken = () => {
                                                 />
                                             </div>
                                             <span>{Config.token}</span>
-                                        </button>
+                                        </div>
                                     </div>
                                     <input
                                         type="number"
@@ -174,7 +174,7 @@ export const WrapToken = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
-                                    <button className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
+                                    <div className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                         <div className="w-6">
                                             <Image
                                                 src={Config.token_image}
@@ -185,7 +185,7 @@ export const WrapToken = () => {
                                             />
                                         </div>
                                         <span className="text-nowrap">{wrapSolMint.symbol}</span>
-                                    </button>
+                                    </div>
                                     <input
                                         type="number"
                                         className={`w-full bg-transparent text-right text-xl focus:outline-none ${!isWrap ? "text-white" : "cursor-not-allowed text-gray-500"}`}
@@ -214,7 +214,7 @@ export const WrapToken = () => {
                                 isWrap ? (
                                     <Button
                                         className="!bg-custom-gradient text-white"
-                                        onClick={() => WrapSOL(0.0001 * 1e9)}
+                                        onClick={() => WrapSOL(token_amount * 1e9)}
                                         isLoading={false}
                                         loadingText="Loading"
                                     >
@@ -223,7 +223,7 @@ export const WrapToken = () => {
                                 ) : (
                                     <Button
                                         className="!bg-custom-gradient text-white"
-                                        onClick={() => UnWrapSOL(0.0001 * 1e9)}
+                                        onClick={() => UnWrapSOL(token_amount * 1e9)}
                                         isLoading={false}
                                         loadingText="Loading"
                                     >
