@@ -67,7 +67,7 @@ export const WrapToken = () => {
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[775px]">
             <div className="flex flex-col gap-2 mb-4">
-                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">Wrap/Unwrap Tool</Text>
+                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">{Config.token} Wrap/Unwrap Tool</Text>
                 {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
             </div>
 
