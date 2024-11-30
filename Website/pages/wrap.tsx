@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     Box,
     Button,
@@ -34,12 +34,15 @@ import Image from "next/image";
 import { CollectionV1, fetchCollectionV1 } from "@metaplex-foundation/mpl-core";
 import { publicKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { Config } from "@/components/Solana/constants";
+import { Config, WRAPPED_SOL } from "@/components/Solana/constants";
 import { fetchWithTimeout } from "@/utils/fetchWithTimeout";
 import CSVUploader from "@/utils/csvLoader";
 import useWrapSOL from "@/hooks/useWrapSOL";
 import useUnWrapSOL from "@/hooks/useUnWrapSOL";
 import useGetUserBalance from "@/hooks/data/useGetUserBalance";
+import { useWallet } from "@solana/wallet-adapter-react";
+import UseWalletConnection from "@/hooks/useWallet";
+import { wrap } from "module";
 
 interface AirdropRecord {
     address: string; // wallet address
@@ -55,7 +58,12 @@ export interface CollectionWithMetadata {
 }
 
 export const WrapToken = () => {
+    const wallet = useWallet();
+    const { handleConnectWallet } = UseWalletConnection();
     const { xs, sm, md, lg } = useResponsive();
+    const [token_amount, setTokenAmount] = useState<number>(0);
+    const [wrapToken, setWrapToken] = useState<number>(0);
+    const [wrapSolMint, setWrapSolMint] = useState<MintData | null>(null);
     const { userBalance: userSOLBalance } = useGetUserBalance();
     const toast = useToast();
     const [amount, setAmount] = useState("");
@@ -64,6 +72,19 @@ export const WrapToken = () => {
     const { WrapSOL } = useWrapSOL();
     const { UnWrapSOL } = useUnWrapSOL();
 
+    const { tokenBalance } = useTokenBalance({ mintAddress: WRAPPED_SOL });
+
+    async function handleSetBaseData() {
+        let mint_data = await getMintData("So11111111111111111111111111111111111111112");
+        setWrapSolMint(mint_data);
+    }
+    useEffect(()=>{
+        handleSetBaseData();
+    },[])
+
+    if(!wrapSolMint){
+        return;
+    }
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[775px]">
             <div className="flex flex-col gap-2 mb-4">
@@ -83,7 +104,9 @@ export const WrapToken = () => {
 
                                     <div className="flex items-center gap-1 opacity-75">
                                         <FaWallet size={12} />
-                                        <p className="text-sm">{userSOLBalance} {Config.token}</p>
+                                        <p className="text-sm">
+                                            {userSOLBalance} {Config.token}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
@@ -102,26 +125,24 @@ export const WrapToken = () => {
                                         </button>
                                     </div>
                                     <input
-                                        type="text"
-                                        className={`w-full text-xl text-right text-gray-500 bg-transparent focus:outline-none ${isWrap? "text-white": "cursor-not-allowed text-gray-500"}`}
+                                        type="number"
+                                        className={`w-full bg-transparent text-right text-xl text-gray-500 focus:outline-none ${isWrap ? "text-white" : "cursor-not-allowed text-gray-500"}`}
                                         placeholder="0"
-                                        // value={
-                                        //     isTokenToNFT
-                                        //         ? formatPrice(
-                                        //               bignum_to_num(collection.swap_price) /
-                                        //                   Math.pow(10, collection.token_decimals),
-                                        //               3,
-                                        //           )
-                                        //         : formatPrice(outAmount, 3)
-                                        // }
-                                        // onChange={(e) => {
-                                        //     setTokenAmount(
-                                        //         !isNaN(parseFloat(e.target.value)) || e.target.value === ""
-                                        //             ? parseFloat(e.target.value)
-                                        //             : token_amount,
-                                        //     );
-                                        // }}
-                                        disabled={isWrap? false: true}
+                                        defaultValue={0}
+                                        value={isNaN(token_amount) ? 0 : token_amount}
+                                        onChange={(e) => {
+                                            setTokenAmount(
+                                                !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                    ? parseFloat(e.target.value)
+                                                    : token_amount,
+                                            );
+                                            setWrapToken(
+                                                !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                    ? parseFloat(e.target.value)
+                                                    : token_amount,
+                                            );
+                                        }}
+                                        disabled={isWrap ? false : true}
                                     />
                                 </div>
                             </div>
@@ -139,7 +160,7 @@ export const WrapToken = () => {
                             </div>
 
                             {/* To Token Input */}
-                            <div className={`${isWrap? "mb-3 -mt-6":""}`}>
+                            <div className={`${isWrap ? "-mt-6 mb-3" : ""}`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="text-sm">{!isWrap ? `You're Swapping` : "To Receive"}</div>
 
@@ -148,7 +169,7 @@ export const WrapToken = () => {
                                         <p className="text-sm">
                                             {/* {nftBalance + userListedNFTs.length}
                                                         {collection.collection_symbol} */}
-                                            999 WSOL
+                                            {tokenBalance} {wrapSolMint.symbol}
                                         </p>
                                     </div>
                                 </div>
@@ -163,36 +184,60 @@ export const WrapToken = () => {
                                                 className="rounded-full"
                                             />
                                         </div>
-                                        <span className="text-nowrap">W{Config.token}</span>
+                                        <span className="text-nowrap">{wrapSolMint.symbol}</span>
                                     </button>
                                     <input
-                                        type="text"
-                                        className={`w-full text-xl text-right bg-transparent focus:outline-none ${!isWrap? "text-white": "cursor-not-allowed text-gray-500"}`}
+                                        type="number"
+                                        className={`w-full bg-transparent text-right text-xl focus:outline-none ${!isWrap ? "text-white" : "cursor-not-allowed text-gray-500"}`}
                                         placeholder="0"
-                                        disabled={isWrap? true: false}
+                                        disabled={isWrap ? true : false}
+                                        value={isNaN(wrapToken) ? 0 : wrapToken}
+                                        onChange={(e) => {
+                                            setTokenAmount(
+                                                !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                    ? parseFloat(e.target.value)
+                                                    : token_amount,
+                                            );
+                                            setWrapToken(
+                                                !isNaN(parseFloat(e.target.value)) || e.target.value === ""
+                                                    ? parseFloat(e.target.value)
+                                                    : token_amount,
+                                            );
+                                        }}
                                     />
                                 </div>
                             </div>
                         </div>
 
                         <HStack className="mt-3">
-                            {isWrap ? (
-                                <Button
-                                    className="!bg-custom-gradient text-white"
-                                    onClick={() => WrapSOL(0.0001 * 1e9)}
-                                    isLoading={false}
-                                    loadingText="Loading"
-                                >
-                                    Wrap
-                                </Button>
+                            {wallet.connected ? (
+                                isWrap ? (
+                                    <Button
+                                        className="!bg-custom-gradient text-white"
+                                        onClick={() => WrapSOL(0.0001 * 1e9)}
+                                        isLoading={false}
+                                        loadingText="Loading"
+                                    >
+                                        Wrap
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="!bg-custom-gradient text-white"
+                                        onClick={() => UnWrapSOL(0.0001 * 1e9)}
+                                        isLoading={false}
+                                        loadingText="Loading"
+                                    >
+                                        UnWrap
+                                    </Button>
+                                )
                             ) : (
                                 <Button
                                     className="!bg-custom-gradient text-white"
-                                    onClick={() => UnWrapSOL(0.0001 * 1e9)}
+                                    onClick={() => handleConnectWallet()}
                                     isLoading={false}
                                     loadingText="Loading"
                                 >
-                                    UnWrap
+                                    Connect Wallet
                                 </Button>
                             )}
                         </HStack>
