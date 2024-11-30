@@ -15,6 +15,7 @@ import UseWalletConnection from "../hooks/useWallet";
 import * as NProgress from "nprogress";
 import { PiHamburgerFill } from "react-icons/pi";
 import { FaParachuteBox } from "react-icons/fa";
+import { Config } from "./Solana/constants";
 
 const tabs = {
     create: [
@@ -74,6 +75,15 @@ const tabs = {
             tab: "Leaderboard",
             url: "/leaderboard",
         },
+    ],
+
+    tools: [
+        {
+            icon: (size: number) => <Image src={Config.token_image} width={24} height={24} alt={"Money Bag"} />,
+            tab: "Wrap/Unwrap",
+            url: "/wrap",
+        },
+        
     ],
 
     info: [
@@ -142,6 +152,12 @@ const SideNav = () => {
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
+                        <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
+                    ))}
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
+                        Tools
+                    </Text>
+                    {tabs.tools.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
