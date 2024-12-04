@@ -36,67 +36,7 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
 import useWrapSOL from "../useWrapSOL";
 import { wrap } from "module";
-
-class OraoTokenFeeConfig {
-    constructor(
-        readonly discriminator: number[],
-        readonly mint: PublicKey,
-        readonly treasury: PublicKey,
-        readonly fee: bignum,
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<OraoTokenFeeConfig>(
-        [
-            ["discriminator", uniformFixedSizeArray(u8, 8)],
-            ["mint", publicKey],
-            ["treasury", publicKey],
-            ["fee", u64],
-        ],
-        (args) => new OraoTokenFeeConfig(args.discriminator!, args.mint!, args.treasury!, args.fee!),
-        "OraoTokenFeeConfig",
-    );
-}
-
-class OraoNetworkConfig {
-    constructor(
-        readonly discriminator: number[],
-        readonly treasury: PublicKey,
-        readonly requestFee: bignum,
-        readonly fulfilmentAuthorities: PublicKey[],
-        readonly tokenFeeConfig: OraoTokenFeeConfig,
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<OraoNetworkConfig>(
-        [
-            ["discriminator", uniformFixedSizeArray(u8, 8)],
-            ["treasury", publicKey],
-            ["requestFee", u64],
-            ["fulfilmentAuthorities", array(publicKey)],
-            ["tokenFeeConfig", OraoTokenFeeConfig.struct],
-        ],
-        (args) =>
-            new OraoNetworkConfig(args.discriminator!, args.treasury!, args.requestFee!, args.fulfilmentAuthorities!, args.tokenFeeConfig!),
-        "OraoNetworkConfig",
-    );
-}
-
-class OraoNetworkState {
-    constructor(
-        readonly discriminator: number[],
-        readonly config: OraoNetworkConfig,
-        readonly numRecieved: bignum,
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<OraoNetworkState>(
-        [
-            ["discriminator", uniformFixedSizeArray(u8, 8)],
-            ["config", OraoNetworkConfig.struct],
-            ["numRecieved", u64],
-        ],
-        (args) => new OraoNetworkState(args.discriminator!, args.config!, args.numRecieved!),
-        "OraoNetworkState",
-    );
-}
+import useSendTransaction from "../useSendTransaction";
 
 class OraoRandomnessResponse {
     constructor(
@@ -140,17 +80,6 @@ function serialise_claim_nft_instruction(seed: number[]): Buffer {
     return buf;
 }
 
-function check_randomness(data: number[]) {
-    let valid = false;
-    for (let i = 0; i < data.length; i++) {
-        if (data[i] != 0) {
-            valid = true;
-            break;
-        }
-    }
-
-    return valid;
-}
 class ClaimNFT_Instruction {
     constructor(
         readonly instruction: number,
@@ -170,55 +99,15 @@ class ClaimNFT_Instruction {
 const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => {
     const wallet = useWallet();
     const { connection } = useConnection();
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const { mintData } = useAppRoot();
-    const [isLoading, setIsLoading] = useState(false);
-    const [OraoRandoms, setOraoRandoms] = useState<number[]>([]);
 
     const { MintNFT } = useMintNFT(launchData);
     const { MintRandom } = useMintRandom(launchData);
     const { getWrapInstruction } = useWrapSOL();
-    const signature_ws_id = useRef<number | null>(null);
 
-    const check_signature_update = useCallback(async (result: any) => {
-        //console.log("claim nft signature: ", result);
-        // if we have a subscription field check against ws_id
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-
-            return;
-        }
-
-        toast.success("Transaction successful! Waiting for Randomness", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        await connection.removeAccountChangeListener(signature_ws_id.current);
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        console.log("transaction failed at ", new Date());
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
+  
     const ClaimNFT = async () => {
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -251,17 +140,9 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             return;
         }
 
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
         if (launchData === null) {
             return;
         }
-
-        setIsLoading(true);
-        setOraoRandoms([]);
 
         let launch_data_account = PublicKey.findProgramAddressSync(
             [Buffer.from(launchData.page_name), Buffer.from("Collection")],
@@ -432,37 +313,33 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             data: instruction_data,
         });
 
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
+        let instructions: TransactionInstruction[] = [];
+
+        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         if (wrapToken) {
             let wrap_instruction = await getWrapInstruction(bignum_to_num(launchData.swap_price));
-            transaction.add(...wrap_instruction);
+            instructions.push(...wrap_instruction);
         }
+        instructions.push(list_instruction);
+ 
 
-        transaction.add(list_instruction);
 
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            console.log("claim nft sig at ", new Date(), signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-        } catch (error) {
-            console.log(error);
-            setIsLoading(false);
-            return;
-        }
+     
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            }
+        });
     };
 
-    return { ClaimNFT, isLoading, OraoRandoms, setOraoRandoms };
+    return { ClaimNFT, isLoading };
 };
 
 export default useClaimNFT;
