@@ -195,7 +195,7 @@ const TradePage = () => {
                                     base_mint={baseMint}
                                     volume={lastDayVolume}
                                     mm_data={currentRewards}
-                                    price={marketData.length > 0 ? marketData[marketData.length - 1].close : 0}
+                                    price={(marketData && marketData.length > 0) ? marketData[marketData.length - 1].close : 0}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
                                 />
@@ -655,7 +655,7 @@ const InfoContent = ({
                 <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
                     <span className="text-md text- text-white text-opacity-50">Volume (24h):</span>
                     <div className="flex items-center space-x-2">
-                        <span className="text-md text-white">{volume.toLocaleString()}</span>
+                        <span className="text-md text-white">{volume ? volume.toLocaleString() : 0}</span>
                         <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
                     </div>
                 </div>
@@ -730,12 +730,16 @@ const InfoContent = ({
 
 const ChartComponent = (props) => {
     const { data, additionalPixels } = props;
-
+    
     const chartContainerRef = useRef(null);
     const chartRef = useRef(null);
     const seriesRef = useRef(null);
 
     useEffect(() => {
+
+        if (!data)
+            return;
+        
         const handleResize = () => {
             if (chartRef.current) {
                 chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });
