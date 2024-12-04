@@ -1,10 +1,5 @@
 import {
-    LaunchData,
     LaunchInstruction,
-    get_current_blockhash,
-    myU64,
-    send_transaction,
-    serialise_basic_instruction,
     uInt32ToLEBytes,
     request_raw_account_data,
     getRecentPrioritizationFees,
@@ -14,29 +9,22 @@ import { CollectionData, request_assignment_data } from "../../components/collec
 import {
     ComputeBudgetProgram,
     PublicKey,
-    Transaction,
     TransactionInstruction,
-    Connection,
     Keypair,
-    SYSVAR_RENT_PUBKEY,
     AccountMeta,
 } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
+import { getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX_META, TIMEOUT } from "../../components/Solana/constants";
-import { useCallback, useRef, useState, useEffect } from "react";
-import bs58 from "bs58";
-import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
+import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys } from "../../components/Solana/constants";
+import { LaunchKeys } from "../../components/Solana/constants";
+import { getAssociatedTokenAddress } from "@solana/spl-token";
 import useMintNFT from "./useMintNFT";
-import { toast } from "react-toastify";
-import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
+import { BeetStruct, FixableBeetStruct, array, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import useMintRandom from "./useMintRandom";
 import useWrapSOL from "../useWrapSOL";
-import { wrap } from "module";
 import useSendTransaction from "../useSendTransaction";
+import { getMintData } from "@/components/amm/launch";
 
 class OraoRandomnessResponse {
     constructor(
@@ -101,8 +89,6 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
     const { connection } = useConnection();
     const { sendTransaction, isLoading } = useSendTransaction();
 
-    const { mintData } = useAppRoot();
-
     const { MintNFT } = useMintNFT(launchData);
     const { MintRandom } = useMintRandom(launchData);
     const { getWrapInstruction } = useWrapSOL();
@@ -152,7 +138,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
-        let mint_info = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
+        let mint_info = await getMintData(launchData.keys[CollectionKeys.MintAddress].toString());
         let mint_account = mint_info.mint;
 
         let user_token_account_key = await getAssociatedTokenAddress(
@@ -177,11 +163,6 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
         );
 
         let token_destination_account = pda_token_account_key;
-        //for (let i = 0; i < launchData.plugins.length; i++) {
-        //    if (launchData.plugins[i]["__kind"] === "MintOnly") {
-        //        token_destination_account = team_token_account_key;
-        //    }
-        //}
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -249,7 +230,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
                 console.log("Have whitelist plugin");
                 console.log(launchData.plugins[i]["key"].toString());
                 whitelist_mint = launchData.plugins[i]["key"];
-                let whitelist = mintData.get(whitelist_mint.toString());
+                let whitelist = await getMintData(whitelist_mint.toString());
                 console.log("whitelist token:", whitelist);
                 whitelist_account = await getAssociatedTokenAddress(
                     whitelist_mint, // mint

@@ -26,15 +26,14 @@ import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX
 import { useCallback, useRef, useState, useEffect } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 import useMintNFT from "./useMintNFT";
 import { toast } from "react-toastify";
 import useSendTransaction from "../useSendTransaction";
+import { getMintData } from "@/components/amm/launch";
 
 const useMintRandom = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
     const { sendTransaction, isLoading } = useSendTransaction();
 
 
@@ -61,7 +60,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
-        let mint_account = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
+        let mint_account = await getMintData(launchData.keys[CollectionKeys.MintAddress].toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner

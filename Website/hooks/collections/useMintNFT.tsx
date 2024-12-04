@@ -25,14 +25,13 @@ import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import useSendTransaction from "../useSendTransaction";
+import { getMintData } from "@/components/amm/launch";
 
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const MintNFT = async () => {
@@ -74,7 +73,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         )[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
-        let mint_info = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
+        let mint_info = await getMintData(launchData.keys[CollectionKeys.MintAddress].toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
