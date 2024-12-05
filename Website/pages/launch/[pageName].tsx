@@ -1,39 +1,13 @@
-import {
-    Center,
-    VStack,
-    Text,
-    Box,
-    HStack,
-    Flex,
-    Tooltip,
-    Checkbox,
-    Input,
-    Button,
-    useNumberInput,
-    Progress,
-    Divider,
-} from "@chakra-ui/react";
-import {
-    LaunchData,
-    bignum_to_num,
-    myU64,
-    JoinData,
-    request_raw_account_data,
-    MintData,
-    getLaunchTypeIndex,
-    ListingData,
-} from "../../components/Solana/state";
-import { PROGRAM, Config } from "../../components/Solana/constants";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { Center, VStack, Text, Box, HStack, Flex, Tooltip, Checkbox, Input, Button, useNumberInput, Progress } from "@chakra-ui/react";
+import { LaunchData, bignum_to_num, JoinData, MintData, getLaunchTypeIndex, ListingData } from "../../components/Solana/state";
+import { Config } from "../../components/Solana/constants";
+import { useEffect, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
-import { MdOutlineContentCopy } from "react-icons/md";
-import { PieChart } from "react-minimal-pie-chart";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
 import UseWalletConnection from "../../hooks/useWallet";
-import trimAddress from "../../utils/trimAddress";
 import WoodenButton from "../../components/Buttons/woodenButton";
 import PageNotFound from "../../components/pageNotFound";
 import useInitAMM from "../../hooks/jupiter/useInitAMM";
@@ -163,8 +137,6 @@ const TokenMintPage = () => {
             setCookState(cook_state);
         }
     }, [cook_state, launchData]);
-
-    //console.log(launchData);
 
     if (!pageName) return;
 

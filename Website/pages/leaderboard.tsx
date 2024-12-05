@@ -1,34 +1,17 @@
 import { useState } from "react";
-import {
-    Box,
-    Flex,
-    Text,
-    TableContainer,
-    HStack,
-    Input,
-    Button,
-    useDisclosure,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalOverlay,
-    VStack,
-} from "@chakra-ui/react";
+import { Flex, Text, HStack, Input, Button, useDisclosure, Modal, ModalBody, ModalContent, ModalOverlay, VStack } from "@chakra-ui/react";
 import { UserData } from "../components/Solana/state";
-import useAppRoot from "../context/useAppRoot";
 import Head from "next/head";
 import useResponsive from "../hooks/useResponsive";
-import { TfiReload } from "react-icons/tfi";
 import { FaSort } from "react-icons/fa";
 import styles from "../styles/Launch.module.css";
 import useEditUser from "../hooks/useEditUserData";
 import { MdEdit } from "react-icons/md";
 import { useWallet } from "@solana/wallet-adapter-react";
-import WoodenButton from "../components/Buttons/woodenButton";
 import UseWalletConnection from "../hooks/useWallet";
 import Image from "next/image";
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import useLeaderBoard from "@/hooks/useLeaderBoard";
 interface Header {
     text: string;
     field: string | null;
@@ -37,7 +20,6 @@ interface Header {
 const LeaderboardPage = () => {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
-    const { userList, currentUserData } = useAppRoot();
     const { xs, sm, lg } = useResponsive();
 
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -49,60 +31,15 @@ const LeaderboardPage = () => {
         setName(e.target.value);
     };
 
-    let userVec: UserData[] = [];
-    if (userList !== null) {
-        userList.forEach((user) => {
-            userVec.push(user);
-        });
-    }
+    const { handleHeaderClick, sortedUsers, rank_sorted, sortedField, reverseSort, currentUserData } = useLeaderBoard();
 
     const LeaderboardTable = () => {
-        const { sm } = useResponsive();
-
-        const [sortedField, setSortedField] = useState<string | null>("sauce");
-        const [reverseSort, setReverseSort] = useState<boolean>(true);
-
         const tableHeaders: Header[] = [
             { text: "RANK", field: "rank" },
             { text: "USER", field: "user" },
             { text: "SAUCE", field: "sauce" },
         ];
-
-        const handleHeaderClick = (field: string | null) => {
-            console.log("field", field);
-            if (field === sortedField) {
-                setReverseSort(!reverseSort);
-            } else {
-                setSortedField(field);
-                setReverseSort(false);
-            }
-        };
-
-        const sortedUsers = userVec.sort((a, b) => {
-            if (sortedField === "user") {
-                let a_name = a.user_name !== "" ? a.user_name : a.user_key.toString();
-                let b_name = b.user_name !== "" ? b.user_name : b.user_key.toString();
-                return reverseSort ? b_name.localeCompare(a_name) : a_name.localeCompare(b_name);
-            } else if (sortedField === "sauce") {
-                return reverseSort ? b.total_points - a.total_points : a.total_points - b.total_points;
-            }
-
-            return 0;
-        });
-
-        //console.log("sortedUsers", sortedUsers);
-
-        const rank_sorted = [...userVec].sort((a, b) => b.total_points - a.total_points);
-
-        let currentUserIndex = -1;
-        if (sortedUsers && currentUserData)
-            currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
-
-        if (currentUserIndex !== -1) {
-            const currentUser = sortedUsers.splice(currentUserIndex, 1)[0];
-            sortedUsers.unshift(currentUser);
-        }
-
+        
         return (
             <>
                 <Table>
@@ -113,10 +50,10 @@ const LeaderboardPage = () => {
                                     {i.field ? (
                                         <div
                                             onClick={() => handleHeaderClick(i.field)}
-                                            className="flex cursor-pointer justify-center font-semibold"
+                                            className="flex justify-center font-semibold cursor-pointer"
                                         >
                                             {i.text}
-                                            {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                            {i.text === "RANK" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
                                         </div>
                                     ) : (
                                         i.text
@@ -169,7 +106,7 @@ const LeaderboardPage = () => {
 
                 <TableCell style={{ minWidth: "160px" }}>
                     <div className="flex items-center justify-center gap-3 px-4">
-                        <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <div className="w-10 h-10 overflow-hidden rounded-lg">
                             <Image alt="Sauce icon" src={"/images/sauce.png"} width={48} height={48} className="object-cover" />
                         </div>
                         <span className="font-semibold">{user.total_points.toString()}</span>
@@ -206,10 +143,10 @@ const LeaderboardPage = () => {
                     alignItems="center"
                     justifyContent="end"
                     style={{ position: "relative", flexDirection: sm ? "column" : "row" }}
-                    className="mb-3 w-full px-2"
+                    className="w-full px-2 mb-3"
                 >
                     <Text
-                        className="block text-center text-3xl font-semibold text-white lg:text-4xl"
+                        className="block text-3xl font-semibold text-center text-white lg:text-4xl"
                         style={{
                             position: sm ? "static" : "absolute",
                             left: 0,
