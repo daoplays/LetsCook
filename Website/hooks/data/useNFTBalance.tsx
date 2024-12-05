@@ -15,6 +15,104 @@ interface UseTokenBalanceProps {
 
 const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
 
+/*
+export async function getDASCollectionAssets(collectionAddress: PublicKey, owner?: PublicKey): Promise<Map<string, AssetWithMetadata>> {
+    try {
+        let rpc = Config.NETWORK === "eclipse" ? "https://aura-eclipse-mainnet.metaplex.com/" : Config.RPC_NODE;
+        const umi = createUmi(rpc, "confirmed").use(dasApi());
+
+        let collection_umiKey = publicKey(collectionAddress.toString());
+
+        var start = new Date().getTime();
+
+        let dasAssets = [];
+        let page = 1;
+        while (true) {
+            const dasPage = await das.getAssetsByCollection(umi, { collection: collection_umiKey, page: page});
+
+            page += 1;
+            dasAssets = dasAssets.concat(dasPage);
+            if (dasPage.length < 1000) {
+                break;
+            }
+        }
+        console.log("Das assets", dasAssets, dasAssets[0] as AssetV1)
+           
+        
+
+        if (owner) {
+            let ownerUM = publicKey(collectionAddress.toString());
+
+            const ownerassets = await getAssetV1GpaBuilder(umi)
+            .whereField("key", Key.AssetV1)
+            .whereField("owner", collection_umiKey)
+            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+            .getDeserialized();
+        }
+        
+        var mid = new Date().getTime();
+
+
+           
+        const assets = await getAssetV1GpaBuilder(umi)
+            .whereField("key", Key.AssetV1)
+            .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
+            .getDeserialized();
+
+        var end = new Date().getTime();
+
+        console.log("RPC assets", assets)
+
+        var time1 = mid - start;
+        var time2 = end - mid;
+
+        console.log('Execution time: ' , time1, time2);
+
+        // Create a Map to store unique URIs and their corresponding metadata
+        const uriMap = new Map();
+        // Create a Map to store URI to multiple assets mapping
+        const uriToAssets = new Map();
+
+        // Group assets by URI
+        assets.forEach((asset) => {
+            if (!uriToAssets.has(asset.uri)) {
+                uriToAssets.set(asset.uri, []);
+            }
+            uriToAssets.get(asset.uri).push(asset);
+        });
+
+        // Create fetch promises only for unique URIs
+        const fetchPromises = Array.from(uriToAssets.keys()).map(async (uri) => {
+            try {
+                const uri_json = await fetch(uri).then((res) => res.json());
+                uriMap.set(uri, uri_json);
+            } catch (error) {
+                console.error(`Error fetching metadata for URI ${uri}:`, error);
+                uriMap.set(uri, null); // or some default metadata
+            }
+        });
+
+        // Wait for all unique fetches to complete
+        await Promise.all(fetchPromises);
+
+        let all_assets: Map<string, AssetWithMetadata> = new Map();
+
+        // Process all assets using the cached metadata
+        assets.forEach((asset) => {
+            const metadata = uriMap.get(asset.uri);
+            const entry: AssetWithMetadata = { asset, metadata };
+
+            all_assets.set(asset.publicKey.toString(), entry);
+        });
+
+        return all_assets;
+    } catch (err) {
+        console.log(err);
+    }
+    return null;
+}
+*/
+
 export async function getCollectionAssets(collectionAddress: PublicKey) {
     try {
         const umi = createUmi(Config.RPC_NODE, "confirmed");
