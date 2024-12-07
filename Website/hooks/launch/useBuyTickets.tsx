@@ -27,9 +27,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
     const { isOpen: isWarningOpened, onOpen: openWarning, onClose: closeWarning } = useDisclosure();
 
-
-    const signature_ws_id = useRef<number | null>(null);
-
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const BuyTickets = async () => {
@@ -39,10 +36,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             return;
         }
 
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
 
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
