@@ -1,7 +1,7 @@
 import { VStack, HStack, Text, Link, Spacer } from "@chakra-ui/react";
 import { usePathname, useRouter, useSelectedLayoutSegment } from "next/navigation";
 import { ReactNode, useState } from "react";
-import { FaBook, FaCalendarDays, FaChartLine, FaCircleQuestion, FaClipboardList, FaQuestion } from "react-icons/fa6";
+import { FaBook, FaCalendarDays, FaChartLine, FaCircleQuestion, FaClipboardList, FaGift } from "react-icons/fa6";
 import useResponsive from "../hooks/useResponsive";
 import { GiCook, GiToken } from "react-icons/gi";
 import { MdLeaderboard } from "react-icons/md";
@@ -15,6 +15,7 @@ import UseWalletConnection from "../hooks/useWallet";
 import * as NProgress from "nprogress";
 import { PiHamburgerFill } from "react-icons/pi";
 import { FaParachuteBox } from "react-icons/fa";
+import { Config } from "./Solana/constants";
 
 const tabs = {
     create: [
@@ -30,31 +31,21 @@ const tabs = {
         },
         {
             icon: (size: number) => <FaChartBar size={size} />,
-            tab: "New AMM",
+            tab: "New Liquidity Pool",
             url: "/trade/create",
-        },
-        {
-            icon: (size: number) => <GiCook size={size} />,
-            tab: "Creator Dashboard",
-            url: "/dashboard",
-        },
-        {
-            icon: (size: number) => <FaParachuteBox size={size} />,
-            tab: "Airdrop",
-            url: "/airdrop",
         },
     ],
 
     trade: [
         {
-            icon: (size: number) => <FaChartLine size={size} />,
-            tab: "Tokens",
-            url: "/trade",
-        },
-        {
             icon: (size: number) => <BsPersonSquare size={size} />,
             tab: "Collections",
             url: "/collections",
+        },
+        {
+            icon: (size: number) => <FaChartLine size={size} />,
+            tab: "Tokens",
+            url: "/trade",
         },
         {
             icon: (size: number) => <FaCalendarDays size={size} />,
@@ -70,9 +61,35 @@ const tabs = {
             url: "/bags",
         },
         {
+            icon: (size: number) => <GiCook size={size} />,
+            tab: "Creator Dashboard",
+            url: "/dashboard",
+        },
+        {
             icon: (size: number) => <MdLeaderboard size={size} />,
-            tab: "Leaderboard",
-            url: "/leaderboard",
+            tab: "Quest Board",
+            url: "/achievements",
+        },
+    ],
+
+    tools: [
+        {
+            icon: (size: number) => <FaParachuteBox size={size} />,
+            tab: "Snapshot / Airdrop",
+            url: "/airdrop",
+        },
+        {
+            icon: (size: number) => (
+                <Image
+                    src={Config.token === "SOL" ? "/images/solana-trans.png" : "/images/eth-png.webp"}
+                    width={24}
+                    height={24}
+                    alt={"Money Bag"}
+                    className="opacity-100 brightness-0 invert filter"
+                />
+            ),
+            tab: "Wrap / Unwrap",
+            url: "/wrap",
         },
     ],
 
@@ -123,6 +140,12 @@ const SideNav = () => {
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" px={4} py={5}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
+                    <Tab
+                        tab={"Leaderboard"}
+                        icon={<MdLeaderboard size={24} />}
+                        isActive={pathname === "/leaderboard"}
+                        url={"/leaderboard"}
+                    />
 
                     <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
                         Create
@@ -142,6 +165,13 @@ const SideNav = () => {
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
+                        <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
+                    ))}
+
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
+                        Tools
+                    </Text>
+                    {tabs.tools.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
