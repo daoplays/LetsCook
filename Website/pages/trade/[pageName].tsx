@@ -1,20 +1,11 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { request_raw_account_data, uInt32ToLEBytes, MintData, ListingData } from "../../components/Solana/state";
-import {
-    TimeSeriesData,
-    MMLaunchData,
-    reward_schedule,
-    AMMData,
-    RaydiumAMM,
-    getAMMKey,
-    AMMPluginData,
-} from "../../components/Solana/jupiter_state";
+import { MintData, ListingData } from "../../components/Solana/state";
+import { MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
 import { bignum_to_num } from "../../components/Solana/state";
-import { Config, PROGRAM } from "../../components/Solana/constants";
-import { useCallback, useEffect, useState, useRef } from "react";
-import { PublicKey } from "@solana/web3.js";
+import { Config } from "../../components/Solana/constants";
+import { useEffect, useState, useRef } from "react";
 import { getTransferFeeConfig } from "@solana/spl-token";
 
 import {
@@ -35,8 +26,7 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { MdOutlineContentCopy } from "react-icons/md";
 import { PiArrowsOutLineVerticalLight } from "react-icons/pi";
-import useAppRoot from "../../context/useAppRoot";
-import { createChart, CrosshairMode, UTCTimestamp } from "lightweight-charts";
+import { createChart, CrosshairMode } from "lightweight-charts";
 import trimAddress from "../../utils/trimAddress";
 import { FaChartLine, FaInfo } from "react-icons/fa";
 
@@ -50,7 +40,6 @@ import { IoMdSwap } from "react-icons/io";
 import { FaPlusCircle } from "react-icons/fa";
 import styles from "../../styles/Launch.module.css";
 
-import { RaydiumCPMM } from "../../hooks/raydium/utils";
 import RemoveLiquidityPanel from "../../components/tradePanels/removeLiquidityPanel";
 import AddLiquidityPanel from "../../components/tradePanels/addLiquidityPanel";
 import SellPanel from "../../components/tradePanels/sellPanel";
@@ -64,80 +53,17 @@ import useAMM from "@/hooks/data/useAMM";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
-
-interface MarketData {
-    time: UTCTimestamp;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-}
-
-async function getBirdEyeData(sol_is_quote: boolean, setMarketData: any, market_address: string, setLastVolume: any) {
-    // Default options are marked with *
-    const options = { method: "GET", headers: { "X-API-KEY": "e819487c98444f82857d02612432a051" } };
-
-    let today_seconds = Math.floor(new Date().getTime() / 1000);
-
-    let start_time = new Date(2024, 0, 1).getTime() / 1000;
-
-    let url =
-        "https://public-api.birdeye.so/defi/ohlcv/pair?address=" +
-        market_address +
-        "&type=15m" +
-        "&time_from=" +
-        start_time +
-        "&time_to=" +
-        today_seconds;
-
-    //console.log(url);
-    let result = await fetch(url, options).then((response) => response.json());
-    let items = result["data"]["items"];
-
-    let now = new Date().getTime() / 1000;
-    let last_volume = 0;
-    let data: MarketData[] = [];
-    for (let i = 0; i < items.length; i++) {
-        let item = items[i];
-
-        let open = sol_is_quote ? item.o : 1.0 / item.o;
-        let high = sol_is_quote ? item.h : 1.0 / item.l;
-        let low = sol_is_quote ? item.l : 1.0 / item.h;
-        let close = sol_is_quote ? item.c : 1.0 / item.c;
-        let volume = sol_is_quote ? item.v : item.v / close;
-        data.push({ time: item.unixTime as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-
-        if (now - item.unixTime < 24 * 60 * 60) {
-            last_volume += volume;
-        }
-    }
-    //console.log(result, "last volume", last_volume);
-    setMarketData(data);
-    setLastVolume(last_volume);
-    //return data;
-}
-
-function filterLaunchRewards(list: Map<string, MMLaunchData>, amm: AMMData, plugins: AMMPluginData) {
-    if (list === null || list === undefined) return null;
-    if (amm === null || amm === undefined) return null;
-
-    if (plugins.trade_reward_first_date === 0) return null;
-
-    let current_date = Math.floor(new Date().getTime() / 1000 / 24 / 60 / 60) - plugins.trade_reward_first_date;
-    let key = getAMMKey(amm, amm.provider);
-    return list.get(key.toString() + "_" + current_date);
-}
+import useGetUserBalance from "@/hooks/data/useGetUserBalance";
 
 const TradePage = () => {
     const wallet = useWallet();
-    const { connection } = useConnection();
     const router = useRouter();
+
     const { xs, sm, lg } = useResponsive();
 
-    const { mmLaunchData } = useAppRoot();
-
     const { SOLPrice } = useSOLPrice();
+
+    const { userBalance: userSOLBalance } = useGetUserBalance();
 
     const { pageName } = router.query;
 
@@ -157,6 +83,10 @@ const TradePage = () => {
         quoteTokenAccount: ammQuoteAddress,
         baseTokenBalance: ammBaseAmount,
         quoteTokenBalance: ammQuoteAmount,
+        lpAmount: ammLPAmount,
+        marketData,
+        lastDayVolume,
+        currentRewards,
         error: ammError,
     } = useAMM({ pageName: pageName as string | null });
 
@@ -165,234 +95,6 @@ const TradePage = () => {
     const { tokenBalance: userBaseAmount } = useTokenBalance({ mintData: baseMint });
     const { tokenBalance: userQuoteAmount } = useTokenBalance({ mintData: quoteMint });
     const { tokenBalance: userLPAmount } = useTokenBalance({ mintData: lpMint });
-
-    const [market_data, setMarketData] = useState<MarketData[]>([]);
-    const [last_day_volume, setLastDayVolume] = useState<number>(0);
-
-    const [price_address, setPriceAddress] = useState<PublicKey | null>(null);
-    const [raydium_address, setRaydiumAddress] = useState<PublicKey | null>(null);
-
-    const [ammLPAmount, setLPAmount] = useState<number | null>(null);
-
-    const price_ws_id = useRef<number | null>(null);
-    const raydium_ws_id = useRef<number | null>(null);
-
-    const last_base_amount = useRef<number>(0);
-    const last_quote_amount = useRef<number>(0);
-    const check_market_data = useRef<boolean>(true);
-
-    useEffect(() => {
-        if (ammBaseAmount === null || ammQuoteAmount === null) {
-            return;
-        }
-
-        if (ammBaseAmount === last_base_amount.current && ammQuoteAmount === last_quote_amount.current) {
-            return;
-        }
-
-        last_base_amount.current = ammBaseAmount;
-        last_quote_amount.current = ammQuoteAmount;
-
-        if (amm.provider === 0 || market_data.length === 0) {
-            return;
-        }
-
-        // update market data using bid/ask
-        let price = ammQuoteAmount / ammBaseAmount;
-
-        price = (price * Math.pow(10, baseMint.mint.decimals)) / Math.pow(10, 9);
-
-        let now_minute = Math.floor(new Date().getTime() / 1000 / 15 / 60);
-        let last_candle = market_data[market_data.length - 1];
-        let last_minute = last_candle.time / 15 / 60;
-        //console.log("update price", price, last_minute, now_minute)
-
-        if (now_minute > last_minute) {
-            let new_candle: MarketData = {
-                time: (now_minute * 15 * 60) as UTCTimestamp,
-                open: price,
-                high: price,
-                low: price,
-                close: price,
-                volume: 0,
-            };
-            //console.log("new candle", now_minute, last_minute, new_candle)
-
-            market_data.push(new_candle);
-            setMarketData([...market_data]);
-        } else {
-            last_candle.close = price;
-            if (price > last_candle.high) {
-                last_candle.high = price;
-            }
-            if (price < last_candle.low) {
-                last_candle.low = price;
-            }
-            //console.log("update old candle", last_candle)
-            market_data[market_data.length - 1] = last_candle;
-            setMarketData([...market_data]);
-        }
-    }, [ammBaseAmount, ammQuoteAmount, amm, market_data, baseMint]);
-
-    const check_price_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        let event_data = result.data;
-        const [price_data] = TimeSeriesData.struct.deserialize(event_data);
-        //console.log("updated price data", price_data);
-
-        let data: MarketData[] = [];
-
-        for (let i = 0; i < price_data.data.length; i++) {
-            let item = price_data.data[i];
-            let time = bignum_to_num(item.timestamp) * 60;
-
-            let open = Buffer.from(item.open).readFloatLE(0);
-            let high = Buffer.from(item.high).readFloatLE(0);
-            let low = Buffer.from(item.low).readFloatLE(0);
-            let close = Buffer.from(item.close).readFloatLE(0);
-            let volume = Buffer.from(item.volume).readFloatLE(0) * open;
-            //console.log("price data", time, open, high, low, close, volume);
-
-            data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-            //console.log("new data", data);
-        }
-        setMarketData(data);
-    }, []);
-
-    const check_raydium_update = useCallback(
-        async (result: any) => {
-            let event_data = result.data;
-            if (amm.provider === 1) {
-                const [poolState] = RaydiumCPMM.struct.deserialize(event_data);
-
-                setLPAmount(bignum_to_num(poolState.lp_supply));
-            }
-            if (amm.provider === 2) {
-                const [ray_pool] = RaydiumAMM.struct.deserialize(event_data);
-                setLPAmount(bignum_to_num(ray_pool.lpReserve));
-            }
-        },
-        [amm],
-    );
-
-    useEffect(() => {
-        if (price_ws_id.current === null && price_address !== null) {
-            price_ws_id.current = connection.onAccountChange(price_address, check_price_update, "confirmed");
-        }
-        if (raydium_ws_id.current === null && raydium_address !== null) {
-            raydium_ws_id.current = connection.onAccountChange(raydium_address, check_raydium_update, "confirmed");
-        }
-    }, [connection, price_address, raydium_address, check_price_update, check_raydium_update]);
-
-    const CheckMarketData = useCallback(async () => {
-        if (!amm || !baseMint) return;
-
-        const token_mint = amm.base_mint;
-        const wsol_mint = amm.quote_mint;
-
-        if (check_market_data.current === true) {
-            if (amm.provider > 0) {
-                let sol_is_quote: boolean = true;
-                let pool_account = amm.pool;
-                setRaydiumAddress(pool_account);
-
-                if (amm.provider === 1) {
-                    let pool_state_account = await connection.getAccountInfo(pool_account);
-                    //console.log(pool_state_account);
-                    const [poolState] = RaydiumCPMM.struct.deserialize(pool_state_account.data);
-                    //console.log(poolState);
-                    setLPAmount(bignum_to_num(poolState.lp_supply));
-                }
-
-                if (amm.provider === 2) {
-                    let pool_data = await request_raw_account_data("", pool_account);
-                    const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
-                    setLPAmount(bignum_to_num(ray_pool.lpReserve));
-                }
-                //console.log("pool state", pool_state.toString())
-                if (Config.PROD) {
-                    await getBirdEyeData(sol_is_quote, setMarketData, pool_account.toString(), setLastDayVolume);
-                }
-
-                return;
-            }
-
-            let amm_seed_keys = [];
-            if (token_mint.toString() < wsol_mint.toString()) {
-                amm_seed_keys.push(token_mint);
-                amm_seed_keys.push(wsol_mint);
-            } else {
-                amm_seed_keys.push(wsol_mint);
-                amm_seed_keys.push(token_mint);
-            }
-
-            let amm_data_account = PublicKey.findProgramAddressSync(
-                [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from(amm.provider === 0 ? "CookAMM" : "RaydiumCPMM")],
-                PROGRAM,
-            )[0];
-
-            setLPAmount(amm.lp_amount);
-
-            let index_buffer = uInt32ToLEBytes(0);
-            let price_data_account = PublicKey.findProgramAddressSync(
-                [amm_data_account.toBytes(), index_buffer, Buffer.from("TimeSeries")],
-                PROGRAM,
-            )[0];
-
-            setPriceAddress(price_data_account);
-
-            let price_data_buffer = await request_raw_account_data("", price_data_account);
-            //console.log(price_data_buffer);
-            const [price_data] = TimeSeriesData.struct.deserialize(price_data_buffer);
-
-            //console.log(price_data.data);
-            let data: MarketData[] = [];
-            let daily_data: MarketData[] = [];
-
-            let now = new Date().getTime() / 1000;
-            let last_volume = 0;
-
-            let last_date = -1;
-            for (let i = 0; i < price_data.data.length; i++) {
-                let item = price_data.data[i];
-                let time = bignum_to_num(item.timestamp) * 60;
-                let date = Math.floor(time / 24 / 60 / 60) * 24 * 60 * 60;
-
-                let open = Buffer.from(item.open).readFloatLE(0);
-                let high = Buffer.from(item.high).readFloatLE(0);
-                let low = Buffer.from(item.low).readFloatLE(0);
-                let close = Buffer.from(item.close).readFloatLE(0);
-                let volume = Buffer.from(item.volume).readFloatLE(0) * open;
-                //console.log("price data", time, open, high, low, close, volume);
-                if (now - time < 24 * 60 * 60) {
-                    last_volume += volume;
-                }
-
-                data.push({ time: time as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-
-                if (date !== last_date) {
-                    daily_data.push({ time: date as UTCTimestamp, open: open, high: high, low: low, close: close, volume: volume });
-                    last_date = date;
-                } else {
-                    daily_data[daily_data.length - 1].high =
-                        high > daily_data[daily_data.length - 1].high ? high : daily_data[daily_data.length - 1].high;
-                    daily_data[daily_data.length - 1].low =
-                        low < daily_data[daily_data.length - 1].low ? low : daily_data[daily_data.length - 1].low;
-                    daily_data[daily_data.length - 1].close = close;
-                    daily_data[daily_data.length - 1].volume += volume;
-                }
-            }
-            setMarketData(data);
-            setLastDayVolume(last_volume);
-            check_market_data.current = false;
-        }
-    }, [amm, baseMint, connection]);
-
-    useEffect(() => {
-        CheckMarketData();
-    }, [CheckMarketData]);
 
     const handleMouseDown = () => {
         document.addEventListener("mousemove", handleMouseMove);
@@ -406,11 +108,9 @@ const TradePage = () => {
         setAdditionalPixels((prevPixels) => prevPixels + event.movementY);
     };
 
-    if (listing === null || amm === null || !baseMint || mmLaunchData === null) {
+    if (listing === null || amm === null || !baseMint) {
         return <Loader />;
     }
-
-    let latest_rewards = filterLaunchRewards(mmLaunchData, amm, ammPlugins);
 
     return (
         <>
@@ -493,9 +193,9 @@ const TradePage = () => {
                                     listing={listing}
                                     amm={amm}
                                     base_mint={baseMint}
-                                    volume={last_day_volume}
-                                    mm_data={latest_rewards}
-                                    price={market_data.length > 0 ? market_data[market_data.length - 1].close : 0}
+                                    volume={lastDayVolume}
+                                    mm_data={currentRewards}
+                                    price={(marketData && marketData.length > 0) ? marketData[marketData.length - 1].close : 0}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
                                 />
@@ -510,6 +210,7 @@ const TradePage = () => {
                                     amm_lp_balance={ammLPAmount}
                                     user_base_balance={userBaseAmount}
                                     user_lp_balance={userLPAmount}
+                                    userSOLBalance={userSOLBalance}
                                 />
                             )}
                         </VStack>
@@ -527,7 +228,7 @@ const TradePage = () => {
                             }}
                         >
                             {/* <div className="w-full overflow-auto rounded-lg bg-[#161616] bg-opacity-75 bg-clip-padding p-3 shadow-2xl backdrop-blur-sm backdrop-filter"> */}
-                            <ChartComponent data={market_data} additionalPixels={additionalPixels} />
+                            <ChartComponent data={marketData} additionalPixels={additionalPixels} />
                             {/* </div> */}
                             <div
                                 style={{
@@ -709,6 +410,7 @@ const BuyAndSell = ({
     amm_lp_balance,
     user_base_balance,
     user_lp_balance,
+    userSOLBalance,
 }: {
     amm: AMMData;
     base_mint: MintData;
@@ -717,6 +419,7 @@ const BuyAndSell = ({
     amm_lp_balance: number;
     user_base_balance: number;
     user_lp_balance: number;
+    userSOLBalance: number;
 }) => {
     const { xs } = useResponsive();
     const wallet = useWallet();
@@ -724,8 +427,6 @@ const BuyAndSell = ({
     const [selected, setSelected] = useState("Buy");
     const [token_amount, setTokenAmount] = useState<number>(0);
     const [sol_amount, setSOLAmount] = useState<number>(0);
-
-    const { userSOLBalance } = useAppRoot();
 
     const handleClick = (tab: string) => {
         setSelected(tab);
@@ -954,7 +655,7 @@ const InfoContent = ({
                 <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
                     <span className="text-md text- text-white text-opacity-50">Volume (24h):</span>
                     <div className="flex items-center space-x-2">
-                        <span className="text-md text-white">{volume.toLocaleString()}</span>
+                        <span className="text-md text-white">{volume ? volume.toLocaleString() : 0}</span>
                         <Image src={Config.token_image} width={30} height={30} alt="Token Icon" />
                     </div>
                 </div>
@@ -1029,12 +730,16 @@ const InfoContent = ({
 
 const ChartComponent = (props) => {
     const { data, additionalPixels } = props;
-
+    
     const chartContainerRef = useRef(null);
     const chartRef = useRef(null);
     const seriesRef = useRef(null);
 
     useEffect(() => {
+
+        if (!data)
+            return;
+        
         const handleResize = () => {
             if (chartRef.current) {
                 chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });

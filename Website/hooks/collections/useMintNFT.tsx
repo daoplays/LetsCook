@@ -25,57 +25,14 @@ import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys, METAPLEX
 import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
 import { toast } from "react-toastify";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
+import useSendTransaction from "../useSendTransaction";
+import { getMintData } from "@/components/amm/launch";
 
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData, mintData } = useAppRoot();
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        //console.log(result);
-        // if we have a subscription field check against ws_id
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Transaction Successfull!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-
-        if (updateData) {
-            await checkProgramData();
-        }
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        console.log("transaction failed at ", new Date());
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const MintNFT = async () => {
         if (wallet.signTransaction === undefined) {
@@ -87,14 +44,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             alert("Launch creator cannot buy tickets");
             return;
         }
-
-        if (signature_ws_id.current !== null) {
-            //console.log("signature not null");
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (launchData === null) {
             //console.log("launch is null");
@@ -116,11 +65,6 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             return;
         }
 
-        let r_data = await request_raw_account_data("", assignment_data.random_address);
-        //console.log(r_data);
-
-        setIsLoading(true);
-
         let asset_keypair = new Keypair();
 
         let launch_data_account = PublicKey.findProgramAddressSync(
@@ -129,7 +73,7 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
         )[0];
 
         let token_mint = launchData.keys[CollectionKeys.MintAddress];
-        let mint_info = mintData.get(launchData.keys[CollectionKeys.MintAddress].toString());
+        let mint_info = await getMintData(launchData.keys[CollectionKeys.MintAddress].toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
@@ -182,32 +126,24 @@ const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => 
             data: instruction_data,
         });
 
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-        transaction.add(list_instruction);
+        let instructions: TransactionInstruction[] = [];
 
-        transaction.partialSign(asset_keypair);
+        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+        instructions.push(list_instruction);
 
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            console.log("mint nft sig at ", new Date(), signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, 20000);
-        } catch (error) {
-            console.log(error);
-            setIsLoading(false);
-            return;
-        }
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                console.error("Failed to buy NFT:", error);
+            },
+            additionalSigner: asset_keypair,
+        });
     };
 
     return { MintNFT, isLoading };

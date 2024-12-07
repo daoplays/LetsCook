@@ -23,7 +23,7 @@ import {
 import { AssetV1 } from "@metaplex-foundation/mpl-core";
 import { bignum_to_num } from "../../components/Solana/state";
 import { useEffect, useCallback, useState, useMemo, useRef } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import useResponsive from "../../hooks/useResponsive";
@@ -50,13 +50,10 @@ import useCollection from "../../hooks/data/useCollection";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
 import styles from "../../styles/Launch.module.css";
-import useAppRoot from "@/context/useAppRoot";
 import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
-import { PublicKey } from "@solana/web3.js";
-import { set } from "date-fns";
-import { NFTListingData } from "@/components/collection/collectionState";
+import { useGetBalance } from '@letscook/sdk';
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -65,6 +62,7 @@ export interface AssetWithMetadata {
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
+    const {connection} = useConnection();
     const router = useRouter();
     const { pageName } = router.query;
     const { xs, sm, md, lg, xl } = useResponsive();
@@ -94,7 +92,11 @@ const CollectionSwapPage = () => {
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
-    const { userSOLBalance } = useAppRoot();
+
+    const { balance : userSOLBalance} = useGetBalance({ 
+        publicKey: wallet?.publicKey, 
+        connection 
+      });
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);

@@ -100,6 +100,10 @@ const MyRewardsTable = ({ amm }: { amm: AMMData | null }) => {
     const { sm } = useResponsive();
     const { mintData, mmLaunchData, mmUserData, ammData } = useAppRoot();
 
+    if (!mintData) {
+        return <></>;
+    }
+
     const tableHeaders: Header[] = [
         { text: "REWARD DAY", field: "reward_day" },
         { text: "TOTAL REWARDS", field: "total_rewards" },

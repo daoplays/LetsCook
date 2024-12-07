@@ -93,6 +93,15 @@ const tabs = {
         },
     ],
 
+    tools: [
+        {
+            icon: (size: number) => <Image src={Config.token_image} width={24} height={24} alt={"Money Bag"} />,
+            tab: "Wrap/Unwrap",
+            url: "/wrap",
+        },
+        
+    ],
+
     info: [
         {
             icon: (size: number) => <FaBook size={size} />,
@@ -165,6 +174,12 @@ const SideNav = () => {
                         Profile
                     </Text>
                     {tabs.profile.map(({ tab, icon, url }, i) => (
+                        <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
+                    ))}
+                    <Text align="start" m={0} fontSize={"medium"} fontWeight={500} opacity={1}>
+                        Tools
+                    </Text>
+                    {tabs.tools.map(({ tab, icon, url }, i) => (
                         <Tab key={tab} tab={tab} icon={icon(24)} isActive={pathname === url} url={url} />
                     ))}
 
