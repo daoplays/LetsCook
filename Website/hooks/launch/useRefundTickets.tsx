@@ -4,68 +4,21 @@ import {
     ListingData,
     getRecentPrioritizationFees,
     get_current_blockhash,
-    myU64,
-    send_transaction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, ComputeBudgetProgram } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
-import { useCallback, useRef, useState } from "react";
-import bs58 from "bs58";
+import { useRef } from "react";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
-import { toast } from "react-toastify";
+import useSendTransaction from "../useSendTransaction";
 
 const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const { checkProgramData } = useAppRoot();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Tickets Refunded!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-
-        if (updateData) {
-            await checkProgramData();
-        }
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const RefundTickets = async () => {
         if (wallet.signTransaction === undefined) return;
@@ -75,18 +28,11 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
             return;
         }
 
-        if (signature_ws_id.current !== null) {
-            alert("Transaction pending, please wait");
-            return;
-        }
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (launchData === null) {
             return;
         }
 
-        setIsLoading(true);
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -118,6 +64,7 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
         account_vector.push({ pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false });
         account_vector.push({ pubkey: SYSTEM_KEY, isSigner: false, isWritable: false });
 
+        let instructions: TransactionInstruction[] = [];
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
@@ -130,23 +77,18 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
         transaction.feePayer = wallet.publicKey;
 
         let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
 
-        transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            console.log("join sig: ", signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, 20000);
-        } catch (error) {
-            console.log(error);
-            setIsLoading(false);
-            return;
-        }
+        instructions.push(list_instruction);
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
 
     return { RefundTickets, isLoading };
