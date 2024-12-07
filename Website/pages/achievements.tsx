@@ -79,9 +79,11 @@ const TutorialDialog: React.FC<{ videoUrl?: string }> = ({ videoUrl }) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="-mt-1 ml-2">
+                {/* <Button variant="outline" size="icon" className="-mt-1 ml-2">
                     <Video className="h-4 w-4" />
-                </Button>
+                </Button> */}
+
+                <Button className="py-6 text-lg">Watch Guide</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>
@@ -127,7 +129,7 @@ export const AchievementsScreen = () => {
                             <div className="flex flex-col gap-2">
                                 <div className="flex gap-1">
                                     <h3 className="text-xl font-semibold text-white md:text-2xl">{achievement.title}</h3>
-                                    <TutorialDialog videoUrl={achievement.tutorialVideoUrl} />
+                                    {/* <TutorialDialog videoUrl={achievement.tutorialVideoUrl} /> */}
                                 </div>
                                 <p className="text-muted-foreground text-white md:text-lg">{achievement.description}</p>
                             </div>
@@ -138,13 +140,16 @@ export const AchievementsScreen = () => {
                                     <p className="-mt-1 text-xl text-white md:text-2xl">Completed</p>
                                 </div>
                             ) : (
+                                // <div className="mr-6 mt-2 flex items-center gap-2 md:mt-0">
+                                //     <img
+                                //         src="/images/sauce.png"
+                                //         alt="Sauce"
+                                //         className={`h-6 w-6 rounded-lg object-cover md:h-12 md:w-12`}
+                                //     />
+                                //     <p className="text-lg text-white md:text-2xl"> {achievement.sauce}</p>
+                                // </div>
                                 <div className="mr-6 mt-2 flex items-center gap-2 md:mt-0">
-                                    <img
-                                        src="/images/sauce.png"
-                                        alt="Sauce"
-                                        className={`h-6 w-6 rounded-lg object-cover md:h-12 md:w-12`}
-                                    />
-                                    <p className="text-lg text-white md:text-2xl"> {achievement.sauce}</p>
+                                    <TutorialDialog videoUrl={achievement.tutorialVideoUrl} />
                                 </div>
                             )}
                         </CardContent>
