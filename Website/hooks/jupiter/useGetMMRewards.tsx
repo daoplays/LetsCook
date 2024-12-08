@@ -19,7 +19,6 @@ import { useCallback, useRef, useState } from "react";
 import bs58 from "bs58";
 import BN from "bn.js";
 import { toast } from "react-toastify";
-import useAppRoot from "../../context/useAppRoot";
 
 import {
     getAssociatedTokenAddress,
@@ -29,10 +28,10 @@ import {
     resolveExtraAccountMeta,
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
+import { getMintData } from "@/components/amm/launch";
 
 const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
     const wallet = useWallet();
-    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -60,8 +59,6 @@ const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
             autoClose: 3000,
         });
 
-        await checkProgramData();
-
         signature_ws_id.current = null;
     }, []);
 
@@ -85,7 +82,7 @@ const useGetMMRewards = (amm: AMMData, amm_provider: number) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         const token_mint = amm.base_mint;
-        let mint_account = mintData.get(token_mint.toString());
+        let mint_account = await getMintData(token_mint.toString());
         const wsol_mint = amm.quote_mint;
 
         let user_pda_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User_PDA")], PROGRAM)[0];

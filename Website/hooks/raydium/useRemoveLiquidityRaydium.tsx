@@ -44,7 +44,7 @@ import {
 } from "./useCreateCP";
 import { MEMO_PROGRAM_ID } from "@raydium-io/raydium-sdk-v2";
 import { AMMData } from "../../components/Solana/jupiter_state";
-import useAppRoot from "../../context/useAppRoot";
+import { getMintData } from "@/components/amm/launch";
 
 function serialise_raydium_remove_liquidity_instruction(amount: number): Buffer {
     let discriminator: number[] = [183, 18, 70, 156, 148, 109, 161, 34];
@@ -78,7 +78,6 @@ class RaydiumRemoveLiquidity_Instruction {
 
 const useRemoveLiquidityRaydium = (amm: AMMData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -123,8 +122,8 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let base_mint_data = mintData.get(base_mint.toString());
-        let quote_mint_data = mintData.get(quote_mint.toString());
+        let base_mint_data = await getMintData(base_mint.toString());
+        let quote_mint_data = await getMintData(quote_mint.toString());
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]

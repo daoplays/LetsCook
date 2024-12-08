@@ -33,7 +33,7 @@ export function HypeVote({
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
-    const { currentUserData, listingData } = useAppRoot();
+    const { currentUserData } = useAppRoot();
     const { lg } = useResponsive();
     const [isLoading, setIsLoading] = useState(false);
 

@@ -2,7 +2,7 @@ import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { useWallet } from "@solana/wallet-adapter-react";
 import useSendTransaction from "../useSendTransaction";
-import { GetListInstructions } from "@letscook/sdk/dist/instructions/collections/ListNFT";
+import { GetListNFTInstruction } from "@letscook/sdk";
 import { CollectionData } from "@letscook/sdk/dist/state/collections";
 import { toast } from "react-toastify";
 
@@ -16,7 +16,7 @@ const useListNFT = (launchData: CollectionData) => {
             return;
         }
 
-        let instruction = await GetListInstructions(launchData, wallet.publicKey, asset_key, price * LAMPORTS_PER_SOL);
+        let instruction = await GetListNFTInstruction(launchData, wallet.publicKey, asset_key, price * LAMPORTS_PER_SOL);
 
         await sendTransaction({
             instructions: [instruction],

@@ -13,9 +13,9 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { LaunchKeys } from "../../components/Solana/constants";
 import { useDisclosure } from "@chakra-ui/react";
 import { toast } from "react-toastify";
-import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import useSendTransaction from "../useSendTransaction";
+import { getMintData } from "@/components/amm/launch";
 interface BuyTicketsProps {
     launchData: LaunchData;
     value: number;
@@ -23,7 +23,6 @@ interface BuyTicketsProps {
 
 const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
     const { isOpen: isWarningOpened, onOpen: openWarning, onClose: closeWarning } = useDisclosure();
 
@@ -82,7 +81,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         for (let i = 0; i < launchData.plugins.length; i++) {
             if (launchData.plugins[i]["__kind"] === "Whitelist") {
                 whitelist_mint = launchData.plugins[i]["key"];
-                let whitelist = mintData.get(whitelist_mint.toString());
+                let whitelist = await getMintData(whitelist_mint.toString());
 
                 whitelist_account = await getAssociatedTokenAddress(
                     whitelist_mint, // mint

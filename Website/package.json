@@ -19,7 +19,6 @@
         "@irys/web-upload": "^0.0.12",
         "@irys/web-upload-solana": "^0.1.5",
         "@jup-ag/limit-order-sdk": "^0.1.10",
-        "@letscook/sdk": "^0.1.1",
         "@metaplex-foundation/beet": "^0.7.1",
         "@metaplex-foundation/beet-solana": "^0.4.0",
         "@metaplex-foundation/digital-asset-standard-api": "^1.0.3",
@@ -45,7 +44,7 @@
         "@solana/wallet-adapter-react": "^0.15.35",
         "@solana/wallet-adapter-react-ui": "^0.9.34",
         "@solana/wallet-adapter-wallets": "^0.19.23",
-        "@solana/web3.js": "^1.87.1",
+        "@solana/web3.js": "^1.95.8",
         "@types/papaparse": "^5.3.15",
         "@types/react-plotly.js": "^2.6.1",
         "arweave": "^1.14.4",
@@ -114,5 +113,6 @@
         "fs": false,
         "os": false,
         "path": false
-    }
+    },
+    "version": "0.0.1"
 }

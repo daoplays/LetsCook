@@ -43,7 +43,7 @@ import {
     getPoolStateAccount,
 } from "./useCreateCP";
 import { AMMData } from "../../components/Solana/jupiter_state";
-import useAppRoot from "../../context/useAppRoot";
+import { getMintData } from "@/components/amm/launch";
 
 function serialise_raydium_add_liquidity_instruction(lp_amount: number, base_amount: number, quote_amount: number): Buffer {
     let discriminator: number[] = [242, 35, 198, 137, 82, 225, 242, 182];
@@ -78,7 +78,6 @@ class RaydiumAddLiquidity_Instruction {
 
 const useAddLiquidityRaydium = (amm: AMMData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -125,8 +124,8 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let base_mint_data = mintData.get(base_mint.toString());
-        let quote_mint_data = mintData.get(quote_mint.toString());
+        let base_mint_data = await getMintData(base_mint.toString());
+        let quote_mint_data = await getMintData(quote_mint.toString());
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]

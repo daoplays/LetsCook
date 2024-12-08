@@ -28,7 +28,7 @@ import {
     resolveExtraAccountMeta,
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
-import useAppRoot from "../../context/useAppRoot";
+import { getMintData } from "@/components/amm/launch";
 
 /**
  * Custom hook for executing swaps on the AMM
@@ -58,7 +58,6 @@ import useAppRoot from "../../context/useAppRoot";
 
 const usePerformSwap = (amm: AMMData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -128,7 +127,7 @@ const usePerformSwap = (amm: AMMData) => {
         // Setup token mints and convert amounts to proper decimals
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
-        let mint_account = mintData.get(token_mint.toString());
+        let mint_account = await getMintData(token_mint.toString());
 
         token_amount = token_amount * Math.pow(10, mint_account.mint.decimals);
         sol_amount = sol_amount * Math.pow(10, 9);

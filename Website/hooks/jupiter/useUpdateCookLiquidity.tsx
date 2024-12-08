@@ -35,8 +35,8 @@ import {
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
 import { FixableBeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
+import { getMintData } from "@/components/amm/launch";
 
 export class UpdateLiquidity_Instruction {
     constructor(
@@ -71,7 +71,6 @@ function serialise_remove_liquidity(side: number, in_amount: bignum): Buffer {
 }
 const useUpdateCookLiquidity = (amm: AMMData) => {
     const wallet = useWallet();
-    const { checkProgramData, mintData } = useAppRoot();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -98,8 +97,6 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
             isLoading: false,
             autoClose: 3000,
         });
-
-        await checkProgramData();
     }, []);
 
     const transaction_failed = useCallback(async () => {
@@ -124,7 +121,7 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
-        let mint_account = mintData.get(token_mint.toString());
+        let mint_account = await getMintData(token_mint.toString());
 
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint

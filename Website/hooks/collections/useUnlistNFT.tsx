@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useSendTransaction from "../useSendTransaction";
-import { GetUnlistInstructions } from "@letscook/sdk/dist/instructions/collections/unlistNFT";
+import { GetUnlistNFTInstruction } from "@letscook/sdk";
 import { CollectionData } from "@letscook/sdk/dist/state/collections";
 import { toast } from "react-toastify";
 
@@ -15,7 +15,7 @@ const useUnlistNFT = (launchData: CollectionData) => {
             return;
         }
 
-        let instructions = await GetUnlistInstructions(launchData, wallet.publicKey, asset_key, index);
+        let instructions = await GetUnlistNFTInstruction(launchData, wallet.publicKey, asset_key, index);
         await sendTransaction({
             instructions: [instructions],
             onSuccess: () => {
