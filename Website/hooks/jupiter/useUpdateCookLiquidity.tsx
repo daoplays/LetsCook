@@ -126,8 +126,6 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
         const wsol_mint = amm.quote_mint;
         let mint_account = mintData.get(token_mint.toString());
 
-        token_amount = new BN(token_amount);
-        console.log(token_amount.toString());
         let user_token_account_key = await getAssociatedTokenAddress(
             token_mint, // mint
             wallet.publicKey, // owner

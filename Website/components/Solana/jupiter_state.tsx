@@ -116,7 +116,7 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
         return 0.0;
     }
 
-    let mm_amount = Number(plugins.trade_reward_tokens / Math.pow(10, mint.mint.decimals));
+    let mm_amount : number = bignum_to_num(plugins.trade_reward_tokens) / Math.pow(10, mint.mint.decimals);
     let first_date = plugins.trade_reward_first_date;
     let last_date = plugins.trade_reward_last_date;
 
@@ -143,7 +143,7 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
 
 export class OHLCV {
     constructor(
-        readonly timestamp: number,
+        readonly timestamp: bignum,
         readonly open: number[],
         readonly high: number[],
         readonly low: number[],
@@ -274,7 +274,7 @@ export class AMMData {
         readonly short_base_amount: bignum,
         readonly long_quote_amount: bignum,
         readonly start_time: bignum,
-        readonly plugins: AMMPluginEnum[],
+        readonly plugins:  Array<DataEnumKeyAsKind<AMMPluginEnum>>
     ) {}
 
     static readonly struct = new FixableBeetStruct<AMMData>(
@@ -298,7 +298,7 @@ export class AMMData {
             ["short_base_amount", u64],
             ["long_quote_amount", u64],
             ["start_time", u64],
-            ["plugins", array(ammPluginBeet)],
+            ["plugins", array(ammPluginBeet)as FixableBeet<Array<DataEnumKeyAsKind<AMMPluginEnum>>>],
         ],
         (args) =>
             new AMMData(

@@ -1,4 +1,4 @@
-import { AssignmentData, CollectionData } from "@/components/collection/collectionState";
+import { AssignmentData } from "@/components/collection/collectionState";
 import { SYSTEM_KEY } from "@/components/Solana/constants";
 import useMintNFT from "@/hooks/collections/useMintNFT";
 import useMintRandom from "@/hooks/collections/useMintRandom";
@@ -7,6 +7,7 @@ import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import { Modal, ModalBody, ModalContent, ModalOverlay } from "@chakra-ui/react";
 import { Loader2Icon } from "lucide-react";
 import Image from "next/image";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface RecievedAssetModalProps {
     isWarningOpened?: boolean;

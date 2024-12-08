@@ -91,7 +91,8 @@ export const useAirdrop = () => {
                         if (tokenAccount.state !== 0) continue;
 
                         const ownerAddress = tokenAccount.owner.toString();
-                        const balance = bignum_to_num(tokenAccount.amount / Math.pow(10, snapshotMint.mint.decimals));
+                        const scaled_balance = BigInt(tokenAccount.amount.toString()) / BigInt(Math.pow(10, snapshotMint.mint.decimals));
+                        const balance = Number(scaled_balance)
 
                         if (balance === 0) continue;
 

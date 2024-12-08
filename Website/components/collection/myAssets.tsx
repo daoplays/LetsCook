@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import { CollectionData, CollectionPluginData, NFTListingData, getCollectionPlugins } from "./collectionState";
+import { NFTListingData } from "./collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";
@@ -19,6 +19,7 @@ import { lamportsToSol } from "@/utils/lamportToSol";
 import { SlOptionsVertical } from "react-icons/sl";
 import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarSeparator, MenubarTrigger } from "../ui/menubar";
 import TransferNft from "./transferNFT";
+import { CollectionData, CollectionPluginData, getCollectionPlugins } from "@letscook/sdk/dist/state/collections";
 
 interface MyNFTsPanelProps {
     ownedNFTs?: AssetWithMetadata[];
@@ -174,7 +175,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                         display: hoveredIndex === index ? "flex" : "none",
                                                     }}
                                                     onClick={() => {
-                                                        handleNFTClick(nft, isListed, price, nftIndex);
+                                                        handleNFTClick(nft, isListed, parseFloat(price), nftIndex);
                                                     }}
                                                 >
                                                     <Text

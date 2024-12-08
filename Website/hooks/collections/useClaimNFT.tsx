@@ -5,7 +5,7 @@ import {
     getRecentPrioritizationFees,
     bignum_to_num,
 } from "../../components/Solana/state";
-import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
+import {  request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     PublicKey,
@@ -25,6 +25,7 @@ import useMintRandom from "./useMintRandom";
 import useWrapSOL from "../useWrapSOL";
 import useSendTransaction from "../useSendTransaction";
 import { getMintData } from "@/components/amm/launch";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 class OraoRandomnessResponse {
     constructor(

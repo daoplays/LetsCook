@@ -12,8 +12,8 @@ import { useEffect } from "react";
 import { CollectionKeys, LaunchKeys } from "./Solana/constants";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { useRouter } from "next/router";
-import { CollectionData } from "./collection/collectionState";
 import { getSolscanLink } from "../utils/getSolscanLink";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface CollectionFeaturedBannerProps {
     featuredLaunch: CollectionData;

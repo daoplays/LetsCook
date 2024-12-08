@@ -3,14 +3,13 @@ import { Info, Loader, Loader2Icon } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { IoSwapVertical } from "react-icons/io5";
 import { FaWallet } from "react-icons/fa";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Montserrat } from "next/font/google";
 import { MdOutlineContentCopy } from "react-icons/md";
 import trimAddress from "@/utils/trimAddress";
 import UseWalletConnection from "@/hooks/useWallet";
 import Image from "next/image";
 import Link from "next/link";
-import useCollection from "@/hooks/data/useCollection";
 import useMintNFT from "@/hooks/collections/useMintNFT";
 import useWrapNFT from "@/hooks/collections/useWrapNFT";
 import useMintRandom from "@/hooks/collections/useMintRandom";
@@ -31,6 +30,7 @@ import MyNFTsPanel from "./myAssets";
 import Marketplace from "./marketplace";
 import ReceivedAssetModal from "./receiveAssetModal";
 import useGetUserBalance from "@/hooks/data/useGetUserBalance";
+import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -42,6 +42,7 @@ const montserrat = Montserrat({
 
 const Joy = () => {
     const wallet = useWallet();
+    const {connection} = useConnection();
     const { sm } = useResponsive();
     const { handleConnectWallet } = UseWalletConnection();
 
@@ -72,7 +73,7 @@ const Joy = () => {
         marketplaceSummary,
         listedAssets,
         error: collectionError,
-    } = useCollection({ pageName: collection_name as string | null });
+    } = useCollection({ connection, pageName: collection_name as string | null });
 
     const { assignmentData, validRandoms, asset, assetMeta, error: assignmentError } = useAssignmentData({ collection: collection });
 

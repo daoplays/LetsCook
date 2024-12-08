@@ -1,5 +1,5 @@
 import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Montserrat } from "next/font/google";
 import Image from "next/image";
 import { Loader } from "lucide-react";
@@ -8,7 +8,6 @@ import PageNotFound from "@/components/pageNotFound";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import useTokenBalance from "@/hooks/data/useTokenBalance";
 import useCitizenData from "./hooks/useCitizenData";
-import useCollection from "@/hooks/data/useCollection";
 import { Box, Flex, GridItem, VStack, useDisclosure } from "@chakra-ui/react";
 import UseWalletConnection from "@/hooks/useWallet";
 import useResponsive from "@/hooks/useResponsive";
@@ -27,6 +26,7 @@ import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import ContractModal from "./list";
 import { FaCoins } from "react-icons/fa";
 import { bignum_to_num } from "@/components/Solana/state";
+import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -67,6 +67,7 @@ function getStatusString(status: number) {
 const LandingPage = () => {
     const [showInteractive, setShowInteractive] = useState(false);
     const wallet = useWallet();
+    const {connection} = useConnection();
     const { sm } = useResponsive();
 
     const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
@@ -89,7 +90,7 @@ const LandingPage = () => {
         outAmount,
         listedAssets,
         error: collectionError,
-    } = useCollection({ pageName: collection_name as string | null });
+    } = useCollection({ connection, pageName: collection_name as string | null });
 
     const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
     const { isOpen: isBetrayalModalOpen, onOpen: openBetrayalModal, onClose: closeBetrayalModal } = useDisclosure();

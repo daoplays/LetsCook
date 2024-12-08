@@ -1,7 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
 import { CollectionKeys, LaunchKeys, Config } from "../components/Solana/constants";
-import { LaunchData } from "../components/Solana/state";
-import { CollectionData } from "../components/collection/collectionState";
 
 export const getSolscanLink = (key: PublicKey, type: string) => {
     if (!key) {

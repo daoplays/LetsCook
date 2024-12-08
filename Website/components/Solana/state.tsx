@@ -621,6 +621,33 @@ export function getLaunchTypeIndex(launch_type: string): number {
     }
 }
 
+export interface LaunchPluginData {
+    whitelistKey: PublicKey | null;
+    whitelistAmount: bignum | null;
+    whitelistPhaseEnd: Date | null;
+}
+
+export function getLaunchPlugins(launch: LaunchData): LaunchPluginData {
+    const initialData: LaunchPluginData = {
+        whitelistKey: null,
+        whitelistAmount: null,
+        whitelistPhaseEnd: null,
+    };
+
+    return launch.plugins.reduce((acc, plugin) => {
+        switch (plugin["__kind"]) {
+            case "Whitelist":
+                acc.whitelistKey = plugin["key"];
+                acc.whitelistAmount = plugin["amount"];
+                acc.whitelistPhaseEnd = new Date(bignum_to_num(plugin["phase_end"]));
+                break;
+            default:
+                break;
+        }
+        return acc;
+    }, initialData);
+}
+
 type LaunchPluginEnum = {
     Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
 };
@@ -867,15 +894,15 @@ export class ListingData {
 export class LaunchData {
     constructor(
         readonly account_type: number,
-        readonly launch_meta: LaunchMetaEnum,
-        readonly plugins: LaunchPluginEnum[],
+        readonly launch_meta: DataEnumKeyAsKind<LaunchMetaEnum>,
+        readonly plugins: Array<DataEnumKeyAsKind<LaunchPluginEnum>>,
         readonly last_interaction: bignum,
         readonly num_interactions: number,
         readonly page_name: string,
         readonly listing: PublicKey,
 
         readonly total_supply: bignum,
-        readonly num_mints: bignum,
+        readonly num_mints: number,
         readonly ticket_price: bignum,
         readonly minimum_liquidity: bignum,
         readonly launch_date: bignum,
@@ -898,8 +925,8 @@ export class LaunchData {
     static readonly struct = new FixableBeetStruct<LaunchData>(
         [
             ["account_type", u8],
-            ["launch_meta", launchInfoBeet],
-            ["plugins", array(launchPluginBeet)],
+            ["launch_meta", launchInfoBeet  as FixableBeet<DataEnumKeyAsKind<LaunchMetaEnum>>],
+            ["plugins", array(launchPluginBeet) as FixableBeet<Array<DataEnumKeyAsKind<LaunchPluginEnum>>>],
             ["last_interaction", i64],
             ["num_interactions", u16],
 
@@ -1140,7 +1167,7 @@ export class UserData {
         readonly user_key: PublicKey,
         readonly user_name: string,
         readonly total_points: number,
-        readonly votes: number[],
+        readonly votes: bignum[],
         readonly stats: UserStats,
     ) {}
 

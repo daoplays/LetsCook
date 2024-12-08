@@ -11,6 +11,7 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
+import { bignum } from "@metaplex-foundation/beet";
 
 export function HypeVote({
     launch_type,
@@ -22,7 +23,7 @@ export function HypeVote({
     listing,
 }: {
     launch_type: number;
-    launch_id: BN;
+    launch_id: bignum;
     page_name: string;
     positive_votes: number;
     negative_votes: number;

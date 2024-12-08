@@ -12,8 +12,8 @@ import Loader from "../components/loader";
 import { CollectionKeys, LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
-import { CollectionData } from "../components/collection/collectionState";
 import { Button } from "@/components/ui/button";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 const DashboardPage = () => {
     const router = useRouter();

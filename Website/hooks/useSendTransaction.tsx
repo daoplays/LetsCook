@@ -1,5 +1,5 @@
 import { Config } from "@/components/Solana/constants";
-import { get_current_blockhash } from "@/components/Solana/state";
+import { getRecentPrioritizationFees, get_current_blockhash } from "@/components/Solana/state";
 import showTransactionToast from "@/components/transactionToast";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { 
@@ -7,7 +7,8 @@ import {
     Transaction, 
     TransactionInstruction,
     Keypair,
-    PublicKey
+    PublicKey,
+    ComputeBudgetProgram
 } from "@solana/web3.js";
 import { useCallback, useRef, useState } from "react";
 
@@ -99,8 +100,16 @@ const useSendTransaction = () => {
             const transaction = new Transaction(txArgs);
             transaction.feePayer = wallet.publicKey;
 
+            let all_instructions = []
+
+            let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
+            all_instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+            all_instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+
+            all_instructions.push(...finalOptions.instructions);
+
             // Add all instructions to the transaction
-            transaction.add(...finalOptions.instructions);
+            transaction.add(...all_instructions);
 
             // If there's an additional signer, add it to the transaction
             if (finalOptions.additionalSigner) {

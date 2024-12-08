@@ -46,9 +46,6 @@ import useWrapSOL from "../useWrapSOL";
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
-const ZERO = new BN(0);
-type BN = typeof ZERO;
-
 function serialise_raydium_swap_classic_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
     let base_in_discriminator: number[] = [143, 190, 90, 218, 196, 30, 51, 222];
     let base_out_discriminator: number[] = [55, 217, 98, 86, 163, 74, 180, 173];
@@ -191,8 +188,8 @@ const useSwapRaydiumClassic = (amm: AMMData) => {
             marketId: ray_pool.marketId,
             baseMint: ray_pool.baseMint,
             quoteMint: ray_pool.quoteMint,
-            baseDecimals: ray_pool.baseDecimal,
-            quoteDecimals: ray_pool.quoteDecimal,
+            baseDecimals: bignum_to_num(ray_pool.baseDecimal),
+            quoteDecimals: bignum_to_num(ray_pool.quoteDecimal),
             programId: PROGRAMIDS.AmmV4,
             marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
         });

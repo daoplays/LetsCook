@@ -3,8 +3,9 @@
 import { PropsWithChildren, createContext, useContext, MutableRefObject, SetStateAction, Dispatch } from "react";
 import { TradeHistoryItem } from "@jup-ag/limit-order-sdk";
 import { LaunchData, UserData, LaunchDataUserInput, JoinData, MintData, ListingData } from "../components/Solana/state";
-import { CollectionDataUserInput, CollectionData } from "../components/collection/collectionState";
+import { CollectionDataUserInput } from "../components/collection/collectionState";
 import { AMMData, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 interface AppRootTypes {
     sidePanelCollapsed: boolean;
     setSidePanelCollapsed: Dispatch<SetStateAction<boolean>>;

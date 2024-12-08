@@ -11,7 +11,7 @@ import MyTicketsTable from "../components/tables/myTicketsTable";
 import MyRewards from "../components/tables/myRewards";
 import MyRewardsTable from "../components/tables/myRewards";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
-import { CollectionData } from "../components/collection/collectionState";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 const BagsPage = () => {
     const { xs, sm, lg } = useResponsive();

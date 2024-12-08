@@ -1,7 +1,6 @@
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { CollectionData } from "./collectionState";
 import { Modal, ModalBody, ModalContent, ModalOverlay, VStack, Text, Spinner, useToast } from "@chakra-ui/react";
 import useResponsive from "@/hooks/useResponsive";
 import { Button } from "../ui/button";
@@ -12,6 +11,8 @@ import { transferV1 } from "@metaplex-foundation/mpl-core";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import useTransferCoreAsset from "@/hooks/useTransferCoreAsset";
 import { PublicKey } from "@solana/web3.js";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
+
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;
     onClose: () => void;

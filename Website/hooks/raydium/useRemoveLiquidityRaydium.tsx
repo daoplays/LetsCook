@@ -46,9 +46,6 @@ import { MEMO_PROGRAM_ID } from "@raydium-io/raydium-sdk-v2";
 import { AMMData } from "../../components/Solana/jupiter_state";
 import useAppRoot from "../../context/useAppRoot";
 
-const ZERO = new BN(0);
-type BN = typeof ZERO;
-
 function serialise_raydium_remove_liquidity_instruction(amount: number): Buffer {
     let discriminator: number[] = [183, 18, 70, 156, 148, 109, 161, 34];
 

@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import { CollectionData, create_CollectionDataInput, getCollectionPlugins, CollectionPluginData } from "../collection/collectionState";
+import { create_CollectionDataInput, getCollectionPlugins, CollectionPluginData } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
 import useEditCollection from "../../hooks/collections/useEditCollection";
@@ -22,6 +22,7 @@ import * as NProgress from "nprogress";
 import formatPrice from "../../utils/formatPrice";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 interface Header {
     text: string;
     field: string | null;

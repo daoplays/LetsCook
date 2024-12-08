@@ -19,7 +19,7 @@
         "@irys/web-upload": "^0.0.12",
         "@irys/web-upload-solana": "^0.1.5",
         "@jup-ag/limit-order-sdk": "^0.1.10",
-        "@letscook/sdk": "^0.0.1",
+        "@letscook/sdk": "^0.1.1",
         "@metaplex-foundation/beet": "^0.7.1",
         "@metaplex-foundation/beet-solana": "^0.4.0",
         "@metaplex-foundation/digital-asset-standard-api": "^1.0.3",

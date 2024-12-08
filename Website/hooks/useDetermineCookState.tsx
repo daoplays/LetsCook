@@ -1,5 +1,5 @@
 import { LaunchFlags } from "../components/Solana/constants";
-import { JoinData, LaunchData } from "../components/Solana/state";
+import { JoinData, LaunchData, bignum_to_num } from "../components/Solana/state";
 
 export const enum CookState {
     PRE_LAUNCH,
@@ -23,20 +23,22 @@ interface Props {
 const useDetermineCookState = ({ current_time, launchData, join_data }: Props) => {
     if (!launchData) return;
 
-    let MINT_SUCEEDED = current_time >= launchData.end_date && launchData.tickets_sold >= launchData.num_mints;
+    let endDate = bignum_to_num(launchData.end_date);
+    let launchDate = bignum_to_num(launchData.launch_date);
+    let MINT_SUCEEDED = current_time >= endDate && launchData.tickets_sold >= launchData.num_mints;
     let TICKETS_CLAIMED = join_data !== null && join_data.num_claimed_tickets === join_data.num_tickets;
     let LP_CREATED = launchData.flags[LaunchFlags.LPState] === 2;
 
-    if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data === null) {
+    if (current_time >= launchDate && current_time < endDate && join_data === null) {
         return CookState.ACTIVE_NO_TICKETS;
     }
-    if (current_time >= launchData.launch_date && current_time < launchData.end_date && join_data !== null) {
+    if (current_time >= launchDate && current_time < endDate && join_data !== null) {
         return CookState.ACTIVE_TICKETS;
     }
-    if (current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints && join_data === null) {
+    if (current_time >= endDate && launchData.tickets_sold < launchData.num_mints && join_data === null) {
         return CookState.MINT_FAILED_REFUNDED;
     }
-    if (current_time >= launchData.end_date && launchData.tickets_sold < launchData.num_mints && join_data !== null) {
+    if (current_time >= endDate && launchData.tickets_sold < launchData.num_mints && join_data !== null) {
         return CookState.MINT_FAILED_NOT_REFUNDED;
     }
     if (MINT_SUCEEDED && join_data === null) {
@@ -51,7 +53,7 @@ const useDetermineCookState = ({ current_time, launchData, join_data }: Props) =
     if (MINT_SUCEEDED && TICKETS_CLAIMED && !LP_CREATED) {
         return CookState.MINT_SUCCEEDED_TICKETS_CHECKED_NO_LP;
     }
-    if (MINT_SUCEEDED && TICKETS_CLAIMED && !LP_CREATED && current_time >= launchData.end_date + 14 * 24 * 60 * 60 * 1000) {
+    if (MINT_SUCEEDED && TICKETS_CLAIMED && !LP_CREATED && current_time >= endDate + 14 * 24 * 60 * 60 * 1000) {
         return CookState.MINT_SUCCEEDED_TICKETS_CHECKED_LP_TIMEOUT;
     }
     return CookState.PRE_LAUNCH;

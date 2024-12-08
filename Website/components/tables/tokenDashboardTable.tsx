@@ -78,9 +78,9 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
         if (sortedField === "symbol") {
             return reverseSort ? listing_b.symbol.localeCompare(listing_a.symbol) : listing_a.symbol.localeCompare(listing_b.symbol);
         } else if (sortedField === "liquidity") {
-            return reverseSort ? b.minimum_liquidity - a.minimum_liquidity : a.minimum_liquidity - b.minimum_liquidity;
+            return reverseSort ? bignum_to_num(b.minimum_liquidity) - bignum_to_num(a.minimum_liquidity) : bignum_to_num(a.minimum_liquidity) - bignum_to_num(b.minimum_liquidity);
         } else if (sortedField === "date") {
-            return reverseSort ? b.launch_date - a.launch_date : a.launch_date - b.launch_date;
+            return reverseSort ? bignum_to_num(b.launch_date) - bignum_to_num(a.launch_date) : bignum_to_num(a.launch_date) - bignum_to_num(b.launch_date);
         }
 
         return 0;
@@ -286,7 +286,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
 
     let current_time = new Date().getTime();
 
-    const timeDifference = launchData.launch_date - current_time;
+    const timeDifference = bignum_to_num(launchData.launch_date) - current_time;
     const isEditable = timeDifference > 48 * 60 * 60 * 1000 || listing.description == ""; // 48 hours
 
     const cook_state = useDetermineCookState({ current_time, launchData, join_data: null });
@@ -400,8 +400,8 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
             <TableCell style={{ minWidth: sm ? "170px" : "200px" }}>
                 <VStack>
                     <Text fontSize={"large"} m={0}>
-                        {(Math.min(launch.tickets_sold, launch.num_mints) * launch.ticket_price) / LAMPORTS_PER_SOL}/
-                        {(launch.num_mints * launch.ticket_price) / LAMPORTS_PER_SOL} SOL
+                        {(Math.min(launch.tickets_sold, launch.num_mints) * bignum_to_num(launch.ticket_price)) / LAMPORTS_PER_SOL}/
+                        {(launch.num_mints * bignum_to_num(launch.ticket_price)) / LAMPORTS_PER_SOL} SOL
                     </Text>
                 </VStack>
             </TableCell>

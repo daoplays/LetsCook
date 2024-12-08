@@ -55,8 +55,8 @@ const MyTicketsTable = ({ bags }: { bags: JoinedLaunch[] }) => {
             return reverseSort ? b_listing.symbol.localeCompare(a_listing.symbol) : a_listing.symbol.localeCompare(b_listing.symbol);
         } else if (sortedField === "date") {
             return reverseSort
-                ? b.launch_data.launch_date - a.launch_data.launch_date
-                : a.launch_data.launch_date - b.launch_data.launch_date;
+                ? bignum_to_num(b.launch_data.launch_date) - bignum_to_num(a.launch_data.launch_date)
+                : bignum_to_num(a.launch_data.launch_date) - bignum_to_num(b.launch_data.launch_date);
         } else if (sortedField === "tickets") {
             return reverseSort ? b.join_data.num_tickets - a.join_data.num_tickets : a.join_data.num_tickets - b.join_data.num_tickets;
         }

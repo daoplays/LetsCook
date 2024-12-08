@@ -186,6 +186,8 @@ const TokenMintPage = () => {
 
     const ticketLabel = (join_data !== null ? join_data.num_tickets : 0) <= 1 ? "ticket" : "tickets";
 
+    const ticketPriceSOL = Number(BigInt(launchData.ticket_price.toString()) / BigInt(LAMPORTS_PER_SOL));
+
     return (
         <>
             <Head>
@@ -435,9 +437,8 @@ const TokenMintPage = () => {
                                     <HStack justify="center">
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                             &nbsp;
-                                            {(Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
-                                                LAMPORTS_PER_SOL}{" "}
-                                            of {(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                            {Math.min(launchData.num_mints, launchData.tickets_sold) * ticketPriceSOL}{" "}
+                                            of {(launchData.num_mints * ticketPriceSOL) }
                                         </Text>
                                         <Image
                                             src={Config.token_image}
@@ -467,11 +468,10 @@ const TokenMintPage = () => {
                                                   : "none"
                                     }
                                     size="sm"
-                                    max={(launchData.num_mints * launchData.ticket_price) / LAMPORTS_PER_SOL}
+                                    max={(launchData.num_mints * ticketPriceSOL)}
                                     min={0}
                                     value={
-                                        (Math.min(launchData.num_mints, launchData.tickets_sold) * launchData.ticket_price) /
-                                        LAMPORTS_PER_SOL
+                                        (Math.min(launchData.num_mints, launchData.tickets_sold) *ticketPriceSOL)
                                     }
                                     boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                                 />

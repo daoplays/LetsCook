@@ -5,9 +5,9 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import { CollectionData } from "../../components/collection/collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../collection/[pageName]";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface RecievedAssetModalProps {
     isOpened: boolean;

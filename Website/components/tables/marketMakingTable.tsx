@@ -22,15 +22,17 @@ import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";
 import { Mint } from "@solana/spl-token";
 import ShowExtensions, { getExtensions } from "../Solana/extensions";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { HypeVote } from "../hypeVote";
 import Links from "../Buttons/links";
 import formatPrice from "../../utils/formatPrice";
 import { FaSort } from "react-icons/fa";
 import Loader from "../loader";
+import BN from "bn.js";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "../ui/input";
+import { bignum } from "@metaplex-foundation/beet";
 
 interface AMMLaunch {
     amm_data: AMMData;
@@ -236,7 +238,9 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     const market_cap = total_supply * last_price * SOLPrice;
     const market_cap_string = "$" + nFormatter(market_cap, 2);
 
-    const liquidity = Number(amm_launch.amm_data.amm_quote_amount / Math.pow(10, 9)) * SOLPrice;
+    let scaled_quote_amount = BigInt(amm_launch.amm_data.amm_quote_amount.toString()) / BigInt(LAMPORTS_PER_SOL);
+
+    const liquidity = Number(scaled_quote_amount) * SOLPrice;
     const liquidity_string = "$" + nFormatter(Math.min(market_cap, 2 * liquidity), 2);
 
     const cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);

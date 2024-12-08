@@ -45,12 +45,6 @@ import {
 import { AMMData } from "../../components/Solana/jupiter_state";
 import useAppRoot from "../../context/useAppRoot";
 
-const ZERO = new BN(0);
-type BN = typeof ZERO;
-
-const DEFAULT_TOKEN = {
-    WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
-};
 
 function serialise_raydium_add_liquidity_instruction(lp_amount: number, base_amount: number, quote_amount: number): Buffer {
     let discriminator: number[] = [242, 35, 198, 137, 82, 225, 242, 182];

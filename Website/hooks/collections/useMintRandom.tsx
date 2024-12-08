@@ -9,7 +9,7 @@ import {
     request_raw_account_data,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
+import { request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     PublicKey,
@@ -31,6 +31,7 @@ import useMintNFT from "./useMintNFT";
 import { toast } from "react-toastify";
 import useSendTransaction from "../useSendTransaction";
 import { getMintData } from "@/components/amm/launch";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 const useMintRandom = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();

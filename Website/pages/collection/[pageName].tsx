@@ -46,7 +46,6 @@ import { FaWallet } from "react-icons/fa";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import formatPrice from "../../utils/formatPrice";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
-import useCollection from "../../hooks/data/useCollection";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
 import styles from "../../styles/Launch.module.css";
@@ -54,6 +53,7 @@ import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
 import { useGetBalance } from '@letscook/sdk';
+import  useCollection  from '@letscook/sdk/dist/hooks/data/useCollection';
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -86,7 +86,7 @@ const CollectionSwapPage = () => {
         marketplaceSummary,
         listedAssets,
         error: collectionError,
-    } = useCollection({ pageName: pageName as string | null });
+    } = useCollection({connection,  pageName: pageName as string});
 
     const { assignmentData, validRandoms, asset, assetMeta, error: assignmentError } = useAssignmentData({ collection: collection });
 

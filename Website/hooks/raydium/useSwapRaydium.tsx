@@ -37,8 +37,6 @@ import {
 import { AMMData } from "../../components/Solana/jupiter_state";
 import useAppRoot from "../../context/useAppRoot";
 
-const ZERO = new BN(0);
-type BN = typeof ZERO;
 
 function serialise_raydium_swap_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
     let base_in_discriminator: number[] = [143, 190, 90, 218, 196, 30, 51, 222];

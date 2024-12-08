@@ -9,7 +9,7 @@ import {
     request_raw_account_data,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { CollectionData, AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
+import { AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
@@ -29,6 +29,7 @@ import { toast } from "react-toastify";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import useSendTransaction from "../useSendTransaction";
 import { getMintData } from "@/components/amm/launch";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 const useMintNFT = (launchData: CollectionData, updateData: boolean = false) => {
     const wallet = useWallet();

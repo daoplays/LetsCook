@@ -58,8 +58,8 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
         let filtered = [];
         launch_list.forEach((item) => {
             if (
-                (filters.start_date === null || (filters.start_date !== null && item.launch_date < filters.end_date)) &&
-                (filters.end_date === null || (filters.end_date !== null && item.end_date >= filters.start_date))
+                (filters.start_date === null || (filters.start_date !== null && bignum_to_num(item.launch_date) < filters.end_date.getTime())) &&
+                (filters.end_date === null || (filters.end_date !== null && bignum_to_num(item.end_date) >= filters.start_date.getTime()))
             ) {
                 filtered.push(item);
             }
@@ -185,8 +185,6 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
 
     const socialsExist = listing.socials.some((social) => social !== "");
 
-    console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString());
-
     return (
         <TableRow
             className="border-b"
@@ -224,7 +222,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
                 />
             </TableCell>
             <TableCell style={{ minWidth: "170px" }}>
-                {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
+                {bignum_to_num(launch.minimum_liquidity) / LAMPORTS_PER_SOL} {Config.token}
             </TableCell>
             <TableCell style={{ minWidth: "150px" }}>{date}</TableCell>
             <TableCell style={{ minWidth: "100px" }}>

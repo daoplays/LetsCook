@@ -49,8 +49,6 @@ import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
 import { getRaydiumPrograms } from "./utils";
 import { AMMData, MarketStateLayoutV2, RaydiumAMM } from "../../components/Solana/jupiter_state";
 
-const ZERO = new BN(0);
-type BN = typeof ZERO;
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
@@ -149,8 +147,8 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
             marketId: ray_pool.marketId,
             baseMint: ray_pool.baseMint,
             quoteMint: ray_pool.quoteMint,
-            baseDecimals: ray_pool.baseDecimal,
-            quoteDecimals: ray_pool.quoteDecimal,
+            baseDecimals: bignum_to_num(ray_pool.baseDecimal),
+            quoteDecimals: bignum_to_num(ray_pool.quoteDecimal),
             programId: PROGRAMIDS.AmmV4,
             marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
         });

@@ -130,8 +130,8 @@ const usePerformSwap = (amm: AMMData) => {
         const wsol_mint = amm.quote_mint;
         let mint_account = mintData.get(token_mint.toString());
 
-        token_amount = new BN(token_amount * Math.pow(10, mint_account.mint.decimals));
-        sol_amount = new BN(sol_amount * Math.pow(10, 9));
+        token_amount = token_amount * Math.pow(10, mint_account.mint.decimals);
+        sol_amount = sol_amount * Math.pow(10, 9);
 
         // Create temporary wrapped SOL account, needed to unwrap back to SOL
         let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
