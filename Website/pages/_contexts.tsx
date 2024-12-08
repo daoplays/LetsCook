@@ -200,7 +200,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                         newData.set(launch.page_name, launch);
                         return newData;
                     });
-
                     return;
                 } catch (error) {
                     //console.log("bad launch data", data);
@@ -484,6 +483,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     launch_data.set(launch.page_name, launch);
+
                 } catch (error) {
                     //console.log("bad launch data", data);
                 }
