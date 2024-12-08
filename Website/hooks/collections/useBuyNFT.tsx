@@ -1,15 +1,13 @@
-import {
-    PublicKey,
-} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import useSendTransaction from "../useSendTransaction";
-import {GetBuyNFTInstructions} from "@letscook/sdk/dist/instructions/collections/BuyNFT"
+import { GetBuyNFTInstructions } from "@letscook/sdk/dist/instructions/collections/BuyNFT";
 import { CollectionData } from "@letscook/sdk/dist/state/collections";
 import { toast } from "react-toastify";
 
 const useBuyNFT = (launchData: CollectionData) => {
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
 
     const { sendTransaction, isLoading } = useSendTransaction();
 
@@ -34,7 +32,7 @@ const useBuyNFT = (launchData: CollectionData) => {
 
         if (!instruction) {
             toast.error("Failed to get buy NFT instruction");
-            return
+            return;
         }
 
         await sendTransaction({
@@ -44,7 +42,7 @@ const useBuyNFT = (launchData: CollectionData) => {
             },
             onError: (error) => {
                 console.error("Failed to buy NFT:", error);
-            }
+            },
         });
     };
 

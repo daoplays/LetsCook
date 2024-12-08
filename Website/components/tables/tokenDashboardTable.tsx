@@ -78,9 +78,13 @@ const TokenDashboardTable = ({ creatorLaunches }: { creatorLaunches: LaunchData[
         if (sortedField === "symbol") {
             return reverseSort ? listing_b.symbol.localeCompare(listing_a.symbol) : listing_a.symbol.localeCompare(listing_b.symbol);
         } else if (sortedField === "liquidity") {
-            return reverseSort ? bignum_to_num(b.minimum_liquidity) - bignum_to_num(a.minimum_liquidity) : bignum_to_num(a.minimum_liquidity) - bignum_to_num(b.minimum_liquidity);
+            return reverseSort
+                ? bignum_to_num(b.minimum_liquidity) - bignum_to_num(a.minimum_liquidity)
+                : bignum_to_num(a.minimum_liquidity) - bignum_to_num(b.minimum_liquidity);
         } else if (sortedField === "date") {
-            return reverseSort ? bignum_to_num(b.launch_date) - bignum_to_num(a.launch_date) : bignum_to_num(a.launch_date) - bignum_to_num(b.launch_date);
+            return reverseSort
+                ? bignum_to_num(b.launch_date) - bignum_to_num(a.launch_date)
+                : bignum_to_num(a.launch_date) - bignum_to_num(b.launch_date);
         }
 
         return 0;

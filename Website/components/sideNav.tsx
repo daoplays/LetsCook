@@ -67,7 +67,7 @@ const tabs = {
         },
         {
             icon: (size: number) => <MdLeaderboard size={size} />,
-            tab: "Quest Board",
+            tab: "Achievements",
             url: "/achievements",
         },
     ],

@@ -37,9 +37,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
     const wallet = useWallet();
     const { sendTransaction, isLoading } = useSendTransaction();
 
-
     const MintRandom = async () => {
-
         if (wallet.signTransaction === undefined) return;
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
@@ -202,7 +200,6 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             },
             additionalSigner: nft_mint_keypair,
         });
-
     };
 
     return { MintRandom, isLoading };

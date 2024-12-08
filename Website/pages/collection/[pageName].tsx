@@ -52,8 +52,8 @@ import styles from "../../styles/Launch.module.css";
 import CollectionReleaseModal from "./collectionReleaseModal";
 import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
-import { useGetBalance } from '@letscook/sdk';
-import  useCollection  from '@letscook/sdk/dist/hooks/data/useCollection';
+import { useGetBalance } from "@letscook/sdk";
+import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -62,7 +62,7 @@ export interface AssetWithMetadata {
 
 const CollectionSwapPage = () => {
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const router = useRouter();
     const { pageName } = router.query;
     const { xs, sm, md, lg, xl } = useResponsive();
@@ -86,17 +86,17 @@ const CollectionSwapPage = () => {
         marketplaceSummary,
         listedAssets,
         error: collectionError,
-    } = useCollection({connection,  pageName: pageName as string});
+    } = useCollection({ connection, pageName: pageName as string });
 
     const { assignmentData, validRandoms, asset, assetMeta, error: assignmentError } = useAssignmentData({ collection: collection });
 
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { WrapNFT, isLoading: isWrapLoading } = useWrapNFT(collection);
 
-    const { balance : userSOLBalance} = useGetBalance({ 
-        publicKey: wallet?.publicKey, 
-        connection 
-      });
+    const { balance: userSOLBalance } = useGetBalance({
+        publicKey: wallet?.publicKey,
+        connection,
+    });
 
     const { MintRandom, isLoading: isMintRandomLoading } = useMintRandom(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection, wrapSOL === 1);

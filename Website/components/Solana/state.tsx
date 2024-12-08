@@ -925,7 +925,7 @@ export class LaunchData {
     static readonly struct = new FixableBeetStruct<LaunchData>(
         [
             ["account_type", u8],
-            ["launch_meta", launchInfoBeet  as FixableBeet<DataEnumKeyAsKind<LaunchMetaEnum>>],
+            ["launch_meta", launchInfoBeet as FixableBeet<DataEnumKeyAsKind<LaunchMetaEnum>>],
             ["plugins", array(launchPluginBeet) as FixableBeet<Array<DataEnumKeyAsKind<LaunchPluginEnum>>>],
             ["last_interaction", i64],
             ["num_interactions", u16],

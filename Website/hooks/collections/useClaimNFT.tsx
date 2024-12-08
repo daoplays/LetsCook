@@ -5,14 +5,8 @@ import {
     getRecentPrioritizationFees,
     bignum_to_num,
 } from "../../components/Solana/state";
-import {  request_assignment_data } from "../../components/collection/collectionState";
-import {
-    ComputeBudgetProgram,
-    PublicKey,
-    TransactionInstruction,
-    Keypair,
-    AccountMeta,
-} from "@solana/web3.js";
+import { request_assignment_data } from "../../components/collection/collectionState";
+import { ComputeBudgetProgram, PublicKey, TransactionInstruction, Keypair, AccountMeta } from "@solana/web3.js";
 import { getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys } from "../../components/Solana/constants";
@@ -94,7 +88,6 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
     const { MintRandom } = useMintRandom(launchData);
     const { getWrapInstruction } = useWrapSOL();
 
-  
     const ClaimNFT = async () => {
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -306,10 +299,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             instructions.push(...wrap_instruction);
         }
         instructions.push(list_instruction);
- 
 
-
-     
         await sendTransaction({
             instructions,
             onSuccess: () => {
@@ -317,7 +307,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             },
             onError: (error) => {
                 // Handle error
-            }
+            },
         });
     };
 

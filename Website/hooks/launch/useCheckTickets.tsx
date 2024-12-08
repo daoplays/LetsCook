@@ -20,14 +20,11 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const CheckTickets = async () => {
-
         if (wallet.signTransaction === undefined) return;
 
         if (launchData === null) {
             return;
         }
-
-
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
@@ -75,13 +72,11 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
+        let computeUnits = 400_000;
         if (launchData.flags[LaunchFlags.AMMProvider] == 0 && launchData.flags[LaunchFlags.LPState] < 2) {
             let init_idx = await GetInitAMMInstruction();
-            instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
             instructions.push(init_idx);
+            computeUnits = 600_000;
         }
 
         instructions.push(list_instruction);
@@ -94,6 +89,7 @@ const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) =>
             onError: (error) => {
                 // Handle error
             },
+            computeUnits,
         });
     };
 

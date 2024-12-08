@@ -27,7 +27,7 @@ const soundCollection = {
 const Pepemon = () => {
     const { xs, sm, md, lg } = useResponsive();
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const collection_name = Config.PROD ? "pepemon_gen1" : "pepemon";
     const { handleConnectWallet } = UseWalletConnection();
 
@@ -36,7 +36,7 @@ const Pepemon = () => {
         collectionPlugins,
         tokenMint,
         error: collectionError,
-    } = useCollection({ connection, pageName: collection_name as string});
+    } = useCollection({ connection, pageName: collection_name as string });
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);

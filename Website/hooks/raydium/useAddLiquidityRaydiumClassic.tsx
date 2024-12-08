@@ -49,7 +49,6 @@ import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
 import { getRaydiumPrograms } from "./utils";
 import { AMMData, MarketStateLayoutV2, RaydiumAMM } from "../../components/Solana/jupiter_state";
 
-
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
 function serialise_raydium_add_liquidity_instruction(base_amount: number, quote_amount: number, base_side): Buffer {

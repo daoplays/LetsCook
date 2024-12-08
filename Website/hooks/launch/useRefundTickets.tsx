@@ -28,11 +28,9 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
             return;
         }
 
-
         if (launchData === null) {
             return;
         }
-
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -75,10 +73,6 @@ const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateDa
 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
-
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
         instructions.push(list_instruction);
         await sendTransaction({
             instructions,

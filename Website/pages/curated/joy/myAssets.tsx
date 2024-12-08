@@ -10,7 +10,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import { lamportsToSol } from "@/utils/lamportToSol";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
-import {  NFTListingData } from "@/components/collection/collectionState";
+import { NFTListingData } from "@/components/collection/collectionState";
 import { Button } from "@/components/ui/button";
 import { Config } from "@/components/Solana/constants";
 import ViewNFTDetails from "./viewNftDetails";

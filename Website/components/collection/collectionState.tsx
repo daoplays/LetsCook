@@ -248,7 +248,7 @@ export function create_CollectionDataInput(launch_data: CollectionData, edit_mod
     let plugins = getCollectionPlugins(launch_data);
 
     for (let i = 0; i < launch_data.plugins.length; i++) {
-        if (plugins.probability !== "") {   
+        if (plugins.probability !== "") {
             mint_prob = launch_data.plugins[i]["mint_prob"];
             //console.log("Have mint prob", prob_string);
         }

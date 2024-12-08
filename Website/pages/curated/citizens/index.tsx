@@ -67,7 +67,7 @@ function getStatusString(status: number) {
 const LandingPage = () => {
     const [showInteractive, setShowInteractive] = useState(false);
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const { sm } = useResponsive();
 
     const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";

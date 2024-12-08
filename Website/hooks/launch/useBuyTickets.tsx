@@ -36,8 +36,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
             return;
         }
 
-
-
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             toast.error(`Launch creator cannot buy tickets`, {
                 isLoading: false,
@@ -46,7 +44,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
 
             return;
         }
-
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
@@ -127,10 +124,6 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
         });
 
         let instructions: TransactionInstruction[] = [];
-
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
         instructions.push(list_instruction);
         await sendTransaction({
             instructions,

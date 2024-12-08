@@ -72,7 +72,6 @@ const MainNetConfig: NetworkConfig = {
     skipPreflight: true,
 };
 
-
 export const firebaseConfig = {
     databaseURL: "https://letscooklistings-default-rtdb.firebaseio.com/",
 };

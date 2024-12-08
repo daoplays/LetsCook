@@ -195,7 +195,8 @@ const LaunchPreviewModal = ({ isOpen, onClose, data }: LaunchPreviewProps) => {
                                             <HStack justify="center">
                                                 <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                                     &nbsp;
-                                                    {(Math.min(launchData.num_mints, launchData.tickets_sold) * bignum_to_num(launchData.ticket_price)) /
+                                                    {(Math.min(launchData.num_mints, launchData.tickets_sold) *
+                                                        bignum_to_num(launchData.ticket_price)) /
                                                         LAMPORTS_PER_SOL}
                                                     /{(launchData.num_mints * bignum_to_num(launchData.ticket_price)) / LAMPORTS_PER_SOL}
                                                 </Text>

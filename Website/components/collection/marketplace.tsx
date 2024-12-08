@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import {  NFTListingData } from "./collectionState";
+import { NFTListingData } from "./collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";

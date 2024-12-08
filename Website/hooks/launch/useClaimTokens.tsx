@@ -18,14 +18,13 @@ import {
 } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
-import { LaunchKeys} from "../../components/Solana/constants";
+import { LaunchKeys } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import useSendTransaction from "../useSendTransaction";
 
 const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();
-    const {mintData, listingData } = useAppRoot();
-
+    const { mintData, listingData } = useAppRoot();
 
     const { sendTransaction, isLoading } = useSendTransaction();
     const ClaimTokens = async () => {
@@ -35,14 +34,12 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
             return;
         }
 
-
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;
         }
-
 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
@@ -159,9 +156,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         let transaction = new Transaction(txArgs);
         transaction.feePayer = wallet.publicKey;
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }))
-        instructions.push(list_instruction)
+        instructions.push(list_instruction);
 
         await sendTransaction({
             instructions,

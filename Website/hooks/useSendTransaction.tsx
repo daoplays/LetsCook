@@ -2,14 +2,7 @@ import { Config } from "@/components/Solana/constants";
 import { getRecentPrioritizationFees, get_current_blockhash } from "@/components/Solana/state";
 import showTransactionToast from "@/components/transactionToast";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { 
-    Connection, 
-    Transaction, 
-    TransactionInstruction,
-    Keypair,
-    PublicKey,
-    ComputeBudgetProgram
-} from "@solana/web3.js";
+import { Connection, Transaction, TransactionInstruction, Keypair, PublicKey, ComputeBudgetProgram } from "@solana/web3.js";
 import { useCallback, useRef, useState } from "react";
 
 interface SendTransactionOptions {
@@ -18,15 +11,17 @@ interface SendTransactionOptions {
     onSuccess?: () => void;
     onError?: (error: any) => void;
     skipPreflight?: boolean; // defaults to true
-    commitment?: 'processed' | 'confirmed' | 'finalized'; // defaults to 'confirmed'
+    commitment?: "processed" | "confirmed" | "finalized"; // defaults to 'confirmed'
     timeout?: number; // defaults to 30000
+    computeUnits?: number;
 }
 
 const DEFAULT_OPTIONS: Partial<SendTransactionOptions> = {
     skipPreflight: true,
-    commitment: 'confirmed',
-    timeout: 30000
-}
+    commitment: "confirmed",
+    timeout: 30000,
+    computeUnits: 400_000,
+};
 
 const useSendTransaction = () => {
     const wallet = useWallet();
@@ -48,32 +43,38 @@ const useSendTransaction = () => {
         }
     }, []);
 
-    const handleTransactionComplete = useCallback(async (result: any, toastControls: any, options?: SendTransactionOptions) => {
-        clearSubscriptions();
-        setIsLoading(false);
+    const handleTransactionComplete = useCallback(
+        async (result: any, toastControls: any, options?: SendTransactionOptions) => {
+            clearSubscriptions();
+            setIsLoading(false);
 
-        if (result.err !== null) {
-            toastControls.setError("execution_failed");
-            options?.onError?.(result.err);
-            return;
-        }
+            if (result.err !== null) {
+                toastControls.setError("execution_failed");
+                options?.onError?.(result.err);
+                return;
+            }
 
-        toastControls.setStatus("Confirmed");
-        options?.onSuccess?.();
-    }, [clearSubscriptions]);
+            toastControls.setStatus("Confirmed");
+            options?.onSuccess?.();
+        },
+        [clearSubscriptions],
+    );
 
-    const handleTransactionTimeout = useCallback((toastControls: any, options?: SendTransactionOptions) => {
-        clearSubscriptions();
-        setIsLoading(false);
+    const handleTransactionTimeout = useCallback(
+        (toastControls: any, options?: SendTransactionOptions) => {
+            clearSubscriptions();
+            setIsLoading(false);
 
-        toastControls.setError("Transaction timeout");
-        options?.onError?.(new Error("Transaction timeout"));
-    }, [clearSubscriptions]);
+            toastControls.setError("Transaction timeout");
+            options?.onError?.(new Error("Transaction timeout"));
+        },
+        [clearSubscriptions],
+    );
 
     const sendTransaction = async (options: SendTransactionOptions) => {
         // Merge provided options with defaults
         const finalOptions = { ...DEFAULT_OPTIONS, ...options };
-        
+
         if (!wallet.signTransaction) {
             console.error("Wallet does not support signing");
             return;
@@ -95,16 +96,16 @@ const useSendTransaction = () => {
 
         try {
             toastControls.setStatus("Signing");
-            
+
             const txArgs = await get_current_blockhash("");
             const transaction = new Transaction(txArgs);
             transaction.feePayer = wallet.publicKey;
 
-            let all_instructions = []
+            let all_instructions = [];
 
             let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
             all_instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-            all_instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+            all_instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: finalOptions.computeUnits }));
 
             all_instructions.push(...finalOptions.instructions);
 
@@ -122,10 +123,9 @@ const useSendTransaction = () => {
             toastControls.setStatus("Sending");
 
             // Send the transaction
-            const signature = await connection.sendRawTransaction(
-                signedTransaction.serialize(), 
-                { skipPreflight: finalOptions.skipPreflight }
-            );
+            const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+                skipPreflight: finalOptions.skipPreflight,
+            });
 
             console.log("Transaction signature: ", signature);
 
@@ -133,15 +133,11 @@ const useSendTransaction = () => {
             signatureWsId.current = connection.onSignature(
                 signature,
                 (result) => handleTransactionComplete(result, toastControls, finalOptions),
-                finalOptions.commitment
+                finalOptions.commitment,
             );
 
             // Set up timeout
-            timeoutId.current = setTimeout(
-                () => handleTransactionTimeout(toastControls, finalOptions),
-                finalOptions.timeout
-            );
-
+            timeoutId.current = setTimeout(() => handleTransactionTimeout(toastControls, finalOptions), finalOptions.timeout);
         } catch (error) {
             console.error(error);
             setIsLoading(false);

@@ -205,7 +205,9 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                         <>
                             {featuredLaunch !== null &&
                                 new Date().getTime() > bignum_to_num(featuredLaunch.launch_date) &&
-                                new Date().getTime() < bignum_to_num(featuredLaunch.end_date) && <WoodenButton label="Mint Live" size={35} />}
+                                new Date().getTime() < bignum_to_num(featuredLaunch.end_date) && (
+                                    <WoodenButton label="Mint Live" size={35} />
+                                )}
 
                             {featuredLaunch !== null && new Date().getTime() < bignum_to_num(featuredLaunch.launch_date) && (
                                 <WoodenButton label="Mint Pending" size={35} width={340} />
@@ -233,7 +235,8 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                 max={(featuredLaunch.num_mints * bignum_to_num(featuredLaunch.ticket_price)) / LAMPORTS_PER_SOL}
                                 min={0}
                                 value={
-                                    (Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) * bignum_to_num(featuredLaunch.ticket_price)) /
+                                    (Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) *
+                                        bignum_to_num(featuredLaunch.ticket_price)) /
                                     LAMPORTS_PER_SOL
                                 }
                                 boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
@@ -244,7 +247,8 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                 </Text>
                                 <HStack justify="center">
                                     <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
-                                        {(Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) * bignum_to_num(featuredLaunch.ticket_price)) /
+                                        {(Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) *
+                                            bignum_to_num(featuredLaunch.ticket_price)) /
                                             LAMPORTS_PER_SOL}{" "}
                                         of {(featuredLaunch.num_mints * bignum_to_num(featuredLaunch.ticket_price)) / LAMPORTS_PER_SOL}
                                     </Text>

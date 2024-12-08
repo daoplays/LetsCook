@@ -113,7 +113,7 @@ const TokenMintPage = () => {
 
         let launch = launchList.get(pageName.toString());
         if (!launch) return;
-        
+
         setLaunchData(launch);
         setListing(listingData.get(launch.listing.toString()));
     }, [listingData, launchList, pageName]);
@@ -439,8 +439,8 @@ const TokenMintPage = () => {
                                     <HStack justify="center">
                                         <Text m="0" color="white" fontSize="x-large" fontFamily="ReemKufiRegular">
                                             &nbsp;
-                                            {Math.min(launchData.num_mints, launchData.tickets_sold) * ticketPriceSOL}{" "}
-                                            of {(launchData.num_mints * ticketPriceSOL) }
+                                            {Math.min(launchData.num_mints, launchData.tickets_sold) * ticketPriceSOL} of{" "}
+                                            {launchData.num_mints * ticketPriceSOL}
                                         </Text>
                                         <Image
                                             src={Config.token_image}
@@ -470,11 +470,9 @@ const TokenMintPage = () => {
                                                   : "none"
                                     }
                                     size="sm"
-                                    max={(launchData.num_mints * ticketPriceSOL)}
+                                    max={launchData.num_mints * ticketPriceSOL}
                                     min={0}
-                                    value={
-                                        (Math.min(launchData.num_mints, launchData.tickets_sold) *ticketPriceSOL)
-                                    }
+                                    value={Math.min(launchData.num_mints, launchData.tickets_sold) * ticketPriceSOL}
                                     boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
                                 />
                                 {(join_data === null || join_data.num_claimed_tickets === 0) && (

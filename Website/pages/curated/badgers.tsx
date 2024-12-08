@@ -25,7 +25,7 @@ const Badgers = () => {
     const { audioRef, isMusicPlaying, isMuted, showControls, togglePlayPause, toggleControls, toggleControlsOff, handleVolumeChange } =
         useAudioPlayer();
     const wallet = useWallet();
-    const {connection} = useConnection();
+    const { connection } = useConnection();
     const collection_name = Config.NETWORK === "mainnet" ? "badger" : "testingtest";
     const { handleConnectWallet } = UseWalletConnection();
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();

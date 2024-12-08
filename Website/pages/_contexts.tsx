@@ -485,7 +485,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 try {
                     const [launch] = LaunchData.struct.deserialize(data);
                     launch_data.set(launch.page_name, launch);
-
                 } catch (error) {
                     //console.log("bad launch data", data);
                 }
@@ -639,7 +638,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
             if (plugins.whitelistKey) {
                 if (!trade_mints.includes(plugins.whitelistKey.toString())) trade_mints.push(plugins.whitelistKey.toString());
             }
-            
         });
 
         collections.forEach((collection, key) => {

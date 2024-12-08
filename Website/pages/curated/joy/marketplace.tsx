@@ -11,7 +11,7 @@ import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
 import { lamportsToSol } from "@/utils/lamportToSol";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
-import {  NFTListingData } from "@/components/collection/collectionState";
+import { NFTListingData } from "@/components/collection/collectionState";
 import { Config } from "@/components/Solana/constants";
 import { Button } from "@/components/ui/button";
 import ViewNFTDetails from "./viewNftDetails";
