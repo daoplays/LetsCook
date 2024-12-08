@@ -107,7 +107,7 @@ export const AchievementsScreen = () => {
         <main className="px-4 md:p-8">
             <div className="mb-4 flex flex-col gap-4 lg:gap-0" style={{ marginTop: sm ? 16 : 0 }}>
                 <Text className="block text-center text-3xl font-semibold text-white lg:text-4xl" align={"center"}>
-                    Quest Board
+                    Achievements
                 </Text>
             </div>
 

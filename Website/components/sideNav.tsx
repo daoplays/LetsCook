@@ -14,7 +14,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import UseWalletConnection from "../hooks/useWallet";
 import * as NProgress from "nprogress";
 import { PiHamburgerFill } from "react-icons/pi";
-import { FaParachuteBox } from "react-icons/fa";
+import { FaParachuteBox, FaTrophy } from "react-icons/fa";
 import { Config } from "./Solana/constants";
 
 const tabs = {
@@ -66,7 +66,7 @@ const tabs = {
             url: "/dashboard",
         },
         {
-            icon: (size: number) => <MdLeaderboard size={size} />,
+            icon: (size: number) => <FaTrophy size={size} />,
             tab: "Achievements",
             url: "/achievements",
         },
