@@ -1,66 +1,31 @@
 import {
     LaunchData,
-    LaunchInstruction,
-    get_current_blockhash,
-    myU64,
-    send_transaction,
     serialise_basic_instruction,
-    request_current_balance,
     uInt32ToLEBytes,
     bignum_to_num,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { serialise_PlaceCancel_instruction } from "../../components/Solana/jupiter_state";
 
-import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
-import { useCallback, useRef, useState } from "react";
-import bs58 from "bs58";
-import BN from "bn.js";
 import { toast } from "react-toastify";
 
-import {
-    Token,
-    DEVNET_PROGRAM_ID,
-    MAINNET_PROGRAM_ID,
-    Liquidity,
-    SYSTEM_PROGRAM_ID,
-    RENT_PROGRAM_ID,
-    LOOKUP_TABLE_CACHE,
-} from "@raydium-io/raydium-sdk";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
-import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import { make_tweet } from "../../components/launch/twitter";
-import { LimitOrderProvider } from "@jup-ag/limit-order-sdk";
+import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
+import useSendTransaction from "../useSendTransaction";
 
 const useGetMMTokens = () => {
     const wallet = useWallet();
     const { listingData } = useAppRoot();
-    const [isLoading, setIsLoading] = useState(false);
 
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-            return;
-        }
-
-        signature_ws_id.current = null;
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const GetMMTokens = async (launch: LaunchData) => {
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        const placeLimitToast = toast.loading("Collecting Tokens..");
-
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
         let listing = listingData.get(launch.listing.toString());
@@ -107,8 +72,6 @@ const useGetMMTokens = () => {
 
         let date_bytes = uInt32ToLEBytes(current_date);
 
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
         let launch_date_account = PublicKey.findProgramAddressSync(
             [amm_data_account.toBytes(), date_bytes, Buffer.from("LaunchDate")],
             PROGRAM,
@@ -141,36 +104,20 @@ const useGetMMTokens = () => {
             data: instruction_data,
         });
 
-        let txArgs = await get_current_blockhash("");
 
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
+        let instructions: TransactionInstruction[] = [];
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        instructions.push(instruction);
 
-        transaction.add(instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-
-            toast.update(placeLimitToast, {
-                render: "Collected Tokens",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        } catch (error) {
-            toast.update(placeLimitToast, {
-                render: "Collection Failed.  Please try again later.",
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
 
     return { GetMMTokens, isLoading };
