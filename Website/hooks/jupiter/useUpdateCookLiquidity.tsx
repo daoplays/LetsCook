@@ -1,27 +1,14 @@
 import {
-    LaunchData,
     LaunchInstruction,
-    get_current_blockhash,
-    myU64,
-    send_transaction,
-    serialise_basic_instruction,
-    request_current_balance,
     uInt32ToLEBytes,
-    bignum_to_num,
     request_raw_account_data,
-    ExtraAccountMetaHead,
-    ExtraAccountMeta,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { AMMData, PlaceLimit_Instruction, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
+import { AMMData } from "../../components/Solana/jupiter_state";
 
-import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
-import { useCallback, useRef, useState } from "react";
-import bs58 from "bs58";
-import BN from "bn.js";
-import { toast } from "react-toastify";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
@@ -29,14 +16,13 @@ import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    getMint,
     getTransferHook,
     resolveExtraAccountMeta,
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { FixableBeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
 import { getMintData } from "@/components/amm/launch";
+import useSendTransaction from "../useSendTransaction";
 
 export class UpdateLiquidity_Instruction {
     constructor(
@@ -72,52 +58,12 @@ function serialise_remove_liquidity(side: number, in_amount: bignum): Buffer {
 const useUpdateCookLiquidity = (amm: AMMData) => {
     const wallet = useWallet();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Liquidity Updated!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const UpdateCookLiquidity = async (token_amount: number, order_type: number) => {
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
-
-        setIsLoading(true);
 
         const token_mint = amm.base_mint;
         const wsol_mint = amm.quote_mint;
@@ -249,36 +195,21 @@ const useUpdateCookLiquidity = (amm: AMMData) => {
             programId: PROGRAM,
             data: instruction_data,
         });
+        let instructions: TransactionInstruction[] = [];
 
-        let txArgs = await get_current_blockhash("");
-
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
-
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
-        transaction.add(instruction);
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
+        instructions.push(instruction);
 
         console.log("sending transaction");
 
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            console.log("liquidity sig", signature);
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, 20000);
-        } catch (error) {
-            setIsLoading(false);
-            toast.error("Market order failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
 
     return { UpdateCookLiquidity, isLoading };

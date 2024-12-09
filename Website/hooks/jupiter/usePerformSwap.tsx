@@ -4,19 +4,15 @@
  */
 
 import {
-    get_current_blockhash,
     uInt32ToLEBytes,
     request_raw_account_data,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
 import { AMMData, AMMPluginData, getAMMPlugins, serialise_PlaceLimit_instruction } from "../../components/Solana/jupiter_state";
 
-import { PublicKey, Transaction, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction, Connection, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
-import { useCallback, useRef, useState } from "react";
-import BN from "bn.js";
-import { toast } from "react-toastify";
 
 import { ComputeBudgetProgram } from "@solana/web3.js";
 
@@ -29,6 +25,7 @@ import {
     ExtraAccountMetaAccountDataLayout,
 } from "@solana/spl-token";
 import { getMintData } from "@/components/amm/launch";
+import useSendTransaction from "../useSendTransaction";
 
 /**
  * Custom hook for executing swaps on the AMM
@@ -58,57 +55,12 @@ import { getMintData } from "@/components/amm/launch";
 
 const usePerformSwap = (amm: AMMData) => {
     const wallet = useWallet();
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
+    const { sendTransaction, isLoading } = useSendTransaction();
     /**
      * Handles transaction signature updates from Solana
      * @param result - Transaction result from Solana
      * @returns Promise<void>
      */
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        // Handle transaction errors
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        // Show success message and refresh program data
-        toast.success("Swap Performed!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    /**
-     * Handles transaction timeout failures
-     * Called after 20 seconds if transaction hasn't completed
-     */
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
 
     /**
      * Executes a swap transaction on the AMM
@@ -122,7 +74,6 @@ const usePerformSwap = (amm: AMMData) => {
 
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
 
-        setIsLoading(true);
 
         // Setup token mints and convert amounts to proper decimals
         const token_mint = amm.base_mint;
@@ -288,33 +239,23 @@ const usePerformSwap = (amm: AMMData) => {
             data: instruction_data,
         });
 
-        let txArgs = await get_current_blockhash("");
 
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
+        let instructions: TransactionInstruction[] = [];
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
-        transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
-        transaction.add(instruction);
+        instructions.push(instruction);
 
         console.log("sending transaction");
 
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: Config.skipPreflight });
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
 
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, 20000);
-        } catch (error) {
-            setIsLoading(false);
-            toast.error("Market order failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        }
     };
 
     return { PerformSwap, isLoading };
