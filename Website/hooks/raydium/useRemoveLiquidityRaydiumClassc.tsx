@@ -48,6 +48,7 @@ import { make_tweet } from "../../components/launch/twitter";
 import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
 import { getRaydiumPrograms } from "./utils";
 import { AMMData, MarketStateLayoutV2, RaydiumAMM } from "../../components/Solana/jupiter_state";
+import useSendTransaction from "../useSendTransaction";
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
@@ -78,45 +79,9 @@ class RaydiumRemoveLiquidity_Instruction {
 const useRemoveLiquidityRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Transaction Successfull!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const RemoveLiquidityRaydiumClassic = async (lp_amount: number) => {
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
         let pool_data = await request_raw_account_data("", amm.pool);
         const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
@@ -191,31 +156,18 @@ const useRemoveLiquidityRaydiumClassic = (amm: AMMData) => {
             data: raydium_add_liquidity_data,
         });
 
-        let list_txArgs = await get_current_blockhash("");
+        let instructions: TransactionInstruction[] = [];
 
-        let list_transaction = new Transaction(list_txArgs);
-        list_transaction.feePayer = wallet.publicKey;
-
-        list_transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(list_transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            if (signature === undefined) {
-                console.log(signature);
-                toast.error("Transaction failed, please try again");
-                return;
-            }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-
-            console.log("swap sig: ", signature);
-        } catch (error) {
-            console.log(error);
-            return;
-        }
+        instructions.push(list_instruction);
+        await sendTransaction({
+                    instructions,
+                    onSuccess: () => {
+                        // Handle success
+                    },
+                    onError: (error) => {
+                        // Handle error
+                    },
+                });
     };
 
     return { RemoveLiquidityRaydiumClassic, isLoading };

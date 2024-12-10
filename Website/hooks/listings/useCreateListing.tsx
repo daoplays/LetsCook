@@ -1,42 +1,29 @@
-import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
-import { getStore } from "@netlify/blobs";
+import {useRef } from "react";
 import {
-    LaunchDataUserInput,
     LaunchInstruction,
-    ListingData,
-    getRecentPrioritizationFees,
-    get_current_blockhash,
-    request_launch_data,
     request_raw_account_data,
-    send_transaction,
-    serialise_EditLaunch_instruction,
-    serialise_basic_instruction,
     uInt32ToLEBytes,
 } from "../../components/Solana/state";
 import {
-    DEBUG,
     SYSTEM_KEY,
     PROGRAM,
     Config,
-    LaunchKeys,
-    LaunchFlags,
     DATA_ACCOUNT_SEED,
     SOL_ACCOUNT_SEED,
-    TIMEOUT,
 } from "../../components/Solana/constants";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram } from "@solana/web3.js";
+import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
 import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAccount } from "../raydium/useCreateCP";
-import { FixableBeetStruct, array, u8, utf8String } from "@metaplex-foundation/beet";
+import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount } from "../raydium/useCreateCP";
+import { FixableBeetStruct, u8 } from "@metaplex-foundation/beet";
 import { NewListing } from "../../components/listing/launch";
 import { RaydiumAMM } from "../../components/Solana/jupiter_state";
+import useSendTransaction from "../useSendTransaction";
 
 class CreateListing_Instruction {
     constructor(
@@ -64,56 +51,10 @@ function serialise_CreateListing_instruction(provider: number): Buffer {
 const useCreateListing = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Listing Created!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-
-        // update the netlify blob
-        //update_listings_blob(listing.mint.toString());
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const CreateListing = async (new_listing: NewListing, accept: boolean) => {
         if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
-
-        if (signature_ws_id.current !== null) {
-            //toast.success("Transaction pending, please wait");
-            //return;
-        }
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
@@ -242,39 +183,19 @@ const useCreateListing = () => {
             data: instruction_data,
         });
 
-        let txArgs = await get_current_blockhash("");
+        let instructions: TransactionInstruction[] = [];
 
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
+        instructions.push(list_instruction);
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
-        transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            if (signature === undefined) {
-                console.log(signature);
-                toast.error("Transaction failed, please try again");
-                return;
-            }
-
-            if (DEBUG) {
-                console.log("list signature: ", signature);
-            }
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-        } catch (error) {
-            console.log(error);
-            toast.error("Something went wrong launching your token , please try again later.", {
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
     return { CreateListing };
 };

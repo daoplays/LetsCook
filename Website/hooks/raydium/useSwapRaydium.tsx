@@ -36,6 +36,7 @@ import {
 } from "./useCreateCP";
 import { AMMData } from "../../components/Solana/jupiter_state";
 import { getMintData } from "@/components/amm/launch";
+import useSendTransaction from "../useSendTransaction";
 
 function serialise_raydium_swap_instruction(token_amount: number, sol_amount: number, order_type: number): Buffer {
     let base_in_discriminator: number[] = [143, 190, 90, 218, 196, 30, 51, 222];
@@ -78,48 +79,10 @@ class RaydiumSwap_Instruction {
 const useSwapRaydium = (amm: AMMData) => {
     const wallet = useWallet();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Transaction Successfull!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
+    const { sendTransaction, isLoading } = useSendTransaction();
+    
     const SwapRaydium = async (token_amount: number, sol_amount: number, order_type: number) => {
         // if we have already done this then just skip this step
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
@@ -218,34 +181,20 @@ const useSwapRaydium = (amm: AMMData) => {
             data: raydium_swap_data,
         });
 
-        let list_txArgs = await get_current_blockhash("");
 
-        let list_transaction = new Transaction(list_txArgs);
-        list_transaction.feePayer = wallet.publicKey;
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        let instructions: TransactionInstruction[] = [];
 
-        list_transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(list_transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            if (signature === undefined) {
-                console.log(signature);
-                toast.error("Transaction failed, please try again");
-                return;
-            }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-
-            console.log("swap sig: ", signature);
-        } catch (error) {
-            console.log(error);
-            return;
-        }
-    };
+        instructions.push(list_instruction);
+        await sendTransaction({
+                    instructions,
+                    onSuccess: () => {
+                        // Handle success
+                    },
+                    onError: (error) => {
+                        // Handle error
+                    },
+                });
+            };
 
     return { SwapRaydium, isLoading };
 };
