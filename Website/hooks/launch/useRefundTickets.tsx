@@ -1,7 +1,5 @@
 import {
-    LaunchData,
     LaunchInstruction,
-    ListingData,
     getRecentPrioritizationFees,
     get_current_blockhash,
     serialise_basic_instruction,
@@ -14,6 +12,8 @@ import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/
 import { useRef } from "react";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useSendTransaction from "../useSendTransaction";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();

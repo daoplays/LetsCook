@@ -1,6 +1,5 @@
 import { VStack, Text, Box, HStack, Flex, Show, Tooltip, Badge, Progress } from "@chakra-ui/react";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { LaunchData } from "./Solana/state";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";

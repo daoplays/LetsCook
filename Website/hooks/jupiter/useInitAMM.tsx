@@ -1,5 +1,4 @@
 import {
-    LaunchData,
     LaunchInstruction,
     serialise_basic_instruction,
     uInt32ToLEBytes,
@@ -23,6 +22,7 @@ import {
 import { LaunchKeys } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import useSendTransaction from "../useSendTransaction";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 const useInitAMM = (launchData: LaunchData) => {
     const wallet = useWallet();

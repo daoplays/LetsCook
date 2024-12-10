@@ -25,7 +25,6 @@ import { toast } from "react-toastify";
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import useResponsive from "../../hooks/useResponsive";
 import {
-    ListingData,
     MintData,
     getRecentPrioritizationFees,
     get_current_blockhash,
@@ -42,6 +41,7 @@ import bs58 from "bs58";
 import useCreateListing from "../../hooks/listings/useCreateListing";
 import useCreateUnverifiedListing from "../../hooks/listings/useCreateUnverifiedListing";
 import useEditListing from "../../hooks/listings/useEditListing";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 // Define the Tag type
 type Tag = {

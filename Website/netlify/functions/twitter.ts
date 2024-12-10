@@ -1,7 +1,9 @@
 const { TwitterApi } = require("twitter-api-v2");
-import { request_raw_account_data, LaunchData, bignum_to_num, ListingData } from "../../components/Solana/state";
+import { request_raw_account_data,  bignum_to_num } from "../../components/Solana/state";
 import { PROGRAM, LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 interface Result {
     statusCode: number;

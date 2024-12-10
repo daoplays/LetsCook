@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { PROGRAM } from "../../components/Solana/constants";
-import { ListingData, request_raw_account_data } from "../../components/Solana/state";
+import { request_raw_account_data } from "../../components/Solana/state";
 import { PublicKey } from "@solana/web3.js";
 import { useConnection } from "@solana/wallet-adapter-react";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 interface useListingProps {
     tokenMintAddress: PublicKey | null;

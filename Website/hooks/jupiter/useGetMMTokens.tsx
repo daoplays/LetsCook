@@ -1,5 +1,4 @@
 import {
-    LaunchData,
     serialise_basic_instruction,
     uInt32ToLEBytes,
     bignum_to_num,
@@ -18,6 +17,7 @@ import { getAssociatedTokenAddress, TOKEN_2022_PROGRAM_ID } from "@solana/spl-to
 import { LaunchFlags } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import useSendTransaction from "../useSendTransaction";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 const useGetMMTokens = () => {
     const wallet = useWallet();

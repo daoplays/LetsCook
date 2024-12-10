@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
+import {  UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";

@@ -6,9 +6,6 @@ import { PublicKey } from "@solana/web3.js";
 
 import { Config, DEFAULT_FONT_SIZE, PROGRAM } from "../../Solana/constants";
 import {
-    LaunchData,
-    LaunchDataUserInput,
-    ListingData,
     create_LaunchData,
     request_current_balance,
     request_launch_data,
@@ -24,6 +21,8 @@ import useCreateLaunch from "../../../hooks/launch/useCreateLaunch";
 import LaunchPreviewModal from "../../launchPreview/modal";
 import { Button } from "@/components/ui/button";
 import useCreateToken2022 from "@/hooks/useCreateToken2022";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 interface DetailsPageProps {
     setScreen: Dispatch<SetStateAction<string>>;

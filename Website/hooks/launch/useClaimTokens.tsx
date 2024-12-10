@@ -1,5 +1,4 @@
 import {
-    LaunchData,
     LaunchInstruction,
     get_current_blockhash,
     serialise_basic_instruction,
@@ -21,6 +20,7 @@ import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/
 import { LaunchKeys } from "../../components/Solana/constants";
 import useAppRoot from "../../context/useAppRoot";
 import useSendTransaction from "../useSendTransaction";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => {
     const wallet = useWallet();

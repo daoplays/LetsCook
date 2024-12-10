@@ -1,10 +1,11 @@
 import { VStack, HStack, Flex, Box, Text } from "@chakra-ui/react";
 import { PieChart } from "react-minimal-pie-chart";
 import useResponsive from "../../hooks/useResponsive";
-import { Distribution, LaunchData, bignum_to_num } from "../Solana/state";
+import { Distribution, bignum_to_num } from "../Solana/state";
 import styles from "../../styles/Launch.module.css";
 import { distributionLabels } from "../../constant/root";
 import { Config } from "../Solana/constants";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 interface TokenDistributionProps {
     launchData?: LaunchData;
 }

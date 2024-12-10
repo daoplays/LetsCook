@@ -1,4 +1,3 @@
-import { LaunchData, LaunchDataUserInput, defaultUserInput } from "../../components/Solana/state";
 import { useEffect, useRef, useState } from "react";
 import { FormControl, FormLabel, Text, Switch, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
 import { FaEye } from "react-icons/fa";

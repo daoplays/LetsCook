@@ -1,7 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-    LaunchData,
-    ListingData,
     UserData,
     bignum_to_num,
     create_LaunchDataInput,
@@ -37,6 +35,8 @@ import useCreateCP from "../../hooks/raydium/useCreateCP";
 import * as NProgress from "nprogress";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 interface Header {
     text: string;
     field: string | null;

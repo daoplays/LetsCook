@@ -1,7 +1,7 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { MintData, ListingData } from "../../components/Solana/state";
+import { MintData } from "../../components/Solana/state";
 import { MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
 import { bignum_to_num } from "../../components/Solana/state";
 import { Config } from "../../components/Solana/constants";
@@ -54,6 +54,7 @@ import useTokenBalance from "@/hooks/data/useTokenBalance";
 import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
 import useGetUserBalance from "@/hooks/data/useGetUserBalance";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 const TradePage = () => {
     const wallet = useWallet();

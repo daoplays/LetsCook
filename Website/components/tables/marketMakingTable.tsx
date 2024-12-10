@@ -3,7 +3,7 @@ import { Box, Flex, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Distribution, JoinedLaunch, LaunchData, ListingData, MintData, bignum_to_num } from "../Solana/state";
+import { Distribution, JoinedLaunch, MintData, bignum_to_num } from "../Solana/state";
 import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
 import {
     AMMData,
@@ -33,6 +33,7 @@ import BN from "bn.js";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "../ui/input";
 import { bignum } from "@metaplex-foundation/beet";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 interface AMMLaunch {
     amm_data: AMMData;

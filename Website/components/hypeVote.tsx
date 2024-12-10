@@ -3,7 +3,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
 import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys, TIMEOUT } from "./Solana/constants";
-import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, ListingData } from "./Solana/state";
+import {  get_current_blockhash, send_transaction, serialise_HypeVote_instruction } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
 import { bignum } from "@metaplex-foundation/beet";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 export function HypeVote({
     launch_type,

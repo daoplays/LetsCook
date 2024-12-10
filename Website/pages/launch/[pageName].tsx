@@ -14,14 +14,11 @@ import {
     Divider,
 } from "@chakra-ui/react";
 import {
-    LaunchData,
     bignum_to_num,
     myU64,
-    JoinData,
     request_raw_account_data,
     MintData,
     getLaunchTypeIndex,
-    ListingData,
 } from "../../components/Solana/state";
 import { PROGRAM, Config } from "../../components/Solana/constants";
 import { useCallback, useEffect, useState, useRef } from "react";

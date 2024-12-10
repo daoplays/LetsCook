@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { MdClose } from "react-icons/md";
 import { Text } from "@chakra-ui/react";
-import { LaunchData, ListingData, bignum_to_num } from "../Solana/state";
+import { bignum_to_num } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import Image from "next/image";
 import FeaturedBanner from "../../components/featuredBanner";
@@ -23,6 +23,8 @@ import useResponsive from "../../hooks/useResponsive";
 import TokenDistribution from "./tokenDistribution";
 import Timespan from "./timespan";
 import { Config } from "../Solana/constants";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 interface LaunchPreviewProps {
     isOpen: boolean;

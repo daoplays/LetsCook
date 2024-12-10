@@ -1,5 +1,4 @@
 import {
-    LaunchData,
     getRecentPrioritizationFees,
     request_raw_account_data,
     serialise_BuyTickets_instruction,
@@ -16,6 +15,7 @@ import { toast } from "react-toastify";
 import { getAssociatedTokenAddress } from "@solana/spl-token";
 import useSendTransaction from "../useSendTransaction";
 import { getMintData } from "@/components/amm/launch";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 interface BuyTicketsProps {
     launchData: LaunchData;
     value: number;
