@@ -8,6 +8,8 @@ import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { Config } from "../../components/Solana/constants";
 import { NewNFTListingData, NFTListingData } from "@/components/collection/collectionState";
+import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
+import { das }  from '@metaplex-foundation/mpl-core-das';
 
 interface UseTokenBalanceProps {
     collectionAddress: PublicKey | null;
@@ -15,7 +17,7 @@ interface UseTokenBalanceProps {
 
 const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
 
-/*
+
 export async function getDASCollectionAssets(collectionAddress: PublicKey, owner?: PublicKey): Promise<Map<string, AssetWithMetadata>> {
     try {
         let rpc = Config.NETWORK === "eclipse" ? "https://aura-eclipse-mainnet.metaplex.com/" : Config.RPC_NODE;
@@ -111,7 +113,7 @@ export async function getDASCollectionAssets(collectionAddress: PublicKey, owner
     }
     return null;
 }
-*/
+
 
 export async function getCollectionAssets(collectionAddress: PublicKey) {
     try {
