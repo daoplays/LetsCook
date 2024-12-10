@@ -13,6 +13,7 @@ import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
 import { bignum } from "@metaplex-foundation/beet";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
+import useCurrentUserData from "@/hooks/data/useCurrentUserData";
 
 export function HypeVote({
     launch_type,
@@ -34,7 +35,7 @@ export function HypeVote({
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
-    const { currentUserData } = useAppRoot();
+    const { userData } = useCurrentUserData({user : wallet?.publicKey});
     const { lg } = useResponsive();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -131,10 +132,10 @@ export function HypeVote({
 
     let has_voted: boolean = false;
     //console.log("check user vote", currentUserData === null)
-    if (currentUserData !== null) {
-        for (let i = 0; i < currentUserData.votes.length; i++) {
+    if (userData !== null) {
+        for (let i = 0; i < userData.votes.length; i++) {
             //console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
-            if (currentUserData.votes[i].toString() == launch_id.toString()) {
+            if (userData.votes[i].toString() == launch_id.toString()) {
                 has_voted = true;
                 break;
             }

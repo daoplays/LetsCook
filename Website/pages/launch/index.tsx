@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { FormControl, FormLabel, Text, Switch, Tooltip, VStack, useDisclosure } from "@chakra-ui/react";
-import { FaEye } from "react-icons/fa";
-import LaunchPreviewModal from "../../components/launchPreview/modal";
-import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
 import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";

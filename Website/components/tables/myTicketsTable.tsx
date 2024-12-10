@@ -126,9 +126,9 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
     let listing = listingData.get(launch.launch_data.listing.toString());
 
-    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, true);
-    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, true);
-    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(listing, launch.launch_data, true);
+    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, listing);
+    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, listing);
+    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(listing, launch.launch_data);
 
     let current_time = new Date().getTime();
 

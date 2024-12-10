@@ -16,7 +16,6 @@ import {
     reward_schedule,
 } from "../Solana/jupiter_state";
 import { useWallet } from "@solana/wallet-adapter-react";
-import useGetMMTokens from "../../hooks/jupiter/useGetMMTokens";
 import { TfiReload } from "react-icons/tfi";
 import useAppRoot from "../../context/useAppRoot";
 import Launch from "../../pages/launch";

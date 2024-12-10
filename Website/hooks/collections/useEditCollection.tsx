@@ -23,7 +23,7 @@ import { serialise_EditCollection_instruction } from "../../components/collectio
 const useEditCollection = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newCollectionData, checkProgramData, mintData } = useAppRoot();
+    const { newCollectionData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);
@@ -56,8 +56,6 @@ const useEditCollection = () => {
         newCollectionData.current.manifest = null;
         newCollectionData.current.metadata_payment = false;
         newCollectionData.current.metadata_uploaded = false;
-
-        await checkProgramData();
 
         router.push("/dashboard");
     }, []);

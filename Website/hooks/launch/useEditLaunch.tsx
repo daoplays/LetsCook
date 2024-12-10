@@ -26,7 +26,7 @@ import { ListingData } from "@letscook/sdk/dist/state/listing";
 const useEditLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newLaunchData, checkProgramData } = useAppRoot();
+    const { newLaunchData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -47,8 +47,6 @@ const useEditLaunch = () => {
         newLaunchData.current.edit_mode = false;
         newLaunchData.current.token_keypair = null;
 
-        console.log(newLaunchData.current);
-        await checkProgramData();
         router.push("/dashboard");
     }, []);
 

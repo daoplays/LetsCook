@@ -20,13 +20,13 @@ import {
 } from "@solana/spl-token";
 
 import { LaunchKeys } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
 import useSendTransaction from "../useSendTransaction";
 import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { getMintData } from "@letscook/sdk";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
-const useInitAMM = (launchData: LaunchData) => {
+const useInitAMM = (launchData: LaunchData, listing : ListingData) => {
     const wallet = useWallet();
-    const { mintData, listingData } = useAppRoot();
 
     const { sendTransaction, isLoading } = useSendTransaction();
 
@@ -35,12 +35,11 @@ const useInitAMM = (launchData: LaunchData) => {
         console.log(launchData);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-        let listing = listingData.get(launchData.listing.toString());
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = listing.mint;
-        let mint_account = mintData.get(listing.mint.toString());
+        let mint_account = await getMintData(connection, listing.mint.toString());
 
         var team_wallet = launchData.keys[LaunchKeys.TeamWallet];
 

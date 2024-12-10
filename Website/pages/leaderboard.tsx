@@ -29,6 +29,7 @@ import UseWalletConnection from "../hooks/useWallet";
 import Image from "next/image";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import useCurrentUserData from "@/hooks/data/useCurrentUserData";
 interface Header {
     text: string;
     field: string | null;
@@ -37,7 +38,8 @@ interface Header {
 const LeaderboardPage = () => {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
-    const { userList, currentUserData } = useAppRoot();
+    const { userList } = useAppRoot();
+    const { userData} = useCurrentUserData({user: wallet.publicKey});
     const { xs, sm, lg } = useResponsive();
 
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -95,8 +97,8 @@ const LeaderboardPage = () => {
         const rank_sorted = [...userVec].sort((a, b) => b.total_points - a.total_points);
 
         let currentUserIndex = -1;
-        if (sortedUsers && currentUserData)
-            currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
+        if (sortedUsers && userData)
+            currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(userData?.user_key));
 
         if (currentUserIndex !== -1) {
             const currentUser = sortedUsers.splice(currentUserIndex, 1)[0];
@@ -158,7 +160,7 @@ const LeaderboardPage = () => {
 
     const UserCard = ({ rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
         let isUser = false;
-        if (user && currentUserData) isUser = user.user_key.equals(currentUserData?.user_key);
+        if (user && userData) isUser = user.user_key.equals(userData?.user_key);
 
         const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
 
@@ -249,7 +251,7 @@ const LeaderboardPage = () => {
                                 Edit Username
                             </Text>
                             <Input
-                                placeholder={currentUserData?.user_name ? currentUserData?.user_name : "Enter New Username"}
+                                placeholder={userData?.user_name ? userData?.user_name : "Enter New Username"}
                                 size={lg ? "md" : "lg"}
                                 maxLength={25}
                                 required

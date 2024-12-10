@@ -48,7 +48,7 @@ type Tag = {
 const usuCreateLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newLaunchData, checkProgramData } = useAppRoot();
+    const { newLaunchData } = useAppRoot();
     const [isLoading, setIsLoading] = useState(false);
 
     const signature_ws_id = useRef<number | null>(null);

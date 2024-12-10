@@ -16,7 +16,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import useAppRoot from "../context/useAppRoot";
 
 const useEditUser = () => {
     const wallet = useWallet();

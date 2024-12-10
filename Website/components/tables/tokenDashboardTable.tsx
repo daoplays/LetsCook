@@ -278,7 +278,7 @@ const LaunchCard = ({ launch, GetFees }: { launch: LaunchData; GetFees: (launch:
     const { newLaunchData, listingData } = useAppRoot();
 
     let listing = listingData.get(launch.listing.toString());
-    const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch);
+    const { InitAMM, isLoading: isInitMMLoading } = useInitAMM(launch, listing);
     const { CreateCP, isLoading: initRaydiumLoading } = useCreateCP(listing, launch);
 
     const [isEditing, setIsEditing] = useState(false);

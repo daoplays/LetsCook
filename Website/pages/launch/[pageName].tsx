@@ -87,10 +87,10 @@ const TokenMintPage = () => {
     const { value } = input;
 
     const { BuyTickets, openWarning, isWarningOpened, closeWarning } = useBuyTickets({ launchData: launch, value });
-    const { CheckTickets, isLoading: isCheckingTickets } = useCheckTickets(launch);
-    const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launch);
+    const { CheckTickets, isLoading: isCheckingTickets } = useCheckTickets(launch, listing);
+    const { ClaimTokens, isLoading: isClamingTokens } = useClaimTickets(launch, listing);
     const { RefundTickets, isLoading: isRefundingTickets } = useRefundTickets(listing, launch);
-    const { InitAMM, isLoading: isInitLoading } = useInitAMM(launch);
+    const { InitAMM, isLoading: isInitLoading } = useInitAMM(launch, listing);
 
     const cook_state = useDetermineCookState({ current_time, launchData: launch, join_data: joinData });
 

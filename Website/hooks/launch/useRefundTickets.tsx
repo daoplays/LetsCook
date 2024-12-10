@@ -15,7 +15,7 @@ import useSendTransaction from "../useSendTransaction";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
-const useRefundTickets = (listing: ListingData, launchData: LaunchData, updateData: boolean = false) => {
+const useRefundTickets = (listing: ListingData, launchData: LaunchData) => {
     const wallet = useWallet();
 
     const { sendTransaction, isLoading } = useSendTransaction();

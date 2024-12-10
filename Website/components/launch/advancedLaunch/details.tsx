@@ -31,7 +31,7 @@ interface DetailsPageProps {
 const DetailsPage = ({ setScreen }: DetailsPageProps) => {
     const router = useRouter();
     const { sm, md, lg, xl } = useResponsive();
-    const { newLaunchData, launchList, listingData } = useAppRoot();
+    const { newLaunchData } = useAppRoot();
     const [name, setName] = useState<string>(newLaunchData.current.pagename);
     const [description, setDescription] = useState<string>(newLaunchData.current.description);
     const [web, setWeb] = useState<string>(newLaunchData.current.web_url);
