@@ -48,6 +48,7 @@ import { make_tweet } from "../../components/launch/twitter";
 import { BeetStruct, bignum, u64, u8 } from "@metaplex-foundation/beet";
 import { getRaydiumPrograms } from "./utils";
 import { AMMData, MarketStateLayoutV2, RaydiumAMM } from "../../components/Solana/jupiter_state";
+import useSendTransaction from "../useSendTransaction";
 
 const PROGRAMIDS = Config.PROD ? MAINNET_PROGRAM_ID : DEVNET_PROGRAM_ID;
 
@@ -94,43 +95,7 @@ async function generatePubKey({
 
 const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Transaction Successfull!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const AddLiquidityRaydiumClassic = async (token_amount: number, sol_amount: number) => {
         // if we have already done this then just skip this step
@@ -220,35 +185,21 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
 
         let ata_balance = await connection.getBalance(user_lp_account);
         console.log("ata balance", ata_balance);
-
-        let list_txArgs = await get_current_blockhash("");
-
-        let list_transaction = new Transaction(list_txArgs);
-        list_transaction.feePayer = wallet.publicKey;
-
+        let instructions: TransactionInstruction[] = [];
         if (ata_balance === 0) {
-            list_transaction.add(create_lp_ata);
+            instructions.push(create_lp_ata);
         }
-        list_transaction.add(list_instruction);
+        instructions.push(list_instruction);
 
-        try {
-            let signed_transaction = await wallet.signTransaction(list_transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            if (signature === undefined) {
-                console.log(signature);
-                toast.error("Transaction failed, please try again");
-                return;
-            }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-
-            console.log("swap sig: ", signature);
-        } catch (error) {
-            console.log(error);
-            return;
-        }
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
 
     return { AddLiquidityRaydiumClassic, isLoading };
