@@ -167,7 +167,7 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={1}
-                    launch_id={launch.launch_id}
+                    launch_id={bignum_to_num(launch.launch_id)}
                     page_name={launch.page_name}
                     positive_votes={launch.positive_votes}
                     negative_votes={launch.negative_votes}

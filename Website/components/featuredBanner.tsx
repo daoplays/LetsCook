@@ -41,12 +41,12 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
             <HStack position="absolute" top={5} right={5} style={{ cursor: "pointer" }} hidden={isHomePage}>
                 <HypeVote
                     launch_type={0}
-                    launch_id={featuredListing.id}
+                    launch_id={bignum_to_num(featuredListing.id)}
                     page_name={""}
                     positive_votes={featuredListing.positive_votes}
                     negative_votes={featuredListing.negative_votes}
                     isTradePage={false}
-                    tokenMint={featuredListing.mint}
+                    tokenMint={featuredListing.mint.toString()}
                 />
             </HStack>
 

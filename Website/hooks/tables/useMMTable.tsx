@@ -31,8 +31,8 @@ export interface MarketMakingRow {
         positiveVotes: number;
         negativeVotes: number;
         score: number;
-        launchId: bignum;
-        tokenMint: PublicKey;
+        launchId: number;
+        tokenMint: string;
     };
 }
 
@@ -131,8 +131,8 @@ export const useMarketMakingData = () => {
                         positiveVotes: listing.positive_votes,
                         negativeVotes: listing.negative_votes,
                         score: listing.positive_votes - listing.negative_votes,
-                        launchId: listing.id,
-                        tokenMint: listing.mint
+                        launchId: bignum_to_num(listing.id),
+                        tokenMint: listing.mint.toString()
 
                     }
                 });

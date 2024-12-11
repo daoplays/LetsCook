@@ -24,12 +24,12 @@ export function HypeVote({
     tokenMint,
 }: {
     launch_type: number;
-    launch_id: bignum;
+    launch_id: number;
     page_name: string;
     positive_votes: number;
     negative_votes: number;
     isTradePage?: boolean;
-    tokenMint: PublicKey | null;
+    tokenMint: string | null;
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -80,8 +80,9 @@ export function HypeVote({
 
             let launch_data_account: PublicKey;
 
-            if (launch_type === 0) {
-                launch_data_account = PublicKey.findProgramAddressSync([tokenMint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            if (tokenMint && launch_type === 0) {
+                let tokenMintKey = new PublicKey(tokenMint);
+                launch_data_account = PublicKey.findProgramAddressSync([tokenMintKey.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             } else {
                 launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
             }

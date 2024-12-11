@@ -701,12 +701,12 @@ const InfoContent = ({
                     <span className="text-md text- text-white text-opacity-50">Hype:</span>
                     <HypeVote
                         launch_type={0}
-                        launch_id={listing.id}
+                        launch_id={bignum_to_num(listing.id)}
                         page_name={""}
                         positive_votes={listing.positive_votes}
                         negative_votes={listing.negative_votes}
                         isTradePage={true}
-                        tokenMint={listing.mint}
+                        tokenMint={listing.mint.toString()}
                     />
                 </div>
 

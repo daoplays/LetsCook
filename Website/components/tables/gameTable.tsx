@@ -220,12 +220,12 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={0}
-                    launch_id={listing.id}
+                    launch_id={bignum_to_num(listing.id)}
                     page_name={launch.page_name}
                     positive_votes={listing.positive_votes}
                     negative_votes={listing.negative_votes}
                     isTradePage={false}
-                    tokenMint={listing.mint}
+                    tokenMint={listing.mint.toString()}
                 />
             </TableCell>
             <TableCell style={{ minWidth: "170px" }}>
