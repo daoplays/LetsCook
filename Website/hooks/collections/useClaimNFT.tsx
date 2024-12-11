@@ -288,12 +288,8 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             data: instruction_data,
         });
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-
         let instructions: TransactionInstruction[] = [];
 
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-        instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         if (wrapToken) {
             let wrap_instruction = await getWrapInstruction(bignum_to_num(launchData.swap_price));
             instructions.push(...wrap_instruction);

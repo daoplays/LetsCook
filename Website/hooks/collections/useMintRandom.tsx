@@ -181,12 +181,7 @@ const useMintRandom = (launchData: CollectionData, updateData: boolean = false) 
             data: instruction_data,
         });
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-
         let instructions: TransactionInstruction[] = [];
-
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-        instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         instructions.push(list_instruction);
 
         await sendTransaction({

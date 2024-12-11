@@ -75,29 +75,29 @@ export function checkAchievements(userData: UserData) {
         achievements[Achievements.Hype100] = true;
     }
 
-    if (userData.stats.amounts.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 1) {
+    if (userData.stats.values.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 1) {
         achievements[Achievements.Mint1] = true;
     }
-    if (userData.stats.amounts.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 25) {
+    if (userData.stats.values.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 25) {
         achievements[Achievements.Mint25] = true;
     }
-    if (userData.stats.amounts.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 50) {
+    if (userData.stats.values.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 50) {
         achievements[Achievements.Mint50] = true;
     }
-    if (userData.stats.amounts.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 100) {
+    if (userData.stats.values.length >= Achievement32.NumMints && userData.stats.values[Achievement32.NumMints] >= 100) {
         achievements[Achievements.Mint100] = true;
     }
 
-    if (userData.stats.amounts.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 1) {
+    if (userData.stats.values.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 1) {
         achievements[Achievements.Unwrap1] = true;
     }
-    if (userData.stats.amounts.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 25) {
+    if (userData.stats.values.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 25) {
         achievements[Achievements.Unwrap25] = true;
     }
-    if (userData.stats.amounts.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 50) {
+    if (userData.stats.values.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 50) {
         achievements[Achievements.Unwrap50] = true;
     }
-    if (userData.stats.amounts.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 100) {
+    if (userData.stats.values.length >= Achievement32.NumWraps && userData.stats.values[Achievement32.NumWraps] >= 100) {
         achievements[Achievements.Unwrap100] = true;
     }
     
