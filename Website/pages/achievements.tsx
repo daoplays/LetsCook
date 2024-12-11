@@ -14,7 +14,6 @@ export interface IAchievement {
     description: string;
     badgeImage: string;
     tutorialVideoUrl?: string;
-    completed: boolean;
 }
 
 export const ACHIEVEMENTS: IAchievement[] = [
@@ -23,136 +22,134 @@ export const ACHIEVEMENTS: IAchievement[] = [
         title: "Set a Username",
         description: "Set your unique username in the leaderboard",
         badgeImage: "/images/achievements/username.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/-vQLlnu7W6U",
     },
     {
         id: 2,
         title: "Hype Voting x1",
         description: "Submit your vote for token or collection launches",
         badgeImage: "/images/achievements/hype_1.png",
-        tutorialVideoUrl: "https://example.com/transaction-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
     },
     {
         id: 3,
         title: "Hype Voting x25",
         description: "Submit 25 votes for token or collection launches",
         badgeImage: "/images/achievements/hype_25.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
+        
     },
     {
         id: 4,
         title: "Hype Voting x50",
         description: "Submit 50 votes for token or collection launches",
         badgeImage: "/images/achievements/hype_50.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
+        
     },
     {
         id: 5,
         title: "Hype Voting x100",
         description: "Submit 100 votes for token or collection launches",
         badgeImage: "/images/achievements/hype_100.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
+        
     },
     {
         id: 6,
         title: "NFT Mint x1",
         description: "Mint an NFT from a collection on Let's Cook",
         badgeImage: "/images/achievements/wrap_1.png",
-        tutorialVideoUrl: "https://example.com/transaction-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
+        
     },
     {
         id: 7,
         title: "NFT Mint x25",
         description: "Mint 25 NFTs from collections on Let's Cook",
         badgeImage: "/images/achievements/wrap_25.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
+        
     },
     {
         id: 8,
         title: "NFT Mint x50",
         description: "Mint 50 NFTs from collections on Let's Cook",
         badgeImage: "/images/achievements/wrap_50.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
+        
     },
     {
         id: 9,
         title: "NFT Mint x100",
         description: "Mint 100 NFTs from collections on Let's Cook",
         badgeImage: "/images/achievements/wrap_100.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
+        
     },
     {
         id: 10,
         title: "NFT Unwrap x1",
         description: "Unwrap an NFT from a hybrid collection on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
-        tutorialVideoUrl: "https://example.com/transaction-tutorial.mp4",
-        completed: false,
+        badgeImage: "/images/achievements/unwrap_1.png",
+        tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
+        
     },
     {
         id: 11,
         title: "NFT Unwrap x25",
         description: "Unwrap 25 NFTs from hybrid collections on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        badgeImage: "/images/achievements/unwrap_25.png",
+        tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
+        
     },
     {
         id: 12,
         title: "NFT Unwrap x50",
         description: "Unwrap 50 NFTs from hybrid collections on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        badgeImage: "/images/achievements/unwrap_50.png",
+        tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
+        
     },
     {
         id: 13,
         title: "NFT Unwrap x100",
         description: "Unwrap 100 NFTs from hybrid collections on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        badgeImage: "/images/achievements/unwrap_100.png",
+        tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
+        
     },
     {
         id: 14,
         title: "100 Sauce",
         description: "Earn 100 sauce on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
+        badgeImage: "/images/achievements/sauce_100.png",
         tutorialVideoUrl: "https://example.com/transaction-tutorial.mp4",
-        completed: false,
+        
     },
     {
         id: 15,
         title: "500 Sauce",
         description: "Earn 500 sauce on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
+        badgeImage: "/images/achievements/sauce_500.png",
         tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        
     },
     {
         id: 16,
         title: "1000 Sauce",
         description: "Earn 1000 sauce on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
+        badgeImage: "/images/achievements/sauce_1000.png",
         tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        
     },
     {
         id: 17,
         title: "10000 Sauce",
         description: "Earn 10000 sauce on Let's Cook",
-        badgeImage: "/images/achievements/username.png",
+        badgeImage: "/images/achievements/sauce_10k.png",
         tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
-        completed: false,
+        
     },
 ];
 
@@ -219,7 +216,7 @@ export const AchievementsScreen = () => {
                                 <p className="text-muted-foreground text-white md:text-lg">{achievement.description}</p>
                             </div>
 
-                            {achievement.completed ? (
+                            {achievements[i] ? (
                                 <div className="mr-6 mt-2 flex items-center gap-2 md:mt-0">
                                     <Check size={sm ? 32 : 40} color="#90EE90" />
                                     <p className="-mt-1 text-xl text-white md:text-2xl">Completed</p>
