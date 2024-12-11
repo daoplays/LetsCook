@@ -1,6 +1,6 @@
 import { VStack, Text, Box, HStack, Flex, Show, Tooltip, Badge, Progress } from "@chakra-ui/react";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { LaunchData, ListingData, bignum_to_num } from "./Solana/state";
+import { bignum_to_num } from "./Solana/state";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
@@ -15,6 +15,8 @@ import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
 import ShowExtensions from "./Solana/extensions";
 import { HypeVote } from "./hypeVote";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;

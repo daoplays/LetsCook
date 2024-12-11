@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num } from "../Solana/state";
+import {  bignum_to_num } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { Box, Button, Center, filter, Flex, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
@@ -15,6 +15,7 @@ import { ButtonString } from "../user_status";
 import { Config, LaunchKeys } from "../Solana/constants";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 export interface LaunchTableFilters {
     start_date: Date | null;
     end_date: Date | null;

@@ -37,7 +37,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
-import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import useIrysUploader from "../useIrysUploader";
 import { bignum, FixableBeetStruct, u64, u8, utf8String } from "@metaplex-foundation/beet";

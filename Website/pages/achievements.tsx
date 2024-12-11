@@ -5,6 +5,8 @@ import { Video, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Text } from "@chakra-ui/react";
 import useResponsive from "@/hooks/useResponsive";
+import useCurrentUserData from "@/hooks/data/useCurrentUserData";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export interface IAchievement {
     id: number;
@@ -183,6 +185,8 @@ const TutorialDialog: React.FC<{ videoUrl?: string }> = ({ videoUrl }) => {
 // Main Achievements Screen
 export const AchievementsScreen = () => {
     const { sm } = useResponsive();
+    const wallet = useWallet();
+    const {userData, achievements} = useCurrentUserData({user : wallet?.publicKey});
 
     return (
         <main className="px-4 md:p-8">

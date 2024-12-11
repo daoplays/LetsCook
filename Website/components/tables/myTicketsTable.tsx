@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num, JoinData, JoinedLaunch } from "../Solana/state";
+import {  UserData, bignum_to_num, JoinedLaunch } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -126,9 +126,9 @@ const LaunchCard = ({ launch }: { launch: JoinedLaunch }) => {
 
     let listing = listingData.get(launch.launch_data.listing.toString());
 
-    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, true);
-    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, true);
-    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(listing, launch.launch_data, true);
+    const { CheckTickets, isLoading: CheckingTickets } = useCheckTickets(launch.launch_data, listing);
+    const { ClaimTokens, isLoading: ClaimingTokens } = useClaimTokens(launch.launch_data, listing);
+    const { RefundTickets, isLoading: RefundingTickets } = useRefundTickets(listing, launch.launch_data);
 
     let current_time = new Date().getTime();
 

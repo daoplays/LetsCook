@@ -1,5 +1,4 @@
 import {
-    LaunchData,
     LaunchInstruction,
     get_current_blockhash,
     serialise_basic_instruction,
@@ -19,12 +18,13 @@ import {
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED } from "../../components/Solana/constants";
 import { LaunchKeys } from "../../components/Solana/constants";
-import useAppRoot from "../../context/useAppRoot";
 import useSendTransaction from "../useSendTransaction";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
+import { getMintData } from "@letscook/sdk";
 
-const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => {
+const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
     const wallet = useWallet();
-    const { mintData, listingData } = useAppRoot();
 
     const { sendTransaction, isLoading } = useSendTransaction();
     const ClaimTokens = async () => {
@@ -44,7 +44,6 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
-        let listing = listingData.get(launchData.listing.toString());
 
         let user_join_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
@@ -54,19 +53,19 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
         let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
-        let mint_account = mintData.get(listing.mint.toString());
+        let mint_account = await getMintData(connection, listingData.mint.toString());
 
         let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
         let token_raffle_account_key = await getAssociatedTokenAddress(
-            listing.mint, // mint
+            listingData.mint, // mint
             program_sol_account, // owner
             true, // allow owner off curve
             mint_account.token_program,
         );
 
         let user_token_account_key = await getAssociatedTokenAddress(
-            listing.mint, // mint
+            listingData.mint, // mint
             wallet.publicKey, // owner
             true, // allow owner off curve
             mint_account.token_program,
@@ -82,7 +81,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
             transfer_hook_program_account = transfer_hook.programId;
             transfer_hook_validation_account = PublicKey.findProgramAddressSync(
-                [Buffer.from("extra-account-metas"), listing.mint.toBuffer()],
+                [Buffer.from("extra-account-metas"), listingData.mint.toBuffer()],
                 transfer_hook_program_account,
             )[0];
 
@@ -120,7 +119,7 @@ const useClaimTokens = (launchData: LaunchData, updateData: boolean = false) => 
 
             { pubkey: token_raffle_account_key, isSigner: false, isWritable: true },
             { pubkey: user_token_account_key, isSigner: false, isWritable: true },
-            { pubkey: listing.mint, isSigner: false, isWritable: true },
+            { pubkey: listingData.mint, isSigner: false, isWritable: true },
 
             { pubkey: program_sol_account, isSigner: false, isWritable: true },
             { pubkey: launchData.listing, isSigner: false, isWritable: false },

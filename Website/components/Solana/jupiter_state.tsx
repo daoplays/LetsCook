@@ -23,7 +23,7 @@ import { publicKey } from "@metaplex-foundation/beet-solana";
 import { Wallet, WalletContextState, useWallet } from "@solana/wallet-adapter-react";
 import { Order } from "@jup-ag/limit-order-sdk";
 
-import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, LaunchData, MintData } from "./state";
+import { LaunchInstruction, uInt8ToLEBytes, bignum_to_num, Distribution, MintData } from "./state";
 import { PROGRAM } from "./constants";
 
 export interface OpenOrder {

@@ -5,7 +5,7 @@ import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
 import { useRouter } from "next/router";
-import { JoinedLaunch, LaunchData, MintData, bignum_to_num } from "../Solana/state";
+import { MintData, bignum_to_num } from "../Solana/state";
 import { AMMData, AMMPluginData, MMLaunchData, MMUserData, getAMMKey, getAMMPlugins } from "../Solana/jupiter_state";
 import { LaunchKeys, LaunchFlags, PROGRAM } from "../Solana/constants";
 import useGetMMRewards from "../../hooks/jupiter/useGetMMRewards";

@@ -1,6 +1,4 @@
 import {
-    JoinData,
-    LaunchData,
     LaunchInstruction,
     getRecentPrioritizationFees,
     get_current_blockhash,
@@ -13,10 +11,12 @@ import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useInitAMM from "../jupiter/useInitAMM";
 import useSendTransaction from "../useSendTransaction";
+import { JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
-const useCheckTickets = (launchData: LaunchData, updateData: boolean = false) => {
+const useCheckTickets = (launchData: LaunchData, listing: ListingData) => {
     const wallet = useWallet();
-    const { GetInitAMMInstruction } = useInitAMM(launchData);
+    const { GetInitAMMInstruction } = useInitAMM(launchData, listing);
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const CheckTickets = async () => {

@@ -1,5 +1,6 @@
+import { JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
 import { LaunchFlags } from "../components/Solana/constants";
-import { JoinData, LaunchData, bignum_to_num } from "../components/Solana/state";
+import {bignum_to_num } from "../components/Solana/state";
 
 export const enum CookState {
     PRE_LAUNCH,

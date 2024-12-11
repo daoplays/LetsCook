@@ -1,5 +1,4 @@
 import {
-    LaunchData,
     LaunchInstruction,
     get_current_blockhash,
     myU64,
