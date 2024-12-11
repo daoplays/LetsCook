@@ -12,7 +12,6 @@ import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
 import { bignum } from "@metaplex-foundation/beet";
-import { ListingData } from "@letscook/sdk/dist/state/listing";
 import useCurrentUserData from "@/hooks/data/useCurrentUserData";
 
 export function HypeVote({
@@ -22,7 +21,7 @@ export function HypeVote({
     positive_votes,
     negative_votes,
     isTradePage,
-    listing,
+    tokenMint,
 }: {
     launch_type: number;
     launch_id: bignum;
@@ -30,7 +29,7 @@ export function HypeVote({
     positive_votes: number;
     negative_votes: number;
     isTradePage?: boolean;
-    listing: ListingData | null;
+    tokenMint: PublicKey | null;
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
@@ -82,7 +81,7 @@ export function HypeVote({
             let launch_data_account: PublicKey;
 
             if (launch_type === 0) {
-                launch_data_account = PublicKey.findProgramAddressSync([listing.mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+                launch_data_account = PublicKey.findProgramAddressSync([tokenMint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             } else {
                 launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
             }
@@ -127,7 +126,7 @@ export function HypeVote({
                 return;
             }
         },
-        [wallet, listing, connection, launch_type, page_name, check_signature_update, transaction_failed],
+        [wallet, tokenMint, connection, launch_type, page_name, check_signature_update, transaction_failed],
     );
 
     let has_voted: boolean = false;

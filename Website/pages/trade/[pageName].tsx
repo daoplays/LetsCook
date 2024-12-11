@@ -706,7 +706,7 @@ const InfoContent = ({
                         positive_votes={listing.positive_votes}
                         negative_votes={listing.negative_votes}
                         isTradePage={true}
-                        listing={listing}
+                        tokenMint={listing.mint}
                     />
                 </div>
 

@@ -46,7 +46,7 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                     positive_votes={featuredListing.positive_votes}
                     negative_votes={featuredListing.negative_votes}
                     isTradePage={false}
-                    listing={featuredListing}
+                    tokenMint={featuredListing.mint}
                 />
             </HStack>
 
