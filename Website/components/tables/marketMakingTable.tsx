@@ -237,10 +237,12 @@ const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: 
     const total_supply = amm_launch.mint ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.mint.mint.decimals) : 0;
     const market_cap = total_supply * last_price * SOLPrice;
     const market_cap_string = "$" + nFormatter(market_cap, 2);
-
-    let scaled_quote_amount = BigInt(amm_launch.amm_data.amm_quote_amount.toString()) / BigInt(LAMPORTS_PER_SOL);
-
-    const liquidity = Number(scaled_quote_amount) * SOLPrice;
+    const PRECISION = BigInt(10 ** 9); // or however many decimal places you need
+    let scaled_quote_amount = (BigInt(amm_launch.amm_data.amm_quote_amount.toString()) * PRECISION) / 
+        BigInt(LAMPORTS_PER_SOL);
+    
+    // When using the number, scale back down
+    const liquidity = Number(scaled_quote_amount) / Number(PRECISION) * SOLPrice;
     const liquidity_string = "$" + nFormatter(Math.min(market_cap, 2 * liquidity), 2);
 
     const cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);

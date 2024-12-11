@@ -206,21 +206,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                 }
             }
 
-            if (event_data[0] === 2) {
-                const [user] = UserData.struct.deserialize(event_data);
-                setUserData((currentData) => {
-                    const newData = new Map(currentData);
-                    newData.set(user.user_key.toString(), user);
-                    return newData;
-                });
-
-                if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
-                    setCurrentUserData(user);
-                }
-
-                return;
-            }
-
             if (event_data[0] === 5) {
                 setMMLaunchData((currentData) => {
                     const [mm_launch] = MMLaunchData.struct.deserialize(event_data);
