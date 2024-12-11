@@ -18,7 +18,7 @@ interface UseTokenBalanceProps {
 const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
 
 
-export async function getDASCollectionAssets(collectionAddress: PublicKey, owner?: PublicKey): Promise<Map<string, AssetWithMetadata>> {
+export async function getCollectionAssets2(collectionAddress: PublicKey, owner?: PublicKey): Promise<Map<string, AssetWithMetadata>> {
     try {
         let rpc = Config.NETWORK === "eclipse" ? "https://aura-eclipse-mainnet.metaplex.com/" : Config.RPC_NODE;
         const umi = createUmi(rpc, "confirmed").use(dasApi());
@@ -38,10 +38,10 @@ export async function getDASCollectionAssets(collectionAddress: PublicKey, owner
                 break;
             }
         }
-        console.log("Das assets", dasAssets, dasAssets[0] as AssetV1)
+        console.log("Das assets", dasAssets.length)
            
         
-
+/*
         if (owner) {
             let ownerUM = publicKey(collectionAddress.toString());
 
@@ -51,7 +51,7 @@ export async function getDASCollectionAssets(collectionAddress: PublicKey, owner
             .whereField("updateAuthority", updateAuthority("Collection", [collection_umiKey]))
             .getDeserialized();
         }
-        
+*/      
         var mid = new Date().getTime();
 
 
@@ -63,7 +63,7 @@ export async function getDASCollectionAssets(collectionAddress: PublicKey, owner
 
         var end = new Date().getTime();
 
-        console.log("RPC assets", assets)
+        console.log("RPC assets", assets.length)
 
         var time1 = mid - start;
         var time2 = end - mid;
