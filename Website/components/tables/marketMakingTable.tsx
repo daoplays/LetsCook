@@ -1,49 +1,55 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Flex, HStack, Link, TableContainer, Text, Tooltip } from "@chakra-ui/react";
-import useResponsive from "../../hooks/useResponsive";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import React from 'react';
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Distribution, JoinedLaunch, MintData, bignum_to_num } from "../Solana/state";
-import { LaunchKeys, LaunchFlags, Extensions, PROGRAM, Config } from "../Solana/constants";
-import {
-    AMMData,
-    MMLaunchData,
-    MMUserData,
-    getAMMKey,
-    getAMMKeyFromMints,
-    getAMMPlugins,
-    reward_date,
-    reward_schedule,
-} from "../Solana/jupiter_state";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { TfiReload } from "react-icons/tfi";
-import useAppRoot from "../../context/useAppRoot";
-import Launch from "../../pages/launch";
-import { Mint } from "@solana/spl-token";
-import ShowExtensions, { getExtensions } from "../Solana/extensions";
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { HypeVote } from "../hypeVote";
-import Links from "../Buttons/links";
-import formatPrice from "../../utils/formatPrice";
+import { MintData, bignum_to_num } from "../Solana/state";
+import { PROGRAM, Config } from "../Solana/constants";
+import { AMMData, reward_date, reward_schedule } from "../Solana/jupiter_state";
 import { FaSort } from "react-icons/fa";
 import Loader from "../loader";
-import BN from "bn.js";
-
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "../ui/input";
-import { bignum } from "@metaplex-foundation/beet";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
+import { HypeVote } from "../hypeVote";
+import Links from "../Buttons/links";
+import useAppRoot from "../../context/useAppRoot";
+import { getAMMKeyFromMints } from "../Solana/jupiter_state";
 
 interface AMMLaunch {
     amm_data: AMMData;
     mint: MintData;
     listing: ListingData;
+    computedValues: {
+        price: number;
+        liquidity: number;
+        liquidityString: string;
+        rewards: number;
+        hypeScore: number;
+    };
 }
 
-function nFormatter(num: number, digits: number) {
-    if (num < 1) {
-        return formatPrice(num, digits);
-    }
+interface SortConfig {
+    field: string;
+    direction: 'asc' | 'desc';
+}
+
+// Moved to component level to avoid recreation
+const tableHeaders = [
+    { text: "Token", field: "symbol" },
+    { text: "Price", field: "price" },
+    { text: "Liquidity", field: "liquidity" },
+    { text: "Rewards (24h)", field: "rewards" },
+    { text: "Socials", field: null },
+    { text: "Hype", field: "hype" },
+] as const;
+
+const PRECISION = BigInt(10 ** 9);
+
+// Extracted number formatting logic
+const nFormatter = (num: number, digits: number): string => {
+    if (num < 1) return num.toFixed(digits);
+    
     const lookup = [
         { value: 1, symbol: "" },
         { value: 1e3, symbol: "k" },
@@ -53,110 +59,184 @@ function nFormatter(num: number, digits: number) {
         { value: 1e15, symbol: "P" },
         { value: 1e18, symbol: "E" },
     ];
-    const regexp = /\.0+$|(?<=\.[0-9]*[1-9])0+$/;
+    
     const item = lookup.findLast((item) => num >= item.value);
-    return item ? (num / item.value).toFixed(digits).replace(regexp, "").concat(item.symbol) : "0";
-}
+    return item ? (num / item.value).toFixed(digits).concat(item.symbol) : "0";
+};
+
+// Memoized LaunchRow component
+const LaunchRow = React.memo(({ 
+    amm_launch, 
+    onRowClick 
+}: { 
+    amm_launch: AMMLaunch; 
+    onRowClick: (address: string) => void;
+}) => {
+    const { mint, listing, computedValues } = amm_launch;
+    const { price, rewards, liquidityString } = computedValues;
+
+    return (
+        <TableRow 
+            className="cursor-pointer border-b transition-colors hover:bg-white/10" 
+            onClick={() => onRowClick(listing.mint.toString())}
+        >
+            <TableCell className="w-[150px]">
+                <div className="flex items-center gap-3 px-4">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <Image
+                            alt={`${listing.symbol} icon`}
+                            src={mint.icon}
+                            width={48}
+                            height={48}
+                            className="object-cover"
+                        />
+                    </div>
+                    <span className="font-semibold">{listing.symbol}</span>
+                </div>
+            </TableCell>
+            <TableCell className="min-w-[120px]">
+                <div className="flex items-center justify-center gap-2">
+                    <span>
+                        {price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(mint.mint.decimals, 3))}
+                    </span>
+                    <Image src={Config.token_image} width={28} height={28} alt="SOL Icon" />
+                </div>
+            </TableCell>
+            <TableCell className="min-w-[120px]">{liquidityString}</TableCell>
+            <TableCell>
+                <div className="flex items-center justify-center gap-2">
+                    <span>{nFormatter(rewards, 2)}</span>
+                    <Image src={listing.icon} width={28} height={28} alt="Token Icon" className="rounded" />
+                </div>
+            </TableCell>
+            <TableCell className="min-w-[160px]">
+                <Links socials={listing.socials} />
+            </TableCell>
+            <TableCell>
+                <HypeVote
+                    launch_type={0}
+                    launch_id={listing.id}
+                    page_name=""
+                    positive_votes={listing.positive_votes}
+                    negative_votes={listing.negative_votes}
+                    isTradePage={false}
+                    listing={listing}
+                />
+            </TableCell>
+        </TableRow>
+    );
+});
+
+LaunchRow.displayName = 'LaunchRow';
 
 const MarketMakingTable = () => {
-    const wallet = useWallet();
-    const { ammData, SOLPrice, mintData, listingData, jupPrices } = useAppRoot();
-    const [sortedField, setSortedField] = useState<string>("liquidity");
-    const [reverseSort, setReverseSort] = useState<boolean>(true);
-    const [rows, setRows] = useState<AMMLaunch[]>([]);
+    const router = useRouter();
+    const { ammData, SOLPrice, mintData, listingData, jupPrices, mmLaunchData } = useAppRoot();
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ field: "liquidity", direction: 'desc' });
     const [searchTerm, setSearchTerm] = useState("");
+    const [rows, setRows] = useState<AMMLaunch[]>([]);
 
-    const tableHeaders = [
-        { text: "Token", field: "symbol" },
-        { text: "Price", field: "price" },
-        { text: "Liquidity", field: "liquidity" },
-        { text: "Rewards (24h)", field: "rewards" },
-        { text: "Socials", field: null },
-        { text: "Hype", field: "hype" },
-    ];
-
-    const handleSort = (field: string) => {
-        if (field === sortedField) {
-            setReverseSort(!reverseSort);
-        } else {
-            setSortedField(field);
-            setReverseSort(false);
-        }
-    };
-
+    // Compute initial data
     useEffect(() => {
         if (!mintData || !listingData || !ammData) return;
 
-        const amm_launches: AMMLaunch[] = [];
-        ammData.forEach((amm) => {
-            if (bignum_to_num(amm.start_time) === 0) return;
+        const computeInitialData = () => {
+            const amm_launches: AMMLaunch[] = [];
+            
+            ammData.forEach((amm) => {
+                if (bignum_to_num(amm.start_time) === 0) return;
 
-            const listing_key = PublicKey.findProgramAddressSync([amm.base_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-            const listing = listingData.get(listing_key.toString());
-            const mint = mintData.get(amm.base_mint.toString());
+                const listing_key = PublicKey.findProgramAddressSync(
+                    [amm.base_mint.toBytes(), Buffer.from("Listing")], 
+                    PROGRAM
+                )[0];
+                
+                const listing = listingData.get(listing_key.toString());
+                const mint = mintData.get(amm.base_mint.toString());
 
-            if (listing && mint) {
-                amm_launches.push({ amm_data: amm, mint, listing });
-            }
-        });
+                if (!listing || !mint) return;
 
-        setRows([...amm_launches]);
-    }, [mintData, listingData, ammData]);
+                const price = amm.provider === 0
+                    ? Buffer.from(amm.last_price).readFloatLE(0)
+                    : jupPrices.get(amm.base_mint.toString()) || 0;
 
-    const sortedAndFilteredRows = useMemo(() => {
-        // Helper function to get the sort value based on sortedField
-        const getSortValue = (row) => {
-            switch (sortedField) {
-                case "symbol":
-                    return row.listing.symbol;
-                case "price":
-                    return row.amm_data.provider === 0
-                        ? Buffer.from(row.amm_data.last_price).readFloatLE(0)
-                        : jupPrices.get(row.amm_data.base_mint.toString()) || 0;
-                case "liquidity":
-                    return row.amm_data.amm_quote_amount / Math.pow(10, 9);
-                case "fdmc": {
-                    const supply = Number(row.mint.mint.supply) / Math.pow(10, row.mint.mint.decimals);
-                    const price =
-                        row.amm_data.provider === 0
-                            ? Buffer.from(row.amm_data.last_price).readFloatLE(0)
-                            : jupPrices.get(row.amm_data.base_mint.toString()) || 0;
-                    return supply * price;
-                }
-                case "rewards": {
-                    const currentDate = Math.floor((Date.now() / 1000 - bignum_to_num(row.amm_data.start_time)) / 86400);
-                    return reward_schedule(currentDate, row.amm_data, row.mint);
-                }
-                case "hype":
-                    return row.listing.positive_votes - row.listing.negative_votes;
-                default:
-                    return 0;
-            }
+                const scaled_quote_amount = (BigInt(amm.amm_quote_amount.toString()) * PRECISION) / 
+                    BigInt(LAMPORTS_PER_SOL);
+                
+                const liquidity = Number(scaled_quote_amount) / Number(PRECISION) * SOLPrice;
+                const total_supply = Number(mint.mint.supply) / Math.pow(10, mint.mint.decimals);
+                const market_cap = total_supply * price * SOLPrice;
+                
+                const current_reward_date = reward_date(amm);
+                const mm_data = mmLaunchData?.get(amm.pool.toString() + "_" + current_reward_date.toString());
+                const rewards = mm_data
+                    ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, mint.mint.decimals)
+                    : reward_schedule(0, amm, mint);
+
+                amm_launches.push({
+                    amm_data: amm,
+                    mint,
+                    listing,
+                    computedValues: {
+                        price,
+                        liquidity,
+                        liquidityString: "$" + nFormatter(Math.min(market_cap, 2 * liquidity), 2),
+                        rewards,
+                        hypeScore: listing.positive_votes - listing.negative_votes
+                    }
+                });
+            });
+
+            setRows(amm_launches);
         };
 
-        // Sort the rows based on the calculated value
-        const sortedRows = [...rows].sort((a, b) => {
-            const aVal = getSortValue(a);
-            const bVal = getSortValue(b);
+        computeInitialData();
+    }, [mintData, listingData, ammData, SOLPrice, jupPrices, mmLaunchData]);
 
-            if (typeof aVal === "string" && typeof bVal === "string") {
-                return reverseSort ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
-            }
+    const handleSort = useCallback((field: string) => {
+        setSortConfig(prevConfig => ({
+            field,
+            direction: 
+                prevConfig.field === field && prevConfig.direction === 'desc' 
+                ? 'asc' 
+                : 'desc'
+        }));
+    }, []);
 
-            if (!isNaN(aVal) && !isNaN(bVal)) {
-                return reverseSort ? bVal - aVal : aVal - bVal;
-            }
+    const sortedAndFilteredRows = useMemo(() => {
+        return [...rows]
+            .filter(row => 
+                row.listing.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .sort((a, b) => {
+                const multiplier = sortConfig.direction === 'desc' ? -1 : 1;
+                
+                switch (sortConfig.field) {
+                    case "symbol":
+                        return multiplier * a.listing.symbol.localeCompare(b.listing.symbol);
+                    case "price":
+                        return multiplier * (a.computedValues.price - b.computedValues.price);
+                    case "liquidity":
+                        return multiplier * (a.computedValues.liquidity - b.computedValues.liquidity);
+                    case "rewards":
+                        return multiplier * (a.computedValues.rewards - b.computedValues.rewards);
+                    case "hype":
+                        return multiplier * (a.computedValues.hypeScore - b.computedValues.hypeScore);
+                    default:
+                        return 0;
+                }
+            });
+    }, [rows, searchTerm, sortConfig]);
 
-            return 0;
-        });
-
-        // Filter the sorted rows based on the search term
-        return sortedRows.filter((row) => row.listing.symbol.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [rows, searchTerm, sortedField, reverseSort, jupPrices]);
+    const handleRowClick = useCallback((mintAddress: string) => {
+        const cook_amm_address = getAMMKeyFromMints(new PublicKey(mintAddress), 0);
+        router.push("/trade/" + cook_amm_address);
+    }, [router]);
 
     if (!mintData || !listingData || !ammData) {
         return <Loader />;
     }
+
     return (
         <div className="flex flex-col gap-2">
             <div className="flex w-full justify-end px-2 lg:-mt-6">
@@ -164,6 +244,7 @@ const MarketMakingTable = () => {
                     type="text"
                     placeholder="Search token"
                     className="w-full lg:w-[220px]"
+                    value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
@@ -189,23 +270,20 @@ const MarketMakingTable = () => {
                 </TableHeader>
                 <TableBody>
                     {sortedAndFilteredRows.length > 0 ? (
-                        sortedAndFilteredRows.map((launch, i) => <LaunchRow key={i} amm_launch={launch} SOLPrice={SOLPrice} />)
+                        sortedAndFilteredRows.map((launch) => (
+                            <LaunchRow 
+                                key={launch.listing.mint.toString()}
+                                amm_launch={launch}
+                                onRowClick={handleRowClick}
+                            />
+                        ))
                     ) : (
-                        <TableRow
-                            style={{
-                                cursor: "pointer",
-                                height: "60px",
-                                transition: "background-color 0.3s",
-                            }}
-                            className="border-b"
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                            }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-                            }}
-                        >
-                            <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                        <TableRow className="h-[60px] border-b">
+                            <TableCell 
+                                style={{ minWidth: "160px" }} 
+                                colSpan={100} 
+                                className="opacity-50"
+                            >
                                 No Tokens yet
                             </TableCell>
                         </TableRow>
@@ -213,90 +291,6 @@ const MarketMakingTable = () => {
                 </TableBody>
             </Table>
         </div>
-    );
-};
-
-const LaunchRow = ({ amm_launch, SOLPrice }: { amm_launch: AMMLaunch; SOLPrice: number }) => {
-    const router = useRouter();
-    const { mmLaunchData, ammData, jupPrices } = useAppRoot();
-
-    if (!mmLaunchData || !ammData || !jupPrices) return <></>;
-
-    let current_reward_date = reward_date(amm_launch.amm_data);
-    let mm_data: MMLaunchData = mmLaunchData.get(amm_launch.amm_data.pool.toString() + "_" + current_reward_date.toString());
-
-    const mm_rewards = mm_data
-        ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, amm_launch.mint.mint.decimals)
-        : reward_schedule(0, amm_launch.amm_data, amm_launch.mint);
-
-    const last_price =
-        amm_launch.amm_data.provider === 0
-            ? Buffer.from(amm_launch.amm_data.last_price).readFloatLE(0)
-            : jupPrices.get(amm_launch.amm_data.base_mint.toString());
-
-    const total_supply = amm_launch.mint ? Number(amm_launch.mint.mint.supply) / Math.pow(10, amm_launch.mint.mint.decimals) : 0;
-    const market_cap = total_supply * last_price * SOLPrice;
-    const market_cap_string = "$" + nFormatter(market_cap, 2);
-    const PRECISION = BigInt(10 ** 9); // or however many decimal places you need
-    let scaled_quote_amount = (BigInt(amm_launch.amm_data.amm_quote_amount.toString()) * PRECISION) / 
-        BigInt(LAMPORTS_PER_SOL);
-    
-    // When using the number, scale back down
-    const liquidity = Number(scaled_quote_amount) / Number(PRECISION) * SOLPrice;
-    const liquidity_string = "$" + nFormatter(Math.min(market_cap, 2 * liquidity), 2);
-
-    const cook_amm_address = getAMMKeyFromMints(amm_launch.listing.mint, 0);
-    const cook_amm = ammData.get(cook_amm_address.toString());
-    const have_cook_amm = cook_amm && bignum_to_num(cook_amm.start_time) > 0;
-
-    if (!have_cook_amm) return null;
-
-    return (
-        <TableRow className="cursor-pointer border-b transition-colors" onClick={() => router.push("/trade/" + cook_amm_address)}>
-            <TableCell className="w-[150px]">
-                <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
-                        <Image
-                            alt={`${amm_launch.listing.symbol} icon`}
-                            src={amm_launch.mint.icon}
-                            width={48}
-                            height={48}
-                            className="object-cover"
-                        />
-                    </div>
-                    <span className="font-semibold">{amm_launch.listing.symbol}</span>
-                </div>
-            </TableCell>
-            <TableCell className="min-w-[120px]">
-                <div className="flex items-center justify-center gap-2">
-                    <span>
-                        {last_price < 1e-3 ? last_price.toExponential(3) : last_price.toFixed(Math.min(amm_launch.mint.mint.decimals, 3))}
-                    </span>
-                    <Image src={Config.token_image} width={28} height={28} alt="SOL Icon" />
-                </div>
-            </TableCell>
-            <TableCell className="min-w-[120px]">{SOLPrice === 0 ? "--" : liquidity_string}</TableCell>
-            <TableCell>
-                <div className="flex items-center justify-center gap-2">
-                    <span>{nFormatter(mm_rewards, 2)}</span>
-                    <Image src={amm_launch.listing.icon} width={28} height={28} alt="Token Icon" className="rounded" />
-                </div>
-            </TableCell>
-            <TableCell className="min-w-[160px]">
-                <Links socials={amm_launch.listing.socials} />
-            </TableCell>
-            <TableCell>
-                <HypeVote
-                    launch_type={0}
-                    launch_id={amm_launch.listing.id}
-                    page_name=""
-                    positive_votes={amm_launch.listing.positive_votes}
-                    negative_votes={amm_launch.listing.negative_votes}
-                    isTradePage={false}
-                    listing={amm_launch.listing}
-                />
-            </TableCell>
-        </TableRow>
     );
 };
 
