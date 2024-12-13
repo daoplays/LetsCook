@@ -43,7 +43,19 @@ const FileUploader: React.FC = () => {
     if (!event.target.files) return;
     
     const files = Array.from(event.target.files);
-    setSelectedFiles(files);
+
+    const sortedFiles = Array.from(event.target.files).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Check for duplicates
+    const hasDuplicates = sortedFiles.some((file, index) => {
+        return index > 0 && file.name === sortedFiles[index - 1].name;
+    });
+    if (hasDuplicates) {
+      toast.error("Duplicate files are not allowed");
+      return;
+    }
+    
+    setSelectedFiles(sortedFiles);
   };
 
   /**
@@ -105,7 +117,6 @@ const FileUploader: React.FC = () => {
                   <p className="mb-2 text-sm text-gray-400">
                     <span className="font-semibold">Click to upload</span> or drag and drop
                   </p>
-                  <p className="text-xs text-gray-400">Maximum total size: 500MB</p>
                 </div>
                 <input 
                   type="file" 
@@ -139,6 +150,9 @@ const FileUploader: React.FC = () => {
                   <div className="pt-2 border-t border-gray-700">
                     <Text className="text-white text-sm">
                       Total Size: {sizeMB} MB
+                    </Text>
+                    <Text className="text-white text-sm">
+                      Total Files: {selectedFiles.length}
                     </Text>
                   </div>
                 </div>

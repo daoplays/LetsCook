@@ -160,7 +160,8 @@ const useIrysUploader = (wallet) => {
                 }));
 
                 const { manifest } = await uploader.uploadFolder(blocks[i], {
-                    manifestTags: blockTags,
+                    //@ts-ignore
+                    tags: blockTags,
                 });
 
                 combinedManifest.paths = { ...combinedManifest.paths, ...manifest.paths };
