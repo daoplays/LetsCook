@@ -91,6 +91,11 @@ const tabs = {
             tab: "Wrap / Unwrap",
             url: "/wrap",
         },
+        {
+            icon: (size: number) => <Image src="/images/irys.jpeg" width={24} height={24} alt={"irys"} />,
+            tab: "Irys Uploader",
+            url: "/upload",
+        },
     ],
 
     info: [

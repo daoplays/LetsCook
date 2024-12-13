@@ -71,7 +71,7 @@ const useSendTransaction = () => {
         [clearSubscriptions],
     );
 
-    const sendTransaction = async (options: SendTransactionOptions) => {
+    const sendTransaction = async (options: SendTransactionOptions) : Promise<string | null> => {
         // Merge provided options with defaults
         const finalOptions = { ...DEFAULT_OPTIONS, ...options };
 
@@ -138,13 +138,17 @@ const useSendTransaction = () => {
 
             // Set up timeout
             timeoutId.current = setTimeout(() => handleTransactionTimeout(toastControls, finalOptions), finalOptions.timeout);
+
+            return signature;
+
         } catch (error) {
             console.error(error);
             setIsLoading(false);
             toastControls.setError("Failed to send transaction");
             finalOptions.onError?.(error);
-            return;
+            return null;
         }
+
     };
 
     // Clean up subscriptions when component unmounts

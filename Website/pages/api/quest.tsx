@@ -35,6 +35,8 @@ export default async function handler(req, res) {
             if (!user_data_raw) {
                 const data = {
                     result: 0,
+                    current: 0,
+                    target: 200,
                     message: "User data does not exist",
                 };
                 res.status(200).json(data);
@@ -46,6 +48,8 @@ export default async function handler(req, res) {
             if (!user_data) {
                 const data = {
                     result: 0,
+                    current: 0,
+                    target: 200,
                     message: "Invalid user data",
                 };
                 res.status(200).json(data);
@@ -54,9 +58,11 @@ export default async function handler(req, res) {
 
             let points = user_data.total_points;
 
-            if (points < 100) {
+            if (points < 200) {
                 const data = {
                     result: 0,
+                    current: points,
+                    target: 200,
                     message: "User has not achieved quest",
                 };
                 res.status(200).json(data);
@@ -65,12 +71,15 @@ export default async function handler(req, res) {
 
             const data = {
                 result: 1,
+                current: points,
+                target: 200,
                 message: "User has achieved quest",
             };
             res.status(200).json(data);
             return;
         } catch (error) {
-            res.status(400).json({ result: 0, error: "Invalid wallet" });
+            res.status(400).json({ result: 0, current: 0,
+                target: 200, error: "Invalid wallet" });
         }
     } else {
         // Handle any other HTTP method
