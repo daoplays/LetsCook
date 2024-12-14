@@ -151,6 +151,8 @@ const useIrysUploader = (wallet) => {
 
         let combinedManifest: Manifest = { manifest: "arweave/paths", version: "0.1.0", paths: {} };
 
+        toast.info("Uploading data in "  + blocks.length + " blocks...");
+
         // Upload each block
         for (let i = 0; i < blocks.length; i++) {
             try {
