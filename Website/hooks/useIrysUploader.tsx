@@ -114,9 +114,7 @@ const useIrysUploader = (wallet) => {
     }, [uploader, wallet, sendTransaction]);
 
     const uploadFilesInBlocks = useCallback(async (
-        connection: Connection,
         files: File[],
-        tags: Tag[],
         options: BlockUploadOptions = {}
     ): Promise<IrysWebUploaderResponse | null> => {
         if (!uploader || !wallet.publicKey) return null;
@@ -143,6 +141,7 @@ const useIrysUploader = (wallet) => {
         }
 
         // Fund the uploader for all blocks
+        toast.info("Transferring funds for file upload");
         const fundingSuccess = await fundUploader(totalSize);
         if (!fundingSuccess) {
             toast.error("Failed to fund uploader");
@@ -161,6 +160,7 @@ const useIrysUploader = (wallet) => {
                     value: file.type
                 }));
 
+                toast.info(`Uploading block ${i + 1}/${blocks.length}`);
                 const { manifest } = await uploader.uploadFolder(blocks[i], {
                     //@ts-ignore
                     tags: blockTags,
@@ -261,9 +261,9 @@ const useIrysUploader = (wallet) => {
             }
 
             // For larger uploads, use block upload
-            return uploadFilesInBlocks(connection, files, [], {
+            return uploadFilesInBlocks(files, {
                 onBlockUpload: (current, total) => {
-                    toast.info(`Uploading block ${current}/${total}`);
+                    toast.info(`Uploaded block ${current}/${total}`);
                 },
                 onManifestUpload: (manifestId) => {
                     toast.success(`Upload complete! Manifest ID: ${manifestId}`);
