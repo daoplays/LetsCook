@@ -8,7 +8,7 @@ import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
 import { Config } from "../../components/Solana/constants";
 import { NewNFTListingData, NFTListingData } from "@/components/collection/collectionState";
-import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
+import { DasApiAsset, dasApi } from '@metaplex-foundation/digital-asset-standard-api';
 import { das }  from '@metaplex-foundation/mpl-core-das';
 
 interface UseTokenBalanceProps {
@@ -16,6 +16,92 @@ interface UseTokenBalanceProps {
 }
 
 const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
+
+
+export async function getOwnedCollectionAssetsDAS(collectionAddress: PublicKey, owner: PublicKey): Promise<Map<string, AssetWithMetadata>> {
+    try {
+        let rpc = Config.NETWORK === "eclipse" ? "https://aura-eclipse-mainnet.metaplex.com/" : Config.RPC_NODE;
+        const umi = createUmi(rpc, "confirmed").use(dasApi());
+
+        var start = new Date().getTime();
+
+        let dasAssets : DasApiAsset[] = [];
+        let page = 1;
+        console.log("get owned das assets")
+        while (true) {
+            const dasPage = await umi.rpc.searchAssets({
+                interface: "MplCoreAsset",
+                burnt: false,
+                owner: publicKey(owner.toString()),
+                grouping: ["collection", collectionAddress.toString()],
+                page: page,
+            });
+    
+
+            page += 1;
+            dasAssets = dasAssets.concat(dasPage.items);
+            if (dasPage.total < 1000) {
+                break;
+            }
+        }
+
+        const coreAssets = await das.dasAssetsToCoreAssets(umi, dasAssets, {
+            skipDerivePlugins: true})
+
+        console.log("Owned Das assets", dasAssets.length, coreAssets)
+           
+           
+        const assets =[]
+
+        var end = new Date().getTime();
+
+        var time2 = end - start;
+
+        console.log('Execution time: ' , time2);
+
+        // Create a Map to store unique URIs and their corresponding metadata
+        const uriMap = new Map();
+        // Create a Map to store URI to multiple assets mapping
+        const uriToAssets = new Map();
+
+        // Group assets by URI
+        coreAssets.forEach((asset) => {
+            if (!uriToAssets.has(asset.uri)) {
+                uriToAssets.set(asset.uri, []);
+            }
+            uriToAssets.get(asset.uri).push(asset);
+        });
+
+        // Create fetch promises only for unique URIs
+        const fetchPromises = Array.from(uriToAssets.keys()).map(async (uri) => {
+            try {
+                const uri_json = await fetch(uri).then((res) => res.json());
+                uriMap.set(uri, uri_json);
+            } catch (error) {
+                console.error(`Error fetching metadata for URI ${uri}:`, error);
+                uriMap.set(uri, null); // or some default metadata
+            }
+        });
+
+        // Wait for all unique fetches to complete
+        await Promise.all(fetchPromises);
+
+        let all_assets: Map<string, AssetWithMetadata> = new Map();
+
+        // Process all assets using the cached metadata
+        coreAssets.forEach((asset) => {
+            const metadata = uriMap.get(asset.uri);
+            const entry: AssetWithMetadata = { asset, metadata };
+
+            all_assets.set(asset.publicKey.toString(), entry);
+        });
+
+        return all_assets;
+    } catch (err) {
+        console.log(err);
+    }
+    return null;
+}
 
 
 export async function getOwnedCollectionAssets(collectionAddress: PublicKey, owner: PublicKey): Promise<Map<string, AssetWithMetadata>> {
@@ -87,7 +173,7 @@ export async function getOwnedCollectionAssets(collectionAddress: PublicKey, own
     return null;
 }
 
-export async function getCollectionAssets2(collectionAddress: PublicKey, owner?: PublicKey): Promise<Map<string, AssetWithMetadata>> {
+export async function getCollectionAssetsDAS(collectionAddress: PublicKey): Promise<Map<string, AssetWithMetadata>> {
     try {
         let rpc = Config.NETWORK === "eclipse" ? "https://aura-eclipse-mainnet.metaplex.com/" : Config.RPC_NODE;
         const umi = createUmi(rpc, "confirmed").use(dasApi());
@@ -320,10 +406,9 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
             if (wallet && wallet.publicKey) {
                 let testOwned = await getOwnedCollectionAssets(collectionAddress, wallet.publicKey);
-                console.log("Test Owned assets", testOwned.size, testOwned);
+                let testDasOwned = await getOwnedCollectionAssetsDAS(collectionAddress, wallet.publicKey);
+                
             }
-
-            await getCollectionAssets(collectionAddress);
 
             let owned_assets: AssetWithMetadata[] = [];
             let all_assets: Map<string, AssetWithMetadata> = new Map();
@@ -339,8 +424,6 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
                     owned_assets.push(entry);
                 }
             });
-
-            console.log("Owned assets", owned_assets.length, owned_assets);
 
             setOwnedAssets(owned_assets);
             setCollectionAssets(all_assets);

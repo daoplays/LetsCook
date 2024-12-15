@@ -54,6 +54,7 @@ import MyNFTsPanel from "@/components/collection/myAssets";
 import Marketplace from "@/components/collection/marketplace";
 import { useGetBalance } from "@letscook/sdk";
 import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
+import useOwnedNFTs from "@/hooks/data/useGetUserNFTBalance";
 
 export interface AssetWithMetadata {
     asset: AssetV1;
@@ -112,6 +113,9 @@ const CollectionSwapPage = () => {
         collectionAddress ? { collectionAddress } : null,
     );
 
+    const {assets : userAssets, refetch, setExpectingUpdate} = useOwnedNFTs(collectionAddress ? { collectionAddress } : {collectionAddress: null});
+    console.log("user asets,", userAssets, ownedAssets)
+
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
     const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
 
@@ -149,6 +153,7 @@ const CollectionSwapPage = () => {
             return;
         } else {
             checkNFTBalance.current = true;
+            setExpectingUpdate(true);
             fetchNFTBalance();
         }
     }, [assignmentData, openAssetModal, fetchNFTBalance, checkNFTBalance]);
