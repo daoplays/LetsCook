@@ -31,6 +31,8 @@ import bs58 from "bs58";
 import { WalletDisconnectButton } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, Mint } from "@solana/spl-token";
 import { create } from "domain";
+import { JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 export async function get_JWT_token(): Promise<any | null> {
     const token_url = `/.netlify/functions/jwt`;
@@ -621,46 +623,6 @@ export function getLaunchTypeIndex(launch_type: string): number {
     }
 }
 
-type LaunchPluginEnum = {
-    Whitelist: { key: PublicKey; amount: bignum; phase_end: bignum };
-};
-type LaunchPlugin = DataEnumKeyAsKind<LaunchPluginEnum>;
-
-const launchPluginBeet = dataEnum<LaunchPluginEnum>([
-    [
-        "Whitelist",
-        new BeetArgsStruct<LaunchPluginEnum["Whitelist"]>(
-            [
-                ["key", publicKey],
-                ["amount", u64],
-                ["phase_end", u64],
-            ],
-            'LaunchPluginEnum["Whitelist"]',
-        ),
-    ],
-]) as FixableBeet<LaunchPlugin>;
-
-type LaunchMetaEnum = {
-    Raffle: {};
-    FCFS: {};
-    IDO: { fraction_distributed: number[]; tokens_distributed: bignum };
-};
-type LaunchInfo = DataEnumKeyAsKind<LaunchMetaEnum>;
-
-const launchInfoBeet = dataEnum<LaunchMetaEnum>([
-    ["Raffle", new BeetArgsStruct<LaunchMetaEnum["Raffle"]>([], 'LaunchMetaEnum["Raffle"]')],
-    ["FCFS", new BeetArgsStruct<LaunchMetaEnum["FCFS"]>([], 'LaunchMetaEnum["FCFS"]')],
-    [
-        "IDO",
-        new BeetArgsStruct<LaunchMetaEnum["IDO"]>(
-            [
-                ["fraction_distributed", uniformFixedSizeArray(u8, 8)],
-                ["tokens_distributed", u64],
-            ],
-            'LaunchMetaEnum["IDO"]',
-        ),
-    ],
-]) as FixableBeet<LaunchInfo>;
 
 export interface JoinedLaunch {
     join_data: JoinData;
@@ -811,155 +773,11 @@ export class myU64 {
     static readonly struct = new BeetStruct<myU64>([["value", u64]], (args) => new myU64(args.value!), "myU64");
 }
 
-export class ListingData {
-    constructor(
-        readonly account_type: number,
-        readonly id: bignum,
-        readonly mint: PublicKey,
-        readonly name: string,
-        readonly symbol: string,
-        readonly decimals: number,
-        readonly icon: string,
-        readonly meta_url: string,
-        readonly banner: string,
-        readonly description: string,
-        readonly positive_votes: number,
-        readonly negative_votes: number,
-        readonly socials: string[],
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<ListingData>(
-        [
-            ["account_type", u8],
-            ["id", u64],
-            ["mint", publicKey],
-            ["name", utf8String],
-            ["symbol", utf8String],
-            ["decimals", u8],
-            ["icon", utf8String],
-            ["meta_url", utf8String],
-            ["banner", utf8String],
-            ["description", utf8String],
-            ["positive_votes", u32],
-            ["negative_votes", u32],
-            ["socials", array(utf8String)],
-        ],
-        (args) =>
-            new ListingData(
-                args.account_type!,
-                args.id!,
-                args.mint!,
-                args.name!,
-                args.symbol!,
-                args.decimals!,
-                args.icon!,
-                args.meta_url!,
-                args.banner!,
-                args.description!,
-                args.positive_votes!,
-                args.negative_votes!,
-                args.socials!,
-            ),
-        "ListingData",
-    );
-}
-
-export class LaunchData {
-    constructor(
-        readonly account_type: number,
-        readonly launch_meta: LaunchMetaEnum,
-        readonly plugins: LaunchPluginEnum[],
-        readonly last_interaction: bignum,
-        readonly num_interactions: number,
-        readonly page_name: string,
-        readonly listing: PublicKey,
-
-        readonly total_supply: bignum,
-        readonly num_mints: bignum,
-        readonly ticket_price: bignum,
-        readonly minimum_liquidity: bignum,
-        readonly launch_date: bignum,
-        readonly end_date: bignum,
-
-        readonly tickets_sold: number,
-        readonly tickets_claimed: number,
-        readonly mints_won: number,
-
-        readonly total_mm_buy_amount: bignum,
-        readonly total_mm_sell_amount: bignum,
-        readonly last_mm_reward_date: number,
-
-        readonly distribution: number[],
-        readonly flags: number[],
-        readonly strings: string[],
-        readonly keys: PublicKey[],
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<LaunchData>(
-        [
-            ["account_type", u8],
-            ["launch_meta", launchInfoBeet],
-            ["plugins", array(launchPluginBeet)],
-            ["last_interaction", i64],
-            ["num_interactions", u16],
-
-            ["page_name", utf8String],
-            ["listing", publicKey],
-
-            ["total_supply", u64],
-            ["num_mints", u32],
-            ["ticket_price", u64],
-            ["minimum_liquidity", u64],
-            ["launch_date", u64],
-            ["end_date", u64],
-
-            ["tickets_sold", u32],
-            ["tickets_claimed", u32],
-            ["mints_won", u32],
-
-            ["total_mm_buy_amount", u64],
-            ["total_mm_sell_amount", u64],
-            ["last_mm_reward_date", u32],
-
-            ["distribution", array(u8)],
-            ["flags", array(u8)],
-            ["strings", array(utf8String)],
-            ["keys", array(publicKey)],
-        ],
-        (args) =>
-            new LaunchData(
-                args.account_type!,
-                args.launch_meta!,
-                args.plugins!,
-                args.last_interaction!,
-                args.num_interactions!,
-
-                args.page_name!,
-                args.listing!,
-
-                args.total_supply!,
-                args.num_mints!,
-                args.ticket_price!,
-                args.minimum_liquidity!,
-                args.launch_date!,
-                args.end_date!,
-
-                args.tickets_sold!,
-                args.tickets_claimed!,
-                args.mints_won!,
-
-                args.total_mm_buy_amount!,
-                args.total_mm_sell_amount!,
-                args.last_mm_reward_date!,
-
-                args.distribution!,
-                args.flags!,
-                args.strings!,
-                args.keys!,
-            ),
-        "LaunchData",
-    );
-}
+type LaunchMetaEnum = {
+    Raffle: Record<never, never>;
+    FCFS: Record<never, never>;
+    IDO: { fraction_distributed: number[]; tokens_distributed: bignum };
+};
 
 export function create_LaunchData(new_launch_data: LaunchDataUserInput): [LaunchData, ListingData] {
     // console.log(new_launch_data);
@@ -1073,47 +891,6 @@ export function create_LaunchDataInput(launch_data: LaunchData, listing: Listing
     return data;
 }
 
-export class JoinData {
-    constructor(
-        readonly account_type: number,
-        readonly joiner_key: PublicKey,
-        readonly page_name: string,
-        readonly num_tickets: number,
-        readonly num_claimed_tickets: number,
-        readonly num_winning_tickets: number,
-        readonly ticket_status: number,
-        readonly random_address: PublicKey,
-        readonly last_slot: bignum,
-    ) {}
-
-    static readonly struct = new FixableBeetStruct<JoinData>(
-        [
-            ["account_type", u8],
-            ["joiner_key", publicKey],
-            ["page_name", utf8String],
-            ["num_tickets", u16],
-            ["num_claimed_tickets", u16],
-            ["num_winning_tickets", u16],
-            ["ticket_status", u8],
-            ["random_address", publicKey],
-            ["last_slot", u64],
-        ],
-        (args) =>
-            new JoinData(
-                args.account_type!,
-                args.joiner_key!,
-                args.page_name!,
-                args.num_tickets!,
-                args.num_claimed_tickets!,
-                args.num_winning_tickets!,
-                args.ticket_status!,
-                args.random_address!,
-                args.last_slot!,
-            ),
-        "JoinData",
-    );
-}
-
 export class UserStats {
     constructor(
         readonly flags: number[],
@@ -1140,7 +917,7 @@ export class UserData {
         readonly user_key: PublicKey,
         readonly user_name: string,
         readonly total_points: number,
-        readonly votes: number[],
+        readonly votes: bignum[],
         readonly stats: UserStats,
     ) {}
 

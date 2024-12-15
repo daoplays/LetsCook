@@ -5,7 +5,7 @@ import Image from "next/image";
 import { CSSProperties, useState } from "react";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import useWrapNFT from "../../hooks/collections/useWrapNFT";
-import { CollectionData, NFTListingData } from "./collectionState";
+import { NFTListingData } from "./collectionState";
 import { PublicKey } from "@solana/web3.js";
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import { Button } from "../ui/button";
@@ -17,6 +17,7 @@ import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
 import { Config } from "../Solana/constants";
 import { lamportsToSol } from "@/utils/lamportToSol";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface MarketplaceProps {
     ownedNFTs?: AssetWithMetadata[];

@@ -3,7 +3,6 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { MintData, TokenAccount, bignum_to_num, request_token_amount } from "../../components/Solana/state";
-import useAppRoot from "../../context/useAppRoot";
 import { getMintData } from "../../components/amm/launch";
 
 interface UseTokenBalanceProps {

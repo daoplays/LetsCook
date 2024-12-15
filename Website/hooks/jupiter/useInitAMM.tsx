@@ -1,26 +1,13 @@
 import {
-    LaunchData,
     LaunchInstruction,
-    get_current_blockhash,
-    myU64,
-    send_transaction,
     serialise_basic_instruction,
-    request_current_balance,
     uInt32ToLEBytes,
     request_raw_account_data,
-    Token22MintAccount,
-    ExtraAccountMetaHead,
-    MetaData,
     getRecentPrioritizationFees,
 } from "../../components/Solana/state";
-import { PublicKey, Transaction, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
+import { PublicKey, TransactionInstruction, Connection, ComputeBudgetProgram, AccountMeta } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { SOL_ACCOUNT_SEED, PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
-import { useCallback, useRef, useState } from "react";
-import bs58 from "bs58";
-import BN from "bn.js";
-import { toast } from "react-toastify";
-
 import {
     getAssociatedTokenAddress,
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -32,40 +19,27 @@ import {
     ExtraAccountMeta,
 } from "@solana/spl-token";
 
-import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import { make_tweet } from "../../components/launch/twitter";
-import useAppRoot from "../../context/useAppRoot";
+import { LaunchKeys } from "../../components/Solana/constants";
+import useSendTransaction from "../useSendTransaction";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { getMintData } from "@letscook/sdk";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
-const useInitAMM = (launchData: LaunchData) => {
+const useInitAMM = (launchData: LaunchData, listing : ListingData) => {
     const wallet = useWallet();
-    const { mintData, listingData } = useAppRoot();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            alert("Transaction failed, please try again");
-            return;
-        }
-
-        signature_ws_id.current = null;
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const GetInitAMMInstruction = async () => {
         // if we have already done this then just skip this step
         console.log(launchData);
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-        let listing = listingData.get(launchData.listing.toString());
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         var token_mint_pubkey = listing.mint;
-        let mint_account = mintData.get(listing.mint.toString());
+        let mint_account = await getMintData(connection, listing.mint.toString());
 
         var team_wallet = launchData.keys[LaunchKeys.TeamWallet];
 
@@ -168,7 +142,7 @@ const useInitAMM = (launchData: LaunchData) => {
         console.log("base amm", base_amm_account.toString());
 
         const instruction_data = serialise_basic_instruction(LaunchInstruction.init_market);
-
+        
         var account_vector = [
             { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
@@ -224,48 +198,23 @@ const useInitAMM = (launchData: LaunchData) => {
         // if we have already done this then just skip this step
         console.log(launchData);
 
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        const initAMMToast = toast.loading("Initialising AMM...");
-
         const list_instruction = await GetInitAMMInstruction();
 
-        let list_txArgs = await get_current_blockhash("");
+        let instructions: TransactionInstruction[] = [];
+        
+        instructions.push(list_instruction);
 
-        let list_transaction = new Transaction(list_txArgs);
-        list_transaction.feePayer = wallet.publicKey;
+        await sendTransaction({
+            instructions,
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+            computeUnits : 600_000
+        });
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
-        list_transaction.add(list_instruction);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }));
-
-        try {
-            let signed_transaction = await wallet.signTransaction(list_transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            console.log("list sig: ", signature);
-
-            signature_ws_id.current = 2;
-            connection.onSignature(signature, check_signature_update, "confirmed");
-
-            toast.update(initAMMToast, {
-                render: "AMM initialised",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-            });
-        } catch (error) {
-            console.log(error);
-            toast.update(initAMMToast, {
-                render: "AMM initialisation failed, please try again later",
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
     };
 
     return { InitAMM, GetInitAMMInstruction, isLoading };

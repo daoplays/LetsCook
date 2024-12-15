@@ -8,9 +8,9 @@ import { PublicKey } from "@solana/web3.js";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
-import { CollectionData } from "@/components/collection/collectionState";
 import { Config } from "@/components/Solana/constants";
 import { Button } from "@/components/ui/button";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;

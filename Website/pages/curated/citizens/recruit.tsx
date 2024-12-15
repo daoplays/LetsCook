@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { AssignmentData, CollectionData, NFTListingData } from "@/components/collection/collectionState";
+import { AssignmentData, NFTListingData } from "@/components/collection/collectionState";
 import { MintData, bignum_to_num } from "@/components/Solana/state";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MdOutlineContentCopy } from "react-icons/md";
@@ -19,6 +19,7 @@ import ReceivedAssetModal from "./assetModal";
 import useAssignmentData from "@/hooks/data/useAssignmentData";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import Marketplace from "./marketplace";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface RecruitProps {
     collection: CollectionData;

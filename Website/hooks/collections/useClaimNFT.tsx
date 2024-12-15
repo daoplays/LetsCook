@@ -5,14 +5,8 @@ import {
     getRecentPrioritizationFees,
     bignum_to_num,
 } from "../../components/Solana/state";
-import { CollectionData, request_assignment_data } from "../../components/collection/collectionState";
-import {
-    ComputeBudgetProgram,
-    PublicKey,
-    TransactionInstruction,
-    Keypair,
-    AccountMeta,
-} from "@solana/web3.js";
+import { request_assignment_data } from "../../components/collection/collectionState";
+import { ComputeBudgetProgram, PublicKey, TransactionInstruction, Keypair, AccountMeta } from "@solana/web3.js";
 import { getTransferHook, resolveExtraAccountMeta, ExtraAccountMetaAccountDataLayout } from "@solana/spl-token";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, CollectionKeys } from "../../components/Solana/constants";
@@ -25,6 +19,7 @@ import useMintRandom from "./useMintRandom";
 import useWrapSOL from "../useWrapSOL";
 import useSendTransaction from "../useSendTransaction";
 import { getMintData } from "@/components/amm/launch";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 class OraoRandomnessResponse {
     constructor(
@@ -93,7 +88,6 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
     const { MintRandom } = useMintRandom(launchData);
     const { getWrapInstruction } = useWrapSOL();
 
-  
     const ClaimNFT = async () => {
         let nft_assignment_account = PublicKey.findProgramAddressSync(
             [wallet.publicKey.toBytes(), launchData.keys[CollectionKeys.CollectionMint].toBytes(), Buffer.from("assignment")],
@@ -294,21 +288,14 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             data: instruction_data,
         });
 
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-
         let instructions: TransactionInstruction[] = [];
 
-        instructions.push(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-        instructions.push(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }));
         if (wrapToken) {
             let wrap_instruction = await getWrapInstruction(bignum_to_num(launchData.swap_price));
             instructions.push(...wrap_instruction);
         }
         instructions.push(list_instruction);
- 
 
-
-     
         await sendTransaction({
             instructions,
             onSuccess: () => {
@@ -316,7 +303,7 @@ const useClaimNFT = (launchData: CollectionData, wrapToken: boolean = false) => 
             },
             onError: (error) => {
                 // Handle error
-            }
+            },
         });
     };
 

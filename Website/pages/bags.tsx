@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import useResponsive from "../hooks/useResponsive";
 import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
-import { JoinData, LaunchData, JoinedLaunch, bignum_to_num } from "../components/Solana/state";
+import {  JoinedLaunch, bignum_to_num } from "../components/Solana/state";
 import Loader from "../components/loader";
 import { LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";

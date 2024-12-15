@@ -1,7 +1,6 @@
 import { AssetWithMetadata } from "../../pages/collection/[pageName]";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { CollectionData } from "./collectionState";
 import { Modal, ModalBody, ModalContent, ModalOverlay, VStack, Text, Spinner } from "@chakra-ui/react";
 import useResponsive from "@/hooks/useResponsive";
 import { Button } from "../ui/button";
@@ -12,6 +11,7 @@ import { PublicKey } from "@solana/web3.js";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import useBuyNFT from "@/hooks/collections/useBuyNFT";
 import { Attribute } from "@metaplex-foundation/mpl-core";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface ViewNFTDetailsModalProps {
     isOpened: boolean;

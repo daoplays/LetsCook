@@ -2,17 +2,18 @@ import { Dispatch, SetStateAction, MutableRefObject } from "react";
 import { Box, Button, Center, HStack, Link, Spinner, Text, VStack } from "@chakra-ui/react";
 import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
-import { LaunchData } from "./state";
 import useBuyTickets from "../../hooks/launch/useBuyTickets";
 import { AssetV1, Attribute } from "@metaplex-foundation/mpl-core";
 import { PublicKey } from "@solana/web3.js";
-import { AssignmentData, CollectionData } from "../collection/collectionState";
+import { AssignmentData } from "../collection/collectionState";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import styles from "../../styles/LaunchDetails.module.css";
 import { SYSTEM_KEY } from "./constants";
 import Image from "next/image";
 import BN from "bn.js";
 import useMintRandom from "../../hooks/collections/useMintRandom";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 interface WarningModalProps {
     isWarningOpened?: boolean;

@@ -1,8 +1,9 @@
-import { LaunchData, UserData, JoinData, bignum_to_num } from "./Solana/state";
+import { bignum_to_num } from "./Solana/state";
 import { Box, Button, Center, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import useResponsive from "../hooks/useResponsive";
 import { CookState } from "../hooks/useDetermineCookState";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
 
 export function WinLoss({ join_data }: { join_data: JoinData }) {
     const { sm, md, lg } = useResponsive();

@@ -1,15 +1,3 @@
-import {
-    LaunchData,
-    LaunchInstruction,
-    get_current_blockhash,
-    myU64,
-    send_transaction,
-    serialise_basic_instruction,
-    request_current_balance,
-    uInt32ToLEBytes,
-    bignum_to_num,
-    getRecentPrioritizationFees,
-} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
@@ -44,10 +32,8 @@ import {
 } from "./useCreateCP";
 import { MEMO_PROGRAM_ID } from "@raydium-io/raydium-sdk-v2";
 import { AMMData } from "../../components/Solana/jupiter_state";
-import useAppRoot from "../../context/useAppRoot";
-
-const ZERO = new BN(0);
-type BN = typeof ZERO;
+import { getMintData } from "@/components/amm/launch";
+import useSendTransaction from "../useSendTransaction";
 
 function serialise_raydium_remove_liquidity_instruction(amount: number): Buffer {
     let discriminator: number[] = [183, 18, 70, 156, 148, 109, 161, 34];
@@ -81,53 +67,15 @@ class RaydiumRemoveLiquidity_Instruction {
 
 const useRemoveLiquidityRaydium = (amm: AMMData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Transaction Successfull!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
+    const { sendTransaction, isLoading } = useSendTransaction();
 
     const RemoveLiquidityRaydium = async (lp_amount: number) => {
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let base_mint_data = mintData.get(base_mint.toString());
-        let quote_mint_data = mintData.get(quote_mint.toString());
+        let base_mint_data = await getMintData(base_mint.toString());
+        let quote_mint_data = await getMintData(quote_mint.toString());
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]
@@ -190,33 +138,19 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
             data: raydium_remove_liquidity_data,
         });
 
-        let list_txArgs = await get_current_blockhash("");
+        let instructions: TransactionInstruction[] = [];
 
-        let list_transaction = new Transaction(list_txArgs);
-        list_transaction.feePayer = wallet.publicKey;
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
+        instructions.push(list_instruction);
 
-        list_transaction.add(list_instruction);
-
-        try {
-            let signed_transaction = await wallet.signTransaction(list_transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            if (signature === undefined) {
-                console.log(signature);
-                toast.error("Transaction failed, please try again");
-                return;
-            }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-
-            console.log("swap sig: ", signature);
-        } catch (error) {
-            console.log(error);
-            return;
-        }
+        await sendTransaction({
+                    instructions,
+                    onSuccess: () => {
+                        // Handle success
+                    },
+                    onError: (error) => {
+                        // Handle error
+                    },
+                });
     };
 
     return { RemoveLiquidityRaydium, isLoading };

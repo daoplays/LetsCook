@@ -1,11 +1,14 @@
 import { ComputeBudgetProgram, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
-import { UserData, getRecentPrioritizationFees, get_current_blockhash, request_raw_account_data, serialise_HypeVote_instruction } from "../../components/Solana/state";
-
+import {
+    UserData,
+    getRecentPrioritizationFees,
+    get_current_blockhash,
+    request_raw_account_data,
+    serialise_HypeVote_instruction,
+} from "../../components/Solana/state";
 
 export default async function handler(req, res) {
-   
-
     // Handle OPTIONS method
     if (req.method === "OPTIONS") {
         res.setHeader("Access-Control-Allow-Origin", "*");
@@ -27,15 +30,17 @@ export default async function handler(req, res) {
 
             let wallet_address = new PublicKey(wallet);
             let user_data_account = PublicKey.findProgramAddressSync([wallet_address.toBytes(), Buffer.from("User")], PROGRAM)[0];
-           
+
             let user_data_raw = await request_raw_account_data("", user_data_account);
             if (!user_data_raw) {
                 const data = {
                     result: 0,
-                    message: "User data does not exist"
-                }
+                    current: 0,
+                    target: 200,
+                    message: "User data does not exist",
+                };
                 res.status(200).json(data);
-                return 
+                return;
             }
 
             const [user_data] = UserData.struct.deserialize(user_data_raw);
@@ -43,33 +48,38 @@ export default async function handler(req, res) {
             if (!user_data) {
                 const data = {
                     result: 0,
-                    message: "Invalid user data"
-                }
+                    current: 0,
+                    target: 200,
+                    message: "Invalid user data",
+                };
                 res.status(200).json(data);
-                return 
+                return;
             }
 
             let points = user_data.total_points;
 
-            if (points < 100) {
+            if (points < 200) {
                 const data = {
                     result: 0,
-                    message: "User has not achieved quest"
-                }
+                    current: points,
+                    target: 200,
+                    message: "User has not achieved quest",
+                };
                 res.status(200).json(data);
-                return 
+                return;
             }
-
 
             const data = {
                 result: 1,
-                message: "User has achieved quest"
-            }
+                current: points,
+                target: 200,
+                message: "User has achieved quest",
+            };
             res.status(200).json(data);
-            return 
-            
+            return;
         } catch (error) {
-            res.status(400).json({ result: 0, error: "Invalid wallet" });
+            res.status(400).json({ result: 0, current: 0,
+                target: 200, error: "Invalid wallet" });
         }
     } else {
         // Handle any other HTTP method

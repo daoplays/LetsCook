@@ -1,6 +1,7 @@
 import { HStack, Divider, Text } from "@chakra-ui/react";
 import useResponsive from "../../hooks/useResponsive";
-import { LaunchData, bignum_to_num } from "../Solana/state";
+import {  bignum_to_num } from "../Solana/state";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 interface TimespanProps {
     launchData?: LaunchData;

@@ -3,12 +3,10 @@
 import { useWallet, WalletContextState } from "@solana/wallet-adapter-react";
 import { LimitOrderProvider, OrderHistoryItem, TradeHistoryItem, ownerFilter } from "@jup-ag/limit-order-sdk";
 import {
-    LaunchData,
     UserData,
     bignum_to_num,
     LaunchDataUserInput,
     defaultUserInput,
-    JoinData,
     RunGPA,
     serialise_basic_instruction,
     LaunchInstruction,
@@ -20,12 +18,11 @@ import {
     Token22MintAccount,
     uInt32ToLEBytes,
     MintData,
-    ListingData,
 } from "../components/Solana/state";
 import { unpackMint, Mint, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { AMMData, getAMMKey, getAMMPlugins, MMLaunchData, MMUserData, OpenOrder } from "../components/Solana/jupiter_state";
 import { Config, PROGRAM, LaunchFlags, SYSTEM_KEY, LaunchKeys, CollectionKeys, SOL_ACCOUNT_SEED } from "../components/Solana/constants";
-import { CollectionDataUserInput, defaultCollectionInput, CollectionData } from "../components/collection/collectionState";
+import { CollectionDataUserInput, defaultCollectionInput } from "../components/collection/collectionState";
 import { PublicKey, Connection, Keypair, TransactionInstruction, Transaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { useCallback, useEffect, useState, useRef, PropsWithChildren, SetStateAction, Dispatch } from "react";
 import { AppRootContextProvider } from "../context/useAppRoot";
@@ -38,6 +35,9 @@ import { getDatabase, ref, get, Database } from "firebase/database";
 import { firebaseConfig } from "../components/Solana/constants";
 import { initializeApp } from "firebase/app";
 import { deserializeMintData, getTradeMintData } from "../utils/getTokenMintData";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
+import { getLaunchPlugins, JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = [];
@@ -200,26 +200,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
                         newData.set(launch.page_name, launch);
                         return newData;
                     });
-
                     return;
                 } catch (error) {
                     //console.log("bad launch data", data);
                 }
-            }
-
-            if (event_data[0] === 2) {
-                const [user] = UserData.struct.deserialize(event_data);
-                setUserData((currentData) => {
-                    const newData = new Map(currentData);
-                    newData.set(user.user_key.toString(), user);
-                    return newData;
-                });
-
-                if (wallet.publicKey !== null && user.user_key.equals(wallet.publicKey)) {
-                    setCurrentUserData(user);
-                }
-
-                return;
             }
 
             if (event_data[0] === 5) {
@@ -632,11 +616,10 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         launch_data.forEach((launch, key) => {
             // check if we have a whitelist token
+            let plugins = getLaunchPlugins(launch);
 
-            for (let p = 0; p < launch.plugins.length; p++) {
-                if (launch.plugins[p]["__kind"] === "Whitelist") {
-                    if (!trade_mints.includes(launch.plugins[p]["key"].toString())) trade_mints.push(launch.plugins[p]["key"]);
-                }
+            if (plugins.whitelistKey) {
+                if (!trade_mints.includes(plugins.whitelistKey.toString())) trade_mints.push(plugins.whitelistKey.toString());
             }
         });
 

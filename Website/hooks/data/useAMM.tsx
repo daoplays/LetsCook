@@ -214,7 +214,7 @@ const useAMM = (props: useAMMProps | null) => {
         }
 
         // get the market data
-        setLPAmount(amm.lp_amount);
+        setLPAmount(bignum_to_num(amm.lp_amount));
 
         let index_buffer = uInt32ToLEBytes(amm.num_data_accounts);
         let price_data_account = PublicKey.findProgramAddressSync(

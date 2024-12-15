@@ -6,7 +6,7 @@ import Links from "../../components/Buttons/links";
 import { CollectionKeys, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import Loader from "../../components/loader";
 import { stockSoldPercentage } from "../../utils/stockSoldPercentage";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import useClaimNFT from "../../hooks/collections/useClaimNFT";
 import {} from "@solana/spl-token";
@@ -17,18 +17,19 @@ import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/So
 import UseWalletConnection from "../../hooks/useWallet";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
-import useCollection from "../../hooks/data/useCollection";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
 import useAudioPlayer from "../../hooks/curated/useAudioControll";
+import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
 
 const Badgers = () => {
     const { audioRef, isMusicPlaying, isMuted, showControls, togglePlayPause, toggleControls, toggleControlsOff, handleVolumeChange } =
         useAudioPlayer();
     const wallet = useWallet();
+    const { connection } = useConnection();
     const collection_name = Config.NETWORK === "mainnet" ? "badger" : "testingtest";
     const { handleConnectWallet } = UseWalletConnection();
     const { isOpen: isAssetModalOpen, onOpen: openAssetModal, onClose: closeAssetModal } = useDisclosure();
-    const { collection, tokenMint, error: collectionError } = useCollection({ pageName: collection_name as string | null });
+    const { collection, tokenMint, error: collectionError } = useCollection({ connection, pageName: collection_name as string | null });
     const { MintNFT, isLoading: isMintLoading } = useMintNFT(collection);
     const { ClaimNFT, isLoading: isClaimLoading } = useClaimNFT(collection);
     const collectionAddress = useMemo(() => {

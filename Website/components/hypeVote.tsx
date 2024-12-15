@@ -3,7 +3,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import { Text, HStack, Tooltip } from "@chakra-ui/react";
 import { PROGRAM, SYSTEM_KEY, Config, LaunchKeys, TIMEOUT } from "./Solana/constants";
-import { LaunchData, get_current_blockhash, send_transaction, serialise_HypeVote_instruction, UserData, ListingData } from "./Solana/state";
+import {  get_current_blockhash, send_transaction, serialise_HypeVote_instruction } from "./Solana/state";
 import bs58 from "bs58";
 import Image from "next/image";
 import UseWalletConnection from "../hooks/useWallet";
@@ -11,6 +11,8 @@ import useAppRoot from "../context/useAppRoot";
 import { toast } from "react-toastify";
 import useResponsive from "../hooks/useResponsive";
 import BN from "bn.js";
+import { bignum } from "@metaplex-foundation/beet";
+import useCurrentUserData from "@/hooks/data/useCurrentUserData";
 
 export function HypeVote({
     launch_type,
@@ -19,20 +21,20 @@ export function HypeVote({
     positive_votes,
     negative_votes,
     isTradePage,
-    listing,
+    tokenMint,
 }: {
     launch_type: number;
-    launch_id: BN;
+    launch_id: number;
     page_name: string;
     positive_votes: number;
     negative_votes: number;
     isTradePage?: boolean;
-    listing: ListingData | null;
+    tokenMint: string | null;
 }) {
     const wallet = useWallet();
     const { connection } = useConnection();
     const { handleConnectWallet } = UseWalletConnection();
-    const { currentUserData, listingData } = useAppRoot();
+    const { userData } = useCurrentUserData({user : wallet?.publicKey});
     const { lg } = useResponsive();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -78,8 +80,9 @@ export function HypeVote({
 
             let launch_data_account: PublicKey;
 
-            if (launch_type === 0) {
-                launch_data_account = PublicKey.findProgramAddressSync([listing.mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+            if (tokenMint && launch_type === 0) {
+                let tokenMintKey = new PublicKey(tokenMint);
+                launch_data_account = PublicKey.findProgramAddressSync([tokenMintKey.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
             } else {
                 launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(page_name), Buffer.from("Collection")], PROGRAM)[0];
             }
@@ -124,15 +127,15 @@ export function HypeVote({
                 return;
             }
         },
-        [wallet, listing, connection, launch_type, page_name, check_signature_update, transaction_failed],
+        [wallet, tokenMint, connection, launch_type, page_name, check_signature_update, transaction_failed],
     );
 
     let has_voted: boolean = false;
     //console.log("check user vote", currentUserData === null)
-    if (currentUserData !== null) {
-        for (let i = 0; i < currentUserData.votes.length; i++) {
+    if (userData !== null) {
+        for (let i = 0; i < userData.votes.length; i++) {
             //console.log("check hype", i, currentUserData.votes[i], launch_data.game_id);
-            if (currentUserData.votes[i].toString() == launch_id.toString()) {
+            if (userData.votes[i].toString() == launch_id.toString()) {
                 has_voted = true;
                 break;
             }

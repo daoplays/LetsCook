@@ -6,14 +6,15 @@ import useResponsive from "../hooks/useResponsive";
 import TokenDashboardTable from "../components/tables/tokenDashboardTable";
 import "react-datepicker/dist/react-datepicker.css";
 import useAppRoot from "../context/useAppRoot";
-import { LaunchData, LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";
+import {LaunchDataUserInput, defaultUserInput, create_LaunchDataInput } from "../components/Solana/state";
 import EmptyLaunch from "../components/emptyLaunch";
 import Loader from "../components/loader";
 import { CollectionKeys, LaunchKeys } from "../components/Solana/constants";
 import Head from "next/head";
 import CollectionDashboardTable from "../components/tables/collectionDashboardTable";
-import { CollectionData } from "../components/collection/collectionState";
 import { Button } from "@/components/ui/button";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
 const DashboardPage = () => {
     const router = useRouter();

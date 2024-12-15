@@ -1,11 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
+import React from 'react';
 import {
-    Box,
     Flex,
     Text,
-    TableContainer,
-    HStack,
-    Input,
     Button,
     useDisclosure,
     Modal,
@@ -13,171 +10,197 @@ import {
     ModalContent,
     ModalOverlay,
     VStack,
+    Input,
+    HStack,
 } from "@chakra-ui/react";
 import { UserData } from "../components/Solana/state";
 import useAppRoot from "../context/useAppRoot";
 import Head from "next/head";
 import useResponsive from "../hooks/useResponsive";
-import { TfiReload } from "react-icons/tfi";
 import { FaSort } from "react-icons/fa";
 import styles from "../styles/Launch.module.css";
 import useEditUser from "../hooks/useEditUserData";
 import { MdEdit } from "react-icons/md";
 import { useWallet } from "@solana/wallet-adapter-react";
-import WoodenButton from "../components/Buttons/woodenButton";
 import UseWalletConnection from "../hooks/useWallet";
 import Image from "next/image";
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import useCurrentUserData from "@/hooks/data/useCurrentUserData";
+
+type SortableField = 'user_name' | 'total_points' | 'rank';
+
 interface Header {
     text: string;
-    field: string | null;
+    field: SortableField | null;
 }
+
+// Memoized UserCard component
+const UserCard = React.memo(({ rank, user, isEven, isCurrentUser }: { 
+    rank: number; 
+    user: UserData; 
+    isEven: boolean;
+    isCurrentUser: boolean;
+}) => {
+    return (
+        <TableRow style={{ background: isEven ? "" : "rgba(255, 255, 255, 0.1)" }}>
+            <TableCell>{rank}</TableCell>
+            <TableCell>{user.user_name || user.user_key.toString()}</TableCell>
+            <TableCell style={{ minWidth: "160px" }}>
+                <div className="flex items-center justify-center gap-3 px-4">
+                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                        <Image 
+                            alt="Sauce icon" 
+                            src="/images/sauce.png" 
+                            width={48} 
+                            height={48} 
+                            className="object-cover"
+                        />
+                    </div>
+                    <span className="font-semibold">{user.total_points.toString()}</span>
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+});
+
+UserCard.displayName = 'UserCard';
+
+// Memoized LeaderboardTable component
+const LeaderboardTable = React.memo(({ userVec, currentUserKey }: { 
+    userVec: UserData[];
+    currentUserKey: string | null;
+}) => {
+    const { sm } = useResponsive();
+    const [sortedField, setSortedField] = useState<SortableField>('total_points');
+    const [reverseSort, setReverseSort] = useState<boolean>(true);
+
+    const tableHeaders: Header[] = useMemo(() => [
+        { text: "RANK", field: "rank" },
+        { text: "USER", field: "user_name" },
+        { text: "SAUCE", field: "total_points" },
+    ], []);
+
+    const handleHeaderClick = useCallback((field: SortableField | null) => {
+        if (!field) return;
+        
+        setSortedField(prev => {
+            if (field === prev) {
+                setReverseSort(r => !r);
+                return prev;
+            }
+            setReverseSort(false);
+            return field;
+        });
+    }, []);
+
+    const sortedUsers = useMemo(() => {
+        const sorted = [...userVec].sort((a, b) => {
+            if (sortedField === "user_name") {
+                const a_name = a.user_name || a.user_key.toString();
+                const b_name = b.user_name || b.user_key.toString();
+                return reverseSort ? b_name.localeCompare(a_name) : a_name.localeCompare(b_name);
+            }
+            if (sortedField === "total_points") {
+                return reverseSort ? b.total_points - a.total_points : a.total_points - b.total_points;
+            }
+            return 0;
+        });
+
+        // Create array of rank entries and convert to Map
+        const rankEntries: [string, number][] = [...userVec]
+            .sort((a, b) => b.total_points - a.total_points)
+            .map((user, index): [string, number] => [user.user_key.toString(), index + 1]);
+        const ranks = new Map<string, number>(rankEntries);
+
+        if (currentUserKey) {
+            const currentUserIndex = sorted.findIndex(
+                user => user.user_key.toString() === currentUserKey
+            );
+            if (currentUserIndex !== -1) {
+                const [currentUser] = sorted.splice(currentUserIndex, 1);
+                sorted.unshift(currentUser);
+            }
+        }
+
+        return { sorted, ranks };
+    }, [userVec, sortedField, reverseSort, currentUserKey]);
+
+    if (userVec.length === 0) {
+        return (
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        {tableHeaders.map(i => (
+                            <TableHead className="min-w-[140px] border-b" key={i.text}>
+                                {i.field ? (
+                                    <div className="flex cursor-pointer justify-center font-semibold">
+                                        {i.text}
+                                        {i.text === "RANK" ? null : <FaSort className="ml-2 h-4 w-4" />}
+                                    </div>
+                                ) : i.text}
+                            </TableHead>
+                        ))}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    <TableRow className="border-b h-[60px]">
+                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+                            No Leaderboard yet
+                        </TableCell>
+                    </TableRow>
+                </TableBody>
+            </Table>
+        );
+    }
+
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    {tableHeaders.map(i => (
+                        <TableHead className="min-w-[140px] border-b" key={i.text}>
+                            {i.field ? (
+                                <div
+                                    onClick={() => handleHeaderClick(i.field)}
+                                    className="flex cursor-pointer justify-center font-semibold"
+                                >
+                                    {i.text}
+                                    {i.text === "RANK" ? null : <FaSort className="ml-2 h-4 w-4" />}
+                                </div>
+                            ) : i.text}
+                        </TableHead>
+                    ))}
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {sortedUsers.sorted.map((user, index) => (
+                    <UserCard
+                        key={user.user_key.toString()}
+                        rank={sortedUsers.ranks.get(user.user_key.toString()) || index + 1}
+                        user={user}
+                        isEven={index % 2 === 0}
+                        isCurrentUser={user.user_key.toString() === currentUserKey}
+                    />
+                ))}
+            </TableBody>
+        </Table>
+    );
+});
+
+LeaderboardTable.displayName = 'LeaderboardTable';
 
 const LeaderboardPage = () => {
     const wallet = useWallet();
     const { handleConnectWallet } = UseWalletConnection();
-    const { userList, currentUserData } = useAppRoot();
+    const { userList } = useAppRoot();
+    const { userData } = useCurrentUserData({ user: wallet.publicKey });
     const { xs, sm, lg } = useResponsive();
-
     const { isOpen, onOpen, onClose } = useDisclosure();
-
     const [name, setName] = useState<string>("");
     const { EditUser } = useEditUser();
 
-    const handleNameChange = (e) => {
-        setName(e.target.value);
-    };
-
-    let userVec: UserData[] = [];
-    if (userList !== null) {
-        userList.forEach((user) => {
-            userVec.push(user);
-        });
-    }
-
-    const LeaderboardTable = () => {
-        const { sm } = useResponsive();
-
-        const [sortedField, setSortedField] = useState<string | null>("sauce");
-        const [reverseSort, setReverseSort] = useState<boolean>(true);
-
-        const tableHeaders: Header[] = [
-            { text: "RANK", field: "rank" },
-            { text: "USER", field: "user" },
-            { text: "SAUCE", field: "sauce" },
-        ];
-
-        const handleHeaderClick = (field: string | null) => {
-            console.log("field", field);
-            if (field === sortedField) {
-                setReverseSort(!reverseSort);
-            } else {
-                setSortedField(field);
-                setReverseSort(false);
-            }
-        };
-
-        const sortedUsers = userVec.sort((a, b) => {
-            if (sortedField === "user") {
-                let a_name = a.user_name !== "" ? a.user_name : a.user_key.toString();
-                let b_name = b.user_name !== "" ? b.user_name : b.user_key.toString();
-                return reverseSort ? b_name.localeCompare(a_name) : a_name.localeCompare(b_name);
-            } else if (sortedField === "sauce") {
-                return reverseSort ? b.total_points - a.total_points : a.total_points - b.total_points;
-            }
-
-            return 0;
-        });
-
-        //console.log("sortedUsers", sortedUsers);
-
-        const rank_sorted = [...userVec].sort((a, b) => b.total_points - a.total_points);
-
-        let currentUserIndex = -1;
-        if (sortedUsers && currentUserData)
-            currentUserIndex = sortedUsers.findIndex((user) => user.user_key.equals(currentUserData?.user_key));
-
-        if (currentUserIndex !== -1) {
-            const currentUser = sortedUsers.splice(currentUserIndex, 1)[0];
-            sortedUsers.unshift(currentUser);
-        }
-
-        return (
-            <>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {tableHeaders.map((i) => (
-                                <TableHead className="min-w-[140px] border-b" key={i.text}>
-                                    {i.field ? (
-                                        <div
-                                            onClick={() => handleHeaderClick(i.field)}
-                                            className="flex cursor-pointer justify-center font-semibold"
-                                        >
-                                            {i.text}
-                                            {i.text === "RANK" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
-                                        </div>
-                                    ) : (
-                                        i.text
-                                    )}
-                                </TableHead>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedUsers.length > 0 ? (
-                            sortedUsers.map((user, i) => {
-                                return <UserCard key={user.user_key.toString()} rank_sorted={rank_sorted} user={user} index={i} />;
-                            })
-                        ) : (
-                            <TableRow
-                                style={{
-                                    cursor: "pointer",
-                                    height: "60px",
-                                    transition: "background-color 0.3s",
-                                }}
-                                className="border-b"
-                                onMouseOver={(e) => {
-                                    e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                                }}
-                                onMouseOut={(e) => {
-                                    e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-                                }}
-                            >
-                                <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
-                                    No Leaderboard yet
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </>
-        );
-    };
-
-    const UserCard = ({ rank_sorted, user, index }: { rank_sorted: UserData[]; user: UserData; index: number }) => {
-        let isUser = false;
-        if (user && currentUserData) isUser = user.user_key.equals(currentUserData?.user_key);
-
-        const rank = rank_sorted.findIndex((u) => u.user_key.equals(user.user_key)) + 1;
-
-        return (
-            <TableRow style={{ background: index % 2 == 0 ? "" : "rgba(255, 255, 255, 0.1)" }}>
-                <TableCell>{rank}</TableCell>
-                <TableCell>{user.user_name !== "" ? user.user_name : user.user_key.toString()}</TableCell>
-
-                <TableCell style={{ minWidth: "160px" }}>
-                    <div className="flex items-center justify-center gap-3 px-4">
-                        <div className="h-10 w-10 overflow-hidden rounded-lg">
-                            <Image alt="Sauce icon" src={"/images/sauce.png"} width={48} height={48} className="object-cover" />
-                        </div>
-                        <span className="font-semibold">{user.total_points.toString()}</span>
-                    </div>
-                </TableCell>
-            </TableRow>
-        );
-    };
+    const userVec = useMemo(() => (userList ? Array.from(userList, ([_, value]) => value) : []), [userList]);
+    const currentUserKey = userData?.user_key.toString() || null;
 
     if (!wallet.connected) {
         return (
@@ -185,8 +208,8 @@ const LeaderboardPage = () => {
                 <Text
                     fontSize={lg ? "large" : "x-large"}
                     m={0}
-                    color={"white"}
-                    onClick={() => handleConnectWallet()}
+                    color="white"
+                    onClick={handleConnectWallet}
                     style={{ cursor: "pointer" }}
                 >
                     Sign in to view Leaderboard
@@ -218,19 +241,22 @@ const LeaderboardPage = () => {
                             margin: "auto",
                             marginTop: sm ? 16 : 0,
                         }}
-                        align={"center"}
                     >
                         Leaderboard
                     </Text>
 
                     {wallet.connected && (
-                        <Button className="w-full md:w-fit" rightIcon={<MdEdit size={20} />} onClick={onOpen}>
+                        <Button 
+                            className="w-full md:w-fit" 
+                            rightIcon={<MdEdit size={20} />} 
+                            onClick={onOpen}
+                        >
                             Username
                         </Button>
                     )}
                 </Flex>
 
-                <LeaderboardTable />
+                <LeaderboardTable userVec={userVec} currentUserKey={currentUserKey} />
             </main>
 
             <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -244,25 +270,25 @@ const LeaderboardPage = () => {
                     px={xs ? 8 : 10}
                 >
                     <ModalBody>
-                        <VStack align="start" justify={"center"} h="100%" spacing={0} mt={xs ? -8 : 0}>
+                        <VStack align="start" justify="center" h="100%" spacing={0} mt={xs ? -8 : 0}>
                             <Text className="font-face-kg" color="white" fontSize="x-large">
                                 Edit Username
                             </Text>
                             <Input
-                                placeholder={currentUserData?.user_name ? currentUserData?.user_name : "Enter New Username"}
+                                placeholder={userData?.user_name || "Enter New Username"}
                                 size={lg ? "md" : "lg"}
                                 maxLength={25}
                                 required
                                 type="text"
                                 value={name}
-                                onChange={handleNameChange}
+                                onChange={(e) => setName(e.target.value)}
                                 color="white"
                             />
                             <HStack mt={xs ? 6 : 10} justify="end" align="end" w="100%">
                                 <Text
                                     mr={3}
                                     align="end"
-                                    fontSize={"medium"}
+                                    fontSize="medium"
                                     style={{
                                         fontFamily: "KGSummerSunshineBlackout",
                                         color: "#fc3838",
@@ -274,9 +300,7 @@ const LeaderboardPage = () => {
                                 </Text>
                                 <button
                                     type="button"
-                                    onClick={async () => {
-                                        await EditUser(name);
-                                    }}
+                                    onClick={() => EditUser(name)}
                                     className={`${styles.nextBtn} font-face-kg`}
                                 >
                                     Save

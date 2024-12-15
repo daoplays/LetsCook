@@ -2,12 +2,13 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { AccountSubscriptionConfig, PublicKey } from "@solana/web3.js";
 import { request_raw_account_data } from "../../components/Solana/state";
-import { AssignmentData, CollectionData, request_assignment_data } from "../../components/collection/collectionState";
+import { AssignmentData, request_assignment_data } from "../../components/collection/collectionState";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import { AssetV1, deserializeAssetV1 } from "@metaplex-foundation/mpl-core";
 import type { RpcAccount, PublicKey as umiKey } from "@metaplex-foundation/umi";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 import { publicKey } from "@metaplex-foundation/umi";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface UseAssignmentDataProps {
     collection: CollectionData | null;

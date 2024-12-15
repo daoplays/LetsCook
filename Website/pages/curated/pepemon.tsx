@@ -3,7 +3,7 @@ import useResponsive from "../../hooks/useResponsive";
 import Head from "next/head";
 import Image from "next/image";
 import { Flex, VStack, Text, useDisclosure, Button, HStack } from "@chakra-ui/react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { CollectionKeys, Config, PROGRAM, SYSTEM_KEY } from "../../components/Solana/constants";
 import { ReceivedAssetModal, ReceivedAssetModalStyle } from "../../components/Solana/modals";
 import UseWalletConnection from "../../hooks/useWallet";
@@ -12,9 +12,9 @@ import Loader from "../../components/loader";
 import ReleaseModal from "./releaseModal";
 import useMintNFT from "../../hooks/collections/useMintNFT";
 import useTokenBalance from "../../hooks/data/useTokenBalance";
-import useCollection from "../../hooks/data/useCollection";
 import useNFTBalance from "../../hooks/data/useNFTBalance";
 import useAssignmentData from "../../hooks/data/useAssignmentData";
+import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
 
 const soundCollection = {
     success: "/Success.mp3",
@@ -27,6 +27,7 @@ const soundCollection = {
 const Pepemon = () => {
     const { xs, sm, md, lg } = useResponsive();
     const wallet = useWallet();
+    const { connection } = useConnection();
     const collection_name = Config.PROD ? "pepemon_gen1" : "pepemon";
     const { handleConnectWallet } = UseWalletConnection();
 
@@ -35,7 +36,7 @@ const Pepemon = () => {
         collectionPlugins,
         tokenMint,
         error: collectionError,
-    } = useCollection({ pageName: collection_name as string | null });
+    } = useCollection({ connection, pageName: collection_name as string });
     const collectionAddress = useMemo(() => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);

@@ -2,7 +2,6 @@ import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef } from 
 
 import {
     LaunchDataUserInput,
-    ListingData,
     getRecentPrioritizationFees,
     get_current_blockhash,
     request_launch_data,
@@ -22,11 +21,12 @@ import { useRouter } from "next/router";
 import useAppRoot from "../../context/useAppRoot";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { getAMMBaseAccount, getAMMQuoteAccount, getLPMintAccount, getPoolStateAccount } from "../raydium/useCreateCP";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 const useEditLaunch = () => {
     const wallet = useWallet();
     const router = useRouter();
-    const { newLaunchData, checkProgramData } = useAppRoot();
+    const { newLaunchData } = useAppRoot();
 
     const signature_ws_id = useRef<number | null>(null);
 
@@ -47,8 +47,6 @@ const useEditLaunch = () => {
         newLaunchData.current.edit_mode = false;
         newLaunchData.current.token_keypair = null;
 
-        console.log(newLaunchData.current);
-        await checkProgramData();
         router.push("/dashboard");
     }, []);
 

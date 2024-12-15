@@ -1,6 +1,6 @@
 import { VStack, Text, Box, HStack, Flex, Show, Tooltip, Badge, Progress } from "@chakra-ui/react";
 import { MdOutlineContentCopy } from "react-icons/md";
-import { LaunchData, ListingData } from "./Solana/state";
+import { bignum_to_num } from "./Solana/state";
 import Link from "next/link";
 import useResponsive from "../hooks/useResponsive";
 import Image from "next/image";
@@ -15,6 +15,8 @@ import { useRouter } from "next/router";
 import { getSolscanLink } from "../utils/getSolscanLink";
 import ShowExtensions from "./Solana/extensions";
 import { HypeVote } from "./hypeVote";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 interface FeaturedBannerProps {
     featuredLaunch: LaunchData;
@@ -39,12 +41,12 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
             <HStack position="absolute" top={5} right={5} style={{ cursor: "pointer" }} hidden={isHomePage}>
                 <HypeVote
                     launch_type={0}
-                    launch_id={featuredListing.id}
+                    launch_id={bignum_to_num(featuredListing.id)}
                     page_name={""}
                     positive_votes={featuredListing.positive_votes}
                     negative_votes={featuredListing.negative_votes}
                     isTradePage={false}
-                    listing={featuredListing}
+                    tokenMint={featuredListing.mint.toString()}
                 />
             </HStack>
 
@@ -204,14 +206,16 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                         // <Link href={`/launch/${featuredLaunch?.page_name}`} >
                         <>
                             {featuredLaunch !== null &&
-                                new Date().getTime() > featuredLaunch.launch_date &&
-                                new Date().getTime() < featuredLaunch.end_date && <WoodenButton label="Mint Live" size={35} />}
+                                new Date().getTime() > bignum_to_num(featuredLaunch.launch_date) &&
+                                new Date().getTime() < bignum_to_num(featuredLaunch.end_date) && (
+                                    <WoodenButton label="Mint Live" size={35} />
+                                )}
 
-                            {featuredLaunch !== null && new Date().getTime() < featuredLaunch.launch_date && (
+                            {featuredLaunch !== null && new Date().getTime() < bignum_to_num(featuredLaunch.launch_date) && (
                                 <WoodenButton label="Mint Pending" size={35} width={340} />
                             )}
 
-                            {featuredLaunch !== null && new Date().getTime() > featuredLaunch.end_date && (
+                            {featuredLaunch !== null && new Date().getTime() > bignum_to_num(featuredLaunch.end_date) && (
                                 <WoodenButton label="Mint Closed" size={35} />
                             )}
                         </>
@@ -230,10 +234,11 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                     },
                                 }}
                                 size="sm"
-                                max={(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
+                                max={(featuredLaunch.num_mints * bignum_to_num(featuredLaunch.ticket_price)) / LAMPORTS_PER_SOL}
                                 min={0}
                                 value={
-                                    (Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) * featuredLaunch.ticket_price) /
+                                    (Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) *
+                                        bignum_to_num(featuredLaunch.ticket_price)) /
                                     LAMPORTS_PER_SOL
                                 }
                                 boxShadow="0px 5px 15px 0px rgba(0,0,0,0.6) inset"
@@ -244,9 +249,10 @@ const FeaturedBanner = ({ featuredLaunch, featuredListing, isHomePage }: Feature
                                 </Text>
                                 <HStack justify="center">
                                     <Text m="0" color="black" fontSize={sm ? "medium" : "large"} fontFamily="ReemKufiRegular">
-                                        {(Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) * featuredLaunch.ticket_price) /
+                                        {(Math.min(featuredLaunch.num_mints, featuredLaunch.tickets_sold) *
+                                            bignum_to_num(featuredLaunch.ticket_price)) /
                                             LAMPORTS_PER_SOL}{" "}
-                                        of {(featuredLaunch.num_mints * featuredLaunch.ticket_price) / LAMPORTS_PER_SOL}
+                                        of {(featuredLaunch.num_mints * bignum_to_num(featuredLaunch.ticket_price)) / LAMPORTS_PER_SOL}
                                     </Text>
                                     <Image
                                         src={Config.token_image}

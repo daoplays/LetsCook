@@ -1,7 +1,7 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { MintData, ListingData } from "../../components/Solana/state";
+import { MintData } from "../../components/Solana/state";
 import { MMLaunchData, reward_schedule, AMMData } from "../../components/Solana/jupiter_state";
 import { bignum_to_num } from "../../components/Solana/state";
 import { Config } from "../../components/Solana/constants";
@@ -54,6 +54,7 @@ import useTokenBalance from "@/hooks/data/useTokenBalance";
 import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
 import useGetUserBalance from "@/hooks/data/useGetUserBalance";
+import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 const TradePage = () => {
     const wallet = useWallet();
@@ -195,7 +196,7 @@ const TradePage = () => {
                                     base_mint={baseMint}
                                     volume={lastDayVolume}
                                     mm_data={currentRewards}
-                                    price={(marketData && marketData.length > 0) ? marketData[marketData.length - 1].close : 0}
+                                    price={marketData && marketData.length > 0 ? marketData[marketData.length - 1].close : 0}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
                                 />
@@ -700,12 +701,12 @@ const InfoContent = ({
                     <span className="text-md text- text-white text-opacity-50">Hype:</span>
                     <HypeVote
                         launch_type={0}
-                        launch_id={listing.id}
+                        launch_id={bignum_to_num(listing.id)}
                         page_name={""}
                         positive_votes={listing.positive_votes}
                         negative_votes={listing.negative_votes}
                         isTradePage={true}
-                        listing={listing}
+                        tokenMint={listing.mint.toString()}
                     />
                 </div>
 
@@ -730,16 +731,14 @@ const InfoContent = ({
 
 const ChartComponent = (props) => {
     const { data, additionalPixels } = props;
-    
+
     const chartContainerRef = useRef(null);
     const chartRef = useRef(null);
     const seriesRef = useRef(null);
 
     useEffect(() => {
+        if (!data) return;
 
-        if (!data)
-            return;
-        
         const handleResize = () => {
             if (chartRef.current) {
                 chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth });

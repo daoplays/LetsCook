@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { LaunchData, UserData, bignum_to_num } from "../Solana/state";
+import {  bignum_to_num } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { Box, Button, Center, Flex, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
+import { Box, Button, Center, filter, Flex, HStack, Link, TableContainer, Text } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
 import { HypeVote } from "../hypeVote";
 import useResponsive from "../../hooks/useResponsive";
@@ -15,6 +15,7 @@ import { ButtonString } from "../user_status";
 import { Config, LaunchKeys } from "../Solana/constants";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { LaunchData } from "@letscook/sdk/dist/state/launch";
 export interface LaunchTableFilters {
     start_date: Date | null;
     end_date: Date | null;
@@ -57,10 +58,16 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
     function filterTable() {
         let filtered = [];
         launch_list.forEach((item) => {
-            if (
-                (filters.start_date === null || (filters.start_date !== null && item.launch_date < filters.end_date)) &&
-                (filters.end_date === null || (filters.end_date !== null && item.end_date >= filters.start_date))
-            ) {
+            if (filters.start_date !== null && filters.end_date !== null) {
+                if (
+                    (filters.start_date === null ||
+                        (filters.start_date !== null && bignum_to_num(item.launch_date) < filters.end_date.getTime())) &&
+                    (filters.end_date === null ||
+                        (filters.end_date !== null && bignum_to_num(item.end_date) >= filters.start_date.getTime()))
+                ) {
+                    filtered.push(item);
+                }
+            } else {
                 filtered.push(item);
             }
         });
@@ -122,10 +129,10 @@ const GameTable = ({ launch_list, filters }: { launch_list: Map<string, LaunchDa
                             {i.field ? (
                                 <div
                                     onClick={i.field !== null ? () => handleHeaderClick(i.field) : () => {}}
-                                    className="flex cursor-pointer justify-center font-semibold"
+                                    className="flex justify-center font-semibold cursor-pointer"
                                 >
                                     {i.text}
-                                    {i.text === "Logo" || i.text === "Socials" ? <></> : <FaSort className="ml-2 h-4 w-4" />}
+                                    {i.text === "Logo" || i.text === "Socials" ? <></> : <FaSort className="w-4 h-4 ml-2" />}
                                 </div>
                             ) : (
                                 i.text
@@ -184,9 +191,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
     let date = splitDate[0] + " " + splitDate[1] + " " + splitDate[2] + " " + splitDate[3];
 
     const socialsExist = listing.socials.some((social) => social !== "");
-
-    console.log("min liq", (launch.minimum_liquidity / LAMPORTS_PER_SOL).toString());
-
+    const liquidityAmount = Number(BigInt(launch.minimum_liquidity.toString()))  / LAMPORTS_PER_SOL;
     return (
         <TableRow
             className="border-b"
@@ -205,7 +210,7 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
         >
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
+                    <div className="w-10 h-10 overflow-hidden rounded-lg">
                         <Image alt="Launch icon" src={listing.icon} width={48} height={48} className="object-cover" />
                     </div>
                     <span className="font-semibold">{listing.symbol}</span>
@@ -215,16 +220,16 @@ const LaunchCard = ({ launch }: { launch: LaunchData }) => {
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={0}
-                    launch_id={listing.id}
+                    launch_id={bignum_to_num(listing.id)}
                     page_name={launch.page_name}
                     positive_votes={listing.positive_votes}
                     negative_votes={listing.negative_votes}
                     isTradePage={false}
-                    listing={listing}
+                    tokenMint={listing.mint.toString()}
                 />
             </TableCell>
             <TableCell style={{ minWidth: "170px" }}>
-                {Number(launch.minimum_liquidity / LAMPORTS_PER_SOL)} {Config.token}
+                {liquidityAmount} {Config.token}
             </TableCell>
             <TableCell style={{ minWidth: "150px" }}>{date}</TableCell>
             <TableCell style={{ minWidth: "100px" }}>

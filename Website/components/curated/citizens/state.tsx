@@ -37,7 +37,7 @@ export class CitizenUserData {
         readonly mission_status: number,
         readonly randoms_address: PublicKey,
         readonly slot: bignum,
-        readonly plugins: CitizenPluginEnum[],
+        readonly plugins: Array<DataEnumKeyAsKind<CitizenPluginEnum>>,
     ) {}
 
     static readonly struct = new FixableBeetStruct<CitizenUserData>(
@@ -47,7 +47,7 @@ export class CitizenUserData {
             ["mission_status", u8],
             ["randoms_address", publicKey],
             ["slot", u64],
-            ["plugins", array(citizenPluginBeet)],
+            ["plugins", array(citizenPluginBeet) as FixableBeet<Array<DataEnumKeyAsKind<CitizenPluginEnum>>>],
         ],
         (args) =>
             new CitizenUserData(

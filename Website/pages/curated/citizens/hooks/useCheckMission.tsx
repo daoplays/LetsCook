@@ -1,6 +1,5 @@
 import {
-    LaunchData,
-    LaunchInstruction,
+    
     get_current_blockhash,
     myU64,
     send_transaction,
@@ -10,7 +9,6 @@ import {
     getRecentPrioritizationFees,
     MintData,
 } from "../../../../components/Solana/state";
-import { CollectionData, AssignmentData, request_assignment_data } from "../../../../components/collection/collectionState";
 import {
     ComputeBudgetProgram,
     SYSVAR_RENT_PUBKEY,
@@ -52,6 +50,7 @@ import bs58 from "bs58";
 import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { CITIZENS } from "../../../../components/curated/citizens/state";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 function serialise_check_mission_instruction(): Buffer {
     const data = new CheckMission_Instruction(1);

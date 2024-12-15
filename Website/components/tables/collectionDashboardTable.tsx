@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { LaunchData, UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
+import {  UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
 import { TfiReload } from "react-icons/tfi";
@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import { toast } from "react-toastify";
-import { CollectionData, create_CollectionDataInput, getCollectionPlugins, CollectionPluginData } from "../collection/collectionState";
+import { create_CollectionDataInput, getCollectionPlugins, CollectionPluginData } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
 import useEditCollection from "../../hooks/collections/useEditCollection";
@@ -22,6 +22,7 @@ import * as NProgress from "nprogress";
 import formatPrice from "../../utils/formatPrice";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 interface Header {
     text: string;
     field: string | null;
@@ -166,12 +167,12 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={1}
-                    launch_id={launch.launch_id}
+                    launch_id={bignum_to_num(launch.launch_id)}
                     page_name={launch.page_name}
                     positive_votes={launch.positive_votes}
                     negative_votes={launch.negative_votes}
                     isTradePage={false}
-                    listing={null}
+                    tokenMint={null}
                 />
             </TableCell>
             <TableCell style={{ minWidth: sm ? "170px" : "200px" }}>

@@ -78,17 +78,17 @@ export const WrapToken = () => {
         let mint_data = await getMintData("So11111111111111111111111111111111111111112");
         setWrapSolMint(mint_data);
     }
-    useEffect(()=>{
+    useEffect(() => {
         handleSetBaseData();
-    },[])
+    }, []);
 
-    if(!wrapSolMint){
+    if (!wrapSolMint) {
         return;
     }
     return (
         <form className="mx-auto mt-5 flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-8 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[775px]">
-            <div className="flex flex-col gap-2 mb-4">
-                <Text className="text-3xl font-semibold text-center text-white lg:text-4xl">{Config.token} Wrap/Unwrap Tool</Text>
+            <div className="mb-4 flex flex-col gap-2">
+                <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">{Config.token} Wrap/Unwrap Tool</Text>
                 {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
             </div>
 
@@ -99,7 +99,7 @@ export const WrapToken = () => {
                         <div className={`flex w-4/5 flex-col text-white ${isWrap ? "flex-col" : "flex-col-reverse"}`}>
                             {/* From Token Input */}
                             <div className={`${isWrap ? "" : "-mt-6 mb-3"}`}>
-                                <div className="flex items-center justify-between mb-2">
+                                <div className="mb-2 flex items-center justify-between">
                                     <div className="text-sm">{isWrap ? `You're Swapping` : "To Receive"}</div>
 
                                     <div className="flex items-center gap-1 opacity-75">
@@ -109,7 +109,7 @@ export const WrapToken = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
+                                <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                             <div className="w-6">
@@ -151,7 +151,7 @@ export const WrapToken = () => {
                             <div className="flex justify-center">
                                 <button
                                     // onClick={() => setIsTokenToNFT(!isTokenToNFT)}
-                                    className="z-50 p-2 mx-auto my-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700"
+                                    className="z-50 mx-auto my-2 cursor-pointer rounded-lg bg-gray-800 p-2 hover:bg-gray-700"
                                     type="button"
                                     onClick={() => setIsWrap(!isWrap)}
                                 >
@@ -161,7 +161,7 @@ export const WrapToken = () => {
 
                             {/* To Token Input */}
                             <div className={`${isWrap ? "-mt-6 mb-3" : ""}`}>
-                                <div className="flex items-center justify-between mb-2">
+                                <div className="mb-2 flex items-center justify-between">
                                     <div className="text-sm">{!isWrap ? `You're Swapping` : "To Receive"}</div>
 
                                     <div className="flex items-center gap-1 opacity-75">
@@ -173,7 +173,7 @@ export const WrapToken = () => {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 p-3 bg-gray-800 rounded-xl">
+                                <div className="flex items-center gap-2 rounded-xl bg-gray-800 p-3">
                                     <div className="flex items-center gap-2 rounded-lg bg-gray-700 px-2.5 py-1.5">
                                         <div className="w-6">
                                             <Image

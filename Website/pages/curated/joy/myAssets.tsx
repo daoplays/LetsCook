@@ -10,12 +10,13 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import useUnlistNFT from "@/hooks/collections/useUnlistNFT";
 import { lamportsToSol } from "@/utils/lamportToSol";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
-import { CollectionData, NFTListingData } from "@/components/collection/collectionState";
+import { NFTListingData } from "@/components/collection/collectionState";
 import { Button } from "@/components/ui/button";
 import { Config } from "@/components/Solana/constants";
 import ViewNFTDetails from "./viewNftDetails";
 import { Loader2 } from "lucide-react";
 import useResponsive from "@/hooks/useResponsive";
+import { CollectionData } from "@letscook/sdk/dist/state/collections";
 
 interface MyNFTsPanelProps {
     ownedNFTs?: AssetWithMetadata[];
@@ -140,7 +141,7 @@ function MyNFTsPanel({ ownedNFTs, listedNFTs, allListings, collection }: MyNFTsP
                                                         display: hoveredIndex === index ? "flex" : "none",
                                                     }}
                                                     onClick={() => {
-                                                        handleNFTClick(nft, isListed, price, nftIndex);
+                                                        handleNFTClick(nft, isListed, parseFloat(price), nftIndex);
                                                     }}
                                                 >
                                                     <Text m={0} lineHeight={0.75} align="center" fontSize="large">

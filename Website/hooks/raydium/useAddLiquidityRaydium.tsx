@@ -1,26 +1,7 @@
-import {
-    LaunchData,
-    LaunchInstruction,
-    get_current_blockhash,
-    myU64,
-    send_transaction,
-    serialise_basic_instruction,
-    request_current_balance,
-    uInt32ToLEBytes,
-    bignum_to_num,
-    getRecentPrioritizationFees,
-} from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
-import { useCallback, useRef, useState } from "react";
-import bs58 from "bs58";
 import BN from "bn.js";
-import { toast } from "react-toastify";
-
-import { Token } from "@raydium-io/raydium-sdk";
-
-import { ComputeBudgetProgram } from "@solana/web3.js";
 
 import {
     unpackMint,
@@ -30,10 +11,7 @@ import {
     TOKEN_PROGRAM_ID,
     ASSOCIATED_TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
-import { make_tweet } from "../../components/launch/twitter";
 import { BeetStruct, bignum, fixedSizeArray, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
-import { RaydiumCPMM, getRaydiumPrograms } from "./utils";
 import {
     RAYDIUM_PROGRAM,
     getAMMBaseAccount,
@@ -43,14 +21,8 @@ import {
     getPoolStateAccount,
 } from "./useCreateCP";
 import { AMMData } from "../../components/Solana/jupiter_state";
-import useAppRoot from "../../context/useAppRoot";
-
-const ZERO = new BN(0);
-type BN = typeof ZERO;
-
-const DEFAULT_TOKEN = {
-    WSOL: new Token(TOKEN_PROGRAM_ID, new PublicKey("So11111111111111111111111111111111111111112"), 9, "WSOL", "WSOL"),
-};
+import { getMintData } from "@/components/amm/launch";
+import useSendTransaction from "../useSendTransaction";
 
 function serialise_raydium_add_liquidity_instruction(lp_amount: number, base_amount: number, quote_amount: number): Buffer {
     let discriminator: number[] = [242, 35, 198, 137, 82, 225, 242, 182];
@@ -85,45 +57,9 @@ class RaydiumAddLiquidity_Instruction {
 
 const useAddLiquidityRaydium = (amm: AMMData) => {
     const wallet = useWallet();
-    const { mintData } = useAppRoot();
 
-    const [isLoading, setIsLoading] = useState(false);
-
-    const signature_ws_id = useRef<number | null>(null);
-
-    const check_signature_update = useCallback(async (result: any) => {
-        console.log(result);
-        signature_ws_id.current = null;
-        setIsLoading(false);
-        // if we have a subscription field check against ws_id
-        if (result.err !== null) {
-            toast.error("Transaction failed, please try again", {
-                isLoading: false,
-                autoClose: 3000,
-            });
-            return;
-        }
-
-        toast.success("Transaction Successfull!", {
-            type: "success",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
-    const transaction_failed = useCallback(async () => {
-        if (signature_ws_id.current == null) return;
-
-        signature_ws_id.current = null;
-        setIsLoading(false);
-
-        toast.error("Transaction not processed, please try again", {
-            type: "error",
-            isLoading: false,
-            autoClose: 3000,
-        });
-    }, []);
-
+    const { sendTransaction, isLoading } = useSendTransaction();
+    
     const AddLiquidityRaydium = async (lp_amount: number, token_amount: number, sol_amount: number) => {
         // if we have already done this then just skip this step
 
@@ -132,8 +68,8 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
-        let base_mint_data = mintData.get(base_mint.toString());
-        let quote_mint_data = mintData.get(quote_mint.toString());
+        let base_mint_data = await getMintData(base_mint.toString());
+        let quote_mint_data = await getMintData(quote_mint.toString());
 
         const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
             ? [quote_mint, base_mint]
@@ -210,37 +146,21 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
         let ata_balance = await connection.getBalance(user_lp_account);
         console.log("ata balance", ata_balance);
 
-        let list_txArgs = await get_current_blockhash("");
-
-        let list_transaction = new Transaction(list_txArgs);
-        list_transaction.feePayer = wallet.publicKey;
-
-        let feeMicroLamports = await getRecentPrioritizationFees(Config.PROD);
-        list_transaction.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: feeMicroLamports }));
-
+        let instructions: TransactionInstruction[] = [];
         if (ata_balance === 0) {
-            list_transaction.add(create_lp_ata);
+            instructions.push(create_lp_ata);
         }
-        list_transaction.add(list_instruction);
+        instructions.push(list_instruction);
 
-        try {
-            let signed_transaction = await wallet.signTransaction(list_transaction);
-            var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
-
-            if (signature === undefined) {
-                console.log(signature);
-                toast.error("Transaction failed, please try again");
-                return;
-            }
-
-            signature_ws_id.current = connection.onSignature(signature, check_signature_update, "confirmed");
-            setTimeout(transaction_failed, TIMEOUT);
-
-            console.log("swap sig: ", signature);
-        } catch (error) {
-            console.log(error);
-            return;
-        }
+        await sendTransaction({
+                    instructions,
+                    onSuccess: () => {
+                        // Handle success
+                    },
+                    onError: (error) => {
+                        // Handle error
+                    },
+                });
     };
 
     return { AddLiquidityRaydium, isLoading };
