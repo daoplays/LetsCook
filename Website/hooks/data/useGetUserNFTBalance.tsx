@@ -108,9 +108,6 @@ const useOwnedNFTs = ({ collectionAddress }: UseOwnedNFTsProps) => {
             return;
         }
 
-        // Initial fetch
-        fetchAssets();
-
         // If we're expecting an update, start polling
         if (expectingUpdate) {
             // Set up fallback timeout

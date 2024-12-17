@@ -124,7 +124,7 @@ export const ACHIEVEMENTS: IAchievement[] = [
         title: "100 Sauce",
         description: "Earn 100 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_100.png",
-        tutorialVideoUrl: "https://example.com/transaction-tutorial.mp4",
+        tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
         
     },
     {
@@ -132,7 +132,7 @@ export const ACHIEVEMENTS: IAchievement[] = [
         title: "500 Sauce",
         description: "Earn 500 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_500.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
+        tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
         
     },
     {
@@ -140,7 +140,7 @@ export const ACHIEVEMENTS: IAchievement[] = [
         title: "1000 Sauce",
         description: "Earn 1000 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_1000.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
+        tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
         
     },
     {
@@ -148,7 +148,7 @@ export const ACHIEVEMENTS: IAchievement[] = [
         title: "10000 Sauce",
         description: "Earn 10000 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_10k.png",
-        tutorialVideoUrl: "https://example.com/username-tutorial.mp4",
+        tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
         
     },
 ];

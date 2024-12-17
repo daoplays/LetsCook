@@ -109,12 +109,11 @@ const CollectionSwapPage = () => {
         return collection?.keys?.[CollectionKeys.CollectionMint] || null;
     }, [collection]);
 
-    const { nftBalance, ownedAssets, collectionAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(
+    const { nftBalance, collectionAssets, ownedAssets, checkNFTBalance, fetchNFTBalance } = useNFTBalance(
         collectionAddress ? { collectionAddress } : null,
     );
 
-    const {assets : userAssets, refetch, setExpectingUpdate} = useOwnedNFTs(collectionAddress ? { collectionAddress } : {collectionAddress: null});
-    console.log("user asets,", userAssets, ownedAssets)
+    //const {assets : ownedAssets2, setExpectingUpdate} = useOwnedNFTs(collectionAddress ? { collectionAddress } : {collectionAddress: null});
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
     const [userListedNFTs, setUserListedNFTs] = useState<string[]>([]);
@@ -153,7 +152,7 @@ const CollectionSwapPage = () => {
             return;
         } else {
             checkNFTBalance.current = true;
-            setExpectingUpdate(true);
+            //setExpectingUpdate(true);
             fetchNFTBalance();
         }
     }, [assignmentData, openAssetModal, fetchNFTBalance, checkNFTBalance]);

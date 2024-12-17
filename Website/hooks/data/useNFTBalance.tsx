@@ -20,7 +20,7 @@ const RATE_LIMIT_INTERVAL = 1000; // we check max once a second
 
 export async function getOwnedCollectionAssetsDAS(collectionAddress: PublicKey, owner: PublicKey): Promise<Map<string, AssetWithMetadata>> {
     try {
-        let rpc = Config.NETWORK === "eclipse" ? "https://aura-eclipse-mainnet.metaplex.com/" : Config.RPC_NODE;
+        let rpc = Config.NETWORK === "eclipse" ?  Config.AURA : Config.RPC_NODE;
         const umi = createUmi(rpc, "confirmed").use(dasApi());
 
         var start = new Date().getTime();
@@ -48,7 +48,7 @@ export async function getOwnedCollectionAssetsDAS(collectionAddress: PublicKey, 
         const coreAssets = await das.dasAssetsToCoreAssets(umi, dasAssets, {
             skipDerivePlugins: true})
 
-        console.log("Owned Das assets", dasAssets.length, coreAssets)
+        console.log("Owned Das assets", dasAssets.length, dasAssets)
            
            
         const assets =[]
@@ -403,12 +403,6 @@ const useNFTBalance = (props: UseTokenBalanceProps | null) => {
 
             // Wait for all unique fetches to complete
             await Promise.all(fetchPromises);
-
-            if (wallet && wallet.publicKey) {
-                let testOwned = await getOwnedCollectionAssets(collectionAddress, wallet.publicKey);
-                let testDasOwned = await getOwnedCollectionAssetsDAS(collectionAddress, wallet.publicKey);
-                
-            }
 
             let owned_assets: AssetWithMetadata[] = [];
             let all_assets: Map<string, AssetWithMetadata> = new Map();

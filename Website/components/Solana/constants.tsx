@@ -8,6 +8,7 @@ export interface NetworkConfig {
     RAYDIUM_FEES: PublicKey;
     RPC_NODE: string;
     WSS_NODE: string;
+    AURA : string;
     COOK_FEES: PublicKey;
     // its useful to define a few strings and images here given we have eth on eclipse and sol on solana
     token: string;
@@ -22,6 +23,7 @@ const EclipseDevNetConfig: NetworkConfig = {
     FEES_KEY: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
     RPC_NODE: "https://devnet.dev2.eclipsenetwork.xyz",
+    AURA: "https://devnet.dev2.eclipsenetwork.xyz",
     WSS_NODE: "wss://devnet.dev2.eclipsenetwork.xyz",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
@@ -37,6 +39,7 @@ const EclipseMainNetConfig: NetworkConfig = {
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
     RPC_NODE: "https:///eclipse.lgns.net/",
     WSS_NODE: "wss://mainnetbeta-rpc.eclipse.xyz/",
+    AURA: "https://aura-eclipse-mainnet.metaplex.com/",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "ETH",
     token_image: "/images/eth.png",
@@ -51,6 +54,7 @@ const DevNetConfig: NetworkConfig = {
     RAYDIUM_FEES: new PublicKey("3XMrhbv989VxAMi3DErLV9eJht1pHppW5LbKxe9fkEFR"),
     RPC_NODE: "https://api.devnet.solana.com",
     WSS_NODE: "wss://api.devnet.solana.com",
+    AURA: "https://aura-solana-devnet.metaplex.com/",
     COOK_FEES: new PublicKey("FxVpjJ5AGY6cfCwZQP5v8QBfS4J2NPa62HbGh1Fu2LpD"),
     token: "SOL",
     token_image: "/images/sol.png",
@@ -65,6 +69,7 @@ const MainNetConfig: NetworkConfig = {
     RAYDIUM_FEES: new PublicKey("7YttLkHDoNj9wyDur5pM1ejNaAvT9X4eqaYcHQqtj2G5"),
     RPC_NODE: "https://mainnet.helius-rpc.com/?api-key=50184015-29a1-4c08-9354-dbcc1843c4d0",
     WSS_NODE: "wss://mainnet.helius-rpc.com/?api-key=50184015-29a1-4c08-9354-dbcc1843c4d0",
+    AURA: "https://mainnet.helius-rpc.com/?api-key=50184015-29a1-4c08-9354-dbcc1843c4d0",
     COOK_FEES: new PublicKey("HtszJ5ntXnwUFc2anMzp5RgaPxtvTFojL2qb5kcFEytA"),
     token: "SOL",
     token_image: "/images/sol.png",
@@ -102,7 +107,7 @@ if (isMobile) {
 
 export const DEBUG = true;
 
-export let Config = EclipseMainNetConfig;
+export let Config = DevNetConfig;
 
 export const enum Screen {
     HOME_SCREEN = 0,
