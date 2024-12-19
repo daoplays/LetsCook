@@ -200,6 +200,8 @@ const TradePage = () => {
                                     price={marketData && marketData.length > 0 ? marketData[marketData.length - 1].close : 0}
                                     sol_price={SOLPrice}
                                     quote_amount={ammQuoteAmount}
+                                    lpMint={lpMint}
+                                    lpTotal={ammLPAmount}
                                 />
                             )}
 
@@ -596,6 +598,8 @@ const InfoContent = ({
     quote_amount,
     volume,
     mm_data,
+    lpMint,
+    lpTotal
 }: {
     listing: ListingData;
     amm: AMMData;
@@ -605,6 +609,8 @@ const InfoContent = ({
     quote_amount: number;
     volume: number;
     mm_data: MMLaunchData | null;
+    lpMint: MintData;
+    lpTotal: number;
 }) => {
     const { isOpen: isRewardsOpen, onOpen: onRewardsOpen, onClose: onRewardsClose } = useDisclosure();
 
@@ -620,6 +626,13 @@ const InfoContent = ({
 
     let liquidity = Math.min(market_cap, 2 * (quote_amount) * sol_price);
 
+    const PRECISION = BigInt(10 ** 9);
+    const scaled_lp_supply = (BigInt(lpMint.mint.supply.toString()) * PRECISION) / 
+    BigInt(Math.pow(10, lpMint.mint.decimals));
+    let lp_supply = Number(scaled_lp_supply) / Number(PRECISION);
+    let lp_total = lpTotal / Math.pow(10, lpMint.mint.decimals);
+    let tlv = liquidity * (lp_total - lp_supply) / lp_total
+    console.log(lpMint.mint.address.toString())
     let market_cap_string =
         sol_price === 0
             ? "--"
@@ -632,6 +645,14 @@ const InfoContent = ({
         sol_price === 0
             ? "--"
             : liquidity.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+              });
+
+    let tlv_string =
+        sol_price === 0
+            ? "--"
+            : tlv.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
               });
@@ -698,6 +719,11 @@ const InfoContent = ({
                 <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
                     <span className="text-md text- text-white text-opacity-50">Liquidity:</span>
                     <span className="text-md text-white">${liquidity_string}</span>
+                </div>
+
+                <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
+                    <span className="text-md text- text-white text-opacity-50">TVL:</span>
+                    <span className="text-md text-white">${tlv_string}</span>
                 </div>
 
                 <div className="flex w-full justify-between border-b border-gray-600/50 px-4 py-3">
