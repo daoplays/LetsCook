@@ -1,169 +1,209 @@
-import { useEffect, useState, useCallback } from "react";
-import {  UserData, bignum_to_num, create_LaunchDataInput, get_current_blockhash, send_transaction } from "../Solana/state";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { Badge, Box, Button, Center, HStack, Link, TableContainer, Text, VStack } from "@chakra-ui/react";
-import { TfiReload } from "react-icons/tfi";
-import { FaSort } from "react-icons/fa";
+import { useEffect, useState, useCallback, memo } from "react";
+import { bignum_to_num, create_LaunchDataInput } from "../Solana/state";
+import { Box, Button } from "@chakra-ui/react";
+import { FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { useWallet } from "@solana/wallet-adapter-react";
 import useResponsive from "../../hooks/useResponsive";
 import Image from "next/image";
 import useAppRoot from "../../context/useAppRoot";
-import useDetermineCookState, { CookState } from "../../hooks/useDetermineCookState";
 import { useRouter } from "next/router";
-import { PublicKey, Transaction, TransactionInstruction, Connection, Keypair } from "@solana/web3.js";
-import bs58 from "bs58";
-import { toast } from "react-toastify";
 import { create_CollectionDataInput, getCollectionPlugins, CollectionPluginData } from "../collection/collectionState";
 import { CollectionKeys } from "../Solana/constants";
 import { HypeVote } from "../hypeVote";
-import useEditCollection from "../../hooks/collections/useEditCollection";
 import convertImageURLToFile from "../../utils/convertImageToBlob";
 import * as NProgress from "nprogress";
 import formatPrice from "../../utils/formatPrice";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CollectionData } from "@letscook/sdk/dist/state/collections";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+
+// Type for sort direction
+type SortDirection = 'asc' | 'desc' | null;
+
+// Interface for sort state
+interface SortState {
+    field: string | null;
+    direction: SortDirection;
+}
+
 interface Header {
     text: string;
     field: string | null;
+    tooltip: string;
 }
 
-interface TransferAccount {
-    pubkey: PublicKey;
-    amount: number;
-}
+// Table headers configuration
+const TABLE_HEADERS: Header[] = [
+    { 
+        text: "Collection", 
+        field: null,
+        tooltip: "NFT collection name and icon"
+    },
+    { 
+        text: "Hype", 
+        field: "hype",
+        tooltip: "Community hype score"
+    },
+    { 
+        text: "Cost Per NFT", 
+        field: "tokensPerNft",
+        tooltip: "Price to purchase one NFT in the collection"
+    },
+    { 
+        text: "Unwrap Fee (%)", 
+        field: "unwrapFee",
+        tooltip: "Percentage fee charged when unwrapping NFTs (only relevant for hybrids)"
+    },
+    { 
+        text: "Collection Size", 
+        field: "totalSupply",
+        tooltip: "Total number of NFTs in the collection"
+    },
+    { 
+        text: "NFTs Available", 
+        field: "numAvailable",
+        tooltip: "Number of NFTs currently available for purchase"
+    },
+];
 
-const CollectionDashboardTable = ({ collectionList }: { collectionList: CollectionData[] }) => {
-    const { sm } = useResponsive();
-    const wallet = useWallet();
+// Memoized sort icon component
+const SortIcon = memo(({ field, sortState }: { field: string | null, sortState: SortState }) => {
+    if (!field) return null;
+    
+    if (sortState.field === field) {
+        return sortState.direction === 'asc' ? 
+            <FaSortUp className="ml-2 h-4 w-4" /> : 
+            <FaSortDown className="ml-2 h-4 w-4" />;
+    }
+    return <FaSort className="ml-2 h-4 w-4 opacity-40" />;
+});
 
-    const tableHeaders: Header[] = [
-        { text: "Collection", field: null },
-        { text: "Token", field: null },
-        { text: "Hype", field: "hype" },
-        { text: "Tokens Per NFT", field: "tokens per nft" },
-        { text: "Unwrap Fee (%)", field: "unwrap fee" },
-        { text: "Total Supply", field: "total supply" },
-    ];
+SortIcon.displayName = 'SortIcon';
 
-    return (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    {tableHeaders.map((header) => (
-                        <TableHead className="min-w-[140px] border-b" key={header.text}>
-                            {header.field ? (
-                                <div onClick={() => header.field} className="flex cursor-pointer justify-center font-semibold">
+// Memoized table header
+const MemoizedTableHeader = memo(({ sortState, onSort }: { 
+    sortState: SortState, 
+    onSort: (field: string | null) => void 
+}) => (
+    <TableHeader>
+        <TableRow>
+            {TABLE_HEADERS.map((header) => (
+                <TableHead 
+                    key={header.text}
+                    className="min-w-[140px] border-b"
+                    onClick={() => header.field && onSort(header.field)}
+                >
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className={`flex justify-center font-semibold ${header.field ? 'cursor-pointer' : 'cursor-help'}`}>
                                     {header.text}
-                                    <FaSort className="ml-2 h-4 w-4" />
+                                    <SortIcon field={header.field} sortState={sortState} />
                                 </div>
-                            ) : (
-                                header.text
-                            )}
-                        </TableHead>
-                    ))}
-                </TableRow>
-            </TableHeader>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{header.tooltip}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </TableHead>
+            ))}
+        </TableRow>
+    </TableHeader>
+));
 
-            <TableBody>
-                {collectionList.length > 0 ? (
-                    collectionList.map((launch, i) => <LaunchCard key={launch.page_name} launch={launch} />)
-                ) : (
-                    <TableRow
-                        style={{
-                            cursor: "pointer",
-                            height: "60px",
-                            transition: "background-color 0.3s",
-                        }}
-                        className="border-b"
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-                        }}
-                    >
-                        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
-                            There are no collections launched yet
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
-    );
-};
+MemoizedTableHeader.displayName = 'MemoizedTableHeader';
 
-const LaunchCard = ({ launch }: { launch: CollectionData }) => {
+// Memoized empty state row
+const EmptyStateRow = memo(() => (
+    <TableRow
+        className="border-b hover:bg-white/10 transition-colors duration-300 h-[60px] cursor-pointer"
+    >
+        <TableCell style={{ minWidth: "160px" }} colSpan={100} className="opacity-50">
+            There are no collections launched yet
+        </TableCell>
+    </TableRow>
+));
+
+EmptyStateRow.displayName = 'EmptyStateRow';
+
+// Memoized Token Icon component
+const TokenIcon = memo(({ icon, symbol }: { icon: string; symbol: string }) => (
+    <TooltipProvider>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Image 
+                    alt="Token icon" 
+                    src={icon} 
+                    width={24} 
+                    height={24} 
+                    className="inline-block object-cover cursor-help" 
+                />
+            </TooltipTrigger>
+            <TooltipContent>
+                <p>{symbol}</p>
+            </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
+));
+
+TokenIcon.displayName = 'TokenIcon';
+
+// Memoized LaunchCard component
+const LaunchCard = memo(({ launch, onEdit }: { 
+    launch: CollectionData; 
+    onEdit: (e: React.MouseEvent, launch: CollectionData) => void;
+}) => {
     const router = useRouter();
-    const { sm, md, lg } = useResponsive();
-    const { EditCollection } = useEditCollection();
-    const { newCollectionData, mintData } = useAppRoot();
+    const { sm } = useResponsive();
+    const { mintData } = useAppRoot();
 
-    const [isEditing, setIsEditing] = useState(false);
+    const handleRowClick = useCallback(() => {
+        NProgress.start();
+        router.push(`/collection/${launch.page_name}`);
+    }, [router, launch.page_name]);
 
-    const EditClicked = async (e) => {
-        e.stopPropagation();
-        setIsEditing(true);
-        newCollectionData.current = create_CollectionDataInput(launch, true);
-
-        let bannerFile = await convertImageURLToFile(launch.banner, `${launch.collection_name} banner image`);
-        let iconFile = await convertImageURLToFile(launch.collection_icon_url, `${launch.collection_name} icon image`);
-
-        newCollectionData.current.banner_file = bannerFile;
-        newCollectionData.current.icon_file = iconFile;
-
-        setIsEditing(false);
-
-        router.push("/collection");
-    };
+    const handleEditClick = useCallback((e: React.MouseEvent) => {
+        onEdit(e, launch);
+    }, [onEdit, launch]);
 
     if (!mintData) {
-        console.log("Mint data not found");
-        return <></>;
+        return null;
     }
 
-    let plugin_data: CollectionPluginData = getCollectionPlugins(launch);
-    let token_mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+    const plugin_data: CollectionPluginData = getCollectionPlugins(launch);
+    const token_mint = mintData.get(launch.keys[CollectionKeys.MintAddress].toString());
+
+    let num_available = launch.num_available.toString();
+    if (launch.collection_meta["__kind"] === "RandomUnlimited") {
+        num_available = "Unlimited";
+    }
+    
     if (!token_mint) {
-        console.log("Token mint not found");
-        return <></>;
+        return null;
     }
 
     return (
         <TableRow
-            style={{
-                cursor: "pointer",
-                height: "60px",
-                transition: "background-color 0.3s",
-            }}
-            className="border-b"
-            onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-            }}
-            onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = ""; // Reset to default background color
-            }}
-            onClick={() => {
-                NProgress.start();
-                router.push(`/collection/` + launch.page_name);
-            }}
+            onClick={handleRowClick}
+            className="border-b hover:bg-white/10 transition-colors duration-300 h-[60px] cursor-pointer"
         >
             <TableCell style={{ minWidth: "160px" }}>
                 <div className="flex items-center gap-3 px-4">
                     <div className="h-10 w-10 overflow-hidden rounded-lg">
-                        <Image alt={"Launch icon"} src={launch.collection_icon_url} width={48} height={48} className="object-cover" />
+                        <Image 
+                            alt="Collection icon"
+                            src={launch.collection_icon_url}
+                            width={48}
+                            height={48}
+                            className="object-cover"
+                        />
                     </div>
                     <span className="font-semibold">{launch.collection_name}</span>
                 </div>
             </TableCell>
-            <TableCell style={{ minWidth: "160px" }}>
-                <div className="flex items-center gap-3 px-4">
-                    <div className="h-10 w-10 overflow-hidden rounded-lg">
-                        <Image alt="Launch icon" src={token_mint.icon} width={48} height={48} className="object-cover" />
-                    </div>
-                    <span className="font-semibold">{launch.token_symbol}</span>
-                </div>
-            </TableCell>
+
             <TableCell style={{ minWidth: "150px" }}>
                 <HypeVote
                     launch_type={1}
@@ -175,24 +215,149 @@ const LaunchCard = ({ launch }: { launch: CollectionData }) => {
                     tokenMint={null}
                 />
             </TableCell>
-            <TableCell style={{ minWidth: sm ? "170px" : "200px" }}>
-                {formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3)}
+
+            <TableCell style={{ minWidth: "170px" }}>
+                <div className="items-center gap-5">
+                    {formatPrice(bignum_to_num(launch.swap_price) / Math.pow(10, launch.token_decimals), 3)}
+                    <span className="ml-2">
+                        <TokenIcon icon={token_mint.icon} symbol={token_mint.symbol} />
+                    </span>
+                </div>
             </TableCell>
-            <TableCell style={{ minWidth: "150px" }}>{plugin_data.mintOnly ? "--" : launch.swap_fee / 100} </TableCell>
-            <TableCell style={{ minWidth: "170px" }}>{launch.total_supply}</TableCell>
+
+            <TableCell style={{ minWidth: "150px" }}>
+                {plugin_data.mintOnly ? "--" : launch.swap_fee / 100}
+            </TableCell>
+
+            <TableCell style={{ minWidth: "170px" }}>
+                {launch.total_supply}
+            </TableCell>
+
+            <TableCell style={{ minWidth: "170px" }}>
+                {num_available}
+            </TableCell>
+
             <TableCell style={{ minWidth: "100px" }}>
-                {launch.description !== "" ? (
-                    <Button onClick={() => router.push(`/collection/` + launch.page_name)} style={{ textDecoration: "none" }}>
-                        View
-                    </Button>
-                ) : (
-                    <Button onClick={(e) => EditClicked(e)} style={{ textDecoration: "none" }}>
-                        Edit
-                    </Button>
-                )}
+                <Button 
+                    onClick={launch.description !== "" ? handleRowClick : handleEditClick}
+                    style={{ textDecoration: "none" }}
+                >
+                    {launch.description !== "" ? "View" : "Edit"}
+                </Button>
             </TableCell>
         </TableRow>
     );
+});
+
+LaunchCard.displayName = 'LaunchCard';
+
+// Main component
+const CollectionDashboardTable = ({ collectionList }: { collectionList: CollectionData[] }) => {
+    const router = useRouter();
+    const { newCollectionData } = useAppRoot();
+    const [sortState, setSortState] = useState<SortState>({
+        field: null,
+        direction: null
+    });
+
+    const handleSort = useCallback((field: string | null) => {
+        if (!field) return;
+        
+        setSortState(prevState => ({
+            field,
+            direction: 
+                prevState.field === field
+                    ? prevState.direction === 'asc'
+                        ? 'desc'
+                        : prevState.direction === 'desc'
+                            ? null
+                            : 'asc'
+                    : 'asc'
+        }));
+    }, []);
+
+    const getSortedData = useCallback(() => {
+        if (!sortState.field || !sortState.direction) {
+            return collectionList;
+        }
+
+        return [...collectionList].sort((a, b) => {
+            let aValue, bValue;
+
+            switch(sortState.field) {
+                case 'hype':
+                    aValue = a.positive_votes - a.negative_votes;
+                    bValue = b.positive_votes - b.negative_votes;
+                    break;
+                case 'tokensPerNft':
+                    aValue = Number(a.swap_price) / Math.pow(10, a.token_decimals);
+                    bValue = Number(b.swap_price) / Math.pow(10, b.token_decimals);
+                    break;
+                case 'unwrapFee':
+                    aValue = a.swap_fee;
+                    bValue = b.swap_fee;
+                    break;
+                case 'totalSupply':
+                    aValue = Number(a.total_supply);
+                    bValue = Number(b.total_supply);
+                    break;
+                case 'numAvailable':
+                    aValue = a.collection_meta["__kind"] === "RandomUnlimited" 
+                        ? Infinity 
+                        : Number(a.num_available);
+                    bValue = b.collection_meta["__kind"] === "RandomUnlimited" 
+                        ? Infinity 
+                        : Number(b.num_available);
+                    break;
+                default:
+                    return 0;
+            }
+
+            return sortState.direction === 'asc' 
+                ? aValue - bValue 
+                : bValue - aValue;
+        });
+    }, [collectionList, sortState]);
+
+    const handleEdit = useCallback(async (e: React.MouseEvent, launch: CollectionData) => {
+        e.stopPropagation();
+        newCollectionData.current = create_CollectionDataInput(launch, true);
+
+        try {
+            const [bannerFile, iconFile] = await Promise.all([
+                convertImageURLToFile(launch.banner, `${launch.collection_name} banner image`),
+                convertImageURLToFile(launch.collection_icon_url, `${launch.collection_name} icon image`)
+            ]);
+
+            newCollectionData.current.banner_file = bannerFile;
+            newCollectionData.current.icon_file = iconFile;
+
+            router.push("/collection");
+        } catch (error) {
+            console.error("Error preparing collection edit:", error);
+        }
+    }, [router, newCollectionData]);
+
+    const sortedData = getSortedData();
+
+    return (
+        <Table>
+            <MemoizedTableHeader sortState={sortState} onSort={handleSort} />
+            <TableBody>
+                {sortedData.length > 0 ? (
+                    sortedData.map((launch) => (
+                        <LaunchCard 
+                            key={launch.page_name} 
+                            launch={launch}
+                            onEdit={handleEdit}
+                        />
+                    ))
+                ) : (
+                    <EmptyStateRow />
+                )}
+            </TableBody>
+        </Table>
+    );
 };
 
-export default CollectionDashboardTable;
+export default memo(CollectionDashboardTable);

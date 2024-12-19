@@ -3,6 +3,7 @@ import { Config } from "../../components/Solana/constants";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, Database } from "firebase/database";
 import { firebaseConfig } from "../../components/Solana/constants";
+import { WRAPPED_SOL } from "@letscook/sdk";
 
 export const useSOLPrice = () => {
     const [SOLPrice, setPrice] = useState<number>(0);
@@ -40,13 +41,22 @@ export const useSOLPrice = () => {
 
     const fetchPrice = useCallback(async () => {
         const options = { method: "GET" };
-        const url = `https://price.jup.ag/v6/price?ids=${Config.token}`;
+
+        let mint = WRAPPED_SOL.toString();
+        if (Config.NETWORK === "eclipse") {
+            mint = "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs";
+        }
+        const url = `https://api.jup.ag/price/v2?ids=${mint}`;
 
         try {
             const response = await fetch(url, options);
             const result = await response.json();
-            //console.log("price result", result);
-            setPrice(result.data[Config.token].price);
+            let token_result = result.data[mint];
+            if (!token_result) {
+                throw new Error("Price not found");
+            }
+
+            setPrice(token_result.price);
             setError(null);
             have_price.current = true;
 

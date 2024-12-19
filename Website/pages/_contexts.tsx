@@ -127,7 +127,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     const wallet = useWallet();
 
     const [selectedNetwork, setSelectedNetwork] = useState(Config.NETWORK);
-    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(false);
+    const [sidePanelCollapsed, setSidePanelCollapsed] = useState(true);
 
     const [isLaunchDataLoading, setIsLaunchDataLoading] = useState(false);
     const [isHomePageDataLoading, setIsHomePageDataLoading] = useState(false);
@@ -178,7 +178,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const check_program_update = useCallback(
         async (new_program_data: any) => {
-            console.log("in program update", new_program_data);
+            //console.log("in program update", new_program_data);
             if (!new_program_data) return;
 
             let wallet_bytes = PublicKey.default.toBytes();
