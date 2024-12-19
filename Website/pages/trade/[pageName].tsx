@@ -55,6 +55,7 @@ import { useSOLPrice } from "@/hooks/data/useSOLPrice";
 import useListing from "@/hooks/data/useListing";
 import useGetUserBalance from "@/hooks/data/useGetUserBalance";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const TradePage = () => {
     const wallet = useWallet();
@@ -615,7 +616,9 @@ const InfoContent = ({
 
     let total_supply = Number(base_mint.mint.supply) / Math.pow(10, base_mint.mint.decimals);
     let market_cap = total_supply * price * sol_price;
-    let liquidity = Math.min(market_cap, 2 * (quote_amount / Math.pow(10, 9)) * sol_price);
+
+
+    let liquidity = Math.min(market_cap, 2 * (quote_amount) * sol_price);
 
     let market_cap_string =
         sol_price === 0
