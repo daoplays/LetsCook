@@ -6,7 +6,7 @@ import {
     serialise_basic_instruction,
 } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, ComputeBudgetProgram } from "@solana/web3.js";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY } from "../../components/Solana/constants";
 import { LaunchKeys, LaunchFlags } from "../../components/Solana/constants";
 import useInitAMM from "../jupiter/useInitAMM";
@@ -16,6 +16,7 @@ import { ListingData } from "@letscook/sdk/dist/state/listing";
 
 const useCheckTickets = (launchData: LaunchData, listing: ListingData) => {
     const wallet = useWallet();
+    const {connection} = useConnection();
     const { GetInitAMMInstruction } = useInitAMM(launchData, listing);
     const { sendTransaction, isLoading } = useSendTransaction();
 
@@ -74,7 +75,7 @@ const useCheckTickets = (launchData: LaunchData, listing: ListingData) => {
 
         let computeUnits = 400_000;
         if (launchData.flags[LaunchFlags.AMMProvider] == 0 && launchData.flags[LaunchFlags.LPState] < 2) {
-            let init_idx = await GetInitAMMInstruction();
+            let init_idx = await GetInitAMMInstruction(connection, launchData, listing, wallet.publicKey);
             instructions.push(init_idx);
             computeUnits = 600_000;
         }
