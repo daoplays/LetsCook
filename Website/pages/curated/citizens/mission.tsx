@@ -8,6 +8,7 @@ import { Loader2Icon } from "lucide-react";
 
 interface DifficultyOption {
     name: string;
+    id: number;
     levelReq: number;
     successRate: number;
     deathRate: number;
@@ -17,6 +18,7 @@ interface DifficultyOption {
 const difficultyOptions: DifficultyOption[] = [
     {
         name: "Easy",
+        id: 0,
         levelReq: 0,
         successRate: 75,
         deathRate: 25,
@@ -24,6 +26,7 @@ const difficultyOptions: DifficultyOption[] = [
     },
     {
         name: "Medium",
+        id: 1,
         levelReq: 5,
         successRate: 50,
         deathRate: 50,
@@ -31,6 +34,7 @@ const difficultyOptions: DifficultyOption[] = [
     },
     {
         name: "Hard",
+        id: 2,
         levelReq: 10,
         successRate: 25,
         deathRate: 75,
@@ -42,7 +46,7 @@ interface MissionModalProps {
     isOpen: boolean;
     onClose: () => void;
     mercenary: any;
-    onSelectMission: (difficulty: string) => void;
+    onSelectMission: (difficulty: number) => void;
     onCheckMission: () => void;
     userData: any;
     isLoading?: boolean;
@@ -77,7 +81,7 @@ export const MissionModal = ({
     const firstName = mercenaryName.split(" ")[0];
 
     // Handler for mission selection
-    const handleMissionSelect = async (difficulty: string) => {
+    const handleMissionSelect = async (difficulty: number) => {
         setIsSubmitting(true);
         try {
             await onSelectMission(difficulty);
@@ -105,7 +109,7 @@ export const MissionModal = ({
                                                     <div
                                                         onClick={async () => {
                                                             if (!isLocked && !isSubmitting) {
-                                                                await handleMissionSelect(difficulty.name);
+                                                                await handleMissionSelect(difficulty.id);
                                                             }
                                                         }}
                                                         className={`w-full transform rounded-lg border-2 p-4 text-left transition-all ${
