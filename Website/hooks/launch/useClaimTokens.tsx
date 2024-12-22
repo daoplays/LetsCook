@@ -23,12 +23,7 @@ import { LaunchData } from "@letscook/sdk/dist/state/launch";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { getMintData } from "@letscook/sdk";
 
-const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
-    const wallet = useWallet();
-
-    const { sendTransaction, isLoading } = useSendTransaction();
-    const ClaimTokens = async () => {
-        if (wallet.signTransaction === undefined) return;
+export const GetClaimTokensInstruction = async(user: PublicKey, launchData: LaunchData, listingData: ListingData)=>{
 
         if (launchData === null) {
             return;
@@ -36,21 +31,21 @@ const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
 
         const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
-        if (wallet.publicKey.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
+        if (user.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
             alert("Launch creator cannot buy tickets");
             return;
         }
 
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
+        let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("User")], PROGRAM)[0];
 
         let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 
         let user_join_account = PublicKey.findProgramAddressSync(
-            [wallet.publicKey.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
+            [user.toBytes(), Buffer.from(launchData.page_name), Buffer.from("Joiner")],
             PROGRAM,
         )[0];
 
-        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
+        let temp_wsol_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
 
         let wrapped_sol_mint = new PublicKey("So11111111111111111111111111111111111111112");
         let mint_account = await getMintData(connection, listingData.mint.toString());
@@ -66,7 +61,7 @@ const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
 
         let user_token_account_key = await getAssociatedTokenAddress(
             listingData.mint, // mint
-            wallet.publicKey, // owner
+            user, // owner
             true, // allow owner off curve
             mint_account.token_program,
         );
@@ -108,7 +103,7 @@ const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
         const instruction_data = serialise_basic_instruction(LaunchInstruction.claim_tokens);
 
         var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+            { pubkey: user, isSigner: true, isWritable: true },
             { pubkey: user_data_account, isSigner: false, isWritable: true },
             { pubkey: user_join_account, isSigner: false, isWritable: true },
             { pubkey: launch_data_account, isSigner: false, isWritable: true },
@@ -143,22 +138,24 @@ const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
             }
         }
 
-        let instructions: TransactionInstruction[] = [];
         const list_instruction = new TransactionInstruction({
             keys: account_vector,
             programId: PROGRAM,
             data: instruction_data,
         });
+        
+        return list_instruction;
 
-        let txArgs = await get_current_blockhash("");
+}
 
-        let transaction = new Transaction(txArgs);
-        transaction.feePayer = wallet.publicKey;
+const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
+    const wallet = useWallet();
 
-        instructions.push(list_instruction);
-
+    const { sendTransaction, isLoading } = useSendTransaction();
+    const ClaimTokens = async () => {
+        let instruction = await GetClaimTokensInstruction(wallet.publicKey, launchData, listingData);
         await sendTransaction({
-            instructions,
+            instructions: [instruction],
             onSuccess: () => {
                 // Handle success
             },

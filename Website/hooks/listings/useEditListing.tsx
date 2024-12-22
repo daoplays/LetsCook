@@ -1,10 +1,6 @@
 import { Dispatch, SetStateAction, MutableRefObject, useCallback, useRef, useState } from "react";
 
-import {
-    LaunchDataUserInput,
-    LaunchInstruction,
-    uInt32ToLEBytes,
-} from "../../components/Solana/state";
+import { LaunchDataUserInput, LaunchInstruction, uInt32ToLEBytes } from "../../components/Solana/state";
 import {
     DEBUG,
     SYSTEM_KEY,
@@ -95,54 +91,51 @@ function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
 
     return buf;
 }
+export const GetEditListingInstruction = async (user: PublicKey, new_listing: NewListing) => {
+    if (user === null) return;
 
+    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
+
+    let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
+    let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+    let token_mint = new PublicKey(new_listing.token);
+    let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+    if (new_listing.token === "So11111111111111111111111111111111111111112") {
+        toast.error("Dont add WSOL");
+        return;
+    }
+
+    let listing = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
+
+    const instruction_data = serialise_CreateListing_instruction(new_listing);
+
+    var account_vector = [
+        { pubkey: user, isSigner: true, isWritable: true },
+        { pubkey: user_data_account, isSigner: false, isWritable: true },
+        { pubkey: listing, isSigner: false, isWritable: true },
+        { pubkey: program_data_account, isSigner: false, isWritable: true },
+        { pubkey: program_sol_account, isSigner: false, isWritable: true },
+        { pubkey: token_mint, isSigner: false, isWritable: true },
+        { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+    ];
+
+    const list_instruction = new TransactionInstruction({
+        keys: account_vector,
+        programId: PROGRAM,
+        data: instruction_data,
+    });
+    return list_instruction;
+};
 const useEditListing = () => {
     const wallet = useWallet();
     const router = useRouter();
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const EditListing = async (new_listing: NewListing) => {
-        if (wallet.publicKey === null || wallet.signTransaction === undefined) return;
-
-
-        const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
-
-        let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
-        let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
-        let token_mint = new PublicKey(new_listing.token);
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        if (new_listing.token === "So11111111111111111111111111111111111111112") {
-            toast.error("Dont add WSOL");
-            return;
-        }
-
-        let listing = PublicKey.findProgramAddressSync([token_mint.toBytes(), Buffer.from("Listing")], PROGRAM)[0];
-
-        const instruction_data = serialise_CreateListing_instruction(new_listing);
-
-        var account_vector = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: listing, isSigner: false, isWritable: true },
-            { pubkey: program_data_account, isSigner: false, isWritable: true },
-            { pubkey: program_sol_account, isSigner: false, isWritable: true },
-            { pubkey: token_mint, isSigner: false, isWritable: true },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
-        ];
-
-        const list_instruction = new TransactionInstruction({
-            keys: account_vector,
-            programId: PROGRAM,
-            data: instruction_data,
-        });
-
-        let instructions: TransactionInstruction[] = [];
-
-        instructions.push(list_instruction);
-
+        let instruction = await GetEditListingInstruction(wallet.publicKey, new_listing);
         await sendTransaction({
-            instructions,
+            instructions: [instruction],
             onSuccess: () => {
                 // Handle success
             },

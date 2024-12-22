@@ -1,7 +1,4 @@
-import {
-    bignum_to_num,
-    request_raw_account_data,
-} from "../../components/Solana/state";
+import { bignum_to_num, request_raw_account_data } from "../../components/Solana/state";
 import { PublicKey, Transaction, TransactionInstruction, Connection } from "@solana/web3.js";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { PROGRAM, Config, SYSTEM_KEY, SOL_ACCOUNT_SEED, TIMEOUT } from "../../components/Solana/constants";
@@ -68,98 +65,99 @@ class RaydiumRemoveLiquidity_Instruction {
     );
 }
 
+export const GetRemoveLiquidityRaydiumClassicInstruction = async (user: PublicKey, amm: AMMData, lp_amount: number) => {
+    let pool_data = await request_raw_account_data("", amm.pool);
+    const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
+
+    const poolInfo = Liquidity.getAssociatedPoolKeys({
+        version: 4,
+        marketVersion: 3,
+        marketId: ray_pool.marketId,
+        baseMint: ray_pool.baseMint,
+        quoteMint: ray_pool.quoteMint,
+        baseDecimals: bignum_to_num(ray_pool.baseDecimal),
+        quoteDecimals: bignum_to_num(ray_pool.quoteDecimal),
+        programId: PROGRAMIDS.AmmV4,
+        marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
+    });
+
+    let market_data = await request_raw_account_data("", ray_pool.marketId);
+    const [market] = MarketStateLayoutV2.struct.deserialize(market_data);
+
+    let user_base_account = await getAssociatedTokenAddress(
+        ray_pool.baseMint, // mint
+        user, // owner
+        true, // allow owner off curve
+    );
+
+    let user_quote_account = await getAssociatedTokenAddress(
+        ray_pool.quoteMint, // mint
+        user, // owner
+        true, // allow owner off curve
+    );
+
+    let user_lp_account = await getAssociatedTokenAddress(
+        ray_pool.lpMint, // mint
+        user, // owner
+        true, // allow owner off curve
+    );
+
+    const keys = [
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: poolInfo.id, isSigner: false, isWritable: true },
+        { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
+        { pubkey: poolInfo.openOrders, isSigner: false, isWritable: false },
+        { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
+        { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
+        { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
+        { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
+
+        { pubkey: poolInfo.withdrawQueue, isSigner: false, isWritable: true },
+        { pubkey: poolInfo.lpVault, isSigner: false, isWritable: true },
+
+        { pubkey: ray_pool.marketProgramId, isSigner: false, isWritable: false },
+        { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
+        { pubkey: market.baseVault, isSigner: false, isWritable: false },
+        { pubkey: market.quoteVault, isSigner: false, isWritable: false },
+        { pubkey: poolInfo.marketAuthority, isSigner: false, isWritable: false },
+
+        { pubkey: user_lp_account, isSigner: false, isWritable: true },
+        { pubkey: user_base_account, isSigner: false, isWritable: true },
+        { pubkey: user_quote_account, isSigner: false, isWritable: true },
+        { pubkey: user, isSigner: true, isWritable: true },
+
+        { pubkey: market.eventQueue, isSigner: false, isWritable: false },
+        { pubkey: market.bids, isSigner: false, isWritable: false },
+        { pubkey: market.asks, isSigner: false, isWritable: false },
+    ];
+
+    let raydium_add_liquidity_data = serialise_raydium_remove_liquidity_instruction(lp_amount);
+
+    const list_instruction = new TransactionInstruction({
+        keys: keys,
+        programId: getRaydiumPrograms(Config).AmmV4,
+        data: raydium_add_liquidity_data,
+    });
+
+    return list_instruction;
+};
+
 const useRemoveLiquidityRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
 
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const RemoveLiquidityRaydiumClassic = async (lp_amount: number) => {
-
-        let pool_data = await request_raw_account_data("", amm.pool);
-        const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
-
-        const poolInfo = Liquidity.getAssociatedPoolKeys({
-            version: 4,
-            marketVersion: 3,
-            marketId: ray_pool.marketId,
-            baseMint: ray_pool.baseMint,
-            quoteMint: ray_pool.quoteMint,
-            baseDecimals: bignum_to_num(ray_pool.baseDecimal),
-            quoteDecimals: bignum_to_num(ray_pool.quoteDecimal),
-            programId: PROGRAMIDS.AmmV4,
-            marketProgramId: PROGRAMIDS.OPENBOOK_MARKET,
-        });
-
-        let market_data = await request_raw_account_data("", ray_pool.marketId);
-        const [market] = MarketStateLayoutV2.struct.deserialize(market_data);
-
-        let user_base_account = await getAssociatedTokenAddress(
-            ray_pool.baseMint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        let user_quote_account = await getAssociatedTokenAddress(
-            ray_pool.quoteMint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        let user_lp_account = await getAssociatedTokenAddress(
-            ray_pool.lpMint, // mint
-            wallet.publicKey, // owner
-            true, // allow owner off curve
-        );
-
-        const keys = [
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.id, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.authority, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.openOrders, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.targetOrders, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.lpMint, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.baseVault, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.quoteVault, isSigner: false, isWritable: true },
-
-            { pubkey: poolInfo.withdrawQueue, isSigner: false, isWritable: true },
-            { pubkey: poolInfo.lpVault, isSigner: false, isWritable: true },
-
-            { pubkey: ray_pool.marketProgramId, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.marketId, isSigner: false, isWritable: false },
-            { pubkey: market.baseVault, isSigner: false, isWritable: false },
-            { pubkey: market.quoteVault, isSigner: false, isWritable: false },
-            { pubkey: poolInfo.marketAuthority, isSigner: false, isWritable: false },
-
-            { pubkey: user_lp_account, isSigner: false, isWritable: true },
-            { pubkey: user_base_account, isSigner: false, isWritable: true },
-            { pubkey: user_quote_account, isSigner: false, isWritable: true },
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-
-            { pubkey: market.eventQueue, isSigner: false, isWritable: false },
-            { pubkey: market.bids, isSigner: false, isWritable: false },
-            { pubkey: market.asks, isSigner: false, isWritable: false },
-        ];
-
-        let raydium_add_liquidity_data = serialise_raydium_remove_liquidity_instruction(lp_amount);
-
-        const list_instruction = new TransactionInstruction({
-            keys: keys,
-            programId: getRaydiumPrograms(Config).AmmV4,
-            data: raydium_add_liquidity_data,
-        });
-
-        let instructions: TransactionInstruction[] = [];
-
-        instructions.push(list_instruction);
+        let instruction = await GetRemoveLiquidityRaydiumClassicInstruction(wallet.publicKey, amm, lp_amount);
         await sendTransaction({
-                    instructions,
-                    onSuccess: () => {
-                        // Handle success
-                    },
-                    onError: (error) => {
-                        // Handle error
-                    },
-                });
+            instructions: [instruction],
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
 
     return { RemoveLiquidityRaydiumClassic, isLoading };
