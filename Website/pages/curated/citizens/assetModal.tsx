@@ -14,7 +14,7 @@ interface RecievedAssetModalProps {
     closeWarning?: () => void;
     collection: CollectionData;
     asset: AssetV1;
-    asset_image: string;
+    asset_meta: string;
     assignment_data: AssignmentData;
     isLoading: boolean;
     have_randoms: boolean;
@@ -26,7 +26,7 @@ export default function ReceivedAssetModal({
     collection,
     assignment_data,
     asset,
-    asset_image,
+    asset_meta,
     isLoading,
     have_randoms,
 }: RecievedAssetModalProps) {
@@ -47,20 +47,23 @@ export default function ReceivedAssetModal({
     let checking = assignment_data.status === 0;
 
     let asset_name = collection.nft_name + " #" + (assignment_data.nft_index + 1).toString();
+    let asset_role = ""
     let image_url = "";
     let description = "";
 
     if (asset !== null) {
         asset_name = asset.name;
     }
-    if (asset_image !== null) {
-        if (asset_image["name"] !== undefined) {
-            asset_name = asset_image["name"];
+    if (asset_meta !== null) {
+        if (asset_meta["name"] !== undefined) {
+            asset_name = asset_meta["name"];
         }
-        if (asset_image["description"] !== undefined) {
-            description = asset_image["description"];
+        if (asset_meta["description"] !== undefined) {
+            description = asset_meta["description"];
         }
-        image_url = asset_image["image"];
+        image_url = asset_meta["image"];
+        asset_role = asset_meta["attributes"][0]["value"]
+
     }
 
     let attributes = asset === null ? [] : asset.attributes === undefined ? [] : filterAttributes(asset.attributes.attributeList);
@@ -128,6 +131,8 @@ export default function ReceivedAssetModal({
                         )}
 
                         {description && <p className="text-center text-[#8B7355]">{description}</p>}
+                        {asset_role && <p className="text-center text-[#8B7355]">Role: {asset_role}</p>}
+
 
                         {attributes.length > 0 && (
                             <div className="grid grid-cols-2 gap-2">
