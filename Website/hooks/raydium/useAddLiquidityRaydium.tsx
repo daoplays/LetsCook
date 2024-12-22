@@ -55,7 +55,7 @@ class RaydiumAddLiquidity_Instruction {
     );
 }
 
-export const GetAddLiquidityRaydiumInstruction = async (connection:Connection, user: PublicKey, amm: AMMData, lp_amount: number, token_amount: number, sol_amount: number ) => {
+export const GetAddLiquidityRaydiumInstruction = async (connection:Connection, user: PublicKey, amm: AMMData, lp_amount: number, token_amount: number, sol_amount: number ): Promise<TransactionInstruction> => {
     // if we have already done this then just skip this step
 
 

@@ -90,7 +90,7 @@ export const GetSwapRaydiumClassicInstruction = async (
     token_amount: number,
     sol_amount: number,
     order_type: number,
-) => {
+): Promise<TransactionInstruction> => {
     // if we have already done this then just skip this step
 
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });

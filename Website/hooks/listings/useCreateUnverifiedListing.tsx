@@ -92,7 +92,7 @@ function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
     return buf;
 }
 
-export const GetCreateUnverifiedListingInstruction = async (user: PublicKey, new_listing: NewListing) => {
+export const GetCreateUnverifiedListingInstruction = async (user: PublicKey, new_listing: NewListing): Promise<TransactionInstruction> => {
     if (user === null) return;
 
     let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];

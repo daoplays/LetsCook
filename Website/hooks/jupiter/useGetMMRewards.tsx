@@ -16,7 +16,7 @@ export const GetMMRewardsInstruction = async (
     amm_provider: number,
     user: PublicKey,
     date: number,
-) => {
+): Promise<TransactionInstruction> => {
     if (user === null) return;
 
     const token_mint = amm.base_mint;

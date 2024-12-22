@@ -65,7 +65,7 @@ class RaydiumRemoveLiquidity_Instruction {
     );
 }
 
-export const GetRemoveLiquidityRaydiumClassicInstruction = async (user: PublicKey, amm: AMMData, lp_amount: number) => {
+export const GetRemoveLiquidityRaydiumClassicInstruction = async (user: PublicKey, amm: AMMData, lp_amount: number): Promise<TransactionInstruction> => {
     let pool_data = await request_raw_account_data("", amm.pool);
     const [ray_pool] = RaydiumAMM.struct.deserialize(pool_data);
 

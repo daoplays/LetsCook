@@ -91,7 +91,7 @@ function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
 
     return buf;
 }
-export const GetEditListingInstruction = async (user: PublicKey, new_listing: NewListing) => {
+export const GetEditListingInstruction = async (user: PublicKey, new_listing: NewListing): Promise<TransactionInstruction> => {
     if (user === null) return;
 
     const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });

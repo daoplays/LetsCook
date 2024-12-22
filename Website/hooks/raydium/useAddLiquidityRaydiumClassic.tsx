@@ -87,7 +87,7 @@ export const GetAddLiquidityRaydiumClassicInstruction = async (
     amm: AMMData,
     token_amount: number,
     sol_amount: number,
-) => {
+): Promise<TransactionInstruction> => {
     // if we have already done this then just skip this step
 
     let pool_data = await request_raw_account_data("", amm.pool);

@@ -21,7 +21,7 @@ interface BuyTicketsProps {
     value: number;
 }
 
-export const GetBuyTicketsInstruction = async (user:PublicKey,{ launchData, value }: BuyTicketsProps) => {
+export const GetBuyTicketsInstruction = async (user: PublicKey, launchData: LaunchData, value: number): Promise<TransactionInstruction> => {
     if (launchData === null) {
         return;
     }
@@ -122,7 +122,7 @@ const useBuyTickets = ({ launchData, value }: BuyTicketsProps) => {
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const BuyTickets = async () => {
-        let instruction = await GetBuyTicketsInstruction(wallet.publicKey, {launchData, value});
+        let instruction = await GetBuyTicketsInstruction(wallet.publicKey, launchData, value);
         await sendTransaction({
             instructions: [instruction],
             onSuccess: () => {

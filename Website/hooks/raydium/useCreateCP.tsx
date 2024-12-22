@@ -130,7 +130,7 @@ export function getAMMQuoteAccount(base_mint: PublicKey, quote_mint: PublicKey) 
     )[0];
 }
 
-export const getCreateCPInstruction = async (user:PublicKey, listing: ListingData, launch: LaunchData) => {
+export const getCreateCPInstruction = async (user:PublicKey, listing: ListingData, launch: LaunchData): Promise<TransactionInstruction> => {
     let sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
 
     let base_mint = listing.mint;

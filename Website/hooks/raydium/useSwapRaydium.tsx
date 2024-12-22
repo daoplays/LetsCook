@@ -80,7 +80,7 @@ export const GetSwapRaydiumInstruction = async (
     token_amount: number,
     sol_amount: number,
     order_type: number,
-) => {
+): Promise<TransactionInstruction> => {
     // if we have already done this then just skip this step
     let base_mint = amm.base_mint;
     let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");

@@ -65,7 +65,7 @@ class RaydiumRemoveLiquidity_Instruction {
     );
 }
 
-export const GetRemoveLiquidityRaydiumInstruction = async (user:PublicKey, amm: AMMData, lp_amount: number) => {
+export const GetRemoveLiquidityRaydiumInstruction = async (user:PublicKey, amm: AMMData, lp_amount: number): Promise<TransactionInstruction> => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 

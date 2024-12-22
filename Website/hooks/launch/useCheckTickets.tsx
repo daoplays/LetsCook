@@ -15,7 +15,7 @@ import { JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { list } from "@chakra-ui/react";
 
-export const GetCheckTicketsIntruction = async (connection: Connection, user: PublicKey, launchData: LaunchData, listing: ListingData) => {
+export const GetCheckTicketsIntruction = async (connection: Connection, user: PublicKey, launchData: LaunchData, listing: ListingData): Promise<TransactionInstruction> => {
     if (launchData === null) {
         return;
     }

@@ -26,7 +26,7 @@ import { getMintData } from "@letscook/sdk";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { toast } from "react-toastify";
 
-export const GetInitAMMInstruction = async (connection: Connection, launchData: LaunchData, listing: ListingData, user: PublicKey) => {
+export const GetInitAMMInstruction = async (connection: Connection, launchData: LaunchData, listing: ListingData, user: PublicKey): Promise<TransactionInstruction> => {
     // if we have already done this then just skip this step
     let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launchData.page_name), Buffer.from("Launch")], PROGRAM)[0];
 

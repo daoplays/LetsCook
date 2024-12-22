@@ -15,7 +15,7 @@ import useSendTransaction from "../useSendTransaction";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { LaunchData } from "@letscook/sdk/dist/state/launch";
 
-export const GetRefurndTicketsInstruction = async (user: PublicKey, listing: ListingData, launchData: LaunchData) => {
+export const GetRefurndTicketsInstruction = async (user: PublicKey, listing: ListingData, launchData: LaunchData): Promise<TransactionInstruction> => {
     if (user.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
         alert("Launch creator cannot buy tickets");
         return;
