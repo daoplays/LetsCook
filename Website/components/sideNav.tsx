@@ -47,11 +47,6 @@ const tabs = {
             tab: "Tokens",
             url: "/trade",
         },
-        {
-            icon: (size: number) => <FaCalendarDays size={size} />,
-            tab: "Token Launches",
-            url: "/calendar",
-        },
     ],
 
     profile: [
@@ -145,6 +140,7 @@ const SideNav = () => {
             <VStack h="100%" w="100%" px={sm ? 0 : "sm"}>
                 <VStack align={!sidePanelCollapsed ? "center" : "start"} h="100%" w="100%" px={4} py={5}>
                     <Tab tab={"Home"} icon={<FaHome size={24} />} isActive={pathname === "/"} url={"/"} />
+                    <Tab tab={"Token Launches"} icon={<FaCalendarDays size={24} />} isActive={pathname === "/calendar"} url={"/calendar"} />
                     <Tab
                         tab={"Leaderboard"}
                         icon={<MdLeaderboard size={24} />}
