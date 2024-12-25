@@ -85,6 +85,7 @@ class RaydiumSwap_Instruction {
     );
 }
 export const GetSwapRaydiumClassicInstruction = async (
+    connection: Connection,
     user: PublicKey,
     amm: AMMData,
     token_amount: number,
@@ -92,8 +93,6 @@ export const GetSwapRaydiumClassicInstruction = async (
     order_type: number,
 ): Promise<TransactionInstruction> => {
     // if we have already done this then just skip this step
-
-    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
     let base_mint = amm.base_mint;
     let quote_mint = amm.quote_mint;
@@ -204,12 +203,13 @@ export const GetSwapRaydiumClassicInstruction = async (
 };
 const useSwapRaydiumClassic = (amm: AMMData) => {
     const wallet = useWallet();
+    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     const { WrapSOL, isLoading: wrap_loading } = useWrapSOL();
 
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const SwapRaydiumClassic = async (token_amount: number, sol_amount: number, order_type: number) => {
-        let instruction = await GetSwapRaydiumClassicInstruction(wallet.publicKey, amm, token_amount, sol_amount, order_type);
+        let instruction = await GetSwapRaydiumClassicInstruction(connection, wallet.publicKey, amm, token_amount, sol_amount, order_type);
         await sendTransaction({
             instructions: [instruction],
             onSuccess: () => {

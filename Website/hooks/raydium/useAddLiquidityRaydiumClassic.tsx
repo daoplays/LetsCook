@@ -87,7 +87,7 @@ export const GetAddLiquidityRaydiumClassicInstruction = async (
     amm: AMMData,
     token_amount: number,
     sol_amount: number,
-): Promise<TransactionInstruction> => {
+): Promise<TransactionInstruction[]> => {
     // if we have already done this then just skip this step
 
     let pool_data = await request_raw_account_data("", amm.pool);
@@ -161,8 +161,22 @@ export const GetAddLiquidityRaydiumClassicInstruction = async (
         programId: getRaydiumPrograms(Config).AmmV4,
         data: raydium_add_liquidity_data,
     });
-    
-    return list_instruction;
+    let create_lp_ata = createAssociatedTokenAccountInstruction(
+        user,
+        user_lp_account,
+        user,
+        poolInfo.lpMint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+
+    let ata_balance = await connection.getBalance(user_lp_account);
+    let instructions: TransactionInstruction[] = [];
+    if (ata_balance === 0) {
+        instructions.push(create_lp_ata);
+    }
+    instructions.push(list_instruction);
+    return instructions;
 };
 
 const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
@@ -173,7 +187,7 @@ const useAddLiquidityRaydiumClassic = (amm: AMMData) => {
     const AddLiquidityRaydiumClassic = async (token_amount: number, sol_amount: number) => {
         let instruction = await GetAddLiquidityRaydiumClassicInstruction(connection, wallet.publicKey, amm, token_amount, sol_amount);
         await sendTransaction({
-            instructions: [instruction],
+            instructions: instruction,
             onSuccess: () => {
                 // Handle success
             },

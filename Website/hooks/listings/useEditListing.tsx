@@ -91,10 +91,12 @@ function serialise_CreateListing_instruction(new_listing: NewListing): Buffer {
 
     return buf;
 }
-export const GetEditListingInstruction = async (user: PublicKey, new_listing: NewListing): Promise<TransactionInstruction> => {
+export const GetEditListingInstruction = async (
+    connection: Connection,
+    user: PublicKey,
+    new_listing: NewListing,
+): Promise<TransactionInstruction> => {
     if (user === null) return;
-
-    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
     let program_data_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], PROGRAM)[0];
     let program_sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
@@ -129,11 +131,12 @@ export const GetEditListingInstruction = async (user: PublicKey, new_listing: Ne
 };
 const useEditListing = () => {
     const wallet = useWallet();
+    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     const router = useRouter();
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const EditListing = async (new_listing: NewListing) => {
-        let instruction = await GetEditListingInstruction(wallet.publicKey, new_listing);
+        let instruction = await GetEditListingInstruction(connection, wallet.publicKey, new_listing);
         await sendTransaction({
             instructions: [instruction],
             onSuccess: () => {

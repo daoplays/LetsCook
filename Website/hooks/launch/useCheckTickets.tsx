@@ -15,7 +15,12 @@ import { JoinData, LaunchData } from "@letscook/sdk/dist/state/launch";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { list } from "@chakra-ui/react";
 
-export const GetCheckTicketsIntruction = async (connection: Connection, user: PublicKey, launchData: LaunchData, listing: ListingData): Promise<TransactionInstruction> => {
+export const GetCheckTicketsIntruction = async (
+    connection: Connection,
+    user: PublicKey,
+    launchData: LaunchData,
+    listing: ListingData,
+): Promise<TransactionInstruction> => {
     if (launchData === null) {
         return;
     }
@@ -69,14 +74,19 @@ const useCheckTickets = (launchData: LaunchData, listing: ListingData) => {
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const CheckTickets = async () => {
+        let instructions: TransactionInstruction[] = [];
         let instruction = await GetCheckTicketsIntruction(connection, wallet.publicKey, launchData, listing);
         let computeUnits = 400_000;
+
         if (launchData.flags[LaunchFlags.AMMProvider] == 0 && launchData.flags[LaunchFlags.LPState] < 2) {
+            let init_idx = await GetInitAMMInstruction(connection, launchData, listing, wallet.publicKey);
+            instructions.push(init_idx);
             computeUnits = 600_000;
         }
 
+        instructions.push(instruction);
         await sendTransaction({
-            instructions: [instruction],
+            instructions: instructions,
             onSuccess: () => {
                 // Handle success
             },

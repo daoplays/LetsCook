@@ -55,9 +55,15 @@ class RaydiumAddLiquidity_Instruction {
     );
 }
 
-export const GetAddLiquidityRaydiumInstruction = async (connection:Connection, user: PublicKey, amm: AMMData, lp_amount: number, token_amount: number, sol_amount: number ): Promise<TransactionInstruction> => {
+export const GetAddLiquidityRaydiumInstruction = async (
+    connection: Connection,
+    user: PublicKey,
+    amm: AMMData,
+    lp_amount: number,
+    token_amount: number,
+    sol_amount: number,
+): Promise<TransactionInstruction[]> => {
     // if we have already done this then just skip this step
-
 
     let base_mint = amm.base_mint;
     let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
@@ -127,8 +133,21 @@ export const GetAddLiquidityRaydiumInstruction = async (connection:Connection, u
         programId: RAYDIUM_PROGRAM,
         data: raydium_add_liquidity_data,
     });
-
-    return list_instruction
+    let create_lp_ata = createAssociatedTokenAccountInstruction(
+        user,
+        user_lp_account,
+        user,
+        lp_mint,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID,
+    );
+    let ata_balance = await connection.getBalance(user_lp_account);
+    let instructions: TransactionInstruction[] = [];
+    if (ata_balance === 0) {
+        instructions.push(create_lp_ata);
+    }
+    instructions.push(list_instruction);
+    return instructions;
 };
 
 const useAddLiquidityRaydium = (amm: AMMData) => {
@@ -139,7 +158,7 @@ const useAddLiquidityRaydium = (amm: AMMData) => {
     const AddLiquidityRaydium = async (lp_amount: number, token_amount: number, sol_amount: number) => {
         let instruction = await GetAddLiquidityRaydiumInstruction(connection, wallet.publicKey, amm, lp_amount, token_amount, sol_amount);
         await sendTransaction({
-            instructions: [instruction],
+            instructions: instruction,
             onSuccess: () => {
                 // Handle success
             },

@@ -24,6 +24,7 @@ import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { getMintData } from "@letscook/sdk";
 
 export const GetClaimTokensInstruction = async (
+    connection: Connection,
     user: PublicKey,
     launchData: LaunchData,
     listingData: ListingData,
@@ -32,7 +33,6 @@ export const GetClaimTokensInstruction = async (
         return;
     }
 
-    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
 
     if (user.toString() == launchData.keys[LaunchKeys.Seller].toString()) {
         alert("Launch creator cannot buy tickets");
@@ -153,9 +153,10 @@ export const GetClaimTokensInstruction = async (
 const useClaimTokens = (launchData: LaunchData, listingData: ListingData) => {
     const wallet = useWallet();
 
+    const connection = new Connection(Config.RPC_NODE, { wsEndpoint: Config.WSS_NODE });
     const { sendTransaction, isLoading } = useSendTransaction();
     const ClaimTokens = async () => {
-        let instruction = await GetClaimTokensInstruction(wallet.publicKey, launchData, listingData);
+        let instruction = await GetClaimTokensInstruction(connection,wallet.publicKey, launchData, listingData);
         await sendTransaction({
             instructions: [instruction],
             onSuccess: () => {
