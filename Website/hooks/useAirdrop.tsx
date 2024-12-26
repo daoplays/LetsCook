@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createTransferInstruction } from "@solana/spl-token";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createTransferInstruction, ACCOUNT_SIZE } from "@solana/spl-token";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { bignum_to_num, MintData, TokenAccount } from "@/components/Solana/state";
 import { getMintData } from "@/components/amm/launch";
@@ -9,6 +9,7 @@ import { CollectionV1 } from "@metaplex-foundation/mpl-core";
 import { getCollectionAssets } from "./data/useNFTBalance";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
 import { CollectionWithMetadata } from "@/pages/airdrop";
+import useSendTransaction from "./useSendTransaction";
 
 interface TokenHolder {
     address: string;
@@ -17,7 +18,7 @@ interface TokenHolder {
     airdropAddress?: string;
 }
 
-interface AirdropRecipient {
+export interface AirdropRecipient {
     address: string;
     amount: string;
     airdropAddress?: string;
@@ -28,6 +29,8 @@ type DistributionType = "fixed" | "even" | "proRata";
 export const useAirdrop = () => {
     const { connection } = useConnection();
     const wallet = useWallet();
+
+    const {sendTransaction} = useSendTransaction();
 
     const [distributions, setDistributions] = useState<AirdropRecipient[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -205,10 +208,77 @@ export const useAirdrop = () => {
         [filteredHolders],
     );
 
+    const createTempAccount = async (recipients: AirdropRecipient[]) => {
+
+        const tempKeypair = Keypair.generate();
+
+        const rentExemptBalance = await connection.getMinimumBalanceForRentExemption(ACCOUNT_SIZE);
+        const estimatedFee = LAMPORTS_PER_SOL * 0.000005;  
+        const reqBalance = (rentExemptBalance + estimatedFee) * (recipients.length + 1);
+
+        const setupTx = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: wallet.publicKey,
+                toPubkey: tempKeypair.publicKey,
+                lamports: reqBalance
+            })
+        );
+    
+        const uniqueMints = Array.from(new Set(recipients.map(r => r.airdropAddress).filter(Boolean)));
+    
+        for (const mintAddress of uniqueMints) {
+            const mintData = await getMintData(mintAddress);
+
+            let totalAmount = 0;
+            for (let i = 0; i < recipients.length; i++) {
+                if (recipients[i].airdropAddress !== mintAddress)
+                    continue;
+
+                console.log("amount ", recipients[i].amount);
+                totalAmount += parseFloat(recipients[i].amount) * Math.pow(10, mintData.mint.decimals);
+            }
+          
+            const tempATA = await getAssociatedTokenAddress(
+                mintData.mint.address,
+                tempKeypair.publicKey,
+                false,
+                mintData.token_program
+            );
+
+            const userATA = await getAssociatedTokenAddress(
+                mintData.mint.address,
+                wallet.publicKey,
+                false,
+                mintData.token_program
+            );
+    
+            setupTx.add(
+                createAssociatedTokenAccountInstruction(
+                    wallet.publicKey,
+                    tempATA,
+                    tempKeypair.publicKey,
+                    mintData.mint.address,
+                    mintData.token_program
+                ),
+                createTransferInstruction(
+                    userATA,
+                    tempATA,
+                    wallet.publicKey,
+                    totalAmount,
+                    [],
+                    mintData.token_program
+                )
+            );
+        }
+    
+        sendTransaction({instructions: setupTx.instructions});
+        return { keypair: tempKeypair };
+    };
+
     type ProgressCallback = (progress: number, signature?: string, recipientAddresses?: string[]) => void;
 
     const executeAirdrop = useCallback(
-        async (recipients: AirdropRecipient[], onProgress: ProgressCallback = () => {}): Promise<boolean> => {
+        async (recipients: AirdropRecipient[], onProgress: ProgressCallback = () => {}, useTempAccount: boolean = true): Promise<boolean> => {
             if (!wallet || !wallet.publicKey) {
                 toast.error("Wallet not connected");
                 return;
@@ -229,6 +299,11 @@ export const useAirdrop = () => {
 
                 for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
                     batches.push(recipients.slice(i, i + BATCH_SIZE));
+                }
+
+                let tempAccount = null;
+                if (useTempAccount) {
+                    tempAccount = await createTempAccount(recipients);
                 }
 
                 // Get or create associated token accounts
@@ -259,9 +334,11 @@ export const useAirdrop = () => {
                         const recipientPubkey = new PublicKey(recipient.address);
                         const airdropAmount = Math.floor(parseFloat(recipient.amount) * Math.pow(10, mintData.mint.decimals));
 
+                        const senderPubkey = tempAccount ? tempAccount.keypair.publicKey : wallet.publicKey;
+                        
                         const senderATA = await getAssociatedTokenAddress(
                             mintData.mint.address,
-                            wallet.publicKey,
+                            senderPubkey,
                             false,
                             mintData.token_program,
                         );
@@ -273,14 +350,14 @@ export const useAirdrop = () => {
                             mintData.token_program,
                         );
 
-                        console.log("recipientATA: ", recipientATA.toString());
+                        //console.log("recipientATA: ", recipientATA.toString());
 
                         // Check if recipient has an associated token account
                         const recipientAccount = await connection.getAccountInfo(recipientATA);
                         if (!recipientAccount) {
                             instructions.push(
                                 createAssociatedTokenAccountInstruction(
-                                    wallet.publicKey,
+                                    senderPubkey,
                                     recipientATA,
                                     recipientPubkey,
                                     mintData.mint.address,
@@ -290,7 +367,7 @@ export const useAirdrop = () => {
                         }
 
                         instructions.push(
-                            createTransferInstruction(senderATA, recipientATA, wallet.publicKey, airdropAmount, [], mintData.token_program),
+                            createTransferInstruction(senderATA, recipientATA, senderPubkey, airdropAmount, [], mintData.token_program),
                         );
                     }
 
@@ -299,12 +376,18 @@ export const useAirdrop = () => {
                     // Get latest blockhash
                     const blockhash = await connection.getLatestBlockhash();
                     transaction.recentBlockhash = blockhash.blockhash;
-                    transaction.feePayer = wallet.publicKey;
 
-                    // Sign and send transaction
-                    let signed_transaction = await wallet.signTransaction(transaction);
+                    transaction.feePayer = tempAccount ? tempAccount.keypair.publicKey : wallet.publicKey;
 
-                    var signature = await connection.sendRawTransaction(signed_transaction.serialize(), { skipPreflight: true });
+                    let signature;
+                    if (tempAccount) {
+                        transaction.sign(tempAccount.keypair);
+                        signature = await connection.sendRawTransaction(transaction.serialize(), { skipPreflight: true });
+                    } else {
+                        const signed = await wallet.signTransaction(transaction);
+                        signature = await connection.sendRawTransaction(signed.serialize(), { skipPreflight: true });
+                    }
+                    
                     await connection.confirmTransaction(
                         {
                             blockhash: blockhash.blockhash,
@@ -319,6 +402,29 @@ export const useAirdrop = () => {
                         signature,
                         batch.map((r) => r.address),
                     );
+                }
+
+                // At end of executeAirdrop:
+                if (tempAccount) {
+                    const balance = await connection.getBalance(tempAccount.keypair.publicKey);
+                    const balance_post_fees = balance - LAMPORTS_PER_SOL * 0.000005;
+                    
+                    if (balance_post_fees > 0) {
+                    const closeTx = new Transaction().add(
+                        SystemProgram.transfer({
+                            fromPubkey: tempAccount.keypair.publicKey,
+                            toPubkey: wallet.publicKey, 
+                            lamports: balance_post_fees
+                        })
+                    );
+                    const blockhash = await connection.getLatestBlockhash();
+                    closeTx.recentBlockhash = blockhash.blockhash;
+
+                    closeTx.feePayer = tempAccount.keypair.publicKey;
+
+                    closeTx.sign(tempAccount.keypair);
+                    await connection.sendRawTransaction(closeTx.serialize());
+                }
                 }
 
                 return true;

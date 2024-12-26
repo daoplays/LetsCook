@@ -19,7 +19,7 @@ import {
     Link,
 } from "@chakra-ui/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAirdrop } from "../hooks/useAirdrop";
+import { AirdropRecipient, useAirdrop } from "../hooks/useAirdrop";
 import { PublicKey } from "@solana/web3.js";
 import { RiDeleteBinLine, RiDownloadLine } from "react-icons/ri"; // Import the icon
 import useResponsive from "@/hooks/useResponsive";
@@ -82,7 +82,8 @@ export const AirdropPage = () => {
     } = useAirdrop();
 
     // Modify this section in the distribution calculations
-    const distributions = useMemo(() => {
+    const distributions : AirdropRecipient[] = useMemo(() => {
+        console.log("holders", holders)
         // If holders have CSV amounts, use those directly and disable the distribution controls
         const hasPresetAmounts = holders.some((holder) => holder.amount !== undefined);
         if (hasPresetAmounts) {
@@ -201,6 +202,7 @@ export const AirdropPage = () => {
             setIsAirdropping(true);
             const newSignatures = new Map<string, string>();
 
+            console.log(distributions)
             // Create distributions with airdropAddress included
             const distributionsWithToken = distributions.map((dist) => {
                 const holder = holders.find((h) => h.address === dist.address);
