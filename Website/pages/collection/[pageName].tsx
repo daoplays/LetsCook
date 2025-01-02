@@ -142,11 +142,31 @@ const CollectionSwapPage = () => {
         sm_checking_w: 420,
     };
 
+    useEffect(() => {
+        if (assignmentData?.status === 2) {
+            openAssetModal();
+        }
+
+        if (assignmentData?.status === 1) {
+            openAssetModal();
+        }
+    }, [isMintLoading, isMintRandomLoading]);
+
     const updateAssignment = useCallback(async () => {
         // if we are started to wait for randoms then open up the modal
         if (!assignmentData.random_address.equals(SYSTEM_KEY)) {
-            openAssetModal();
+            if (validRandoms) {
+                if (assignmentData.status === 0) {
+                    if (collection.collection_meta["__kind"] === "RandomFixedSupply") {
+                        MintNFT();
+                    }
+                    if (collection.collection_meta["__kind"] === "RandomUnlimited") {
+                        MintRandom();
+                    }
+                }
+            }
         }
+
 
         if (assignmentData.status < 2) {
             return;
@@ -155,7 +175,7 @@ const CollectionSwapPage = () => {
             //setExpectingUpdate(true);
             fetchNFTBalance();
         }
-    }, [assignmentData, openAssetModal, fetchNFTBalance, checkNFTBalance]);
+    }, [assignmentData, openAssetModal, fetchNFTBalance, checkNFTBalance, validRandoms]);
 
     useEffect(() => {
         if (!assignmentData) return;
@@ -235,8 +255,16 @@ const CollectionSwapPage = () => {
             ? whiteListTokenBalance >= bignum_to_num(collectionPlugins.whitelistAmount) / Math.pow(10, whiteListDecimals)
             : true;
 
-    //console.log(collection.keys[CollectionKeys.TeamWallet].toString())
-    //console.log(whiteListTokenBalance, "whiteListTokenBalance >= collectionPlugins.whitelistAmount", enoughTokenBalance);
+    function getBalanceMessage(enoughTokenBalance, hasEnoughWhitelistToken, hasEnoughCollection) {
+        if (!enoughTokenBalance) {
+            return "You don't have enough token balance";
+        } else if (!hasEnoughWhitelistToken) {
+            return "You don't have WhiteList token balance";
+        } else if (!hasEnoughCollection) {
+            return "There are no supplies left";
+        }
+        return ""; // Return an empty string if both conditions are satisfied
+    }
     return (
         <>
             <Head>
@@ -244,7 +272,7 @@ const CollectionSwapPage = () => {
             </Head>
             <main style={{ background: "linear-gradient(180deg, #292929 10%, #0B0B0B 100%)", height: "auto" }}>
                 <CollectionFeaturedBanner featuredLaunch={collection} isHomePage={false} />
-                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="ml-4 mt-2">
+                <HStack align="center" spacing={0} zIndex={99} w="100%" mt={xs ? 1 : -2} className="mt-2 ml-4">
                     {/* add rewards  */}
                     {["Mint", "My NFTs", "Marketplace"].map((name, i) => {
                         const isActive = selected === name;
@@ -607,15 +635,18 @@ const CollectionSwapPage = () => {
                                                     <HStack w="100%">
                                                         {assignmentData === null || assignmentData.status > 0 ? (
                                                             <Tooltip
-                                                                label={
-                                                                    enoughTokenBalance == false
-                                                                        ? "You don't have enough token balance"
-                                                                        : hasEnoughWhitelistToken == false &&
-                                                                          "You don't have WhiteList token balance"
-                                                                }
+                                                                label={getBalanceMessage(
+                                                                    enoughTokenBalance,
+                                                                    hasEnoughWhitelistToken,
+                                                                    collection.num_available !== 0,
+                                                                )}
                                                                 hasArrow
                                                                 offset={[0, 10]}
-                                                                isDisabled={enoughTokenBalance && hasEnoughWhitelistToken}
+                                                                isDisabled={
+                                                                    enoughTokenBalance &&
+                                                                    hasEnoughWhitelistToken &&
+                                                                    collection.num_available !== 0
+                                                                }
                                                             >
                                                                 <Button
                                                                     w="100%"
@@ -633,7 +664,8 @@ const CollectionSwapPage = () => {
                                                                     isDisabled={
                                                                         enoughTokenBalance == false ||
                                                                         hasEnoughWhitelistToken == false ||
-                                                                        isLoading
+                                                                        isLoading ||
+                                                                        collection.num_available === 0
                                                                     }
                                                                 >
                                                                     Confirm {collectionPlugins.probability}
