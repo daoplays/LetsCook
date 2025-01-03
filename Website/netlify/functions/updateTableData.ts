@@ -1,12 +1,13 @@
 import admin from "firebase-admin";
 import { MarketMakingRow } from "../../hooks/tables/useMMTable";
-import { Config, PROGRAM } from "../../components/Solana/constants";
+import { CollectionKeys, Config, PROGRAM } from "../../components/Solana/constants";
 import { PublicKey, LAMPORTS_PER_SOL, Connection } from "@solana/web3.js";
 import { RunGPA, GPAccount, bignum_to_num, MintData } from "../../components/Solana/state";
 import { AMMData, reward_date, reward_schedule } from "../../components/Solana/jupiter_state";
-import { getTradeMintData } from "../../utils/getTokenMintData";
 import { ListingData } from "@letscook/sdk/dist/state/listing";
 import { fetchFromFirebase } from "@/utils/firebaseUtils";
+import { CollectionData, getCollectionPlugins } from "@letscook/sdk";
+import { CollectionRow } from "@/hooks/tables/useCollectionTable";
 
 // Initialize Firebase Admin SDK
 let firebaseApp = null;
@@ -64,9 +65,39 @@ function serializeMMData(row: MarketMakingRow) {
     };
 }
 
-exports.handler = async function (event, context) {
-    console.log("Starting market making data update");
+// Helper function to serialize collection data
+function serializeCollectionData(row: CollectionRow) {
+    return {
+        id: row.id,
+        name: row.name,
+        iconUrl: row.iconUrl,
+        price: {
+            value: row.price.value,
+            display: row.price.display,
+            tokenIcon: row.price.tokenIcon,
+            tokenSymbol: row.price.tokenSymbol
+        },
+        unwrapFee: {
+            value: row.unwrapFee.value,
+            display: row.unwrapFee.display,
+            isMintOnly: row.unwrapFee.isMintOnly
+        },
+        supply: {
+            total: row.supply.total,
+            available: row.supply.available
+        },
+        hype: {
+            positiveVotes: row.hype.positiveVotes,
+            negativeVotes: row.hype.negativeVotes,
+            score: row.hype.score,
+            launchId: row.hype.launchId
+        },
+        hasDescription: row.hasDescription
+    };
+}
 
+
+exports.handler = async function (event, context) {
     if (event.httpMethod !== "POST") {
         return { statusCode: 405, body: "Method Not Allowed" };
     }
@@ -83,6 +114,7 @@ exports.handler = async function (event, context) {
 
         // Sort program data into respective arrays
         let ammData: AMMData[] = [];
+        let collectionData: CollectionData[] = [];
         let listingData = new Map();
         let mintKeys: string[] = [];
 
@@ -95,7 +127,18 @@ exports.handler = async function (event, context) {
                     ammData.push(amm);
                     continue;
                 } catch (error) {
-                    console.log("Failed to deserialize listing data:", error);
+                    console.log("Failed to deserialize amm data:", error);
+                    continue;
+                }
+            }
+
+            if (data[0] === 8) {
+                try {
+                    const [collection] = CollectionData.struct.deserialize(data);
+                    collectionData.push(collection);
+                    continue;
+                } catch (error) {
+                    console.log("Failed to deserialize collection data:", error);
                     continue;
                 }
             }
@@ -184,16 +227,62 @@ exports.handler = async function (event, context) {
             });
         }
 
-        
-        const mmTableDatabase = db.ref(Config.NETWORK + "/marketMaking/");
+        // Process collection data
+        const processedCollectionRows: CollectionRow[] = [];
+
+        for (const collection of collectionData) {
+            const pluginData = getCollectionPlugins(collection);
+
+            const numAvailable = collection.collection_meta["__kind"] === "RandomUnlimited" 
+                ? "Unlimited" 
+                : collection.num_available.toString();
+
+            const normalizedPrice = bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
+
+            processedCollectionRows.push({
+                id: collection.page_name,
+                name: collection.collection_name,
+                iconUrl: collection.collection_icon_url,
+                price: {
+                    value: normalizedPrice,
+                    display: normalizedPrice.toFixed(3),
+                    tokenIcon: collection.token_icon_url,
+                    tokenSymbol: collection.token_symbol
+                },
+                unwrapFee: {
+                    value: collection.swap_fee,
+                    display: pluginData.mintOnly ? "--" : (collection.swap_fee / 100).toString(),
+                    isMintOnly: pluginData.mintOnly
+                },
+                supply: {
+                    total: Number(collection.total_supply),
+                    available: numAvailable
+                },
+                hype: {
+                    positiveVotes: collection.positive_votes,
+                    negativeVotes: collection.negative_votes,
+                    score: collection.positive_votes - collection.negative_votes,
+                    launchId: bignum_to_num(collection.launch_id)
+                },
+                hasDescription: collection.description !== ""
+            });
+        }
 
         const now = new Date().getTime();
+
+        const mmTableDatabase = db.ref(Config.NETWORK + "/marketMaking/");
         const data = {
             timestamp: now,
             rows: processedRows.map(row => serializeMMData(row))
         };
-
         await mmTableDatabase.set(data);
+
+        // Save collection data
+        const collectionTableDatabase = db.ref(Config.NETWORK + "/collections/");
+        await collectionTableDatabase.set({
+            timestamp: now,
+            rows: processedCollectionRows.map(row => serializeCollectionData(row))
+        });
 
         return {
             statusCode: 200,

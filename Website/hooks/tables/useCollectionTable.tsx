@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { CollectionData, getCollectionPlugins } from '@letscook/sdk/dist/state/collections';
-import { bignum_to_num } from '@letscook/sdk/dist/utils';
 import useAppRoot from '../../context/useAppRoot';
-import { CollectionKeys } from '@/components/Solana/constants';
+import { fetchFromFirebase } from '@/utils/firebaseUtils';
+import { CollectionKeys, Config } from '@/components/Solana/constants';
+import { bignum_to_num } from '@letscook/sdk';
 
 export interface CollectionRow {
     id: string;                    // page_name
@@ -39,64 +40,101 @@ export interface SortConfig {
 
 export const useCollectionTable = (collectionList: CollectionData[]) => {
     const { mintData } = useAppRoot();
+    const [baseData, setBaseData] = useState<CollectionRow[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+    const [initialLoadComplete, setInitialLoadComplete] = useState(false);
     const [sortConfig, setSortConfig] = useState<SortConfig>({
         field: 'hype',
         direction: 'desc'
     });
 
+    // Load Firebase data for initial quick display
+    useEffect(() => {
+        const loadFirebaseData = async () => {
+            try {
+                const fbData = await fetchFromFirebase(`${Config.NETWORK}/collections`);
+                if (fbData?.rows && fbData.timestamp) {
+                    setBaseData(fbData.rows);
+                    setIsLoading(false);
+                }
+            } catch (err) {
+                console.warn("Failed to load Firebase data:", err);
+            } finally {
+                // Mark initial load as complete regardless of success or failure
+                setInitialLoadComplete(true);
+            }
+        };
+
+        loadFirebaseData();
+    }, []);
+
     // Process raw collection data into display-ready format
-    const processedData = useMemo(() => {
-        if (!mintData) return [];
+    useEffect(() => {
+        if (!initialLoadComplete || !mintData || !collectionList) {
+            return;
+        }
 
-        return collectionList.map(collection => {
-            const pluginData = getCollectionPlugins(collection);
-            const tokenMint = mintData.get(collection.keys[CollectionKeys.MintAddress].toString());
-            
-            if (!tokenMint) return null;
+        try {
+            const processedRows: CollectionRow[] = [];
 
-            const numAvailable = collection.collection_meta["__kind"] === "RandomUnlimited" 
-                ? "Unlimited" 
-                : collection.num_available.toString();
+            for (const collection of collectionList) {
+                const pluginData = getCollectionPlugins(collection);
+                const tokenMint = mintData.get(collection.keys[CollectionKeys.MintAddress].toString());
+                
+                if (!tokenMint) continue;
 
-            const normalizedPrice = bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
+                const numAvailable = collection.collection_meta["__kind"] === "RandomUnlimited" 
+                    ? "Unlimited" 
+                    : collection.num_available.toString();
 
-            return {
-                id: collection.page_name,
-                name: collection.collection_name,
-                iconUrl: collection.collection_icon_url,
-                hype: {
-                    positiveVotes: collection.positive_votes,
-                    negativeVotes: collection.negative_votes,
-                    score: collection.positive_votes - collection.negative_votes,
-                    launchId: bignum_to_num(collection.launch_id)
-                },
-                price: {
-                    value: normalizedPrice,
-                    display: normalizedPrice.toFixed(3),
-                    tokenIcon: tokenMint.icon,
-                    tokenSymbol: tokenMint.symbol
-                },
-                unwrapFee: {
-                    value: collection.swap_fee,
-                    display: pluginData.mintOnly ? "--" : (collection.swap_fee / 100).toString(),
-                    isMintOnly: pluginData.mintOnly
-                },
-                supply: {
-                    total: Number(collection.total_supply),
-                    available: numAvailable
-                },
-                hasDescription: collection.description !== ""
-            };
-        }).filter((row): row is CollectionRow => row !== null);
-    }, [collectionList, mintData]);
+                const normalizedPrice = bignum_to_num(collection.swap_price) / Math.pow(10, collection.token_decimals);
+
+                processedRows.push({
+                    id: collection.page_name,
+                    name: collection.collection_name,
+                    iconUrl: collection.collection_icon_url,
+                    hype: {
+                        positiveVotes: collection.positive_votes,
+                        negativeVotes: collection.negative_votes,
+                        score: collection.positive_votes - collection.negative_votes,
+                        launchId: bignum_to_num(collection.launch_id)
+                    },
+                    price: {
+                        value: normalizedPrice,
+                        display: normalizedPrice.toFixed(3),
+                        tokenIcon: tokenMint.icon,
+                        tokenSymbol: tokenMint.symbol
+                    },
+                    unwrapFee: {
+                        value: collection.swap_fee,
+                        display: pluginData.mintOnly ? "--" : (collection.swap_fee / 100).toString(),
+                        isMintOnly: pluginData.mintOnly
+                    },
+                    supply: {
+                        total: Number(collection.total_supply),
+                        available: numAvailable
+                    },
+                    hasDescription: collection.description !== ""
+                });
+            }
+
+            setBaseData(processedRows);
+            setError(null);
+        } catch (err) {
+            setError(err instanceof Error ? err : new Error('Failed to process collection data'));
+        } finally {
+            setIsLoading(false);
+        }
+    }, [mintData, collectionList, initialLoadComplete]);
 
     // Handle sorting
     const sortedData = useMemo(() => {
         if (!sortConfig.field) {
-            return processedData;
+            return baseData;
         }
 
-        return [...processedData].sort((a, b) => {
+        return [...baseData].sort((a, b) => {
             let comparison = 0;
             
             switch(sortConfig.field) {
@@ -127,7 +165,7 @@ export const useCollectionTable = (collectionList: CollectionData[]) => {
 
             return sortConfig.direction === 'asc' ? comparison : -comparison;
         });
-    }, [processedData, sortConfig]);
+    }, [baseData, sortConfig]);
 
     const handleSort = useCallback((field: string | null) => {
         if (!field) return;
@@ -143,6 +181,8 @@ export const useCollectionTable = (collectionList: CollectionData[]) => {
 
     return {
         rows: sortedData,
+        isLoading,
+        error,
         sortConfig,
         handleSort
     };
