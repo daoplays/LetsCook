@@ -152,9 +152,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
     const check_program_data = useRef<boolean>(true);
     const last_program_data_update = useRef<number>(0);
-    const [databaseLoaded, setDatabaseLoaded] = useState<boolean>(false);
 
-    const user_balance_ws_id = useRef<number | null>(null);
     const program_ws_id = useRef<number | null>(null);
 
     const newLaunchData = useRef<LaunchDataUserInput>({ ...defaultUserInput });
@@ -350,80 +348,6 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         [wallet],
     );
 
-    // Helper function to deserialize account data
-    function deserializeGPAccount(serializedAccount: any): GPAccount {
-        return {
-            pubkey: new PublicKey(serializedAccount.pubkey),
-            data: Buffer.from(serializedAccount.data, "base64"),
-        };
-    }
-
-    const fetchInitialData = useCallback(async () => {
-        if (lastDBUpdate.current > 0) return;
-
-        const app = initializeApp(firebaseConfig);
-
-        // Initialize Realtime Database and get a reference to the service
-        const database = getDatabase(app);
-
-        const accountsDB = await get(ref(database, Config.NETWORK + "/accounts/"));
-        let accounts = accountsDB.val();
-        if (!accounts) {
-            return;
-        }
-
-        const tokensDB = await get(ref(database, Config.NETWORK + "/tokens/"));
-        let tokens = tokensDB.val();
-        if (!tokens) {
-            return;
-        }
-
-        lastDBUpdate.current = accounts.timestamp;
-
-        // Deserialize each account in the accounts array
-        const listingAccounts: GPAccount[] = accounts.listingData.map((account: any) => deserializeGPAccount(account));
-
-        // Deserialize each account in the accounts array
-        const ammAccounts: GPAccount[] = accounts.ammData.map((account: any) => deserializeGPAccount(account));
-
-        const tokenAccounts: MintData[] = tokens.mintData.map((mint: any) => deserializeMintData(mint));
-
-        let ammData: Map<string, AMMData> = new Map<string, AMMData>();
-        let listingData: Map<string, ListingData> = new Map<string, ListingData>();
-        let tokenData: Map<string, MintData> = new Map<string, MintData>();
-
-        for (let i = 0; i < ammAccounts.length; i++) {
-            let data = ammAccounts[i].data;
-            try {
-                const [amm] = AMMData.struct.deserialize(data);
-                let amm_key = getAMMKey(amm, amm.provider);
-                ammData.set(amm_key.toString(), amm);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        for (let i = 0; i < listingAccounts.length; i++) {
-            let data = listingAccounts[i].data;
-            try {
-                const [listing] = ListingData.struct.deserialize(data);
-                listingData.set(listingAccounts[i].pubkey.toString(), listing);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        for (let i = 0; i < tokenAccounts.length; i++) {
-            let token = tokenAccounts[i];
-            tokenData.set(token.mint.address.toString(), token);
-        }
-
-        console.log("Setting initial data from DB");
-        setAMMData(ammData);
-        setListingData(listingData);
-        setMintData(tokenData);
-        setDatabaseLoaded(true);
-    }, []);
 
     const UpdateDatabase = useCallback(async () => {
         await fetch("/.netlify/functions/updateTableData", {
@@ -648,20 +572,15 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
     }, []);
 
-    useEffect(() => {
-        fetchInitialData();
-    }, [fetchInitialData]);
 
     useEffect(() => {
-        if (!databaseLoaded) return;
-
         let current_time = new Date().getTime();
         if (current_time - last_program_data_update.current < 1000) return;
 
         last_program_data_update.current = current_time;
 
         GetProgramData(check_program_data, setProgramData, setIsLaunchDataLoading, setIsHomePageDataLoading);
-    }, [databaseLoaded]);
+    }, []);
 
     return (
         <AppRootContextProvider
