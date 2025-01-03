@@ -130,139 +130,142 @@ export function getAMMQuoteAccount(base_mint: PublicKey, quote_mint: PublicKey) 
     )[0];
 }
 
+export const getCreateCPInstruction = async (user:PublicKey, listing: ListingData, launch: LaunchData): Promise<TransactionInstruction> => {
+    let sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
+
+    let base_mint = listing.mint;
+    let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
+
+    const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
+        ? [quote_mint, base_mint]
+        : [base_mint, quote_mint];
+
+    let amm_config = getAMMConfigAccount();
+    let authority = getAuthorityAccount();
+    let pool_state = getPoolStateAccount(base_mint, quote_mint);
+    let observation = getObservationAccount(base_mint, quote_mint);
+
+    let lp_mint = getLPMintAccount(base_mint, quote_mint);
+    let amm_0 = token0.equals(base_mint) ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
+    let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
+
+    let token_program_0 = token0.equals(base_mint) ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+    let token_program_1 = token0.equals(base_mint) ? TOKEN_PROGRAM_ID : TOKEN_2022_PROGRAM_ID;
+
+    let pda_base = await getAssociatedTokenAddress(
+        base_mint, // mint
+        sol_account, // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
+    let pda_quote = launch.keys[LaunchKeys.WSOLAddress];
+    let user_0 = token0.equals(base_mint) ? pda_base : pda_quote;
+    let user_1 = token0.equals(base_mint) ? pda_quote : pda_base;
+
+    let user_lp = await getAssociatedTokenAddress(
+        lp_mint, // mint
+        sol_account, // owner
+        true, // allow owner off curve
+        TOKEN_PROGRAM_ID,
+    );
+
+    console.log("pda", user_0.toString(), user_1.toString(), user_lp.toString());
+    console.log("amm", amm_0.toString(), amm_1.toString());
+
+    let quote_amount = bignum_to_num(launch.ticket_price) * launch.num_mints;
+    let total_token_amount = bignum_to_num(launch.total_supply) * Math.pow(10, listing.decimals);
+    let base_amount = Math.floor(total_token_amount * (launch.distribution[Distribution.LP] / 100.0));
+
+    let amount_0 = token0.equals(base_mint) ? base_amount : quote_amount;
+    let amount_1 = token0.equals(base_mint) ? quote_amount : base_amount;
+
+    let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("User")], PROGRAM)[0];
+
+    let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
+
+    let team_base_account = await getAssociatedTokenAddress(
+        listing.mint, // mint
+        launch.keys[LaunchKeys.TeamWallet], // owner
+        true, // allow owner off curve
+        TOKEN_2022_PROGRAM_ID,
+    );
+
+    let amm_seed_keys = [];
+    if (base_mint.toString() < quote_mint.toString()) {
+        amm_seed_keys.push(base_mint);
+        amm_seed_keys.push(quote_mint);
+    } else {
+        amm_seed_keys.push(quote_mint);
+        amm_seed_keys.push(base_mint);
+    }
+
+    let amm_data_account = PublicKey.findProgramAddressSync(
+        [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("RaydiumCPMM")],
+        PROGRAM,
+    )[0];
+
+    let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
+
+    let temp_wsol_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
+    //let keys  = transaction["instructions"][0]["keys"]
+    let keys = [
+        { pubkey: user, isSigner: true, isWritable: true },
+        { pubkey: user_data_account, isSigner: false, isWritable: true },
+        { pubkey: launch.listing, isSigner: false, isWritable: false },
+        { pubkey: launch_data_account, isSigner: false, isWritable: true },
+        { pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
+        { pubkey: team_base_account, isSigner: false, isWritable: true },
+        { pubkey: sol_account, isSigner: false, isWritable: true },
+        { pubkey: amm_config, isSigner: false, isWritable: false },
+        { pubkey: authority, isSigner: false, isWritable: true },
+        { pubkey: pool_state, isSigner: false, isWritable: true },
+        { pubkey: token0, isSigner: false, isWritable: true },
+        { pubkey: token1, isSigner: false, isWritable: true },
+        { pubkey: lp_mint, isSigner: false, isWritable: true },
+        { pubkey: user_0, isSigner: false, isWritable: true },
+        { pubkey: user_1, isSigner: false, isWritable: true },
+        { pubkey: user_lp, isSigner: false, isWritable: true },
+        { pubkey: amm_0, isSigner: false, isWritable: true },
+        { pubkey: amm_1, isSigner: false, isWritable: true },
+        { pubkey: RAYDIUM_FEES, isSigner: false, isWritable: true },
+        { pubkey: observation, isSigner: false, isWritable: true },
+        { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: token_program_0, isSigner: false, isWritable: false },
+        { pubkey: token_program_1, isSigner: false, isWritable: false },
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+        { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
+        { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+        { pubkey: RAYDIUM_PROGRAM, isSigner: false, isWritable: false },
+        { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
+        { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
+        { pubkey: amm_data_account, isSigner: false, isWritable: true },
+    ];
+
+    for (let i = 0; i < keys.length; i++) {
+        console.log("key ", i, keys[i].pubkey.toString());
+    }
+
+    let init_raydium_data = serialise_CreateCP_instruction(amount_0, amount_1, 0);
+
+    const init_instruction = new TransactionInstruction({
+        keys: keys,
+        programId: PROGRAM,
+        data: init_raydium_data,
+    });
+
+    return init_instruction;
+};
+
 export const useCreateCP = (listing: ListingData, launch: LaunchData) => {
     const wallet = useWallet();
-    
+
     const { sendTransaction, isLoading } = useSendTransaction();
 
     const CreateCP = async () => {
-        let sol_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], PROGRAM)[0];
-
-        let base_mint = listing.mint;
-        let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
-
-        const [token0, token1] = new BN(base_mint.toBuffer()).gt(new BN(quote_mint.toBuffer()))
-            ? [quote_mint, base_mint]
-            : [base_mint, quote_mint];
-
-        let amm_config = getAMMConfigAccount();
-        let authority = getAuthorityAccount();
-        let pool_state = getPoolStateAccount(base_mint, quote_mint);
-        let observation = getObservationAccount(base_mint, quote_mint);
-
-        let lp_mint = getLPMintAccount(base_mint, quote_mint);
-        let amm_0 = token0.equals(base_mint) ? getAMMBaseAccount(base_mint, quote_mint) : getAMMQuoteAccount(base_mint, quote_mint);
-        let amm_1 = token0.equals(base_mint) ? getAMMQuoteAccount(base_mint, quote_mint) : getAMMBaseAccount(base_mint, quote_mint);
-
-        let token_program_0 = token0.equals(base_mint) ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
-        let token_program_1 = token0.equals(base_mint) ? TOKEN_PROGRAM_ID : TOKEN_2022_PROGRAM_ID;
-
-        let pda_base = await getAssociatedTokenAddress(
-            base_mint, // mint
-            sol_account, // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-        let pda_quote = launch.keys[LaunchKeys.WSOLAddress];
-        let user_0 = token0.equals(base_mint) ? pda_base : pda_quote;
-        let user_1 = token0.equals(base_mint) ? pda_quote : pda_base;
-
-        let user_lp = await getAssociatedTokenAddress(
-            lp_mint, // mint
-            sol_account, // owner
-            true, // allow owner off curve
-            TOKEN_PROGRAM_ID,
-        );
-
-        console.log("pda", user_0.toString(), user_1.toString(), user_lp.toString());
-        console.log("amm", amm_0.toString(), amm_1.toString());
-
-        let quote_amount = bignum_to_num(launch.ticket_price) * launch.num_mints;
-        let total_token_amount = bignum_to_num(launch.total_supply) * Math.pow(10, listing.decimals);
-        let base_amount = Math.floor(total_token_amount * (launch.distribution[Distribution.LP] / 100.0));
-
-        let amount_0 = token0.equals(base_mint) ? base_amount : quote_amount;
-        let amount_1 = token0.equals(base_mint) ? quote_amount : base_amount;
-
-        let user_data_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("User")], PROGRAM)[0];
-
-        let launch_data_account = PublicKey.findProgramAddressSync([Buffer.from(launch.page_name), Buffer.from("Launch")], PROGRAM)[0];
-
-        let team_base_account = await getAssociatedTokenAddress(
-            listing.mint, // mint
-            launch.keys[LaunchKeys.TeamWallet], // owner
-            true, // allow owner off curve
-            TOKEN_2022_PROGRAM_ID,
-        );
-
-        let amm_seed_keys = [];
-        if (base_mint.toString() < quote_mint.toString()) {
-            amm_seed_keys.push(base_mint);
-            amm_seed_keys.push(quote_mint);
-        } else {
-            amm_seed_keys.push(quote_mint);
-            amm_seed_keys.push(base_mint);
-        }
-
-        let amm_data_account = PublicKey.findProgramAddressSync(
-            [amm_seed_keys[0].toBytes(), amm_seed_keys[1].toBytes(), Buffer.from("RaydiumCPMM")],
-            PROGRAM,
-        )[0];
-
-        let trade_to_earn_account = PublicKey.findProgramAddressSync([amm_data_account.toBytes(), Buffer.from("TradeToEarn")], PROGRAM)[0];
-
-        let temp_wsol_account = PublicKey.findProgramAddressSync([wallet.publicKey.toBytes(), Buffer.from("Temp")], PROGRAM)[0];
-        //let keys  = transaction["instructions"][0]["keys"]
-        let keys = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
-            { pubkey: user_data_account, isSigner: false, isWritable: true },
-            { pubkey: launch.listing, isSigner: false, isWritable: false },
-            { pubkey: launch_data_account, isSigner: false, isWritable: true },
-            { pubkey: launch.keys[LaunchKeys.TeamWallet], isSigner: false, isWritable: true },
-            { pubkey: team_base_account, isSigner: false, isWritable: true },
-            { pubkey: sol_account, isSigner: false, isWritable: true },
-            { pubkey: amm_config, isSigner: false, isWritable: false },
-            { pubkey: authority, isSigner: false, isWritable: true },
-            { pubkey: pool_state, isSigner: false, isWritable: true },
-            { pubkey: token0, isSigner: false, isWritable: true },
-            { pubkey: token1, isSigner: false, isWritable: true },
-            { pubkey: lp_mint, isSigner: false, isWritable: true },
-            { pubkey: user_0, isSigner: false, isWritable: true },
-            { pubkey: user_1, isSigner: false, isWritable: true },
-            { pubkey: user_lp, isSigner: false, isWritable: true },
-            { pubkey: amm_0, isSigner: false, isWritable: true },
-            { pubkey: amm_1, isSigner: false, isWritable: true },
-            { pubkey: RAYDIUM_FEES, isSigner: false, isWritable: true },
-            { pubkey: observation, isSigner: false, isWritable: true },
-            { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: token_program_0, isSigner: false, isWritable: false },
-            { pubkey: token_program_1, isSigner: false, isWritable: false },
-            { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: SYSTEM_KEY, isSigner: false, isWritable: false },
-            { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
-            { pubkey: RAYDIUM_PROGRAM, isSigner: false, isWritable: false },
-            { pubkey: temp_wsol_account, isSigner: false, isWritable: true },
-            { pubkey: trade_to_earn_account, isSigner: false, isWritable: true },
-            { pubkey: amm_data_account, isSigner: false, isWritable: true },
-        ];
-
-        for (let i = 0; i < keys.length; i++) {
-            console.log("key ", i, keys[i].pubkey.toString());
-        }
-
-        let init_raydium_data = serialise_CreateCP_instruction(amount_0, amount_1, 0);
-
-        const init_instruction = new TransactionInstruction({
-            keys: keys,
-            programId: PROGRAM,
-            data: init_raydium_data,
-        });
-
-        let instructions: TransactionInstruction[] = [];
-        instructions.push(init_instruction);
+        let instruction = await getCreateCPInstruction(wallet.publicKey, listing, launch);
 
         await sendTransaction({
-            instructions,
+            instructions: [instruction],
             onSuccess: () => {
                 // Handle success
             },

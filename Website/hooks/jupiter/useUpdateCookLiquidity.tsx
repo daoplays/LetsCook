@@ -43,7 +43,7 @@ export const getUpdateCookLiquidityInstruction = async (
     amm: AMMData,
     token_amount: number,
     order_type: number,
-) => {
+): Promise<TransactionInstruction> => {
     function serialise_update_liquidity(side: number, in_amount: bignum): Buffer {
         const data = new UpdateLiquidity_Instruction(LaunchInstruction.update_cook_liquidity, side, in_amount);
         const [buf] = UpdateLiquidity_Instruction.struct.serialize(data);

@@ -70,7 +70,7 @@ const LandingPage = () => {
     const { connection } = useConnection();
     const { sm } = useResponsive();
 
-    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "Citizens5";
     const [selectedMercenary, setSelectedMercenary] = useState(null);
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);

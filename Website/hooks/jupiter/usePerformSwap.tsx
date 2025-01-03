@@ -56,7 +56,7 @@ export const getPerformSwapInstruction = async (
     order_type: number,
     user: PublicKey,
     amm: AMMData
-) => {
+): Promise<TransactionInstruction> => {
     // Initialize connection and check wallet
 
     if (user === null) return;

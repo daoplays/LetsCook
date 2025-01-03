@@ -264,7 +264,7 @@ function Recruit({
                 assignment_data={assignmentData}
                 collection={collection}
                 asset={asset}
-                asset_image={assetMeta}
+                asset_meta={assetMeta}
                 isLoading={isLoading}
             />
         </div>

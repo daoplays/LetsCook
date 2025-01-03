@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
     Box,
     Button,
@@ -19,7 +19,7 @@ import {
     Link,
 } from "@chakra-ui/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useAirdrop } from "../hooks/useAirdrop";
+import { AirdropRecipient, useAirdrop } from "../hooks/useAirdrop";
 import { PublicKey } from "@solana/web3.js";
 import { RiDeleteBinLine, RiDownloadLine } from "react-icons/ri"; // Import the icon
 import useResponsive from "@/hooks/useResponsive";
@@ -63,6 +63,10 @@ export const AirdropPage = () => {
     const [airdropProgress, setAirdropProgress] = useState(0);
     const [isAirdropping, setIsAirdropping] = useState(false);
 
+    const [distributions, setDistributions] = useState<AirdropRecipient[]>([]);
+
+
+
     const [signatures, setSignatures] = useState<Map<string, string>>(new Map());
 
     const {
@@ -81,20 +85,25 @@ export const AirdropPage = () => {
         error,
     } = useAirdrop();
 
-    // Modify this section in the distribution calculations
-    const distributions = useMemo(() => {
+    useEffect(() => {
         // If holders have CSV amounts, use those directly and disable the distribution controls
         const hasPresetAmounts = holders.some((holder) => holder.amount !== undefined);
         if (hasPresetAmounts) {
-            return holders.map((holder) => ({
+            const csvDistributions = holders.map((holder) => ({
                 address: holder.address,
                 amount: holder.amount || "0",
             }));
+            setDistributions(csvDistributions);
+            return;
         }
-
+    
         // Otherwise use the original calculation
-        if (!amount || !holders.length) return [];
-        return calculateAirdropAmounts(amount, distributionType);
+        if (!amount || !holders.length) {
+            setDistributions([]);
+            return;
+        }
+        const newDistributions = calculateAirdropAmounts(amount, distributionType);
+        setDistributions(newDistributions);
     }, [amount, holders, distributionType, calculateAirdropAmounts]);
 
     const handleMintInput = (value: string) => {
@@ -201,12 +210,14 @@ export const AirdropPage = () => {
             setIsAirdropping(true);
             const newSignatures = new Map<string, string>();
 
+            //console.log(distributions)
             // Create distributions with airdropAddress included
             const distributionsWithToken = distributions.map((dist) => {
                 const holder = holders.find((h) => h.address === dist.address);
                 return {
-                    ...dist,
-                    airdropAddress: holder?.airdropAddress || airdroppedToken, // Use custom address or fallback to global
+                    address: dist.address,
+                    amount: dist.amount,
+                    airdropAddress: holder?.airdropAddress || airdroppedToken,
                 };
             });
 

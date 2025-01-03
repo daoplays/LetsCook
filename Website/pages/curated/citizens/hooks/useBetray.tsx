@@ -132,6 +132,8 @@ export const BetrayInstructions = async (launchData: CollectionData, user: Publi
 
         { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
 
+        { pubkey: pda_token_account_key, isSigner: false, isWritable: true },
+
         { pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false },
         { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
     ];

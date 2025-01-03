@@ -68,7 +68,7 @@ class StartMission_Instruction {
 }
 
 // pda : 9ikNqoDwVRoUFUGKWPYm5ZT8fLCZUFwXgn1VhsAexxW5
-// random on chain attributes: Level, Wealth 0->0
+// random on chain attributes: Level 1->1, Wealth 1000->1000
 // 10000 bps swap fee
 export const StartMissionInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, difficulty: number) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];

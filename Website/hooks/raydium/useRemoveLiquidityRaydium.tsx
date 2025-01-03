@@ -65,12 +65,7 @@ class RaydiumRemoveLiquidity_Instruction {
     );
 }
 
-const useRemoveLiquidityRaydium = (amm: AMMData) => {
-    const wallet = useWallet();
-
-    const { sendTransaction, isLoading } = useSendTransaction();
-
-    const RemoveLiquidityRaydium = async (lp_amount: number) => {
+export const GetRemoveLiquidityRaydiumInstruction = async (user:PublicKey, amm: AMMData, lp_amount: number): Promise<TransactionInstruction> => {
         let base_mint = amm.base_mint;
         let quote_mint = new PublicKey("So11111111111111111111111111111111111111112");
 
@@ -90,14 +85,14 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
 
         let user_base_account = await getAssociatedTokenAddress(
             amm.base_mint, // mint
-            wallet.publicKey, // owner
+            user, // owner
             true, // allow owner off curve
             base_mint_data.token_program,
         );
 
         let user_quote_account = await getAssociatedTokenAddress(
             quote_mint, // mint
-            wallet.publicKey, // owner
+            user, // owner
             true, // allow owner off curve
             quote_mint_data.token_program,
         );
@@ -107,13 +102,13 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
 
         let user_lp_account = await getAssociatedTokenAddress(
             lp_mint, // mint
-            wallet.publicKey, // owner
+            user, // owner
             true, // allow owner off curve
             TOKEN_PROGRAM_ID,
         );
 
         const keys = [
-            { pubkey: wallet.publicKey, isSigner: true, isWritable: false },
+            { pubkey: user, isSigner: true, isWritable: false },
             { pubkey: authority, isSigner: false, isWritable: false },
             { pubkey: pool_state, isSigner: false, isWritable: true },
             { pubkey: user_lp_account, isSigner: false, isWritable: true },
@@ -138,19 +133,25 @@ const useRemoveLiquidityRaydium = (amm: AMMData) => {
             data: raydium_remove_liquidity_data,
         });
 
-        let instructions: TransactionInstruction[] = [];
+        return list_instruction;
+};
 
-        instructions.push(list_instruction);
+const useRemoveLiquidityRaydium = (amm: AMMData) => {
+    const wallet = useWallet();
 
+    const { sendTransaction, isLoading } = useSendTransaction();
+
+    const RemoveLiquidityRaydium = async (lp_amount: number) => {
+        let instruction = await GetRemoveLiquidityRaydiumInstruction(wallet.publicKey, amm, lp_amount);
         await sendTransaction({
-                    instructions,
-                    onSuccess: () => {
-                        // Handle success
-                    },
-                    onError: (error) => {
-                        // Handle error
-                    },
-                });
+            instructions: [instruction],
+            onSuccess: () => {
+                // Handle success
+            },
+            onError: (error) => {
+                // Handle error
+            },
+        });
     };
 
     return { RemoveLiquidityRaydium, isLoading };

@@ -615,7 +615,7 @@ const InfoContent = ({
     const { isOpen: isRewardsOpen, onOpen: onRewardsOpen, onClose: onRewardsClose } = useDisclosure();
 
     let current_date = Math.floor((new Date().getTime() / 1000 - bignum_to_num(amm.start_time)) / 24 / 60 / 60);
-    let reward = reward_schedule(current_date, amm, base_mint);
+    let reward = reward_schedule(current_date, amm, listing.decimals);
     if (mm_data !== null && mm_data !== undefined) {
         reward = bignum_to_num(mm_data.token_rewards) / Math.pow(10, base_mint.mint.decimals);
     }
