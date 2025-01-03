@@ -426,7 +426,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
     }, []);
 
     const UpdateDatabase = useCallback(async () => {
-        await fetch("/.netlify/functions/updateProgramData", {
+        await fetch("/.netlify/functions/updateTableData", {
             method: "POST",
             body: JSON.stringify({}),
             headers: {

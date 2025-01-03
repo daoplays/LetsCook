@@ -105,7 +105,7 @@ export function reward_date(amm) {
 
 // this function is only relevant when users havn't traded for some number of days
 // once a given day has been traded the on chain data will provide the correct number
-export function reward_schedule(date: number, amm: AMMData, mint: MintData): number {
+export function reward_schedule(date: number, amm: AMMData, decimals: number): number {
     if (amm.plugins.length === 0) {
         return 0.0;
     }
@@ -116,7 +116,7 @@ export function reward_schedule(date: number, amm: AMMData, mint: MintData): num
         return 0.0;
     }
 
-    let mm_amount: number = bignum_to_num(plugins.trade_reward_tokens) / Math.pow(10, mint.mint.decimals);
+    let mm_amount: number = bignum_to_num(plugins.trade_reward_tokens) / Math.pow(10, decimals);
     let first_date = plugins.trade_reward_first_date;
     let last_date = plugins.trade_reward_last_date;
 
