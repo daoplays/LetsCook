@@ -278,7 +278,7 @@ export const useAirdrop = () => {
     type ProgressCallback = (progress: number, signature?: string, recipientAddresses?: string[]) => void;
 
     const executeAirdrop = useCallback(
-        async (recipients: AirdropRecipient[], onProgress: ProgressCallback = () => {}, useTempAccount: boolean = true): Promise<boolean> => {
+        async (recipients: AirdropRecipient[], onProgress: ProgressCallback = () => {}, useTempAccount: boolean = false): Promise<boolean> => {
             if (!wallet || !wallet.publicKey) {
                 toast.error("Wallet not connected");
                 return;
