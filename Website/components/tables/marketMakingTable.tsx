@@ -147,7 +147,7 @@ const MarketMakingTable = () => {
                 </TableHeader>
                 <TableBody>
                     {rows.length > 0 ? (
-                        rows.map((row) => (
+                        rows.slice(0,100).map((row) => (
                             <LaunchRow 
                                 key={row.id}
                                 row={row}
