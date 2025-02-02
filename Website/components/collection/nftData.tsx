@@ -190,7 +190,7 @@ const NFTData = ({ setScreen }: NFTDataProps) => {
 
     const BrowseMetaData = () => (
         <HStack spacing={0} className={styles.eachField}>
-            <p className="min-w-[100px] text-lg text-white md:min-w-[290px]">MetaData:</p>
+            <p className="min-w-[100px] text-lg text-white md:min-w-[290px]">Metadata:</p>
             <div>
                 <label className={styles.label}>
                     <input id="file" type="file" multiple={true} onChange={handleMetaDataChange} />

@@ -27,6 +27,8 @@ import ContractModal from "./list";
 import { FaCoins } from "react-icons/fa";
 import { bignum_to_num } from "@/components/Solana/state";
 import useCollection from "@letscook/sdk/dist/hooks/data/useCollection";
+import useAudioPlayer from "@/hooks/curated/useAudioControll";
+import { IoSettingsSharp, IoVolumeHigh, IoVolumeMute } from "react-icons/io5";
 
 const montserrat = Montserrat({
     weight: ["500", "600", "700", "800", "900"],
@@ -91,6 +93,9 @@ const LandingPage = () => {
         listedAssets,
         error: collectionError,
     } = useCollection({ connection, pageName: collection_name as string | null });
+
+    const { audioRef, isMusicPlaying, isMuted, showControls, togglePlayPause, toggleControls, toggleControlsOff, handleVolumeChange } =
+        useAudioPlayer();
 
     const { isOpen: isMissionModalOpen, onOpen: openMissionModal, onClose: closeMissionModal } = useDisclosure();
     const { isOpen: isBetrayalModalOpen, onOpen: openBetrayalModal, onClose: closeBetrayalModal } = useDisclosure();
@@ -429,6 +434,76 @@ const LandingPage = () => {
 
     return (
         <main className={`relative min-h-screen w-full ${montserrat.className}`}>
+            <audio ref={audioRef} src="/curatedLaunches/citizens/tavern.mp3" autoPlay loop muted={isMuted} />
+            <Flex
+                position="fixed"
+                bottom={{ base: 1, md: 5 }}
+                right={{ base: 1, md: 5 }}
+                zIndex={50}
+                py={2}
+                px={3}
+                w="fit-content"
+                bg="black"
+                opacity={0.5}
+                borderRadius="2xl"
+                alignItems="center"
+                justify="center"
+            >
+                <Flex alignItems="center" gap={3}>
+                    <Box
+                        onClick={toggleControls}
+                        className="cursor-pointer"
+                        fontSize={{ base: "20px", lg: "30px" }}
+                        color="white"
+                        _hover={{ color: "teal.500", transform: "scale(1.1)" }} // Hover effect
+                        transition="all 0.2s"
+                        cursor="pointer"
+                    >
+                        <IoSettingsSharp />
+                    </Box>
+                    {isMusicPlaying ? (
+                        <Flex
+                            gap={1}
+                            onClick={() => {
+                                togglePlayPause();
+                                toggleControlsOff();
+                            }}
+                        >
+                            <Box
+                                onClick={toggleControlsOff}
+                                className="cursor-pointer"
+                                fontSize={{ base: "20px", lg: "30px" }}
+                                color="white"
+                                _hover={{ color: "teal.500", transform: "scale(1.1)" }} // Hover effect
+                                transition="all 0.2s"
+                                cursor="pointer"
+                            >
+                                <IoVolumeHigh />
+                            </Box>
+                            {/* <Lottie options={defaultOptions} height={35} width={35} /> */}
+                        </Flex>
+                    ) : (
+                        <Box
+                            onClick={togglePlayPause}
+                            className="cursor-pointer"
+                            fontSize={{ base: "20px", lg: "30px" }}
+                            color="white"
+                            _hover={{ color: "teal.500", transform: "scale(1.1)" }} // Hover effect
+                            transition="all 0.2s"
+                            cursor="pointer"
+                        >
+                            <IoVolumeMute />
+                        </Box>
+                    )}
+                </Flex>
+
+                {showControls && (
+                    <Flex direction="column">
+                        <input type="range" min="0" max="1" step="0.01" onChange={handleVolumeChange} className="volume-slider" />
+                    </Flex>
+                )}
+            </Flex>
+
             {/* Background Image */}
             <div className="absolute inset-0 h-full w-full">
                 <Image

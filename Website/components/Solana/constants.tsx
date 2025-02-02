@@ -8,7 +8,7 @@ export interface NetworkConfig {
     RAYDIUM_FEES: PublicKey;
     RPC_NODE: string;
     WSS_NODE: string;
-    AURA : string;
+    AURA: string;
     COOK_FEES: PublicKey;
     // its useful to define a few strings and images here given we have eth on eclipse and sol on solana
     token: string;
