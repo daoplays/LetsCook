@@ -70,7 +70,7 @@ const LandingPage = () => {
     const { connection } = useConnection();
     const { sm } = useResponsive();
 
-    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens3";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "Citizens5";
     const [selectedMercenary, setSelectedMercenary] = useState(null);
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
@@ -209,8 +209,8 @@ const LandingPage = () => {
     const NFTGrid = () => {
         let allUserAssets = [...ownedAssets];
 
-        const handleMissionSelect = (difficulty: string) => {
-            StartMission(new PublicKey(selectedMercenary.asset.publicKey.toString()), 0);
+        const handleMissionSelect = (difficulty: number) => {
+            StartMission(new PublicKey(selectedMercenary.asset.publicKey.toString()), difficulty);
         };
 
         const handleBetrayalConfirm = async () => {
@@ -284,6 +284,11 @@ const LandingPage = () => {
                                     nft.asset.publicKey.toString() !== userData?.asset.toString() &&
                                     userData?.mission_status !== 1);
 
+                            let maxLevel = 20;
+                            let overMaxLevel = parseInt(level) >= maxLevel;
+
+                            let maxLevelString = overMaxLevel ? "Max Level Reached" : "Send on Mission";
+
                             return (
                                 <GridItem key={`nft-${index}`}>
                                     <div className="flex flex-col gap-4">
@@ -333,6 +338,7 @@ const LandingPage = () => {
                                                     )}
                                                     {!isListed && anyOnMission && (
                                                         <button
+                                                            disabled={overMaxLevel}
                                                             className="w-full transform rounded-lg border-2 border-[#3A2618] bg-gradient-to-b from-[#8B7355] to-[#3A2618] px-4 py-2 font-bold text-[#1C1410] transition-all hover:from-[#C4A484] hover:to-[#8B7355] active:scale-95"
                                                             onClick={() => {
                                                                 setSelectedMercenary(nft);
@@ -340,7 +346,7 @@ const LandingPage = () => {
                                                                 openMissionModal();
                                                             }}
                                                         >
-                                                            Send on Mission
+                                                            {maxLevelString}
                                                         </button>
                                                     )}
 

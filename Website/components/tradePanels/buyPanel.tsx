@@ -133,6 +133,8 @@ const BuyPanel = ({
     }
 
     let quote_raw = Math.floor(sol_amount * Math.pow(10, 9));
+    let cook_fee = quote_raw * 0.0005;
+    quote_raw -= cook_fee;
 
     let plugins: AMMPluginData = getAMMPlugins(amm);
     //console.log(plugins)

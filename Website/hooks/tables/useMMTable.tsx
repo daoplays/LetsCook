@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { PROGRAM } from "../../components/Solana/constants";
+import { Config, PROGRAM } from "../../components/Solana/constants";
 import { bignum_to_num } from "../../components/Solana/state";
 import { reward_date, reward_schedule } from "../../components/Solana/jupiter_state";
 import useAppRoot from "../../context/useAppRoot";
@@ -94,8 +94,7 @@ export const useMarketMakingData = () => {
 
     // Process raw data into display-ready format
     useEffect(() => {
-        if (!mintData || !listingData || !ammData) {
-            setIsLoading(true);
+        if (!initialLoadComplete || !mintData || !listingData || !ammData) {
             return;
         }
 
@@ -124,8 +123,8 @@ export const useMarketMakingData = () => {
                 const current_reward_date = reward_date(amm);
                 const mm_data = mmLaunchData?.get(amm.pool.toString() + "_" + current_reward_date.toString());
                 const rewards = mm_data
-                    ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, mint.mint.decimals)
-                    : reward_schedule(0, amm, mint);
+                    ? bignum_to_num(mm_data.token_rewards) / Math.pow(10, listing.decimals)
+                    : reward_schedule(0, amm, listing.decimals);
 
                 processedRows.push({
                     id: listing.mint.toString(),
@@ -133,8 +132,8 @@ export const useMarketMakingData = () => {
                     tokenIcon: mint.icon,
                     price: {
                         value: price,
-                        display: price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(mint.mint.decimals, 3)),
-                        decimals: mint.mint.decimals,
+                        display: price < 1e-3 ? price.toExponential(3) : price.toFixed(Math.min(listing.decimals, 3)),
+                        decimals: listing.decimals
                     },
                     liquidity: {
                         value: liquidity,

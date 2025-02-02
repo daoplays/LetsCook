@@ -4,6 +4,7 @@ import Image from "next/image";
 import { FaCoins } from "react-icons/fa";
 import { Loader2Icon } from "lucide-react";
 import { AssetWithMetadata } from "@/pages/collection/[pageName]";
+import { Config } from "@/components/Solana/constants";
 
 interface ContractModalProps {
     isOpen: boolean;
@@ -88,7 +89,7 @@ const ContractModal = ({ isOpen, onClose, onConfirm, mercenary, isLoading = fals
                                     placeholder="Enter amount"
                                     className="flex-1 bg-transparent text-lg font-bold text-[#C4A484] placeholder-[#8B7355]/50 outline-none"
                                 />
-                                <span className="text-sm text-[#8B7355]">MARKS</span>
+                                <span className="text-sm text-[#8B7355]">{Config.token}</span>
                             </div>
                         </div>
 

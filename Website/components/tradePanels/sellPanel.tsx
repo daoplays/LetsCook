@@ -120,6 +120,9 @@ const SellPanel = ({
         ? CalculateChunkedOutput(base_raw, amm_quote_balance, amm_base_balance, amm.fee, plugins, 9, base_mint.mint.decimals)
         : getQuoteOutput(base_raw, amm_base_balance, amm_quote_balance, amm.fee, 9, base_mint.mint.decimals);
 
+    let cook_fee = quote_output[0] * 0.0005;
+    quote_output[0] -= cook_fee;
+
     let quote_rate = plugins.liquidity_active
         ? CalculateChunkedOutput(
               1 * Math.pow(10, base_mint.mint.decimals),

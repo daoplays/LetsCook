@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, get, Database } from "firebase/database";
 import { firebaseConfig } from "../../components/Solana/constants";
 import { WRAPPED_SOL } from "@letscook/sdk";
+import { fetchFromFirebase } from "@/utils/firebaseUtils";
 
 export const useSOLPrice = () => {
     const [SOLPrice, setPrice] = useState<number>(0);
@@ -22,13 +23,8 @@ export const useSOLPrice = () => {
         // if for some reason this is called after the price has been set from the jupiter api then just return
         if (have_price.current || lastDBUpdate.current > 0) return;
 
-        const app = initializeApp(firebaseConfig);
-
-        // Initialize Realtime Database and get a reference to the service
-        const database = getDatabase(app);
-
-        const price = await get(ref(database, Config.NETWORK + "/prices/" + Config.token));
-        let entry = price.val();
+        const entry = await fetchFromFirebase(Config.NETWORK + "/prices/" + Config.token);
+        
         if (entry === null) {
             return;
         }
