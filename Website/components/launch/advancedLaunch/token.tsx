@@ -29,13 +29,7 @@ import {
     ModalOverlay,
 } from "@chakra-ui/react";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import {
-    
-    Distribution,
-    uInt32ToLEBytes,
-    getLaunchType,
-    getLaunchTypeIndex,
-} from "../../Solana/state";
+import { Distribution, uInt32ToLEBytes, getLaunchType, getLaunchTypeIndex } from "../../Solana/state";
 import Image from "next/image";
 import styles from "../../../styles/Launch.module.css";
 import WoodenButton from "../../Buttons/woodenButton";
@@ -51,6 +45,7 @@ import trimAddress from "../../../utils/trimAddress";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Config } from "../../Solana/constants";
 import { Button } from "@/components/ui/button";
+import { ChevronDownIcon } from "lucide-react";
 interface TokenPageProps {
     setScreen: Dispatch<SetStateAction<string>>;
 }
@@ -73,6 +68,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     const [ticketPrice, setTotalPrice] = useState<string>(newLaunchData.current.ticket_price.toString());
     const [distribution, setDistribution] = useState<number[]>(newLaunchData.current.distribution);
     const [launch_type, setLaunchType] = useState<string>(getLaunchType(newLaunchData.current.launch_type));
+
+    const [isTEEnabled, setIsTEEnabled] = useState(false);
 
     const [rewardsSupply, setRewardsSupply] = useState<string>("none");
 
@@ -393,12 +390,12 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
     );
 
     return (
-        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1075px]">
+        <form className="mx-auto flex w-full flex-col items-center justify-center bg-[#161616] bg-opacity-75 bg-clip-padding px-6 py-6 shadow-2xl backdrop-blur-sm backdrop-filter md:rounded-xl md:border-t-[3px] md:border-orange-700 md:px-12 md:py-8 lg:w-[1200px]">
             <Center height="100%" width="100%">
                 <VStack height="100%" w="100%">
                     <div className="flex flex-col gap-2 md:mb-4">
                         <Text className="text-center text-3xl font-semibold text-white lg:text-4xl">Token Information</Text>
-                        {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">Switch to Advance Mode</p> */}
+                        {/* <p className="text-center transition-all cursor-pointer text-white/50 hover:text-white">`Switch` to Advance Mode</p> */}
                     </div>
                     <VStack w={"100%"} spacing={25} mt={4}>
                         <HStack w="100%" spacing={lg ? 10 : 12} style={{ flexDirection: lg ? "column" : "row" }}>
@@ -598,11 +595,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                         </HStack>
 
                         <Divider />
-                        <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
-                            Token Extensions:
-                        </Text>
+                        <HStack className="cursor-pointer" onClick={() => setIsTEEnabled(!isTEEnabled)}>
+                            <Text className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
+                                Token Extensions
+                            </Text>
+                            <ChevronDownIcon className={`text-white ${isTEEnabled ? "rotate-180" : ""} -mt-1`} />
+                        </HStack>
                         <VStack w="100%">
-                            <VStack spacing={lg ? 8 : 10} w="100%">
+                            <VStack spacing={lg ? 8 : 10} w="100%" pb={6} hidden={!isTEEnabled}>
                                 <HStack spacing={8} w="100%" style={{ flexDirection: lg ? "column" : "row" }}>
                                     <HStack spacing={0} className={styles.eachField}>
                                         <p className="min-w-[110px] text-lg text-white md:min-w-[185px]">Transfer Fee:</p>
@@ -706,11 +706,13 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         </HStack>
                                     </HStack>
                                 </HStack>
+                            </VStack>
 
-                                <Divider />
+                            <Divider />
 
+                            <VStack mt={8} spacing={lg ? 8 : 10} w="100%">
                                 <Text mt={-3} className="font-face-kg" color={"white"} fontSize="x-large" mb={0}>
-                                    Distribution:
+                                    Distribution
                                 </Text>
 
                                 <HStack spacing={8} w="100%" justify="space-between" style={{ flexDirection: lg ? "column" : "row" }}>
@@ -735,8 +737,8 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                         </div>
                                     </HStack>
 
-                                    <HStack spacing={lg ? 0 : 8} className={styles.eachField}>
-                                        <p className="min-w-[110px] text-lg text-white md:min-w-[180px] xl:min-w-[95px]">Ticket Price:</p>
+                                    <HStack spacing={lg ? 0 : 4} className={styles.eachField}>
+                                        <p className="min-w-[110px] text-lg text-white md:min-w-[180px] xl:min-w-[120px]">Ticket Price:</p>
                                         <div style={{ width: "100%" }} className={styles.textLabelInput}>
                                             <Input
                                                 placeholder={"Enter Price Per Ticket"}
@@ -776,13 +778,14 @@ const TokenPage = ({ setScreen }: TokenPageProps) => {
                                     </div>
                                 </HStack>
                             </VStack>
+
                             <VStack mt={lg ? 2 : 5} spacing={5} w="100%" align="start">
                                 <HStack
                                     justify="space-between"
                                     align={"center"}
                                     w="100%"
                                     style={{ flexDirection: md ? "column" : "row" }}
-                                    spacing={15}
+                                    spacing={14}
                                 >
                                     <VStack
                                         spacing={5}
