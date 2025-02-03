@@ -72,7 +72,7 @@ const LandingPage = () => {
     const { connection } = useConnection();
     const { sm } = useResponsive();
 
-    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "Citizens5";
+    const collection_name = Config.NETWORK === "eclipse" ? "joypeeps" : "citizens_final";
     const [selectedMercenary, setSelectedMercenary] = useState(null);
 
     const [listedNFTs, setListedNFTs] = useState<AssetWithMetadata[]>([]);
@@ -289,8 +289,8 @@ const LandingPage = () => {
                                     nft.asset.publicKey.toString() !== userData?.asset.toString() &&
                                     userData?.mission_status !== 1);
 
-                            let maxLevel = 20;
-                            let overMaxLevel = parseInt(level) >= maxLevel;
+                            let maxLevel = 10;
+                            let overMaxLevel = parseInt(level) > maxLevel;
 
                             let maxLevelString = overMaxLevel ? "Max Level Reached" : "Send on Mission";
 

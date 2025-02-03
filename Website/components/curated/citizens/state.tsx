@@ -14,7 +14,7 @@ import {
 import { publicKey } from "@metaplex-foundation/beet-solana";
 import { PublicKey } from "@solana/web3.js";
 
-export const CITIZENS: PublicKey = new PublicKey("3NGoqG82EWT9UMBeiPE7weanFyq6tkfJBQTMP1svLjXX");
+export const CITIZENS: PublicKey = new PublicKey("5CP8WP4Wj9eTvZeVNyLKWz1fQgE2fCdeMLFkGQ7JqeYF");
 
 type CitizenPluginEnum = {
     Achievements: {
