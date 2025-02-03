@@ -40,6 +40,7 @@ import { toast } from "react-toastify";
 import { BeetStruct, FixableBeetStruct, array, bignum, u64, u8, uniformFixedSizeArray } from "@metaplex-foundation/beet";
 import { CITIZENS } from "../../../../components/curated/citizens/state";
 import { CollectionData } from "@letscook/sdk/dist/state/collections";
+import { DATA_ACCOUNT_SEED } from "@letscook/sdk";
 
 function serialise_start_mission_instruction(difficulty: number, seed: number[]): Buffer {
     const data = new StartMission_Instruction(0, difficulty, seed);
@@ -67,11 +68,16 @@ class StartMission_Instruction {
     );
 }
 
-// pda : 9ikNqoDwVRoUFUGKWPYm5ZT8fLCZUFwXgn1VhsAexxW5
+// pda : 5JHiBihp5F5zUD3posMYPN7xgHYzJbZCyqhjdd5tYDgW
 // random on chain attributes: Level 1->1, Wealth 1000->1000
+// swap rate 1000
 // 10000 bps swap fee
+// send cost of cook account to pda
+// send 5M tokens to pda
 export const StartMissionInstructions = async (launchData: CollectionData, user: PublicKey, asset_key: PublicKey, difficulty: number) => {
     let pda_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(SOL_ACCOUNT_SEED)], CITIZENS)[0];
+    let summary_account = PublicKey.findProgramAddressSync([uInt32ToLEBytes(DATA_ACCOUNT_SEED)], CITIZENS)[0];
+
     console.log("Pda ", pda_account.toString());
     let user_data_account = PublicKey.findProgramAddressSync([user.toBytes(), Buffer.from("UserData")], CITIZENS)[0];
 
@@ -87,6 +93,7 @@ export const StartMissionInstructions = async (launchData: CollectionData, user:
         { pubkey: launchData.keys[CollectionKeys.CollectionMint], isSigner: false, isWritable: true },
         { pubkey: user_data_account, isSigner: false, isWritable: true },
         { pubkey: pda_account, isSigner: false, isWritable: true },
+        { pubkey: summary_account, isSigner: false, isWritable: true },
         { pubkey: orao_random, isSigner: false, isWritable: true },
     ];
 

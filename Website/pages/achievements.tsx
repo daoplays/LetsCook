@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Video, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Text } from "@chakra-ui/react";
 import useResponsive from "@/hooks/useResponsive";
@@ -37,7 +37,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Submit 25 votes for token or collection launches",
         badgeImage: "/images/achievements/hype_25.png",
         tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
-        
     },
     {
         id: 4,
@@ -45,7 +44,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Submit 50 votes for token or collection launches",
         badgeImage: "/images/achievements/hype_50.png",
         tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
-        
     },
     {
         id: 5,
@@ -53,7 +51,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Submit 100 votes for token or collection launches",
         badgeImage: "/images/achievements/hype_100.png",
         tutorialVideoUrl: "https://youtu.be/GLlJyPepT00",
-        
     },
     {
         id: 6,
@@ -61,7 +58,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Mint an NFT from a collection on Let's Cook",
         badgeImage: "/images/achievements/wrap_1.png",
         tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
-        
     },
     {
         id: 7,
@@ -69,7 +65,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Mint 25 NFTs from collections on Let's Cook",
         badgeImage: "/images/achievements/wrap_25.png",
         tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
-        
     },
     {
         id: 8,
@@ -77,7 +72,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Mint 50 NFTs from collections on Let's Cook",
         badgeImage: "/images/achievements/wrap_50.png",
         tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
-        
     },
     {
         id: 9,
@@ -85,7 +79,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Mint 100 NFTs from collections on Let's Cook",
         badgeImage: "/images/achievements/wrap_100.png",
         tutorialVideoUrl: "https://youtu.be/QpEhv8TsKMA",
-        
     },
     {
         id: 10,
@@ -93,7 +86,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Unwrap an NFT from a hybrid collection on Let's Cook",
         badgeImage: "/images/achievements/unwrap_1.png",
         tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
-        
     },
     {
         id: 11,
@@ -101,7 +93,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Unwrap 25 NFTs from hybrid collections on Let's Cook",
         badgeImage: "/images/achievements/unwrap_25.png",
         tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
-        
     },
     {
         id: 12,
@@ -109,7 +100,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Unwrap 50 NFTs from hybrid collections on Let's Cook",
         badgeImage: "/images/achievements/unwrap_50.png",
         tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
-        
     },
     {
         id: 13,
@@ -117,7 +107,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Unwrap 100 NFTs from hybrid collections on Let's Cook",
         badgeImage: "/images/achievements/unwrap_100.png",
         tutorialVideoUrl: "https://youtu.be/2JaXezDGmCM",
-        
     },
     {
         id: 14,
@@ -125,7 +114,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Earn 100 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_100.png",
         tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
-        
     },
     {
         id: 15,
@@ -133,7 +121,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Earn 500 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_500.png",
         tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
-        
     },
     {
         id: 16,
@@ -141,7 +128,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Earn 1000 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_1000.png",
         tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
-        
     },
     {
         id: 17,
@@ -149,7 +135,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
         description: "Earn 10000 sauce on Let's Cook",
         badgeImage: "/images/achievements/sauce_10k.png",
         tutorialVideoUrl: "https://www.youtube.com/watch?v=vqvECbcI_3A",
-        
     },
 ];
 
@@ -183,7 +168,7 @@ const TutorialDialog: React.FC<{ videoUrl?: string }> = ({ videoUrl }) => {
 export const AchievementsScreen = () => {
     const { sm } = useResponsive();
     const wallet = useWallet();
-    const {userData, achievements} = useCurrentUserData({user : wallet?.publicKey});
+    const { userData, achievements } = useCurrentUserData({ user: wallet?.publicKey });
 
     return (
         <main className="px-4 md:p-8">
