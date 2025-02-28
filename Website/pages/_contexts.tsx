@@ -562,7 +562,7 @@ const ContextProviders = ({ children }: PropsWithChildren) => {
 
         GetTradeMintData(trade_mints, setMintData);
         getTokenPrices(price_mints, setJupPrices);
-        if (new Date().getTime() - lastDBUpdate.current > 60 * 60 * 1000) {
+        if (new Date().getTime() - lastDBUpdate.current > 1000 * 60 * 60 * 1000) {
             UpdateDatabase();
         }
     }, [program_data, wallet, UpdateDatabase]);
